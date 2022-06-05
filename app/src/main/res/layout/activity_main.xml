@@ -1,24 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-  <TextView
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/header"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:paddingTop="@dimen/home_page_title_padding_top"
-      android:paddingBottom="@dimen/home_page_title_padding_bottom"
-      android:fontFamily="google-sans"
-      android:gravity="center_horizontal"
-      android:text="@string/app_name"
-      android:textColor="@color/white"
-      android:textSize="@dimen/home_page_title_size"/>
+      android:paddingStart="8dp"
+      android:paddingEnd="8dp"
+      android:paddingTop="4dp"
+      android:paddingBottom="4dp"
+      android:background="@color/color_primary"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
 
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/mode_recycler_view"
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textColor="@color/white"
+        android:textSize="@dimen/home_page_title_size"
+        app:layout_constraintBottom_toBottomOf="@+id/logoView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/logoView" />
+
+    <ImageView
+        android:id="@+id/logoView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_launcher_round"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/white"
+        android:queryHint="English or Vietnamese"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logoView" />
+
+    <ImageView
+        android:id="@+id/searchSingleImageView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_image_search_white"
+        app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchView" />
+
+    <ImageView
+        android:id="@+id/searchMultiImagesView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="4dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_multiple_images_white"
+        app:layout_constraintStart_toEndOf="@id/searchCameraView"
+        app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
+        app:layout_constraintTop_toBottomOf="@id/searchView" />
+
+    <ImageView
+        android:id="@+id/searchCameraView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_camera_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
+        app:layout_constraintTop_toBottomOf="@id/searchView" />
+
+    <TextView
+        android:id="@+id/searchSingleImageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/single_image"
+        android:textColor="@color/white"
+        android:textSize="12dp"
+        app:layout_constraintStart_toStartOf="@id/searchSingleImageView"
+        app:layout_constraintEnd_toEndOf="@id/searchSingleImageView"
+        app:layout_constraintTop_toBottomOf="@id/searchSingleImageView" />
+
+    <TextView
+        android:id="@+id/searchMultiImagesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/multiple_images"
+        android:textColor="@color/white"
+        android:textSize="12dp"
+        app:layout_constraintStart_toStartOf="@id/searchMultiImagesView"
+        app:layout_constraintEnd_toEndOf="@id/searchMultiImagesView"
+        app:layout_constraintTop_toBottomOf="@id/searchMultiImagesView" />
+
+    <TextView
+        android:id="@+id/searchCameraTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/camera"
+        android:textColor="@color/white"
+        android:textSize="12dp"
+        app:layout_constraintStart_toStartOf="@id/searchCameraView"
+        app:layout_constraintEnd_toEndOf="@id/searchCameraView"
+        app:layout_constraintTop_toBottomOf="@id/searchCameraView" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="@color/white"
+        android:foreground="@drawable/rounded_corner_background_white_stroke"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchMultiImagesTextView" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+  <ScrollView
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:scrollbars="vertical"/>
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      app:layout_constraintTop_toBottomOf="@id/header"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent">
 
-</LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/mode_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical">
+
+    </androidx.recyclerview.widget.RecyclerView>
+  </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

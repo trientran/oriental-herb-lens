@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">MLKit Showcase</string>
+  <string name="app_name">Viet Herb lens</string>
+
+  <!-- Strings for home screen -->
+  <string name="single_image">Single Image</string>
+  <string name="multiple_images">Multiple Images</string>
+  <string name="camera">Camera</string>
 
   <string name="entry_java_title">Java</string>
   <string name="entry_java_subtitle">Run the MLKit Showcase written in Java.</string>

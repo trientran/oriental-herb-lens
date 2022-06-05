@@ -17,4 +17,7 @@
   <color name="object_reticle_outer_ring_stroke">#9AFFFFFF</color>
   <color name="object_reticle_inner_ring">@color/white</color>
   <color name="product_description">#5F6368</color>
+  <color name="color_primary">#536b78</color>
+  <color name="color_primary_dark">#7c98b3</color>
+  <color name="color_accent">#637081</color>
 </resources>
