@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_images">
+
+    <fragment
+        android:id="@+id/navigation_images"
+        android:name="com.uri.lee.dl.herbdetails.images.ImagesFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_overview" />
+
+    <fragment
+        android:id="@+id/navigation_overview"
+        android:name="com.uri.lee.dl.herbdetails.overview.ReviewFragment"
+        android:label="@string/title_dashboard"
+        tools:layout="@layout/fragment_images" />
+
+    <fragment
+        android:id="@+id/navigation_usage"
+        android:name="com.uri.lee.dl.herbdetails.usage.UsageFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_usage" />
+
+    <fragment
+        android:id="@+id/navigation_caution"
+        android:name="com.uri.lee.dl.herbdetails.usage.CautionFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_usage" />
+
+    <fragment
+        android:id="@+id/navigation_review"
+        android:name="com.uri.lee.dl.herbdetails.usage.ReviewFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_usage" />
+</navigation>
