@@ -23,14 +23,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.algolia.instantsearch.android.list.autoScrollToStart
+import com.algolia.instantsearch.android.paging3.liveData
+import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
+import com.algolia.instantsearch.core.connection.ConnectionHandler
+import com.algolia.instantsearch.searchbox.connectView
 import com.uri.lee.dl.databinding.ActivityMainBinding
+import com.uri.lee.dl.instantsearch.MyAdapter
+import com.uri.lee.dl.instantsearch.MyViewModel
 
 /** Entry activity to select the detection mode.  */
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: MyViewModel by viewModels()
+    private val connection = ConnectionHandler()
 
     private enum class DetectionMode(val titleResId: Int, val subtitleResId: Int) {
         ODT_LIVE(R.string.mode_odt_live_title, R.string.mode_odt_live_subtitle),
@@ -51,6 +62,31 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = ModeItemAdapter(DetectionMode.values())
         }
+
+        val searchResultAdapter = MyAdapter()
+        searchResultAdapter.onItemClick = {
+            // todo navigate to detail screen with herb as bundle
+        }
+        viewModel.paginator.liveData.observe(this) {
+            searchResultAdapter.submitData(lifecycle, it)
+        }
+        binding.herbSearchList.let {
+            it.itemAnimator = null
+            it.adapter = searchResultAdapter
+            it.layoutManager = LinearLayoutManager(this)
+            it.autoScrollToStart(searchResultAdapter)
+        }
+
+        val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
+        connection += viewModel.searchBox.connectView(searchBoxView)
+
+        // val statsView = StatsTextView(binding.stats)
+        //   connection += viewModel.stats.connectView(statsView, DefaultStatsPresenter())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connection.clear()
     }
 
     override fun onResume() {
@@ -60,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == Utils.REQUEST_CODE_PHOTO_LIBRARY &&
             resultCode == Activity.RESULT_OK &&
