@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/navigation_overview"
-        android:name="com.uri.lee.dl.herbdetails.overview.ReviewFragment"
+        android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_images" />
 

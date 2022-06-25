@@ -1,4 +1,4 @@
-package com.uri.lee.dl.herbdetails.overview
+package com.uri.lee.dl.herbdetails.review
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

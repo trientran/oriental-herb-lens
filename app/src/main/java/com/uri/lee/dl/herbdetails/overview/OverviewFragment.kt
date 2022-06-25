@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.uri.lee.dl.databinding.FragmentOverviewBinding
+import com.uri.lee.dl.herbdetails.review.ReviewViewModel
 
 class OverviewFragment : Fragment() {
 

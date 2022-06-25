@@ -1,4 +1,4 @@
-package com.uri.lee.dl.herbdetails.overview
+package com.uri.lee.dl.herbdetails.review
 
 import android.os.Bundle
 import android.view.LayoutInflater

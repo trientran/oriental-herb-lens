@@ -6,7 +6,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.uri.lee.dl.databinding.FragmentCautionBinding
-import com.uri.lee.dl.herbdetails.overview.ReviewViewModel
+import com.uri.lee.dl.herbdetails.review.ReviewViewModel
 
 class CautionFragment : Fragment() {
 
