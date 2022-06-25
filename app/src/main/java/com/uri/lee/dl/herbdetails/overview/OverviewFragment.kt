@@ -24,7 +24,7 @@ class OverviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val dashboardViewModel =
-            ViewModelProvider(this).get(ReviewViewModel::class.java)
+            ViewModelProvider(this)[ReviewViewModel::class.java]
 
         _binding = FragmentOverviewBinding.inflate(inflater, container, false)
         val root: View = binding.root

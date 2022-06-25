@@ -23,7 +23,7 @@ class ReviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val dashboardViewModel =
-            ViewModelProvider(this).get(ReviewViewModel::class.java)
+            ViewModelProvider(this)[ReviewViewModel::class.java]
 
         _binding = FragmentReviewBinding.inflate(inflater, container, false)
         val root: View = binding.root

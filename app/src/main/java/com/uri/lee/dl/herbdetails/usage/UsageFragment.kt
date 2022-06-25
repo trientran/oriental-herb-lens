@@ -23,7 +23,7 @@ class UsageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val notificationsViewModel =
-            ViewModelProvider(this).get(UsageViewModel::class.java)
+            ViewModelProvider(this)[UsageViewModel::class.java]
 
         _binding = FragmentUsageBinding.inflate(inflater, container, false)
         val root: View = binding.root
