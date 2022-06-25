@@ -38,9 +38,22 @@
       android:layout_marginTop="4dp"
       android:layout_marginEnd="8dp"
       android:src="@drawable/ic_launcher_round"
-      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintEnd_toStartOf="@id/menuView"
       app:layout_constraintTop_toTopOf="parent"
       android:contentDescription="logo" />
+
+  <ImageView
+      android:id="@+id/menuView"
+      android:layout_marginBottom="707dp"
+      android:layout_width="50dp"
+      android:layout_height="50dp"
+      android:layout_marginTop="4dp"
+      android:layout_marginEnd="8dp"
+      android:background="?android:attr/selectableItemBackground"
+      android:src="@drawable/ic_menu"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:srcCompat="@drawable/ic_menu" />
 
   <androidx.appcompat.widget.SearchView
       android:id="@+id/searchView"
@@ -62,6 +75,7 @@
       android:layout_width="50dp"
       android:layout_height="50dp"
       android:layout_marginTop="4dp"
+      android:background="?android:attr/selectableItemBackground"
       android:src="@drawable/ic_image_search_white"
       app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
       app:layout_constraintEnd_toEndOf="parent"
@@ -74,6 +88,7 @@
       android:layout_height="50dp"
       android:padding="4dp"
       android:layout_marginTop="4dp"
+      android:background="?android:attr/selectableItemBackground"
       android:src="@drawable/ic_multiple_images_white"
       app:layout_constraintStart_toEndOf="@id/searchCameraView"
       app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
@@ -85,6 +100,7 @@
       android:layout_width="50dp"
       android:layout_height="50dp"
       android:layout_marginTop="4dp"
+      android:background="?android:attr/selectableItemBackground"
       android:src="@drawable/ic_camera_white"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
