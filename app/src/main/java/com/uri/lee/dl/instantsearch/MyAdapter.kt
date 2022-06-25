@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.algolia.instantsearch.android.highlighting.toSpannedString
 import com.algolia.instantsearch.android.inflate
 import com.uri.lee.dl.R
+import java.util.*
 
 class MyAdapter : PagingDataAdapter<Herb, MyAdapter.ProductViewHolder>(ProductDiffUtil) {
 
@@ -32,7 +33,9 @@ class MyAdapter : PagingDataAdapter<Herb, MyAdapter.ProductViewHolder>(ProductDi
         private val itemName = view.findViewById<TextView>(R.id.itemName)
 
         fun bind(herb: Herb) {
-            itemName.text = herb.highlightedName?.toSpannedString() ?: herb.viName
+            val itemNamePerSystemLanguage =
+                if (Locale.getDefault().displayLanguage == "English") herb.sciName else herb.viName
+            itemName.text = herb.highlightedName?.toSpannedString() ?: itemNamePerSystemLanguage
             itemName.setOnClickListener {
                 onItemClick?.invoke(herb)
             }
