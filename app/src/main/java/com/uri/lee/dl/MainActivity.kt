@@ -18,14 +18,21 @@ package com.uri.lee.dl
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.algolia.instantsearch.android.list.autoScrollToStart
@@ -36,6 +43,7 @@ import com.algolia.instantsearch.searchbox.connectView
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.instantsearch.MyAdapter
 import com.uri.lee.dl.instantsearch.MyViewModel
+
 
 /** Entry activity to select the detection mode.  */
 class MainActivity : AppCompatActivity() {
@@ -65,7 +73,9 @@ class MainActivity : AppCompatActivity() {
 
         val searchResultAdapter = MyAdapter()
         searchResultAdapter.onItemClick = {
-            // todo navigate to detail screen with herb as bundle
+            val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
+            intent.putExtra("INSTANT_HERB", it)
+            startActivity(intent)
         }
         viewModel.paginator.liveData.observe(this) {
             searchResultAdapter.submitData(lifecycle, it)
@@ -80,8 +90,43 @@ class MainActivity : AppCompatActivity() {
         val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
         connection += viewModel.searchBox.connectView(searchBoxView)
 
-        // val statsView = StatsTextView(binding.stats)
-        //   connection += viewModel.stats.connectView(statsView, DefaultStatsPresenter())
+        setSearchViewOnClickListener(binding.searchView) {
+            binding.herbSearchList.isVisible = true
+        }
+    }
+
+    private fun setSearchViewOnClickListener(v: View?, listener: View.OnClickListener?) {
+        if (v is ViewGroup) {
+            val group = v
+            val count = group.childCount
+            for (i in 0 until count) {
+                val child = group.getChildAt(i)
+                if (child is LinearLayout || child is RelativeLayout) {
+                    setSearchViewOnClickListener(child, listener)
+                }
+                if (child is TextView) {
+                    child.isFocusable = false
+                }
+                child.setOnClickListener(listener)
+            }
+        }
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    binding.herbSearchList.isVisible = false
+                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     override fun onDestroy() {
@@ -142,7 +187,12 @@ class MainActivity : AppCompatActivity() {
                             activity.startActivity(Intent(activity, LiveObjectDetectionActivity::class.java))
                         DetectionMode.ODT_STATIC -> Utils.openImagePicker(activity)
                         DetectionMode.CUSTOM_MODEL_LIVE ->
-                            activity.startActivity(Intent(activity, com.uri.lee.dl.CustomModelObjectDetectionActivity::class.java))
+                            activity.startActivity(
+                                Intent(
+                                    activity,
+                                    CustomModelObjectDetectionActivity::class.java
+                                )
+                            )
                     }
                 }
             }
