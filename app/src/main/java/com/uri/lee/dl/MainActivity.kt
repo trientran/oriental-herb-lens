@@ -49,8 +49,6 @@ import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.instantsearch.MyAdapter
 import com.uri.lee.dl.instantsearch.MyViewModel
 
-
-/** Entry activity to select the detection mode.  */
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MyViewModel by viewModels()
