@@ -20,19 +20,16 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -91,49 +88,38 @@ class MainActivity : AppCompatActivity() {
         val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
         connection += viewModel.searchBox.connectView(searchBoxView)
 
-        binding.searchView.setOnCloseListener {
-            Log.d("trien", "close")
-            binding.herbSearchList.isVisible = false
-            return@setOnCloseListener false
-        }
-
-        setSearchViewOnClickListener(binding.searchView) {
-            Log.d("trien", "click")
-            binding.herbSearchList.isVisible = true
-        }
-    }
-
-    private fun setSearchViewOnClickListener(v: View?, listener: View.OnClickListener?) {
-        if (v is ViewGroup) {
-            val count = v.childCount
-            for (i in 0 until count) {
-                val child = v.getChildAt(i)
-                if (child is LinearLayout || child is RelativeLayout) {
-                    setSearchViewOnClickListener(child, listener)
-                }
-                if (child is TextView) {
-                    child.isFocusable = true
-                }
-                child.setOnClickListener(listener)
+        val searchAutoComplete: SearchView.SearchAutoComplete =
+            binding.searchView.findViewById(androidx.appcompat.R.id.search_src_text)
+        searchAutoComplete.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                binding.herbSearchList.isVisible = true
+            } else {
+                hideSoftKeyboard()
+                binding.herbSearchList.isVisible = false
             }
+        }
+        view.setOnClickListener {
+            view.requestFocus()
         }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            if (view is SearchView.SearchAutoComplete) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    binding.herbSearchList.isVisible = false
-                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.windowToken, 0)
+                    binding.scrollView.requestFocus()
                 }
             }
         }
         return super.dispatchTouchEvent(event)
+    }
+
+    private fun hideSoftKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
     }
 
     override fun onDestroy() {

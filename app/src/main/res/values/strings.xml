@@ -62,7 +62,7 @@
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto search</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="english_or_vietnamese">English or Vietnamese</string>
+    <string name="scientific_or_vietnamese">Scientific or Vietnamese</string>
     <string name="n_results_found">5 results found</string>
     <string name="title_activity_herb_details">HerbDetailsActivity</string>
     <string name="tab_text_1">Tab 1</string>
