@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:focusableInTouchMode="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -20,7 +21,7 @@
       app:layout_constraintTop_toTopOf="parent" />
 
   <TextView
-      android:id="@+id/textView"
+      android:id="@+id/appName"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginStart="8dp"
@@ -28,7 +29,8 @@
       android:textColor="@color/white"
       android:textSize="@dimen/home_page_title_size"
       app:layout_constraintBottom_toBottomOf="@+id/logoView"
-      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toStartOf="@+id/menuView"
+      app:layout_constraintStart_toEndOf="@id/logoView"
       app:layout_constraintTop_toTopOf="@+id/logoView" />
 
   <ImageView
@@ -37,10 +39,11 @@
       android:layout_height="50dp"
       android:layout_marginTop="4dp"
       android:layout_marginEnd="8dp"
+      android:layout_marginStart="8dp"
+      android:contentDescription="logo"
       android:src="@drawable/ic_launcher_round"
-      app:layout_constraintEnd_toStartOf="@id/menuView"
-      app:layout_constraintTop_toTopOf="parent"
-      android:contentDescription="logo" />
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
 
   <ImageView
       android:id="@+id/menuView"
@@ -63,9 +66,9 @@
       android:layout_marginBottom="4dp"
       android:layout_marginStart="8dp"
       android:layout_marginEnd="8dp"
-      android:background="@drawable/bg_rounded_corner_6dp_radius_white"
       app:iconifiedByDefault="false"
-      app:defaultQueryHint="@string/english_or_vietnamese"
+      android:background="@drawable/bg_rounded_corner_6dp_radius_white"
+      app:defaultQueryHint="@string/scientific_or_vietnamese"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/logoView" />
@@ -165,9 +168,10 @@
       app:layout_constraintTop_toBottomOf="@id/searchView"
       tools:layout_editor_absoluteX="16dp"
       tools:listitem="@layout/search_item"
-      android:visibility="visible" />
+      android:visibility="gone" />
 
   <ScrollView
+      android:id="@+id/scrollView"
       android:layout_width="match_parent"
       android:layout_height="0dp"
       android:layout_marginTop="8dp"
