@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -90,22 +91,28 @@ class MainActivity : AppCompatActivity() {
         val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
         connection += viewModel.searchBox.connectView(searchBoxView)
 
+        binding.searchView.setOnCloseListener {
+            Log.d("trien", "close")
+            binding.herbSearchList.isVisible = false
+            return@setOnCloseListener false
+        }
+
         setSearchViewOnClickListener(binding.searchView) {
+            Log.d("trien", "click")
             binding.herbSearchList.isVisible = true
         }
     }
 
     private fun setSearchViewOnClickListener(v: View?, listener: View.OnClickListener?) {
         if (v is ViewGroup) {
-            val group = v
-            val count = group.childCount
+            val count = v.childCount
             for (i in 0 until count) {
-                val child = group.getChildAt(i)
+                val child = v.getChildAt(i)
                 if (child is LinearLayout || child is RelativeLayout) {
                     setSearchViewOnClickListener(child, listener)
                 }
                 if (child is TextView) {
-                    child.isFocusable = false
+                    child.isFocusable = true
                 }
                 child.setOnClickListener(listener)
             }

@@ -65,7 +65,7 @@
       android:layout_marginEnd="8dp"
       android:background="@drawable/bg_rounded_corner_6dp_radius_white"
       app:iconifiedByDefault="false"
-      android:queryHint="@string/english_or_vietnamese"
+      app:defaultQueryHint="@string/english_or_vietnamese"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/logoView" />
@@ -165,7 +165,7 @@
       app:layout_constraintTop_toBottomOf="@id/searchView"
       tools:layout_editor_absoluteX="16dp"
       tools:listitem="@layout/search_item"
-      android:visibility="gone" />
+      android:visibility="visible" />
 
   <ScrollView
       android:layout_width="match_parent"

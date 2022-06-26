@@ -6,7 +6,6 @@ import com.algolia.instantsearch.highlighting.Highlightable
 import com.algolia.search.model.Attribute
 import kotlinx.android.parcel.Parcelize
 import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import java.util.*
@@ -27,7 +26,8 @@ data class Herb(
     val enSideEffects: String,
     val enPrecautions: String,
     val enInteractions: String,
-    override val _highlightResult: @RawValue JsonObject?
+    @IgnoredOnParcel
+    override val _highlightResult: JsonObject? = null
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
     val herbAttributePerSystemLanguage =

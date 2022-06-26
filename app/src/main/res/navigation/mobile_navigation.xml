@@ -25,13 +25,13 @@
 
     <fragment
         android:id="@+id/navigation_caution"
-        android:name="com.uri.lee.dl.herbdetails.usage.CautionFragment"
+        android:name="com.uri.lee.dl.herbdetails.caution.CautionFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_usage" />
 
     <fragment
         android:id="@+id/navigation_review"
-        android:name="com.uri.lee.dl.herbdetails.usage.ReviewFragment"
+        android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_usage" />
 </navigation>
