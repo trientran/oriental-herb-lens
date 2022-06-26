@@ -75,5 +75,11 @@
     <string name="usage">Usage</string>
     <string name="caution">Caution</string>
     <string name="review">Review</string>
+    <string name="add_a_new_herb">Add a new herb</string>
+    <string name="log_out">Log out</string>
+    <string name="delete_account">Delete account</string>
+    <string name="contact_us">Contact us</string>
+    <string name="share_this_app">Share this app</string>
+    <string name="about_us_and_this_app">About us and this app</string>
 
 </resources>

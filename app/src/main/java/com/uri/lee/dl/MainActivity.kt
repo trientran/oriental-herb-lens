@@ -85,6 +85,11 @@ class MainActivity : AppCompatActivity() {
             adapter = ModeItemAdapter(DetectionMode.values())
         }
 
+        binding.menuView.setOnClickListener {
+            val bottomSheet = BottomSheetDialog()
+            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
+        }
+
         setupAlgoliaSearch(view)
     }
 
@@ -198,7 +203,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private inner class ModeItemAdapter internal constructor(private val detectionModes: Array<DetectionMode>) :
+    private inner class ModeItemAdapter(private val detectionModes: Array<DetectionMode>) :
         RecyclerView.Adapter<ModeItemAdapter.ModeItemViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ModeItemViewHolder {
