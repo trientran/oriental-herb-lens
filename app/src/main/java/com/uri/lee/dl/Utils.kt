@@ -26,6 +26,9 @@ import android.graphics.*
 import android.hardware.Camera
 import android.net.Uri
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.exifinterface.media.ExifInterface
@@ -240,4 +243,9 @@ object Utils {
             ExifInterface.ORIENTATION_UNDEFINED
         }
     }
+}
+
+fun Context.hideSoftKeyboard(view: View) {
+    val imm = getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(view.windowToken, 0)
 }

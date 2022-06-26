@@ -25,12 +25,12 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,6 +39,12 @@ import com.algolia.instantsearch.android.paging3.liveData
 import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
 import com.algolia.instantsearch.core.connection.ConnectionHandler
 import com.algolia.instantsearch.searchbox.connectView
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.instantsearch.MyAdapter
 import com.uri.lee.dl.instantsearch.MyViewModel
@@ -59,18 +65,94 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val handler = Handler()
 
+    private lateinit var auth: FirebaseAuth
+    private val authUI = AuthUI.getInstance()
+    private val signInLauncher =
+        registerForActivityResult(FirebaseAuthUIActivityResultContract()) { onSignInResult(it) }
+
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
+
+        auth = Firebase.auth
+
         binding.modeRecyclerView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = ModeItemAdapter(DetectionMode.values())
         }
 
+        setupAlgoliaSearch(view)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val view = currentFocus
+            if (view is SearchView.SearchAutoComplete) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    binding.scrollView.requestFocus()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (auth.currentUser == null) {
+            val signInIntent = authUI
+                .createSignInIntentBuilder()
+                .setAvailableProviders(arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build()))
+                .setLogo(R.drawable.ic_launcher_round)
+                .setTheme(R.style.AppTheme)
+                .build()
+            signInLauncher.launch(signInIntent)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connection.clear()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!Utils.allPermissionsGranted(this)) {
+            Utils.requestRuntimePermissions(this)
+        }
+    }
+
+    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+        val response = result.idpResponse
+        if (result.resultCode == RESULT_OK) {
+            val user = auth.currentUser
+            require(user != null)
+            // todo write to FireStore user
+        }
+    }
+
+    private fun signOut() {
+        authUI
+            .signOut(this)
+            .addOnCompleteListener {
+                // ...
+            }
+    }
+
+    private fun delete() {
+        authUI
+            .delete(this)
+            .addOnCompleteListener {
+                // ...
+            }
+    }
+
+    private fun setupAlgoliaSearch(view: ConstraintLayout) {
         val searchResultAdapter = MyAdapter()
         searchResultAdapter.onItemClick = {
             val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
@@ -92,44 +174,13 @@ class MainActivity : AppCompatActivity() {
 
         val searchAutoComplete: SearchView.SearchAutoComplete =
             binding.searchView.findViewById(androidx.appcompat.R.id.search_src_text)
-        searchAutoComplete.setOnFocusChangeListener { v, hasFocus ->
+        searchAutoComplete.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.herbSearchList.isVisible = true
             } else {
-                hideSoftKeyboard()
+                hideSoftKeyboard(view)
                 handler.postDelayed({ binding.herbSearchList.isVisible = false }, 200)
             }
-        }
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val view = currentFocus
-            if (view is SearchView.SearchAutoComplete) {
-                val outRect = Rect()
-                view.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    binding.scrollView.requestFocus()
-                }
-            }
-        }
-        return super.dispatchTouchEvent(event)
-    }
-
-    private fun hideSoftKeyboard() {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        connection.clear()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
         }
     }
 
@@ -169,7 +220,7 @@ class MainActivity : AppCompatActivity() {
             private val titleView: TextView = view.findViewById(R.id.mode_title)
             private val subtitleView: TextView = view.findViewById(R.id.mode_subtitle)
 
-            internal fun bindDetectionMode(detectionMode: DetectionMode) {
+            fun bindDetectionMode(detectionMode: DetectionMode) {
                 titleView.setText(detectionMode.titleResId)
                 subtitleView.setText(detectionMode.subtitleResId)
                 itemView.setOnClickListener {
