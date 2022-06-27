@@ -18,7 +18,8 @@ class BottomSheetDialog : BottomSheetDialogFragment() {
         @Nullable container: ViewGroup?,
         @Nullable savedInstanceState: Bundle?
     ): View {
-        val view: View = inflater.inflate(R.layout.bottom_sheet_menu, container, false)
+        binding = BottomSheetMenuBinding.inflate(layoutInflater)
+        val view = binding.root
         val addButton = binding.addButton
         val deleteAccButton = binding.deleteAccButton
         val aboutButton = binding.aboutButton

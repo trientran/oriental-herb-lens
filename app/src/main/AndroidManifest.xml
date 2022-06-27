@@ -33,14 +33,12 @@
         <activity
             android:name=".LiveObjectDetectionActivity"
             android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="fullSensor" />
         <activity
             android:name=".StaticObjectDetectionActivity"
             android:exported="false"
-            android:screenOrientation="fullSensor" />
-        <activity
-            android:name=".CustomModelObjectDetectionActivity"
-            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="fullSensor" />
         <activity
             android:name=".settings.SettingsActivity"
