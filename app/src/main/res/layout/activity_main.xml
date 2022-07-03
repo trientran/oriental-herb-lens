@@ -68,9 +68,10 @@
             android:id="@+id/searchHint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
             android:text="@string/scientific_or_vietnamese_name"
+            app:layout_constraintEnd_toStartOf="@id/microphoneView"
             app:layout_constraintBottom_toBottomOf="@+id/searchView"
-            app:layout_constraintEnd_toStartOf="@+id/microphoneView"
             app:layout_constraintStart_toStartOf="@+id/searchView"
             app:layout_constraintTop_toTopOf="@id/searchView" />
 

@@ -1,7 +1,9 @@
 package com.uri.lee.dl.instantsearch
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -14,6 +16,7 @@ import com.algolia.instantsearch.core.connection.ConnectionHandler
 import com.algolia.instantsearch.searchbox.connectView
 import com.uri.lee.dl.HerbDetailsActivity
 import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivitySearchBinding
 
 class SearchActivity : AppCompatActivity() {
@@ -30,6 +33,7 @@ class SearchActivity : AppCompatActivity() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         binding.closeView.setOnClickListener { finish() }
+        binding.microphoneView.setOnClickListener { Utils.displaySpeechRecognizer(this) }
 
         setupAlgoliaSearch()
     }
@@ -57,10 +61,26 @@ class SearchActivity : AppCompatActivity() {
         }
 
         val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
-        connection += viewModel.searchBox.connectView(searchBoxView)
+        connection += viewModel.searchBox.connectView(searchBoxView) // This line somehow might clear the search query at first
 
         val searchAutoComplete: SearchView.SearchAutoComplete =
             binding.searchView.findViewById(androidx.appcompat.R.id.search_src_text)
         searchAutoComplete.requestFocus()
+        intent.getStringExtra(SPOKEN_TEXT_EXTRA)?.let { binding.searchView.setQuery(it, false) }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            when (requestCode) {
+                Utils.SPEECH_REQUEST_CODE -> {
+                    val spokenText: String = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)!![0]
+                    binding.searchView.setQuery(spokenText, false)
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }
+
+const val SPOKEN_TEXT_EXTRA = "spokenTextExtra"

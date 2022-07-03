@@ -25,11 +25,13 @@ import android.content.res.Configuration
 import android.graphics.*
 import android.hardware.Camera
 import android.net.Uri
+import android.speech.RecognizerIntent
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.exifinterface.media.ExifInterface
 import com.google.mlkit.vision.common.InputImage
@@ -50,6 +52,7 @@ object Utils {
     const val ASPECT_RATIO_TOLERANCE = 0.01f
 
     internal const val REQUEST_CODE_PHOTO_LIBRARY = 1
+    internal const val SPEECH_REQUEST_CODE = 0
 
     private const val TAG = "Utils"
 
@@ -195,6 +198,14 @@ object Utils {
             inputStreamForSize?.close()
             inputStreamForImage?.close()
         }
+    }
+
+    internal fun displaySpeechRecognizer(activity: Activity) {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        }
+        // This starts the activity and populates the intent with the speech text.
+        startActivityForResult(activity, intent, SPEECH_REQUEST_CODE, null)
     }
 
     private fun maybeTransformBitmap(resolver: ContentResolver, uri: Uri, bitmap: Bitmap?): Bitmap? {
