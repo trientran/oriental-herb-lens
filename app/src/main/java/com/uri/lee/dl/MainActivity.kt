@@ -2,36 +2,21 @@ package com.uri.lee.dl
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
-import android.os.Handler
-import android.view.MotionEvent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.algolia.instantsearch.android.list.autoScrollToStart
-import com.algolia.instantsearch.android.paging3.liveData
-import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
-import com.algolia.instantsearch.core.connection.ConnectionHandler
-import com.algolia.instantsearch.searchbox.connectView
+import androidx.viewpager.widget.ViewPager
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.android.material.tabs.TabLayout
 import com.uri.lee.dl.databinding.ActivityMainBinding
-import com.uri.lee.dl.instantsearch.MyAdapter
-import com.uri.lee.dl.instantsearch.MyViewModel
+import com.uri.lee.dl.instantsearch.SearchActivity
+import com.uri.lee.dl.ui.main.SectionsPagerAdapter
+
 
 class MainActivity : AppCompatActivity() {
-
-    private val viewModel: MyViewModel by viewModels()
-    private val connection = ConnectionHandler()
-
     private lateinit var binding: ActivityMainBinding
-    private val handler = Handler()
 
     private val authUI = AuthUI.getInstance()
     private val signInLauncher =
@@ -43,6 +28,22 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
+
+        // Setup tabbed views
+        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
+        val viewPager: ViewPager = binding.viewPager
+        viewPager.adapter = sectionsPagerAdapter
+        val tabs: TabLayout = binding.tabs
+        tabs.setupWithViewPager(viewPager)
+
+        setSupportActionBar(binding.toolBar)
+        supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false);
+
+        binding.searchView.setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
+        }
+        binding.searchHint.setOnClickListener { binding.searchView.performClick() }
 
         binding.menuView.setOnClickListener {
             val bottomSheet = BottomSheetDialog()
@@ -58,22 +59,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.searchSingleImageView.setOnClickListener { Utils.openImagePicker(this) }
-
-        setupAlgoliaSearch(view)
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val view = currentFocus
-            if (view is SearchView.SearchAutoComplete) {
-                val outRect = Rect()
-                view.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    binding.scrollView.requestFocus()
-                }
-            }
-        }
-        return super.dispatchTouchEvent(event)
     }
 
     override fun onStart() {
@@ -86,18 +71,10 @@ class MainActivity : AppCompatActivity() {
                 .setTheme(R.style.AppTheme)
                 .build()
             signInLauncher.launch(signInIntent)
-        }
-    }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        connection.clear()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
+            if (!Utils.allPermissionsGranted(this)) {
+                Utils.requestRuntimePermissions(this)
+            }
         }
     }
 
@@ -124,38 +101,6 @@ class MainActivity : AppCompatActivity() {
             .addOnCompleteListener {
                 // ...
             }
-    }
-
-    private fun setupAlgoliaSearch(view: ConstraintLayout) {
-        val searchResultAdapter = MyAdapter()
-        searchResultAdapter.onItemClick = {
-            val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
-            intent.putExtra("INSTANT_HERB", it)
-            startActivity(intent)
-        }
-        viewModel.paginator.liveData.observe(this) {
-            searchResultAdapter.submitData(lifecycle, it)
-        }
-        binding.herbSearchList.let {
-            it.itemAnimator = null
-            it.adapter = searchResultAdapter
-            it.layoutManager = LinearLayoutManager(this)
-            it.autoScrollToStart(searchResultAdapter)
-        }
-
-        val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
-        connection += viewModel.searchBox.connectView(searchBoxView)
-
-        val searchAutoComplete: SearchView.SearchAutoComplete =
-            binding.searchView.findViewById(androidx.appcompat.R.id.search_src_text)
-        searchAutoComplete.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                binding.herbSearchList.isVisible = true
-            } else {
-                hideSoftKeyboard(view)
-                handler.postDelayed({ binding.herbSearchList.isVisible = false }, 200)
-            }
-        }
     }
 
     @Deprecated("Deprecated in Java")

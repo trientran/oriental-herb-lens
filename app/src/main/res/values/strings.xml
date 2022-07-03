@@ -62,7 +62,7 @@
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto search</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="scientific_or_vietnamese">Scientific or Vietnamese</string>
+    <string name="scientific_or_vietnamese_name">Scientific or Vietnamese name</string>
     <string name="n_results_found">5 results found</string>
     <string name="title_activity_herb_details">HerbDetailsActivity</string>
     <string name="tab_text_1">Tab 1</string>
@@ -81,5 +81,8 @@
     <string name="contact_us">Contact us</string>
     <string name="share_this_app">Share this app</string>
     <string name="about_us_and_this_app">About us and this app</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main2">MainActivity2</string>
 
 </resources>

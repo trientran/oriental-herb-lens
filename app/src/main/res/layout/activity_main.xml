@@ -1,195 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/color_primary"
-    android:focusableInTouchMode="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
 
-  <View
-      android:id="@+id/header"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:paddingStart="8dp"
-      android:paddingEnd="8dp"
-      android:paddingTop="4dp"
-      android:layout_marginBottom="-8dp"
-      android:background="@color/color_primary"
-      app:layout_constraintBottom_toBottomOf="@id/spinner"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
-
-  <TextView
-      android:id="@+id/appName"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginStart="8dp"
-      android:text="@string/app_name"
-      android:textColor="@color/white"
-      android:textSize="@dimen/home_page_title_size"
-      app:layout_constraintBottom_toBottomOf="@+id/logoView"
-      app:layout_constraintEnd_toStartOf="@+id/menuView"
-      app:layout_constraintStart_toEndOf="@id/logoView"
-      app:layout_constraintTop_toTopOf="@+id/logoView" />
-
-  <ImageView
-      android:id="@+id/logoView"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginTop="4dp"
-      android:layout_marginEnd="8dp"
-      android:layout_marginStart="8dp"
-      android:contentDescription="logo"
-      android:src="@drawable/ic_launcher_round"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
-
-  <ImageView
-      android:id="@+id/menuView"
-      android:layout_marginBottom="707dp"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginTop="4dp"
-      android:layout_marginEnd="8dp"
-      android:background="?android:attr/selectableItemBackground"
-      android:src="@drawable/ic_menu"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:srcCompat="@drawable/ic_menu" />
-
-  <androidx.appcompat.widget.SearchView
-      android:id="@+id/searchView"
+  <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/appBarLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginTop="4dp"
-      android:layout_marginBottom="4dp"
-      android:layout_marginStart="8dp"
-      android:layout_marginEnd="8dp"
-      app:iconifiedByDefault="false"
-      android:background="@drawable/bg_rounded_corner_6dp_radius_white"
-      app:defaultQueryHint="@string/scientific_or_vietnamese"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/logoView" />
+      android:fitsSystemWindows="true">
 
-  <ImageView
-      android:id="@+id/searchSingleImageView"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginTop="4dp"
-      android:background="?android:attr/selectableItemBackground"
-      android:src="@drawable/ic_image_search_white"
-      app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/searchView"
-      android:contentDescription="Look up Single Image" />
-
-  <ImageView
-      android:id="@+id/searchMultiImagesView"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:padding="4dp"
-      android:layout_marginTop="4dp"
-      android:background="?android:attr/selectableItemBackground"
-      android:src="@drawable/ic_multiple_images_white"
-      app:layout_constraintStart_toEndOf="@id/searchCameraView"
-      app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
-      app:layout_constraintTop_toBottomOf="@id/searchView"
-      android:contentDescription="Look up Multiple images" />
-
-  <ImageView
-      android:id="@+id/searchCameraView"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginTop="4dp"
-      android:background="?android:attr/selectableItemBackground"
-      android:src="@drawable/ic_camera_white"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
-      app:layout_constraintTop_toBottomOf="@id/searchView"
-      android:contentDescription="Look up using your camera" />
-
-  <TextView
-      android:id="@+id/searchSingleImageTextView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/single_image"
-      android:textColor="@color/white"
-      android:textSize="12sp"
-      app:layout_constraintStart_toStartOf="@id/searchSingleImageView"
-      app:layout_constraintEnd_toEndOf="@id/searchSingleImageView"
-      app:layout_constraintTop_toBottomOf="@id/searchSingleImageView" />
-
-  <TextView
-      android:id="@+id/searchMultiImagesTextView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/multiple_images"
-      android:textColor="@color/white"
-      android:textSize="12sp"
-      app:layout_constraintStart_toStartOf="@id/searchMultiImagesView"
-      app:layout_constraintEnd_toEndOf="@id/searchMultiImagesView"
-      app:layout_constraintTop_toBottomOf="@id/searchMultiImagesView" />
-
-  <TextView
-      android:id="@+id/searchCameraTextView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="@string/camera"
-      android:textColor="@color/white"
-      android:textSize="12sp"
-      app:layout_constraintStart_toStartOf="@id/searchCameraView"
-      app:layout_constraintEnd_toEndOf="@id/searchCameraView"
-      app:layout_constraintTop_toBottomOf="@id/searchCameraView" />
-
-  <Spinner
-      android:id="@+id/spinner"
-      android:layout_width="match_parent"
-      android:layout_height="48dp"
-      android:layout_marginStart="8dp"
-      android:layout_marginTop="8dp"
-      android:layout_marginEnd="8dp"
-      android:backgroundTint="@color/white"
-      android:foreground="@drawable/rounded_corner_background_white_stroke"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/searchMultiImagesTextView" />
-
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/herbSearchList"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_marginTop="4dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginEnd="16dp"
-      android:layout_marginBottom="60dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/searchView"
-      tools:layout_editor_absoluteX="16dp"
-      tools:listitem="@layout/search_item"
-      android:visibility="gone" />
-
-  <ScrollView
-      android:id="@+id/scrollView"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_marginTop="8dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/spinner"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent">
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:paddingBottom="8dp"
+    <com.google.android.material.appbar.CollapsingToolbarLayout
+        android:id="@+id/collapsingToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="vertical">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        app:expandedTitleMarginBottom="25dp"
+        app:expandedTitleMarginStart="15dp"
+        app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-    </androidx.recyclerview.widget.RecyclerView>
+      <androidx.appcompat.widget.Toolbar
+          android:id="@+id/toolBar"
+          android:layout_width="match_parent"
+          android:layout_height="?actionBarSize"
+          android:layout_gravity="bottom"
+          android:contentInsetStart="0dp"
+          android:background="@android:color/transparent"
+          app:layout_collapseMode="pin"
+          app:layout_constraintTop_toBottomOf="@+id/searchCameraTextView" />
 
-  </ScrollView>
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:background="@color/color_primary"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!--  <View-->
+        <!--      android:id="@+id/header"-->
+        <!--      android:layout_width="match_parent"-->
+        <!--      android:layout_height="0dp"-->
+        <!--      android:paddingStart="8dp"-->
+        <!--      android:paddingEnd="8dp"-->
+        <!--      android:paddingTop="4dp"-->
+        <!--      android:layout_marginBottom="-8dp"-->
+        <!--      android:background="@color/color_primary"-->
+        <!--      app:layout_constraintBottom_toBottomOf="@id/spinner"-->
+        <!--      app:layout_constraintEnd_toEndOf="parent"-->
+        <!--      app:layout_constraintStart_toStartOf="parent"-->
+        <!--      app:layout_constraintTop_toTopOf="parent" />-->
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:focusable="false"
+            android:background="@drawable/bg_rounded_corner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/searchHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/scientific_or_vietnamese_name"
+            app:layout_constraintBottom_toBottomOf="@+id/searchView"
+            app:layout_constraintEnd_toStartOf="@+id/microphoneView"
+            app:layout_constraintStart_toStartOf="@+id/searchView"
+            app:layout_constraintTop_toTopOf="@id/searchView" />
+
+        <ImageView
+            android:id="@+id/menuView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintBottom_toBottomOf="@+id/searchView"
+            app:layout_constraintEnd_toEndOf="@+id/searchView"
+            app:layout_constraintTop_toTopOf="@+id/searchView"
+            app:srcCompat="@drawable/ic_menu" />
+
+        <ImageView
+            android:id="@+id/microphoneView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintBottom_toBottomOf="@+id/searchView"
+            app:layout_constraintEnd_toStartOf="@+id/menuView"
+            app:layout_constraintTop_toTopOf="@+id/searchView"
+            app:srcCompat="@drawable/ic_baseline_keyboard_voice_24" />
+
+        <ImageView
+            android:id="@+id/searchSingleImageView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_image_search_white"
+            app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up Single Image" />
+
+        <ImageView
+            android:id="@+id/searchMultiImagesView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="4dp"
+            android:layout_marginTop="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_multiple_images_white"
+            app:layout_constraintStart_toEndOf="@id/searchCameraView"
+            app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up Multiple images" />
+
+        <ImageView
+            android:id="@+id/searchCameraView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_camera_white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up using your camera" />
+
+        <TextView
+            android:id="@+id/searchSingleImageTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/single_image"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/searchSingleImageView"
+            app:layout_constraintEnd_toEndOf="@id/searchSingleImageView"
+            app:layout_constraintTop_toBottomOf="@id/searchSingleImageView" />
+
+        <TextView
+            android:id="@+id/searchMultiImagesTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/multiple_images"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/searchMultiImagesView"
+            app:layout_constraintEnd_toEndOf="@id/searchMultiImagesView"
+            app:layout_constraintTop_toBottomOf="@id/searchMultiImagesView" />
+
+        <TextView
+            android:id="@+id/searchCameraTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/camera"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/searchCameraView"
+            app:layout_constraintEnd_toEndOf="@id/searchCameraView"
+            app:layout_constraintTop_toBottomOf="@id/searchCameraView" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_marginTop="8dp"
+            android:background="@color/color_primary"
+            app:tabMode="scrollable"
+            app:tabMinWidth="30dp"
+            app:tabTextColor="@color/white"
+            app:tabIndicatorColor="@color/white"
+            app:tabSelectedTextColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/searchCameraTextView" />
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+  </com.google.android.material.appbar.AppBarLayout>
+
+  <androidx.core.widget.NestedScrollView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:overScrollMode="never"
+      app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+  </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
