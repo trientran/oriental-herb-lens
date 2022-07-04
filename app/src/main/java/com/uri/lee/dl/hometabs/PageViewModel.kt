@@ -1,4 +1,4 @@
-package com.uri.lee.dl.ui.main
+package com.uri.lee.dl.hometabs
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

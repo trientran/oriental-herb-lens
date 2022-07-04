@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl
+package com.uri.lee.dl.singleimage
 
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
@@ -26,6 +26,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -45,14 +46,16 @@ import com.google.mlkit.vision.objects.DetectedObject
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
-import com.uri.lee.dl.objectdetection.DetectedObjectInfo
-import com.uri.lee.dl.objectdetection.StaticObjectDotView
+import com.uri.lee.dl.BitmapInputInfo
+import com.uri.lee.dl.InputInfo
+import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.productsearch.*
 import java.io.IOException
 import java.util.*
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
-class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener {
+class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
 
     private val searchedObjectMap = TreeMap<Int, SearchedObject>()
 
@@ -84,7 +87,7 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
         setContentView(R.layout.activity_static_object)
 
         loadingView = findViewById<View>(R.id.loading_view).apply {
-            setOnClickListener(this@StaticObjectDetectionActivity)
+            setOnClickListener(this@SingleImageActivity)
         }
 
         bottomPromptChip = findViewById(R.id.bottom_prompt_chip)
@@ -92,7 +95,7 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
 
         previewCardCarousel = findViewById<RecyclerView>(R.id.card_recycler_view).apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@StaticObjectDetectionActivity, RecyclerView.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(this@SingleImageActivity, RecyclerView.HORIZONTAL, false)
             addItemDecoration(
                 CardItemDecoration(
                     resources
@@ -119,7 +122,9 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
 
     override fun onResume() {
         super.onStart()
-        if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+        if (Build.VERSION.SDK_INT <= 28) {
+            if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+        }
     }
 
     override fun onDestroy() {
@@ -201,13 +206,13 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
         }
 
         bottomSheetScrimView = findViewById<BottomSheetScrimView>(R.id.bottom_sheet_scrim_view).apply {
-            setOnClickListener(this@StaticObjectDetectionActivity)
+            setOnClickListener(this@SingleImageActivity)
         }
 
         bottomSheetTitleView = findViewById(R.id.bottom_sheet_title)
         productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view)?.apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@StaticObjectDetectionActivity)
+            layoutManager = LinearLayoutManager(this@SingleImageActivity)
             adapter = ProductAdapter(ImmutableList.of())
         }
     }

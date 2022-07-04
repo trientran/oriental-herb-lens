@@ -22,7 +22,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.tasks.Tasks
-import com.uri.lee.dl.objectdetection.DetectedObjectInfo
+import com.uri.lee.dl.singleimage.DetectedObjectInfo
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors

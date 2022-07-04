@@ -12,10 +12,13 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.tabs.TabLayout
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
+import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
+import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
-import com.uri.lee.dl.ui.main.SectionsPagerAdapter
+import com.uri.lee.dl.multipleimages.ImagesActivity
+import com.uri.lee.dl.singleimage.SingleImageActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -55,15 +58,15 @@ class MainActivity : AppCompatActivity() {
         binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
 
         binding.searchCameraView.setOnClickListener {
-            startActivity(Intent(this, LiveObjectDetectionActivity::class.java))
+            startActivity(Intent(this, CameraActivity::class.java))
         }
 
         binding.searchMultiImagesView.setOnClickListener {
-
+            startActivity(Intent(this, ImagesActivity::class.java))
         }
 
         binding.searchSingleImageView.setOnClickListener {
-            startActivity(Intent(this, StaticObjectDetectionActivity::class.java))
+            startActivity(Intent(this, SingleImageActivity::class.java))
         }
     }
 

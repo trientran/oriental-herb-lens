@@ -16,7 +16,9 @@
 
 package com.uri.lee.dl
 
+import android.Manifest
 import android.app.Activity
+import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -25,6 +27,8 @@ import android.content.res.Configuration
 import android.graphics.*
 import android.hardware.Camera
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.util.Log
 import android.view.View
@@ -36,6 +40,8 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.exifinterface.media.ExifInterface
 import com.google.mlkit.vision.common.InputImage
 import com.uri.lee.dl.camera.CameraSizePair
+import kotlinx.coroutines.Dispatchers
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -259,4 +265,51 @@ object Utils {
 fun Context.hideSoftKeyboard(view: View) {
     val imm = getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+
+fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): Bitmap? {
+    val bitmapFromUri: Bitmap? =
+        // check version of Android on device
+        try {
+            if (Build.VERSION.SDK_INT > 27) {
+                // on newer versions of Android, use the new decodeBitmap method
+                val source: ImageDecoder.Source =
+                    ImageDecoder.createSource(context.contentResolver, this)
+                ImageDecoder.decodeBitmap(source)
+            } else {
+                // support older versions of Android by using getBitmap
+                MediaStore.Images.Media.getBitmap(context.contentResolver, this)
+            }
+        } catch (e: Exception) {
+            Timber.e(e.message ?: "Some error")
+            null
+        }
+
+    val resizedBitmap = bitmapFromUri?.let { Bitmap.createScaledBitmap(it, width, height, false) }
+
+    return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
+}
+
+/**
+ * Simple Data object with two fields for the label and probability
+ */
+data class Recognition(val label: String, val confidence: Float, val imageUri: Uri? = null) {
+    // Output probability as a string to enable easy data binding
+    val confidencePercentage = String.format("%.1f%%", confidence * 100.0f)
+}
+
+const val CAMERA_PERMISSION = Manifest.permission.CAMERA
+const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
+const val LOCAL_TFLITE_MODEL_NAME = "herb.tflite"
+const val REMOTE_TFLITE_MODEL_NAME = "herb_model"
+val defaultDispatcher = Dispatchers.Default
+val mainDispatcher = Dispatchers.Main
+val ioDispatcher = Dispatchers.IO
+
+class BaseApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Timber.plant(Timber.DebugTree())
+    }
 }

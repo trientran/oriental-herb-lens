@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.objectdetection
+package com.uri.lee.dl.singleimage
 
 import android.graphics.PointF
 import android.util.Log
@@ -24,12 +24,12 @@ import androidx.core.util.forEach
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.google.mlkit.vision.objects.DetectedObject
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
+import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
+import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.InputInfo
 import com.uri.lee.dl.R
 import com.uri.lee.dl.camera.CameraReticleAnimator
@@ -38,7 +38,6 @@ import com.uri.lee.dl.camera.GraphicOverlay
 import com.uri.lee.dl.camera.WorkflowModel
 import com.uri.lee.dl.settings.PreferenceUtils
 import java.io.IOException
-import java.util.ArrayList
 import kotlin.math.hypot
 
 /** A processor to run object detector in multi-objects mode.  */

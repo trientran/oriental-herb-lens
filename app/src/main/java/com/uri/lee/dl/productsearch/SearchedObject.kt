@@ -21,7 +21,7 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
-import com.uri.lee.dl.objectdetection.DetectedObjectInfo
+import com.uri.lee.dl.singleimage.DetectedObjectInfo
 
 /** Hosts the detected object info and its search result.  */
 class SearchedObject(

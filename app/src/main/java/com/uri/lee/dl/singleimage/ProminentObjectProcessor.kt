@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.objectdetection
+package com.uri.lee.dl.singleimage
 
 import android.graphics.RectF
 import android.util.Log

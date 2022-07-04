@@ -1,4 +1,4 @@
-package com.uri.lee.dl
+package com.uri.lee.dl.herbdetails
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +7,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
 
 class HerbDetailsActivity : AppCompatActivity() {

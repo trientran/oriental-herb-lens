@@ -14,10 +14,10 @@ import com.algolia.instantsearch.android.paging3.liveData
 import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
 import com.algolia.instantsearch.core.connection.ConnectionHandler
 import com.algolia.instantsearch.searchbox.connectView
-import com.uri.lee.dl.HerbDetailsActivity
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivitySearchBinding
+import com.uri.lee.dl.herbdetails.HerbDetailsActivity
 
 class SearchActivity : AppCompatActivity() {
     private val viewModel: MyViewModel by viewModels()

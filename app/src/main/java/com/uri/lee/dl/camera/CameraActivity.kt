@@ -1,5 +1,3 @@
-package com.uri.lee.dl
-
 /*
  * Copyright 2020 Google LLC
  *
@@ -16,6 +14,8 @@ package com.uri.lee.dl
  * limitations under the License.
  */
 
+package com.uri.lee.dl.camera
+
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
 import android.content.Intent
@@ -26,6 +26,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -37,22 +38,18 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
-import com.uri.lee.dl.camera.CameraSource
-import com.uri.lee.dl.camera.CameraSourcePreview
-import com.uri.lee.dl.camera.GraphicOverlay
-import com.uri.lee.dl.camera.WorkflowModel
-import com.uri.lee.dl.objectdetection.MultiObjectProcessor
-import com.uri.lee.dl.objectdetection.ProminentObjectProcessor
+import com.uri.lee.dl.R
 import com.uri.lee.dl.productsearch.BottomSheetScrimView
-import com.uri.lee.dl.productsearch.Product
 import com.uri.lee.dl.productsearch.ProductAdapter
+import com.uri.lee.dl.productsearch.SearchEngine
 import com.uri.lee.dl.settings.PreferenceUtils
 import com.uri.lee.dl.settings.SettingsActivity
+import com.uri.lee.dl.singleimage.MultiObjectProcessor
+import com.uri.lee.dl.singleimage.ProminentObjectProcessor
 import java.io.IOException
 
-/** Demonstrates the object detection and custom classification workflow using camera preview.
- *  Modeled after LiveObjectDetectionActivity.java */
-class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener {
+/** Demonstrates the object detection and visual search workflow using camera preview.  */
+class CameraActivity : AppCompatActivity(), OnClickListener {
 
     private var cameraSource: CameraSource? = null
     private var preview: CameraSourcePreview? = null
@@ -63,8 +60,10 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
     private var promptChipAnimator: AnimatorSet? = null
     private var searchButton: ExtendedFloatingActionButton? = null
     private var searchButtonAnimator: AnimatorSet? = null
+    private var searchProgressBar: ProgressBar? = null
     private var workflowModel: WorkflowModel? = null
     private var currentWorkflowState: WorkflowModel.WorkflowState? = null
+    private var searchEngine: SearchEngine? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private var bottomSheetScrimView: BottomSheetScrimView? = null
@@ -76,10 +75,12 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        searchEngine = SearchEngine(applicationContext)
+
         setContentView(R.layout.activity_live_object)
         preview = findViewById(R.id.camera_preview)
         graphicOverlay = findViewById<GraphicOverlay>(R.id.camera_preview_graphic_overlay).apply {
-            setOnClickListener(this@CustomModelObjectDetectionActivity)
+            setOnClickListener(this@CameraActivity)
             cameraSource = CameraSource(this)
         }
         promptChip = findViewById(R.id.bottom_prompt_chip)
@@ -88,19 +89,20 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
                 setTarget(promptChip)
             }
         searchButton = findViewById<ExtendedFloatingActionButton>(R.id.product_search_button).apply {
-            setOnClickListener(this@CustomModelObjectDetectionActivity)
+            setOnClickListener(this@CameraActivity)
         }
         searchButtonAnimator =
             (AnimatorInflater.loadAnimator(this, R.animator.search_button_enter) as AnimatorSet).apply {
                 setTarget(searchButton)
             }
+        searchProgressBar = findViewById(R.id.search_progress_bar)
         setUpBottomSheet()
         findViewById<View>(R.id.close_button).setOnClickListener(this)
         flashButton = findViewById<View>(R.id.flash_button).apply {
-            setOnClickListener(this@CustomModelObjectDetectionActivity)
+            setOnClickListener(this@CameraActivity)
         }
         settingsButton = findViewById<View>(R.id.settings_button).apply {
-            setOnClickListener(this@CustomModelObjectDetectionActivity)
+            setOnClickListener(this@CameraActivity)
         }
         setUpWorkflowModel()
     }
@@ -114,15 +116,9 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
         currentWorkflowState = WorkflowModel.WorkflowState.NOT_STARTED
         cameraSource?.setFrameProcessor(
             if (PreferenceUtils.isMultipleObjectsMode(this)) {
-                MultiObjectProcessor(
-                    graphicOverlay!!, workflowModel!!,
-                    CUSTOM_MODEL_PATH
-                )
+                MultiObjectProcessor(graphicOverlay!!, workflowModel!!)
             } else {
-                ProminentObjectProcessor(
-                    graphicOverlay!!, workflowModel!!,
-                    CUSTOM_MODEL_PATH
-                )
+                ProminentObjectProcessor(graphicOverlay!!, workflowModel!!)
             }
         )
         workflowModel?.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
@@ -138,6 +134,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
         super.onDestroy()
         cameraSource?.release()
         cameraSource = null
+        searchEngine?.shutdown()
     }
 
     override fun onBackPressed() {
@@ -180,7 +177,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
                 workflowModel.markCameraLive()
                 preview?.start(cameraSource)
             } catch (e: IOException) {
-                Log.e(com.uri.lee.dl.CustomModelObjectDetectionActivity.Companion.TAG, "Failed to start camera preview!", e)
+                Log.e(TAG, "Failed to start camera preview!", e)
                 cameraSource.release()
                 this.cameraSource = null
             }
@@ -200,7 +197,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
         bottomSheetBehavior?.setBottomSheetCallback(
             object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    Log.d(com.uri.lee.dl.CustomModelObjectDetectionActivity.Companion.TAG, "Bottom sheet new state: $newState")
+                    Log.d(TAG, "Bottom sheet new state: $newState")
                     bottomSheetScrimView?.visibility =
                         if (newState == BottomSheetBehavior.STATE_HIDDEN) View.GONE else View.VISIBLE
                     graphicOverlay?.clear()
@@ -242,13 +239,13 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
             })
 
         bottomSheetScrimView = findViewById<BottomSheetScrimView>(R.id.bottom_sheet_scrim_view).apply {
-            setOnClickListener(this@CustomModelObjectDetectionActivity)
+            setOnClickListener(this@CameraActivity)
         }
 
         bottomSheetTitleView = findViewById(R.id.bottom_sheet_title)
         productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view).apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@CustomModelObjectDetectionActivity)
+            layoutManager = LinearLayoutManager(this@CameraActivity)
             adapter = ProductAdapter(ImmutableList.of())
         }
     }
@@ -258,35 +255,38 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
 
             // Observes the workflow state changes, if happens, update the overlay view indicators and
             // camera preview state.
-            workflowState.observe(this@CustomModelObjectDetectionActivity, Observer { workflowState ->
+            workflowState.observe(this@CameraActivity, Observer { workflowState ->
                 if (workflowState == null || Objects.equal(currentWorkflowState, workflowState)) {
                     return@Observer
                 }
                 currentWorkflowState = workflowState
-                Log.d(com.uri.lee.dl.CustomModelObjectDetectionActivity.Companion.TAG, "Current workflow state: ${workflowState.name}")
+                Log.d(TAG, "Current workflow state: ${workflowState.name}")
 
-                if (PreferenceUtils.isAutoSearchEnabled(this@CustomModelObjectDetectionActivity)) {
+                if (PreferenceUtils.isAutoSearchEnabled(this@CameraActivity)) {
                     stateChangeInAutoSearchMode(workflowState)
                 } else {
                     stateChangeInManualSearchMode(workflowState)
                 }
             })
 
-            // Observes changes on the object to search, if happens, show detected object labels as
-            // product search results.
-            objectToSearch.observe(this@CustomModelObjectDetectionActivity, Observer { detectObject ->
-                val productList: List<Product> = detectObject.labels.map { label ->
-                    Product("" /* imageUrl */, label.text, "" /* subtitle */)
+            // Observes changes on the object to search, if happens, fire product search request.
+            objectToSearch.observe(this@CameraActivity, Observer { detectObject ->
+                searchEngine!!.search(detectObject) { detectedObject, products ->
+                    workflowModel?.onSearchCompleted(detectedObject, products)
                 }
-                workflowModel?.onSearchCompleted(detectObject, productList)
             })
 
             // Observes changes on the object that has search completed, if happens, show the bottom sheet
             // to present search result.
-            searchedObject.observe(this@CustomModelObjectDetectionActivity, Observer { searchedObject ->
+            searchedObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
+                val searchedObject = nullableSearchedObject ?: return@Observer
+                val productList = searchedObject.productList
                 objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
-                bottomSheetTitleView?.text = getString(R.string.buttom_sheet_custom_model_title)
-                productRecyclerView?.adapter = ProductAdapter(searchedObject.productList)
+                bottomSheetTitleView?.text = resources
+                    .getQuantityString(
+                        R.plurals.bottom_sheet_title, productList.size, productList.size
+                    )
+                productRecyclerView?.adapter = ProductAdapter(productList)
                 slidingSheetUpFromHiddenState = true
                 bottomSheetBehavior?.peekHeight =
                     preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
@@ -299,6 +299,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
         val wasPromptChipGone = promptChip!!.visibility == View.GONE
 
         searchButton?.visibility = View.GONE
+        searchProgressBar?.visibility = View.GONE
         when (workflowState) {
             WorkflowModel.WorkflowState.DETECTING, WorkflowModel.WorkflowState.DETECTED, WorkflowModel.WorkflowState.CONFIRMING -> {
                 promptChip?.visibility = View.VISIBLE
@@ -306,7 +307,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
                     if (workflowState == WorkflowModel.WorkflowState.CONFIRMING)
                         R.string.prompt_hold_camera_steady
                     else
-                        R.string.prompt_point_at_a_bird
+                        R.string.prompt_point_at_an_object
                 )
                 startCameraPreview()
             }
@@ -316,10 +317,13 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
                 stopCameraPreview()
             }
             WorkflowModel.WorkflowState.SEARCHING -> {
-                promptChip?.visibility = View.GONE
+                searchProgressBar?.visibility = View.VISIBLE
+                promptChip?.visibility = View.VISIBLE
+                promptChip?.setText(R.string.prompt_searching)
                 stopCameraPreview()
             }
             WorkflowModel.WorkflowState.SEARCHED -> {
+                promptChip?.visibility = View.GONE
                 stopCameraPreview()
             }
             else -> promptChip?.visibility = View.GONE
@@ -335,6 +339,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
         val wasPromptChipGone = promptChip?.visibility == View.GONE
         val wasSearchButtonGone = searchButton?.visibility == View.GONE
 
+        searchProgressBar?.visibility = View.GONE
         when (workflowState) {
             WorkflowModel.WorkflowState.DETECTING, WorkflowModel.WorkflowState.DETECTED, WorkflowModel.WorkflowState.CONFIRMING -> {
                 promptChip?.visibility = View.VISIBLE
@@ -354,6 +359,7 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
                 searchButton?.visibility = View.VISIBLE
                 searchButton?.isEnabled = false
                 searchButton?.setBackgroundColor(Color.GRAY)
+                searchProgressBar!!.visibility = View.VISIBLE
                 stopCameraPreview()
             }
             WorkflowModel.WorkflowState.SEARCHED -> {
@@ -379,7 +385,6 @@ class CustomModelObjectDetectionActivity : AppCompatActivity(), OnClickListener 
     }
 
     companion object {
-        private const val TAG = "CustomModelODActivity"
-        private const val CUSTOM_MODEL_PATH = "custom_models/model_70.tflite"
+        private const val TAG = "LiveObjectActivity"
     }
 }
