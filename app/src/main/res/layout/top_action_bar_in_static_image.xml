@@ -16,13 +16,17 @@
       android:contentDescription="@string/cd_close_button"
       app:srcCompat="@drawable/ic_close_vd_white_24"/>
 
-  <ImageView
+  <TextView
       android:id="@+id/photo_library_button"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_alignParentEnd="true"
-      android:padding="@dimen/top_action_button_padding"
+      android:textColor="@color/white"
+      android:padding="12dp"
+      android:drawablePadding="4dp"
+      android:drawableEnd="@drawable/ic_photo_library_vd_white_24"
       android:contentDescription="@string/cd_photo_library_button"
-      app:srcCompat="@drawable/ic_photo_library_vd_white_24"/>
+      android:text="@string/pick_an_image"
+      app:drawableEndCompat="@drawable/ic_photo_library_vd_white_24" />
 
 </RelativeLayout>

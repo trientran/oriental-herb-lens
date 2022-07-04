@@ -62,7 +62,9 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        binding.searchSingleImageView.setOnClickListener { Utils.openImagePicker(this) }
+        binding.searchSingleImageView.setOnClickListener {
+            startActivity(Intent(this, StaticObjectDetectionActivity::class.java))
+        }
     }
 
     override fun onStart() {
@@ -76,9 +78,7 @@ class MainActivity : AppCompatActivity() {
                 .build()
             signInLauncher.launch(signInIntent)
 
-            if (!Utils.allPermissionsGranted(this)) {
-                Utils.requestRuntimePermissions(this)
-            }
+
         }
     }
 
@@ -111,11 +111,6 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK && data != null) {
             when (requestCode) {
-                Utils.REQUEST_CODE_PHOTO_LIBRARY -> {
-                    val intent = Intent(this, StaticObjectDetectionActivity::class.java)
-                    intent.data = data.data
-                    startActivity(intent)
-                }
                 Utils.SPEECH_REQUEST_CODE -> {
                     val spokenText: String = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)!![0]
                     val intent = Intent(this, SearchActivity::class.java)

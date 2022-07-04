@@ -117,6 +117,11 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
         intent.data?.let(::detectObjects)
     }
 
+    override fun onResume() {
+        super.onStart()
+        if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         try {
@@ -128,9 +133,10 @@ class StaticObjectDetectionActivity : AppCompatActivity(), View.OnClickListener 
         searchEngine?.shutdown()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Utils.REQUEST_CODE_PHOTO_LIBRARY && resultCode == Activity.RESULT_OK) {
-            data?.data?.let(::detectObjects)
+        if (requestCode == Utils.REQUEST_CODE_PHOTO_LIBRARY && resultCode == Activity.RESULT_OK && data != null) {
+            data.data?.let(::detectObjects)
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
