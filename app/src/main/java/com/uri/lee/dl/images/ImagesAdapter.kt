@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.multipleimages
+package com.uri.lee.dl.images
 
 import android.content.Context
 import android.view.LayoutInflater

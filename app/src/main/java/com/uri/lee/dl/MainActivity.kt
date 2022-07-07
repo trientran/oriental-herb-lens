@@ -15,10 +15,10 @@ import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
+import com.uri.lee.dl.image.ImageActivity
+import com.uri.lee.dl.images.ImagesActivity
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
-import com.uri.lee.dl.multipleimages.ImagesActivity
-import com.uri.lee.dl.singleimage.SingleImageActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -60,14 +60,18 @@ class MainActivity : AppCompatActivity() {
         binding.searchCameraView.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))
         }
+        binding.searchCameraTextView.setOnClickListener { binding.searchCameraView.performClick() }
 
         binding.searchMultiImagesView.setOnClickListener {
             startActivity(Intent(this, ImagesActivity::class.java))
         }
+        binding.searchMultiImagesView.setOnClickListener { binding.searchMultiImagesView.performClick() }
 
         binding.searchSingleImageView.setOnClickListener {
-            startActivity(Intent(this, SingleImageActivity::class.java))
+            startActivity(Intent(this, ImageActivity::class.java))
         }
+        binding.searchSingleImageView.setOnClickListener { binding.searchSingleImageView.performClick() }
+
     }
 
     override fun onStart() {

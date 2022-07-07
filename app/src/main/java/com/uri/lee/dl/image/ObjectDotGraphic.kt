@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.singleimage
+package com.uri.lee.dl.image
 
 import android.graphics.Canvas
 import android.graphics.Color

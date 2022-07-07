@@ -11,8 +11,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".multipleimages.ImagesActivity"
-            android:exported="false" />
+            android:name=".images.ImagesActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".instantsearch.SearchActivity"
             android:exported="false"
@@ -38,7 +39,7 @@
             android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".singleimage.SingleImageActivity"
+            android:name=".image.ImageActivity"
             android:exported="false"
             android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme.NoActionBar" />

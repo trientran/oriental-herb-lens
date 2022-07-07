@@ -39,13 +39,13 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
+import com.uri.lee.dl.image.MultiObjectProcessor
+import com.uri.lee.dl.image.ProminentObjectProcessor
 import com.uri.lee.dl.productsearch.BottomSheetScrimView
 import com.uri.lee.dl.productsearch.ProductAdapter
 import com.uri.lee.dl.productsearch.SearchEngine
 import com.uri.lee.dl.settings.PreferenceUtils
 import com.uri.lee.dl.settings.SettingsActivity
-import com.uri.lee.dl.singleimage.MultiObjectProcessor
-import com.uri.lee.dl.singleimage.ProminentObjectProcessor
 import java.io.IOException
 
 /** Demonstrates the object detection and visual search workflow using camera preview.  */
@@ -77,7 +77,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
         searchEngine = SearchEngine(applicationContext)
 
-        setContentView(R.layout.activity_live_object)
+        setContentView(R.layout.activity_camera)
         preview = findViewById(R.id.camera_preview)
         graphicOverlay = findViewById<GraphicOverlay>(R.id.camera_preview_graphic_overlay).apply {
             setOnClickListener(this@CameraActivity)

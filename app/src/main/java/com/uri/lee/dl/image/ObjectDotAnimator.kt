@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.singleimage
+package com.uri.lee.dl.image
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator

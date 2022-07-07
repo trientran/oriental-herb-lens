@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.singleimage
+package com.uri.lee.dl.image
 
 import android.graphics.RectF
 import android.util.Log

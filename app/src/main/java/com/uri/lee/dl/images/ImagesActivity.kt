@@ -1,4 +1,4 @@
-package com.uri.lee.dl.multipleimages
+package com.uri.lee.dl.images
 
 import android.content.Intent
 import android.os.Build

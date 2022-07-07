@@ -21,10 +21,10 @@ import android.content.Context
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.uri.lee.dl.image.DetectedObjectInfo
 import com.uri.lee.dl.productsearch.Product
 import com.uri.lee.dl.productsearch.SearchedObject
 import com.uri.lee.dl.settings.PreferenceUtils
-import com.uri.lee.dl.singleimage.DetectedObjectInfo
 
 /** View model for handling application workflow based on camera preview.  */
 class WorkflowModel(application: Application) : AndroidViewModel(application) {

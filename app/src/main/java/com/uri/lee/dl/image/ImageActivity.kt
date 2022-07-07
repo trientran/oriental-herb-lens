@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.singleimage
+package com.uri.lee.dl.image
 
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
@@ -55,7 +55,7 @@ import java.io.IOException
 import java.util.*
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
-class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
+class ImageActivity : AppCompatActivity(), View.OnClickListener {
 
     private val searchedObjectMap = TreeMap<Int, SearchedObject>()
 
@@ -84,10 +84,10 @@ class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
 
         searchEngine = SearchEngine(applicationContext)
 
-        setContentView(R.layout.activity_static_object)
+        setContentView(R.layout.activity_image)
 
         loadingView = findViewById<View>(R.id.loading_view).apply {
-            setOnClickListener(this@SingleImageActivity)
+            setOnClickListener(this@ImageActivity)
         }
 
         bottomPromptChip = findViewById(R.id.bottom_prompt_chip)
@@ -95,7 +95,7 @@ class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
 
         previewCardCarousel = findViewById<RecyclerView>(R.id.card_recycler_view).apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@SingleImageActivity, RecyclerView.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(this@ImageActivity, RecyclerView.HORIZONTAL, false)
             addItemDecoration(
                 CardItemDecoration(
                     resources
@@ -159,7 +159,8 @@ class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
         when (view.id) {
             R.id.close_button -> onBackPressed()
             R.id.photo_library_button -> Utils.openImagePicker(this)
-            R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
+            R.id.bottom_sheet_scrim_view, R.id.pickImageView -> bottomSheetBehavior?.state =
+                BottomSheetBehavior.STATE_HIDDEN
         }
     }
 
@@ -206,13 +207,13 @@ class SingleImageActivity : AppCompatActivity(), View.OnClickListener {
         }
 
         bottomSheetScrimView = findViewById<BottomSheetScrimView>(R.id.bottom_sheet_scrim_view).apply {
-            setOnClickListener(this@SingleImageActivity)
+            setOnClickListener(this@ImageActivity)
         }
 
         bottomSheetTitleView = findViewById(R.id.bottom_sheet_title)
         productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view)?.apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@SingleImageActivity)
+            layoutManager = LinearLayoutManager(this@ImageActivity)
             adapter = ProductAdapter(ImmutableList.of())
         }
     }
