@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         binding.searchView.setOnClickListener {
             startActivity(Intent(this, SearchActivity::class.java))
         }
-        binding.searchHint.setOnClickListener { binding.searchView.performClick() }
 
         binding.menuView.setOnClickListener {
             val bottomSheet = BottomSheetDialog()

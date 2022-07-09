@@ -125,6 +125,7 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         if (Build.VERSION.SDK_INT <= 28) {
             if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
         }
+        if (Utils.allPermissionsGranted(this)) Utils.openImagePicker(this)
     }
 
     override fun onDestroy() {
@@ -134,7 +135,6 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         } catch (e: IOException) {
             Log.e(TAG, "Failed to close the detector!", e)
         }
-
         searchEngine?.shutdown()
     }
 
@@ -158,8 +158,8 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.close_button -> onBackPressed()
-            R.id.photo_library_button -> Utils.openImagePicker(this)
-            R.id.bottom_sheet_scrim_view, R.id.pickImageView -> bottomSheetBehavior?.state =
+            R.id.photo_library_button, R.id.pickImageView -> Utils.openImagePicker(this)
+            R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.state =
                 BottomSheetBehavior.STATE_HIDDEN
         }
     }
