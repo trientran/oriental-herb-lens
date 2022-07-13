@@ -22,8 +22,8 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.uri.lee.dl.image.DetectedObjectInfo
-import com.uri.lee.dl.productsearch.Product
-import com.uri.lee.dl.productsearch.SearchedObject
+import com.uri.lee.dl.labeling.DetectedObject
+import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.settings.PreferenceUtils
 
 /** View model for handling application workflow based on camera preview.  */
@@ -31,7 +31,7 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
 
     val workflowState = MutableLiveData<WorkflowState>()
     val objectToSearch = MutableLiveData<DetectedObjectInfo>()
-    val searchedObject = MutableLiveData<SearchedObject>()
+    val detectedObject = MutableLiveData<DetectedObject>()
 
     private val objectIdsToSearch = HashSet<Int>()
 
@@ -111,7 +111,7 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         isCameraLive = false
     }
 
-    fun onSearchCompleted(detectedObject: DetectedObjectInfo, products: List<Product>) {
+    fun onSearchCompleted(detectedObject: DetectedObjectInfo, herbs: List<Herb>) {
         val lConfirmedObject = confirmedObject
         if (detectedObject != lConfirmedObject) {
             // Drops the search result from the object that has lost focus.
@@ -121,6 +121,6 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         objectIdsToSearch.remove(detectedObject.objectId)
         setWorkflowState(WorkflowState.SEARCHED)
 
-        searchedObject.value = SearchedObject(context.resources, lConfirmedObject, products)
+        this.detectedObject.value = DetectedObject(context.resources, lConfirmedObject, herbs)
     }
 }

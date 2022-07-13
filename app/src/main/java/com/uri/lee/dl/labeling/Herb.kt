@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.productsearch
+package com.uri.lee.dl.labeling
 
 /** Information about a product.  */
-data class Product internal constructor(val imageUrl: String, val title: String, val subtitle: String)
+data class Herb internal constructor(val imageUrl: String? = null, val title: String, val subtitle: String)
+
+sealed interface ImageSource {
+    data class Uri(val uri: android.net.Uri) : ImageSource
+    data class Bitmap(val bitmap: android.graphics.Bitmap) : ImageSource
+}

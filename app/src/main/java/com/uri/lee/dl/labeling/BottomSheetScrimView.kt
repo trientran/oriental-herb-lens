@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.productsearch
+package com.uri.lee.dl.labeling
 
 import android.content.Context
 import android.graphics.*

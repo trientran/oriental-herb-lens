@@ -66,6 +66,7 @@ class ImagesActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT <= 28) {
             if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
         }
+        if (Utils.allPermissionsGranted(this)) Utils.openImagePicker(this)
     }
 
     private fun addImages() {

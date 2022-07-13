@@ -41,9 +41,9 @@ import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
 import com.uri.lee.dl.image.MultiObjectProcessor
 import com.uri.lee.dl.image.ProminentObjectProcessor
-import com.uri.lee.dl.productsearch.BottomSheetScrimView
-import com.uri.lee.dl.productsearch.ProductAdapter
-import com.uri.lee.dl.productsearch.SearchEngine
+import com.uri.lee.dl.labeling.BottomSheetScrimView
+import com.uri.lee.dl.labeling.HerbAdapter
+import com.uri.lee.dl.labeling.LabelImage
 import com.uri.lee.dl.settings.PreferenceUtils
 import com.uri.lee.dl.settings.SettingsActivity
 import java.io.IOException
@@ -63,7 +63,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
     private var searchProgressBar: ProgressBar? = null
     private var workflowModel: WorkflowModel? = null
     private var currentWorkflowState: WorkflowModel.WorkflowState? = null
-    private var searchEngine: SearchEngine? = null
+    private var searchEngine: LabelImage? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private var bottomSheetScrimView: BottomSheetScrimView? = null
@@ -75,7 +75,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        searchEngine = SearchEngine(applicationContext)
+        searchEngine = LabelImage(applicationContext)
 
         setContentView(R.layout.activity_camera)
         preview = findViewById(R.id.camera_preview)
@@ -213,7 +213,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    val searchedObject = workflowModel!!.searchedObject.value
+                    val searchedObject = workflowModel!!.detectedObject.value
                     if (searchedObject == null || java.lang.Float.isNaN(slideOffset)) {
                         return
                     }
@@ -246,7 +246,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view).apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@CameraActivity)
-            adapter = ProductAdapter(ImmutableList.of())
+            adapter = HerbAdapter(ImmutableList.of())
         }
     }
 
@@ -270,23 +270,23 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
             })
 
             // Observes changes on the object to search, if happens, fire product search request.
-            objectToSearch.observe(this@CameraActivity, Observer { detectObject ->
+            objectToSearch.observe(this@CameraActivity) { detectObject ->
                 searchEngine!!.search(detectObject) { detectedObject, products ->
                     workflowModel?.onSearchCompleted(detectedObject, products)
                 }
-            })
+            }
 
             // Observes changes on the object that has search completed, if happens, show the bottom sheet
             // to present search result.
-            searchedObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
+            detectedObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
                 val searchedObject = nullableSearchedObject ?: return@Observer
-                val productList = searchedObject.productList
+                val productList = searchedObject.herbList
                 objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
                 bottomSheetTitleView?.text = resources
                     .getQuantityString(
                         R.plurals.bottom_sheet_title, productList.size, productList.size
                     )
-                productRecyclerView?.adapter = ProductAdapter(productList)
+                productRecyclerView?.adapter = HerbAdapter(productList)
                 slidingSheetUpFromHiddenState = true
                 bottomSheetBehavior?.peekHeight =
                     preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO

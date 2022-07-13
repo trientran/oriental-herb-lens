@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.productsearch
+package com.uri.lee.dl.labeling
 
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -27,8 +27,8 @@ import com.uri.lee.dl.R
 
 /** Powers the bottom card carousel for displaying the preview of product search result.  */
 class PreviewCardAdapter(
-    private val searchedObjectList: List<SearchedObject>,
-    private val previewCordClickedListener: (searchedObject: SearchedObject) -> Any
+    private val detectedObjectList: List<DetectedObject>,
+    private val previewCordClickedListener: (detectedObject: DetectedObject) -> Any
 ) : RecyclerView.Adapter<PreviewCardAdapter.CardViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
@@ -39,12 +39,12 @@ class PreviewCardAdapter(
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        val searchedObject = searchedObjectList[position]
-        holder.bindProducts(searchedObject.productList)
+        val searchedObject = detectedObjectList[position]
+        holder.bindProducts(searchedObject.herbList)
         holder.itemView.setOnClickListener { previewCordClickedListener.invoke(searchedObject) }
     }
 
-    override fun getItemCount(): Int = searchedObjectList.size
+    override fun getItemCount(): Int = detectedObjectList.size
 
     class CardViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -53,24 +53,25 @@ class PreviewCardAdapter(
         private val subtitleView: TextView = itemView.findViewById(R.id.card_subtitle)
         private val imageSize: Int = itemView.resources.getDimensionPixelOffset(R.dimen.preview_card_image_size)
 
-        internal fun bindProducts(products: List<Product>) {
-            if (products.isEmpty()) {
+        internal fun bindProducts(herbs: List<Herb>) {
+            if (herbs.isEmpty()) {
                 imageView.visibility = View.GONE
                 titleView.setText(R.string.static_image_card_no_result_title)
                 subtitleView.setText(R.string.static_image_card_no_result_subtitle)
             } else {
-                val topProduct = products[0]
+                val topProduct = herbs[0]
                 imageView.visibility = View.VISIBLE
                 imageView.setImageDrawable(null)
                 if (!TextUtils.isEmpty(topProduct.imageUrl)) {
-                    ImageDownloadTask(imageView, imageSize).execute(topProduct.imageUrl)
+                    //todo replace with Glide later when loading image from storage
+                    //  ImageDownloadTask(imageView, imageSize).execute(topProduct.imageUrl)
                 } else {
-                    imageView.setImageResource(R.drawable.logo_google_cloud)
+                    imageView.setImageResource(R.drawable.ic_launcher_round)
                 }
                 titleView.text = topProduct.title
                 subtitleView.text = itemView
                     .resources
-                    .getString(R.string.static_image_preview_card_subtitle, products.size - 1)
+                    .getString(R.string.static_image_preview_card_subtitle, herbs.size - 1)
             }
         }
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.productsearch
+package com.uri.lee.dl.labeling
 
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -24,10 +24,10 @@ import com.uri.lee.dl.Utils
 import com.uri.lee.dl.image.DetectedObjectInfo
 
 /** Hosts the detected object info and its search result.  */
-class SearchedObject(
+class DetectedObject(
     resources: Resources,
     private val detectedObject: DetectedObjectInfo,
-    val productList: List<Product>
+    val herbList: List<Herb>
 ) {
 
     private val objectThumbnailCornerRadius: Int = resources.getDimensionPixelOffset(R.dimen.bounding_box_corner_radius)
