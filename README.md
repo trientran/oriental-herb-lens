@@ -1,27 +1,11 @@
 [![Build Status](https://travis-ci.org/firebase/mlkit-material-android.svg?branch=master)](https://travis-ci.org/firebase/mlkit-material-android)
 
-# ML Kit Vision Showcase App with Material Design
-
-This app demonstrates how to build an end-to-end user experience with
-[Google ML Kit APIs](https://developers.google.com/ml-kit/guides) and following the
-[new Material for ML design guidelines](https://material.io/design/machine-learning/).
-
-The goal of this app is to showcase an ideal ML Kit driven end to end solution for various ML Kit vision APIs and use cases. The following use cases are covered:
-* Visual search using the Object Detection & Tracking API - An end to end workflow for object detection and product search
-* “Wild Bird” search using the Object Detection & Tracking API - An end to end workflow for object detection and search using a custom TensorFlow Lite model
-* Barcode detection - An end to end barcode scanning solution
-
-<img src="screenshots/live_odt.gif" width="256"/> <img src="screenshots/static_odt.gif" width="256"/>
-<img src="screenshots/live_barcode.gif" width="256"/>
-
-## Steps to run the app
-
-* Clone this repo locally
-* Build and run it on an Android device
+# Oriental Herb Lens
 
 ## How to use the app
 
-This app supports two usage scenarios: Live Camera and Static Image.
+This app supports three herb image recognition scenarios: live camera, single static image, and
+multiple images.
 
 ### Live Camera scenario
 
@@ -41,16 +25,20 @@ allow you to configure several options:
     - Barcode reticle width -- Size of barcode reticle width relative to the camera preview width
     - Barcode reticle height -- Size of the barcode reticle height relative to the camera preview height
     - Enable Barcode size check -- Will prompt user to "move closer" if the detected barcode is too small
-    - Delay loading result -- Simulates a case where the detected barcode requires further processing before displaying the result.
+    - Delay loading result -- Simulates a case where the detected barcode requires further
+      processing before displaying the result.
 
-### Static Image scenario
+### Single Static Image scenario
 
-During this scenario, the app will prompt the user to select an image from the “Image Picker” (gallery), detect objects in the selected image, and then perform visual search on those objects. There are well designed UI components (overlay dots, card carousel etc.) to indicate the detected objects and search results.
+During this scenario, the app will prompt the user to select an image from the “Image Picker” (
+gallery), detect objects in the selected image, and then perform visual search on those objects.
+There are well designed UI components (overlay dots, card carousel etc.) to indicate the detected
+objects and search results.
 
-### Visual Search
+### Multiple Static Images scenario
 
-Please note that the visual search functionality in this app will not work since there is no real search backend setup for this repository. However, it should be easy to hook up your  own search service (e.g. [Product Search](https://cloud.google.com/vision/product-search/docs)) by only replacing the [SearchEngine](https://github.com/googlesamples/mlkit/blob/master/android/material-showcase/app/src/main/java/com/google/mlkit/md/productsearch/SearchEngine.kt) class implementation.
+### Full-text search
 
+## Copyright
 
-## License
-© Google, 2020. Licensed under an [Apache-2](./LICENSE) license.
+© Uri Lee, 2020.

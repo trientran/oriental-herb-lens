@@ -32,7 +32,7 @@ class LabelImage(context: Context) {
     private val searchRequestQueue: RequestQueue = Volley.newRequestQueue(context)
     private val requestCreationExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun search(
+    fun label(
         detectedObject: DetectedObjectInfo,
         listener: (detectedObject: DetectedObjectInfo, herbList: List<Herb>) -> Unit
     ) {

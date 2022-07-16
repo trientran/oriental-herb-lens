@@ -271,7 +271,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
             // Observes changes on the object to search, if happens, fire product search request.
             objectToSearch.observe(this@CameraActivity) { detectObject ->
-                searchEngine!!.search(detectObject) { detectedObject, products ->
+                searchEngine!!.label(detectObject) { detectedObject, products ->
                     workflowModel?.onSearchCompleted(detectedObject, products)
                 }
             }
