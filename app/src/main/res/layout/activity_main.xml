@@ -40,7 +40,7 @@
         <TextView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="50dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:gravity="center_vertical"
@@ -77,88 +77,65 @@
             app:layout_constraintTop_toTopOf="@+id/searchView"
             app:srcCompat="@drawable/ic_baseline_keyboard_voice_24" />
 
-        <ImageView
-            android:id="@+id/searchSingleImageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_image_search_white"
-            app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/searchView"
-            android:contentDescription="Look up Single Image" />
-
-        <ImageView
-            android:id="@+id/searchMultiImagesView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="4dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_multiple_images_white"
-            app:layout_constraintStart_toEndOf="@id/searchCameraView"
-            app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
-            app:layout_constraintTop_toBottomOf="@id/searchView"
-            android:contentDescription="Look up Multiple images" />
-
-        <ImageView
-            android:id="@+id/searchCameraView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_camera_white"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
-            app:layout_constraintTop_toBottomOf="@id/searchView"
-            android:contentDescription="Look up using your camera" />
-
         <TextView
-            android:id="@+id/searchSingleImageTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/searchSingleImageView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/single_image"
             android:textColor="@color/white"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="@id/searchSingleImageView"
-            app:layout_constraintEnd_toEndOf="@id/searchSingleImageView"
-            app:layout_constraintTop_toBottomOf="@id/searchSingleImageView" />
+            android:textAlignment="center"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintStart_toEndOf="@id/searchMultiImagesView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up Single Image"
+            app:drawableTopCompat="@drawable/single_image_case" />
 
         <TextView
-            android:id="@+id/searchMultiImagesTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/searchMultiImagesView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/multiple_images"
             android:textColor="@color/white"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="@id/searchMultiImagesView"
-            app:layout_constraintEnd_toEndOf="@id/searchMultiImagesView"
-            app:layout_constraintTop_toBottomOf="@id/searchMultiImagesView" />
+            android:textAlignment="center"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintStart_toEndOf="@id/searchCameraView"
+            app:layout_constraintEnd_toStartOf="@id/searchSingleImageView"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up Multiple images"
+            app:drawableTopCompat="@drawable/multi_image_case" />
 
         <TextView
-            android:id="@+id/searchCameraTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/searchCameraView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/camera"
             android:textColor="@color/white"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="@id/searchCameraView"
-            app:layout_constraintEnd_toEndOf="@id/searchCameraView"
-            app:layout_constraintTop_toBottomOf="@id/searchCameraView" />
+            android:textAlignment="center"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/searchMultiImagesView"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            android:contentDescription="Look up using your camera"
+            app:drawableTopCompat="@drawable/live_camera_case" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
-            android:layout_marginTop="8dp"
             android:background="@color/color_primary"
             app:tabMode="scrollable"
             app:tabMinWidth="30dp"
             app:tabTextColor="@color/white"
             app:tabIndicatorColor="@color/white"
             app:tabSelectedTextColor="@color/white"
-            app:layout_constraintTop_toBottomOf="@+id/searchCameraTextView" />
+            app:layout_constraintTop_toBottomOf="@+id/searchCameraView" />
 
       </androidx.constraintlayout.widget.ConstraintLayout>
 

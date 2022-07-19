@@ -16,10 +16,24 @@
 
 package com.uri.lee.dl.labeling
 
+import android.graphics.Bitmap
+import android.net.Uri
+
 /** Information about a product.  */
-data class Herb internal constructor(val imageUrl: String? = null, val title: String, val subtitle: String)
+data class Herb(
+    val imageUrl: String? = null,
+    val id: String,
+    val sciName: String,
+    val viName: String,
+    val confident: Float,
+)
+
+sealed interface HerbError {
+    data class LabelingError(val exception: Exception) : HerbError
+    data class ObjectDetectionError(val exception: Exception) : HerbError
+}
 
 sealed interface ImageSource {
-    data class Uri(val uri: android.net.Uri) : ImageSource
-    data class Bitmap(val bitmap: android.graphics.Bitmap) : ImageSource
+    data class UriSource(val uri: Uri) : ImageSource
+    data class BitmapSource(val bitmap: Bitmap) : ImageSource
 }

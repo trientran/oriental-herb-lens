@@ -8,7 +8,6 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import java.util.*
 
 @Serializable
 @Parcelize
@@ -30,10 +29,10 @@ data class Herb(
     override val _highlightResult: JsonObject? = null
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
-    val herbAttributePerSystemLanguage =
-        if (Locale.getDefault().displayLanguage == "English") ::sciName.name else ::viName.name
+    val highlightedNameSci: HighlightedString?
+        get() = getHighlight(Attribute(::sciName.name))
 
     @IgnoredOnParcel
-    val highlightedName: HighlightedString?
-        get() = getHighlight(Attribute(herbAttributePerSystemLanguage))
+    val highlightedNameVi: HighlightedString?
+        get() = getHighlight(Attribute(::viName.name))
 }

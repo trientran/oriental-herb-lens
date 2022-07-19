@@ -28,6 +28,8 @@
     <string name="static_image_card_no_result_title">No result found</string>
     <string name="static_image_card_no_result_subtitle">Support text place holder</string>
     <string name="static_image_preview_card_subtitle">+%d more results</string>
+    <string name="static_image_detected_no_results_continue_to_label">No object found. Processed the whole image instead.</string>
+    <string name="static_image_classification_result">Herb code: %1$s. Scientific name: %2$s. Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_camera">Camera</string>

@@ -32,8 +32,9 @@ class HerbAdapter(private val herbList: List<Herb>) : Adapter<HerbAdapter.HerbVi
     class HerbViewHolder private constructor(view: View) : RecyclerView.ViewHolder(view) {
 
         private val imageView: ImageView = view.findViewById(R.id.herb_image)
-        private val titleView: TextView = view.findViewById(R.id.herb_title)
-        private val subtitleView: TextView = view.findViewById(R.id.herb_subtitle)
+        private val titleView: TextView = view.findViewById(R.id.card_title)
+        private val subtitleView: TextView = view.findViewById(R.id.card_subtitle_1)
+        private val subtitle2View: TextView = view.findViewById(R.id.card_subtitle_2)
         private val imageSize: Int = view.resources.getDimensionPixelOffset(R.dimen.product_item_image_size)
 
         fun bindHerb(herb: Herb) {
@@ -44,8 +45,9 @@ class HerbAdapter(private val herbList: List<Herb>) : Adapter<HerbAdapter.HerbVi
             } else {
                 imageView.setImageResource(R.drawable.ic_launcher_round)
             }
-            titleView.text = herb.title
-            subtitleView.text = herb.subtitle
+            titleView.text = herb.id
+            subtitleView.text = herb.sciName
+            subtitle2View.text = herb.viName
         }
 
         companion object {

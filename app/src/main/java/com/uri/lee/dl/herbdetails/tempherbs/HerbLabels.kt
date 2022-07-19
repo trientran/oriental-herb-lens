@@ -1,6 +1,6 @@
 package com.uri.lee.dl.herbdetails.tempherbs
 
-val vietList = mapOf(
+val viList70 = mapOf(
     "0001" to "Bạc hà",
     "0002" to "Bách bộ",
     "0003" to "Bạch đồng nữ",
@@ -73,7 +73,7 @@ val vietList = mapOf(
     "0070" to "Ý dĩ"
 )
 
-val enList = mapOf(
+val sciList70 = mapOf(
     "0001" to "Peppermint",
     "0002" to "Stemona tuberosa",
     "0003" to "Clerodendrum canescens",

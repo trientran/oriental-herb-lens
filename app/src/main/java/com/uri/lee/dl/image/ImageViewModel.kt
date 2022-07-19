@@ -1,8 +1,9 @@
 package com.uri.lee.dl.image
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
-import android.widget.Toast
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,11 +16,23 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
-import com.uri.lee.dl.*
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+import com.google.mlkit.vision.objects.DetectedObject
+import com.google.mlkit.vision.objects.ObjectDetection
+import com.google.mlkit.vision.objects.ObjectDetector
+import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
+import com.uri.lee.dl.LOCAL_TFLITE_MODEL_NAME
+import com.uri.lee.dl.REMOTE_TFLITE_MODEL_NAME
+import com.uri.lee.dl.herbdetails.tempherbs.sciList70
+import com.uri.lee.dl.herbdetails.tempherbs.viList70
+import com.uri.lee.dl.ioDispatcher
 import com.uri.lee.dl.labeling.Herb
-import com.uri.lee.dl.labeling.ImageSource
+import com.uri.lee.dl.labeling.HerbError
+import com.uri.lee.dl.labeling.HerbError.LabelingError
+import com.uri.lee.dl.labeling.HerbError.ObjectDetectionError
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.IOException
 
 class ImageViewModel : ViewModel() {
     // This is a LiveData field. Choosing this structure because the whole list tend to be updated
@@ -29,38 +42,60 @@ class ImageViewModel : ViewModel() {
     val imageUri: LiveData<Uri> get() = _imageUri
     private val _recognitionList = MutableLiveData<MutableList<Herb>>(mutableListOf())
     val recognitionList: LiveData<MutableList<Herb>> get() = _recognitionList
+    private val _objectList = MutableLiveData<MutableList<DetectedObject>>(mutableListOf())
+    val objectList: LiveData<MutableList<DetectedObject>> get() = _objectList
+    private val _error = MutableLiveData<HerbError>()
+    val error: LiveData<HerbError> get() = _error
 
-    private fun updateData(recognitions: MutableList<Herb>) {
-        _recognitionList.value = recognitions
+    private var detector: ObjectDetector? = null
+    private var labeler: ImageLabeler? = null
+    private val defaultLabeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
+
+    init {
+        detector = ObjectDetection.getClient(
+            ObjectDetectorOptions.Builder()
+                .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
+                .enableMultipleObjects()
+                .build()
+        )
     }
 
-    fun updateImageUri(imageUri: Uri) {
+    fun setImageUri(imageUri: Uri) {
         _imageUri.value = imageUri
+    }
+
+    fun setObjectList(objectList: MutableList<DetectedObject>) {
+        _objectList.value = objectList
+    }
+
+    private fun setError(error: HerbError) {
+        _error.value = error
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        try {
+            detector?.close()
+            labeler?.close()
+        } catch (e: IOException) {
+            Timber.e("Failed to close the detector!")
+        }
     }
 
     fun inferImageLabels(
         context: Context,
-        imageSource: ImageSource,
+        bitmap: Bitmap,
         confidence: Float = 0.0f,
+        listener: (herbList: List<Herb>) -> Unit,
     ) {
         viewModelScope.launch(ioDispatcher) {
-            //todo change image size for future model
-            val bitmap = when (imageSource) {
-                //todo bitmap size based on model shape obtained from FB list of constants + datastore
-                is ImageSource.Uri -> imageSource.uri.toScaledBitmap(context, 224, 224) ?: return@launch
-                is ImageSource.Bitmap -> imageSource.bitmap
-            }
-
             val inputImage = InputImage.fromBitmap(bitmap, 0)
-
             // set the minimum confidence required:
             val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
-
             // Specify the name you assigned in the Firebase console.
             val remoteModel = CustomRemoteModel
                 .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
                 .build()
-
             RemoteModelManager.getInstance().isModelDownloaded(remoteModel)
                 .addOnSuccessListener { isDownloaded ->
                     val optionsBuilder =
@@ -74,58 +109,76 @@ class ImageViewModel : ViewModel() {
                     val options = optionsBuilder
                         .setConfidenceThreshold(confidence)
                         .build()
-
-                    val labeler = ImageLabeling.getClient(options)
-                    labelImage(labeler, inputImage, context)
+                    labeler = ImageLabeling.getClient(options)
+                    labelImage(inputImage, context) { listener.invoke(it) }
                 }
         }
     }
 
-    fun labelObject(
-        detectedObject: DetectedObjectInfo,
-        listener: (detectedObject: DetectedObjectInfo, herbList: List<Herb>) -> Unit
-    ) {
-        detectedObject.getBitmap()
-        val herbList = ArrayList<Herb>()
-        for (i in 0..7) {
-            herbList.add(Herb(imageUrl = "", title = "Herb: $i", subtitle = "Herb code: $i"))
-        }
-        listener.invoke(detectedObject, herbList)
-    }
-
-    private fun labelImage(
-        labeler: ImageLabeler,
-        inputImage: InputImage,
-        context: Context
-    ) {
-
-        labeler.process(inputImage)
-            .addOnSuccessListener {
-                val maxResultsDisplayed = if (it.first().confidence >= 0.5) 2 else 1
-                val recognitionList = arrayListOf<Herb>()
-                for (i in 0 until maxResultsDisplayed) {
-                    try {
-                        recognitionList.add(
-                            Herb(
-                                title = it[i].text.substringBefore(" "),
-                                subtitle = it[i].text.substringAfter(" ")
-                            )
-                        )
-                    } catch (e: IndexOutOfBoundsException) {
-                        recognitionList.add(
-                            Herb(
-                                title = context.getString(R.string.no_result),
-                                subtitle = ""
-                            )
-                        )
+    fun inferImageLabelsWithDefaultModel(bitmap: Bitmap) {
+        viewModelScope.launch(ioDispatcher) {
+            val inputImage = InputImage.fromBitmap(bitmap, 0)
+            defaultLabeler.process(inputImage)
+                .addOnSuccessListener { labels ->
+                    labels.onEach {
+                        Log.d("trien112", it.text)
+//                        Plant
+//                        Vegetable
+//                        Petal
+//                        Flower
+//                        Garden
+//                        Fruit
                     }
                 }
-                Timber.d(recognitionList.toString())
-                updateData(recognitionList)
+                .addOnFailureListener { e ->
+                    // Task failed with an exception
+                    // ...
+                }
+        }
+    }
+
+    fun detectObject(image: InputImage, callback: (List<DetectedObject>) -> Unit) {
+        detector!!.process(image)
+            .addOnSuccessListener { objects -> callback.invoke(objects) }
+            .addOnFailureListener {
+                callback.invoke(mutableListOf())
+                setError(ObjectDetectionError(it))
             }
-            .addOnFailureListener { Toast.makeText(context, it.localizedMessage, Toast.LENGTH_SHORT).show() }
+    }
+
+    private fun updateData(recognitions: MutableList<Herb>) {
+        _recognitionList.value = recognitions
+    }
+
+    private fun labelImage(inputImage: InputImage, context: Context, listener: (herbList: List<Herb>) -> Unit) {
+        defaultLabeler.process(inputImage)
+            .addOnSuccessListener { labels ->
+                val recognitionList = arrayListOf<Herb>()
+                val couldBeHerb =
+                    labels.any { listOf("Plant", "Vegetable", "Petal", "Flower", "Garden", "Fruit").contains(it.text) }
+                if (couldBeHerb) {
+                    labeler!!.process(inputImage)
+                        .addOnSuccessListener {
+                            val maxResultsDisplayed = 1 //if (it.first().confidence >= 0.5) 2 else 1
+                            for (i in 0 until maxResultsDisplayed) {
+                                val id = it[i].text.substringBefore(" ")
+                                recognitionList.add(
+                                    Herb(
+                                        id = id,
+                                        sciName = sciList70[id]!!,
+                                        viName = viList70[id]!!,
+                                        confident = it[i].confidence
+                                    )
+                                )
+                            }
+                            Timber.d(recognitionList.toString())
+                            listener.invoke(recognitionList)
+                        }
+                        .addOnFailureListener { setError(LabelingError(it)) }
+                } else {
+                    listener.invoke(emptyList())
+                }
+            }
+            .addOnFailureListener { setError(LabelingError(it)) }
     }
 }
-
-
-

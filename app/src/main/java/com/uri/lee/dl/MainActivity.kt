@@ -59,18 +59,14 @@ class MainActivity : AppCompatActivity() {
         binding.searchCameraView.setOnClickListener {
             startActivity(Intent(this, CameraActivity::class.java))
         }
-        binding.searchCameraTextView.setOnClickListener { binding.searchCameraView.performClick() }
 
         binding.searchMultiImagesView.setOnClickListener {
             startActivity(Intent(this, ImagesActivity::class.java))
         }
-        binding.searchMultiImagesView.setOnClickListener { binding.searchMultiImagesView.performClick() }
 
         binding.searchSingleImageView.setOnClickListener {
             startActivity(Intent(this, ImageActivity::class.java))
         }
-        binding.searchSingleImageView.setOnClickListener { binding.searchSingleImageView.performClick() }
-
     }
 
     override fun onStart() {

@@ -44,7 +44,15 @@ class LabelImage(context: Context) {
                 // Remove the below dummy code after your own product search backed hooked up.
                 val herbList = ArrayList<Herb>()
                 for (i in 0..7) {
-                    herbList.add(Herb(imageUrl = "", title = "Herb: $i", subtitle = "Herb code: $i"))
+                    herbList.add(
+                        Herb(
+                            imageUrl = "",
+                            id = "Herb: $i",
+                            sciName = "Herb code: $i",
+                            confident = 0f,
+                            viName = ""
+                        )
+                    )
                 }
                 listener.invoke(detectedObject, herbList)
             }
