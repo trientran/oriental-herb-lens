@@ -13,23 +13,31 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.uri.lee.dl.*
+import com.uri.lee.dl.herbdetails.tempherbs.sciList70
+import com.uri.lee.dl.herbdetails.tempherbs.viList70
+import com.uri.lee.dl.labeling.Herb
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runInterruptible
 import timber.log.Timber
 
 @ExperimentalCoroutinesApi
 class ImagesViewModel : ViewModel() {
     // Backing property to avoid state updates from other classes
-    private val _recognitionList = MutableStateFlow<MutableList<Recognition>>(mutableListOf())
+    private val _recognitionList = MutableStateFlow<MutableList<Herb>>(mutableListOf())
 
     // The UI collects from this StateFlow to get its state updates
-    val recognitionList: StateFlow<MutableList<Recognition>> get() = this._recognitionList
+    val recognitionList: StateFlow<MutableList<Herb>> get() = this._recognitionList
 
-    fun addData(recognition: Recognition) {
+    private lateinit var labeler: ImageLabeler
+    private val defaultLabeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
+
+    private fun addData(herb: Herb) {
         val currentList = _recognitionList.value.toMutableList()
-        currentList.add(recognition)
+        currentList.add(herb)
         _recognitionList.value = currentList
     }
 
@@ -65,9 +73,12 @@ class ImagesViewModel : ViewModel() {
                     .setMaxResultCount(1)
                     .build()
 
-                val labeler = ImageLabeling.getClient(options)
-                processImages(context, clipData, labeler)
-                    .catch { Timber.e(it.message ?: "Some error") }
+                labeler = ImageLabeling.getClient(options)
+                processImages(context, clipData)
+                    .catch {
+                        Timber.e(it.message ?: "Some error")
+                        throw it
+                    }
                     .onEach { addData(it) }
                     .flowOn(defaultDispatcher)
                     .launchIn(viewModelScope)
@@ -77,32 +88,45 @@ class ImagesViewModel : ViewModel() {
     private fun processImages(
         context: Context,
         clipData: ClipData,
-        labeler: ImageLabeler
     ) = callbackFlow {
-
-        var recognition: Recognition
-
         for (i in 0 until clipData.itemCount) {
             val selectedImageUri: Uri = clipData.getItemAt(i).uri
-            val bitmap = selectedImageUri.toScaledBitmap(context, 224, 224) ?: return@callbackFlow
-            val inputImage = InputImage.fromBitmap(bitmap, 0)
+            val bitmap = runInterruptible(ioDispatcher) {
+                Utils.loadImage(context, selectedImageUri, MAX_IMAGE_DIMENSION_FOR_LABELING)
+            }
+            val inputImage = InputImage.fromBitmap(bitmap!!, 0)
 
-            labeler.process(inputImage)
-                .addOnSuccessListener { results ->
-                    recognition = try {
-                        Recognition(
-                            label = results[0].text + " " + results[0].index,
-                            confidence = results[0].confidence,
-                            imageUri = selectedImageUri
-                        )
-                    } catch (e: IndexOutOfBoundsException) {
-                        Recognition(
-                            label = context.getString(R.string.no_result),
-                            confidence = 0f,
-                            imageUri = selectedImageUri
-                        )
+            defaultLabeler.process(inputImage)
+                .addOnSuccessListener { labels ->
+                    val couldBeHerb =
+                        labels.any {
+                            listOf(
+                                "Plant",
+                                "Vegetable",
+                                "Petal",
+                                "Flower",
+                                "Garden",
+                                "Fruit"
+                            ).contains(it.text)
+                        }
+                    if (couldBeHerb) {
+                        labeler.process(inputImage)
+                            .addOnSuccessListener { results ->
+                                val id = results[0].text.substringBefore(" ")
+                                trySend(
+                                    Herb(
+                                        id = id,
+                                        sciName = sciList70[id]!!,
+                                        viName = viList70[id]!!,
+                                        confident = results[0].confidence,
+                                        imageFileUri = selectedImageUri
+                                    )
+                                )
+                            }
+                            .addOnFailureListener { Timber.e(it.message ?: "Some error") }
+                    } else {
+                        trySend(Herb(imageFileUri = selectedImageUri))
                     }
-                    trySend(recognition)
                 }
                 .addOnFailureListener { Timber.e(it.message ?: "Some error") }
         }

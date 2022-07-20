@@ -3,40 +3,52 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="4dp"
+    android:background="@color/lighter_grey">
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="100dp"
-        android:layout_marginStart="8dp"
+        android:contentDescription="Your selected image"
         android:scaleType="fitStart"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@tools:sample/avatars"
-        android:contentDescription="Your selected image" />
+        tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/labelTextView"
+        android:id="@+id/idView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
         android:textAppearance="?attr/textAppearanceHeadline6"
-        android:textColor="@color/white"
+        android:textColor="@color/color_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/sciNameView"
         tools:text="Orange" />
 
     <TextView
-        android:id="@+id/confidenceTextView"
+        android:id="@+id/sciNameView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
         android:textAppearance="?attr/textAppearanceHeadline6"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textColor="@color/color_primary"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/idView"
+        app:layout_constraintBottom_toTopOf="@id/viNameView"
+        tools:text="99%" />
+
+    <TextView
+        android:id="@+id/viNameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="@color/color_primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sciNameView"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:text="99%" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

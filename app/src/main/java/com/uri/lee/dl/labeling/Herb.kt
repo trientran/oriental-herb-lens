@@ -22,10 +22,11 @@ import android.net.Uri
 /** Information about a product.  */
 data class Herb(
     val imageUrl: String? = null,
-    val id: String,
-    val sciName: String,
-    val viName: String,
-    val confident: Float,
+    val imageFileUri: Uri? = null,
+    val id: String? = null,
+    val sciName: String? = null,
+    val viName: String? = null,
+    val confident: Float? = null,
 )
 
 sealed interface HerbError {

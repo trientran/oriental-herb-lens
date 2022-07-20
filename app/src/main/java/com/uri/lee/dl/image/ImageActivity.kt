@@ -47,10 +47,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.ImmutableList
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
-import com.uri.lee.dl.BitmapInputInfo
-import com.uri.lee.dl.InputInfo
-import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils
+import com.uri.lee.dl.*
 import com.uri.lee.dl.labeling.*
 import java.io.IOException
 import java.util.*
@@ -222,7 +219,7 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         try {
             inputBitmap = Utils.loadImage(
                 this, imageUri,
-                MAX_IMAGE_DIMENSION
+                MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION
             )
         } catch (e: IOException) {
             Log.e(TAG, "Failed to load file: $imageUri", e)
@@ -242,13 +239,12 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         detectedObjectNum = objects.size
         Log.d(TAG, "Detected objects num: $detectedObjectNum")
         if (detectedObjectNum == 0) {
-            val bitmapFromUri = Utils.loadImage(this, viewModel.imageUri.value!!, MAX_IMAGE_DIMENSION)
-            bitmapFromUri!!.let { bitmap ->
+            inputBitmap!!.let { bitmap ->
                 viewModel.inferImageLabels(this, bitmap) { herbList ->
                     val snackBarMessage = if (herbList.isEmpty()) {
                         getString(R.string.no_result)
                     } else {
-                        val maxConfidentLabel = herbList.maxBy { it.confident }
+                        val maxConfidentLabel = herbList.maxBy { it.confident!! }
                         String.format(
                             getString(R.string.static_image_classification_result),
                             maxConfidentLabel.id,
@@ -401,7 +397,6 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     companion object {
-        private const val TAG = "StaticObjectActivity"
-        private const val MAX_IMAGE_DIMENSION = 1024
+        private val TAG = this::class.java.simpleName
     }
 }

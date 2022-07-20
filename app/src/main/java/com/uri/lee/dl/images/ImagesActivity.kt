@@ -3,18 +3,22 @@ package com.uri.lee.dl.images
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImagesBinding
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
@@ -35,6 +39,7 @@ class ImagesActivity : AppCompatActivity() {
 
         binding.closeButton.setOnClickListener { finish() }
         binding.addImagesBtn.setOnClickListener { addImages() }
+        binding.pickImagesView.setOnClickListener { addImages() }
         binding.clearBtn.setOnClickListener { onClearBtnClick() }
 
         // Initialising the RecyclerView and its linked Adapter
@@ -55,23 +60,26 @@ class ImagesActivity : AppCompatActivity() {
                 // Note that this happens when lifecycle is STARTED and stops
                 // collecting when the lifecycle is STOPPED
                 viewModel.recognitionList.collect {
+                    binding.pickImagesView.isVisible = it.isEmpty()
                     viewAdapter.submitList(it)
                 }
             }
         }
     }
 
-    override fun onResume() {
+    override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT <= 28) {
-            if (!Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+        if (Build.VERSION.SDK_INT <= 28 && Utils.allPermissionsGranted(this)) {
+            Utils.requestRuntimePermissions(this)
         }
-        if (Utils.allPermissionsGranted(this)) Utils.openImagePicker(this)
     }
 
     private fun addImages() {
         // Create intent for picking a photo from the gallery
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        //  val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "image/*"
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         resultLauncher.launch(intent)
     }
@@ -82,9 +90,22 @@ class ImagesActivity : AppCompatActivity() {
 
     private var resultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+            if (result.resultCode == RESULT_OK) {
                 result.data?.clipData?.let { clipData ->
-                    viewModel.inferImages(this, clipData)
+                    for (i in 0 until clipData.itemCount) {
+                        Log.d("trien111", clipData.getItemAt(i).uri.toString())
+                    }
+                    try {
+                        viewModel.inferImages(this, clipData)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Throwable) {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.something_went_wrong_please_try_again_or_contact_us),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }

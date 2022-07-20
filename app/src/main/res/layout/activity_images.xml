@@ -18,24 +18,13 @@
         app:srcCompat="@drawable/ic_close_vd_white_24"
         app:tint="@android:color/darker_gray" />
 
-    <TextView
-        android:id="@+id/pickImagesView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:textAlignment="center"
-        android:padding="50dp"
-        android:textSize="40sp"
-        android:text="@string/pick_photos" />
-
     <Button
         android:id="@+id/addImagesBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:padding="8dp"
-        android:text="@string/pick_photos"
+        android:text="@string/add_photos"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/guideline2" />
@@ -70,5 +59,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/close_button" />
+
+    <TextView
+        android:id="@+id/pickImagesView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:textAlignment="center"
+        android:padding="50dp"
+        android:textSize="40sp"
+        android:text="@string/pick_photos" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

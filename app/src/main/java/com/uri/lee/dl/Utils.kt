@@ -306,6 +306,8 @@ const val REMOTE_TFLITE_MODEL_NAME = "herb_model"
 val defaultDispatcher = Dispatchers.Default
 val mainDispatcher = Dispatchers.Main
 val ioDispatcher = Dispatchers.IO
+const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
+const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 
 class BaseApplication : Application() {
     override fun onCreate() {
