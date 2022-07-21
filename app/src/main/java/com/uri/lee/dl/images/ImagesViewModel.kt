@@ -2,6 +2,7 @@ package com.uri.lee.dl.images
 
 import android.content.ClipData
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,8 +22,8 @@ import com.uri.lee.dl.labeling.Herb
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runInterruptible
 import timber.log.Timber
+import java.io.IOException
 
 @ExperimentalCoroutinesApi
 class ImagesViewModel : ViewModel() {
@@ -85,15 +86,22 @@ class ImagesViewModel : ViewModel() {
             }
     }
 
+    private suspend fun getBitmapFromFileUri(context: Context, imageUri: Uri): Bitmap? =
+        // run blocking to make sure bitmap is ready for all others
+        try {
+            Utils.loadImage(context, imageUri, MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION)
+        } catch (e: IOException) {
+            Timber.e(e.message)
+            null
+        }
+
     private fun processImages(
         context: Context,
         clipData: ClipData,
     ) = callbackFlow {
         for (i in 0 until clipData.itemCount) {
             val selectedImageUri: Uri = clipData.getItemAt(i).uri
-            val bitmap = runInterruptible(ioDispatcher) {
-                Utils.loadImage(context, selectedImageUri, MAX_IMAGE_DIMENSION_FOR_LABELING)
-            }
+            val bitmap = getBitmapFromFileUri(context, selectedImageUri)
             val inputImage = InputImage.fromBitmap(bitmap!!, 0)
 
             defaultLabeler.process(inputImage)

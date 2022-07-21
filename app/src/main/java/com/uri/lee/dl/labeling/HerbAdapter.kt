@@ -16,6 +16,7 @@
 
 package com.uri.lee.dl.labeling
 
+import android.app.Activity
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -25,16 +26,20 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils
 
 /** Presents the list of herb items as labeling results.  */
-class HerbAdapter(private val herbList: List<Herb>) : Adapter<HerbAdapter.HerbViewHolder>() {
+class HerbAdapter(private val activity: Activity, private val herbList: List<Herb>) :
+    Adapter<HerbAdapter.HerbViewHolder>() {
 
-    class HerbViewHolder private constructor(view: View) : RecyclerView.ViewHolder(view) {
-
+    class HerbViewHolder private constructor(private val activity: Activity, view: View) :
+        RecyclerView.ViewHolder(view) {
         private val imageView: ImageView = view.findViewById(R.id.herb_image)
         private val titleView: TextView = view.findViewById(R.id.card_title)
         private val subtitleView: TextView = view.findViewById(R.id.card_subtitle_1)
         private val subtitle2View: TextView = view.findViewById(R.id.card_subtitle_2)
+        private val searchWithGoogleSci: TextView = view.findViewById(R.id.search_with_google_using_scientific_view)
+        private val searchWithGoogleVi: TextView = view.findViewById(R.id.search_with_google_using_vietnamese_view)
         private val imageSize: Int = view.resources.getDimensionPixelOffset(R.dimen.product_item_image_size)
 
         fun bindHerb(herb: Herb) {
@@ -48,16 +53,25 @@ class HerbAdapter(private val herbList: List<Herb>) : Adapter<HerbAdapter.HerbVi
             titleView.text = herb.id
             subtitleView.text = herb.sciName
             subtitle2View.text = herb.viName
+            searchWithGoogleSci.setOnClickListener {
+                herb.sciName?.let { it1 -> Utils.openUrlWithDefaultBrowser(activity, it1) }
+            }
+            searchWithGoogleVi.setOnClickListener {
+                herb.viName?.let { it1 -> Utils.openUrlWithDefaultBrowser(activity, it1) }
+            }
         }
 
         companion object {
-            fun create(parent: ViewGroup) =
-                HerbViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.single_image_item, parent, false))
+            fun create(activity: Activity, parent: ViewGroup) =
+                HerbViewHolder(
+                    activity,
+                    LayoutInflater.from(parent.context).inflate(R.layout.single_image_item, parent, false)
+                )
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HerbViewHolder =
-        HerbViewHolder.create(parent)
+        HerbViewHolder.create(activity, parent)
 
     override fun onBindViewHolder(holder: HerbViewHolder, position: Int) {
         holder.bindHerb(herbList[position])

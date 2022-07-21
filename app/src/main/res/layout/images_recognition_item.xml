@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="4dp"
-    android:background="@color/lighter_grey">
+    android:layout_margin="4dp"
+    android:backgroundTint="@color/color_primary"
+    android:background="@drawable/rounded_corner_background_white_stroke">
 
     <ImageView
         android:id="@+id/imageView"
@@ -24,17 +26,19 @@
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:textColor="@color/color_primary"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/sciNameView"
-        tools:text="Orange" />
-
+        tools:text="@tools:sample/lorem" />
+    <!--todo use ellipse ... to display text, could set text background to raise contrast-->
     <TextView
         android:id="@+id/sciNameView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:textColor="@color/color_primary"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/idView"
         app:layout_constraintBottom_toTopOf="@id/viNameView"
@@ -47,6 +51,7 @@
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:textColor="@color/color_primary"
         app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/sciNameView"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="99%" />

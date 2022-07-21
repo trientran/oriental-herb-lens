@@ -22,15 +22,17 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.LOCAL_TFLITE_MODEL_NAME
+import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION
 import com.uri.lee.dl.REMOTE_TFLITE_MODEL_NAME
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.herbdetails.tempherbs.sciList70
 import com.uri.lee.dl.herbdetails.tempherbs.viList70
-import com.uri.lee.dl.ioDispatcher
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.HerbError
 import com.uri.lee.dl.labeling.HerbError.LabelingError
 import com.uri.lee.dl.labeling.HerbError.ObjectDetectionError
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.IOException
 
@@ -46,6 +48,8 @@ class ImageViewModel : ViewModel() {
     val objectList: LiveData<MutableList<DetectedObject>> get() = _objectList
     private val _error = MutableLiveData<HerbError>()
     val error: LiveData<HerbError> get() = _error
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     private var detector: ObjectDetector? = null
     private var labeler: ImageLabeler? = null
@@ -62,6 +66,10 @@ class ImageViewModel : ViewModel() {
 
     fun setImageUri(imageUri: Uri) {
         _imageUri.value = imageUri
+    }
+
+    private fun setLoading(boolean: Boolean) {
+        _isLoading.value = boolean
     }
 
     fun setObjectList(objectList: MutableList<DetectedObject>) {
@@ -82,13 +90,25 @@ class ImageViewModel : ViewModel() {
         }
     }
 
+    fun getBitmapFromFileUri(context: Context, imageUri: Uri): Bitmap? =
+        // run blocking to make sure bitmap is ready for all others
+        runBlocking {
+            try {
+                Utils.loadImage(context, imageUri, MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION)
+            } catch (e: IOException) {
+                setError(HerbError.BitmapError(e))
+                Timber.e(e.message)
+                null
+            }
+        }
+
     fun inferImageLabels(
-        context: Context,
         bitmap: Bitmap,
         confidence: Float = 0.0f,
         listener: (herbList: List<Herb>) -> Unit,
     ) {
-        viewModelScope.launch(ioDispatcher) {
+        viewModelScope.launch {
+            setLoading(true)
             val inputImage = InputImage.fromBitmap(bitmap, 0)
             // set the minimum confidence required:
             val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
@@ -110,13 +130,14 @@ class ImageViewModel : ViewModel() {
                         .setConfidenceThreshold(confidence)
                         .build()
                     labeler = ImageLabeling.getClient(options)
-                    labelImage(inputImage, context) { listener.invoke(it) }
+                    labelImage(inputImage) { listener.invoke(it) }
                 }
+            setLoading(false)
         }
     }
 
     fun inferImageLabelsWithDefaultModel(bitmap: Bitmap) {
-        viewModelScope.launch(ioDispatcher) {
+        viewModelScope.launch {
             val inputImage = InputImage.fromBitmap(bitmap, 0)
             defaultLabeler.process(inputImage)
                 .addOnSuccessListener { labels ->
@@ -138,47 +159,70 @@ class ImageViewModel : ViewModel() {
     }
 
     fun detectObject(image: InputImage, callback: (List<DetectedObject>) -> Unit) {
-        detector!!.process(image)
-            .addOnSuccessListener { objects -> callback.invoke(objects) }
-            .addOnFailureListener {
-                callback.invoke(mutableListOf())
-                setError(ObjectDetectionError(it))
-            }
+        viewModelScope.launch {
+            setLoading(true)
+            detector!!.process(image)
+                .addOnSuccessListener { objects ->
+                    callback.invoke(objects)
+                    setLoading(false)
+                }
+                .addOnFailureListener {
+                    setLoading(false)
+                    callback.invoke(mutableListOf())
+                    setError(ObjectDetectionError(it))
+                }
+        }
     }
 
     private fun updateData(recognitions: MutableList<Herb>) {
         _recognitionList.value = recognitions
     }
 
-    private fun labelImage(inputImage: InputImage, context: Context, listener: (herbList: List<Herb>) -> Unit) {
-        defaultLabeler.process(inputImage)
-            .addOnSuccessListener { labels ->
-                val recognitionList = arrayListOf<Herb>()
-                val couldBeHerb =
-                    labels.any { listOf("Plant", "Vegetable", "Petal", "Flower", "Garden", "Fruit").contains(it.text) }
-                if (couldBeHerb) {
-                    labeler!!.process(inputImage)
-                        .addOnSuccessListener {
-                            val maxResultsDisplayed = 1 //if (it.first().confidence >= 0.5) 2 else 1
-                            for (i in 0 until maxResultsDisplayed) {
-                                val id = it[i].text.substringBefore(" ")
-                                recognitionList.add(
-                                    Herb(
-                                        id = id,
-                                        sciName = sciList70[id]!!,
-                                        viName = viList70[id]!!,
-                                        confident = it[i].confidence
-                                    )
-                                )
-                            }
-                            Timber.d(recognitionList.toString())
-                            listener.invoke(recognitionList)
+    private fun labelImage(inputImage: InputImage, listener: (herbList: List<Herb>) -> Unit) {
+        viewModelScope.launch {
+            setLoading(true)
+            defaultLabeler.process(inputImage)
+                .addOnSuccessListener { labels ->
+                    val recognitionList = arrayListOf<Herb>()
+                    val couldBeHerb =
+                        labels.any {
+                            listOf(
+                                "Plant",
+                                "Vegetable",
+                                "Petal",
+                                "Flower",
+                                "Garden",
+                                "Fruit"
+                            ).contains(it.text)
                         }
-                        .addOnFailureListener { setError(LabelingError(it)) }
-                } else {
-                    listener.invoke(emptyList())
+                    if (couldBeHerb) {
+                        labeler!!.process(inputImage)
+                            .addOnSuccessListener {
+                                val maxResultsDisplayed = 1 //if (it.first().confidence >= 0.5) 2 else 1
+                                for (i in 0 until maxResultsDisplayed) {
+                                    val id = it[i].text.substringBefore(" ")
+                                    recognitionList.add(
+                                        Herb(
+                                            id = id,
+                                            sciName = sciList70[id]!!,
+                                            viName = viList70[id]!!,
+                                            confident = it[i].confidence
+                                        )
+                                    )
+                                }
+                                Timber.d(recognitionList.toString())
+                                listener.invoke(recognitionList)
+                            }
+                            .addOnFailureListener { setError(LabelingError(it)) }
+                    } else {
+                        listener.invoke(emptyList())
+                    }
+                    setLoading(false)
                 }
-            }
-            .addOnFailureListener { setError(LabelingError(it)) }
+                .addOnFailureListener {
+                    setLoading(false)
+                    setError(LabelingError(it))
+                }
+        }
     }
 }

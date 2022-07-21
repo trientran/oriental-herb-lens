@@ -42,7 +42,6 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.image.MultiObjectProcessor
 import com.uri.lee.dl.image.ProminentObjectProcessor
 import com.uri.lee.dl.labeling.BottomSheetScrimView
-import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.HerbAdapter
 import com.uri.lee.dl.labeling.LabelImage
 import com.uri.lee.dl.settings.PreferenceUtils
@@ -247,7 +246,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view).apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@CameraActivity)
-            adapter = HerbAdapter(ImmutableList.of())
+            adapter = HerbAdapter(this@CameraActivity, ImmutableList.of())
         }
     }
 
@@ -287,7 +286,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                     .getQuantityString(
                         R.plurals.bottom_sheet_title, productList.size, productList.size
                     )
-                productRecyclerView?.adapter = HerbAdapter(productList as List<Herb>)
+                productRecyclerView?.adapter = HerbAdapter(this@CameraActivity, productList)
                 slidingSheetUpFromHiddenState = true
                 bottomSheetBehavior?.peekHeight =
                     preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO

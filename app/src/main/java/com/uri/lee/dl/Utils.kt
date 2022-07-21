@@ -41,6 +41,7 @@ import androidx.exifinterface.media.ExifInterface
 import com.google.mlkit.vision.common.InputImage
 import com.uri.lee.dl.camera.CameraSizePair
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -87,6 +88,15 @@ object Utils {
             if (ps != null && ps.isNotEmpty()) ps else arrayOf()
         } catch (e: Exception) {
             arrayOf()
+        }
+    }
+
+    fun openUrlWithDefaultBrowser(activity: Activity, searchedKeyWord: String) {
+        val url = "https://www.google.com/search?q=$searchedKeyWord"
+        val uri = Uri.parse(url)
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        if (intent.resolveActivity(activity.packageManager) != null) {
+            activity.startActivity(intent)
         }
     }
 
@@ -180,8 +190,9 @@ object Utils {
         activity.startActivityForResult(intent, REQUEST_CODE_PHOTO_LIBRARY)
     }
 
-    @Throws(IOException::class)
-    internal fun loadImage(context: Context, imageUri: Uri, maxImageDimension: Int): Bitmap? {
+    internal suspend fun loadImage(context: Context, imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
+        ioDispatcher
+    ) {
         var inputStreamForSize: InputStream? = null
         var inputStreamForImage: InputStream? = null
         try {
@@ -195,7 +206,7 @@ object Utils {
             opts.inSampleSize = inSampleSize
             inputStreamForImage = context.contentResolver.openInputStream(imageUri)
             val decodedBitmap = BitmapFactory.decodeStream(inputStreamForImage, null, opts)/* outPadding= */
-            return maybeTransformBitmap(
+            maybeTransformBitmap(
                 context.contentResolver,
                 imageUri,
                 decodedBitmap
@@ -290,6 +301,7 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
 
     return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 }
+
 
 /**
  * Simple Data object with two fields for the label and probability

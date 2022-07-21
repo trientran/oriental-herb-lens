@@ -28,8 +28,8 @@
     <string name="static_image_card_no_result_title">No result found</string>
     <string name="static_image_card_no_result_subtitle">Support text place holder</string>
     <string name="static_image_preview_card_subtitle">+%d more results</string>
-    <string name="static_image_detected_no_results_continue_to_label">No object found. Processed the whole image instead.</string>
-    <string name="static_image_classification_result">Herb code: %1$s. Scientific name: %2$s. Vietnamese name: %3$s.</string>
+    <string name="static_image_detected_no_results_continue_to_label">No object found. Please switch on Entire Image Mode instead.</string>
+    <string name="static_image_classification_result">This could be: \n-Herb code: %1$s. \n-Scientific name: %2$s. \n-Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_camera">Camera</string>
@@ -82,5 +82,9 @@
     <string name="no_result">No result</string>
     <string name="something_went_wrong_please_try_again_or_contact_us">Something went wrong. Please try again or contact us!</string>
     <string name="add_photos">Add Photos</string>
+    <string name="entire_image_mode">Entire image mode</string>
+    <string name="result">Result</string>
+    <string name="search_with_google">Google scientific name</string>
+    <string name="search_with_google_vi">Google Vietnamese name</string>
 
 </resources>

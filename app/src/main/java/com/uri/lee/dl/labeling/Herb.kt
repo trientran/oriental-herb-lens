@@ -25,6 +25,7 @@ data class Herb(
     val imageFileUri: Uri? = null,
     val id: String? = null,
     val sciName: String? = null,
+    val enName: String? = null,
     val viName: String? = null,
     val confident: Float? = null,
 )
@@ -32,6 +33,7 @@ data class Herb(
 sealed interface HerbError {
     data class LabelingError(val exception: Exception) : HerbError
     data class ObjectDetectionError(val exception: Exception) : HerbError
+    data class BitmapError(val exception: Exception) : HerbError
 }
 
 sealed interface ImageSource {
