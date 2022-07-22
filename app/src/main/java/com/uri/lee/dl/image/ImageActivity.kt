@@ -114,18 +114,20 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         viewModel.isLoading.observe(this) {
             findViewById<View>(R.id.loading_view).isVisible = it
         }
+        viewModel.error.observe(this) {
+            when (it) {
+                is HerbError.BitmapError -> showBottomPromptChip(getString(R.string.failed_to_load_file))
+                is HerbError.LabelingError -> showBottomPromptChip(getString(R.string.failed_to_label))
+                is HerbError.ObjectDetectionError -> showBottomPromptChip(getString(R.string.failed_to_detect_object))
+            }
+        }
         viewModel.imageUri.observe(this) {
-            // run blocking so that we have bitmap ready for all other actions
-            viewModel.getBitmapFromFileUri(this, it).apply {
-                if (this == null) {
-                    showBottomPromptChip("Failed to load file!")
-                } else {
-                    Glide.with(this@ImageActivity).load(this).into(inputImageView as ImageView)
-                    detectObjects(this)
-                    entireImageSwitchCompat?.setOnCheckedChangeListener { _, isChecked ->
-                        if (isChecked) {
-                            inferWholeImage(this)
-                        }
+            viewModel.getBitmapFromFileUri(this, it)?.apply {
+                Glide.with(this@ImageActivity).load(this).into(inputImageView as ImageView)
+                detectObjects(this)
+                entireImageSwitchCompat?.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        inferWholeImage(this)
                     }
                 }
             }
