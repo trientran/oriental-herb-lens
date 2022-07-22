@@ -3,7 +3,6 @@ package com.uri.lee.dl.image
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -42,10 +41,6 @@ class ImageViewModel : ViewModel() {
     // sense.
     private val _imageUri = MutableLiveData<Uri>()
     val imageUri: LiveData<Uri> get() = _imageUri
-    private val _recognitionList = MutableLiveData<MutableList<Herb>>(mutableListOf())
-    val recognitionList: LiveData<MutableList<Herb>> get() = _recognitionList
-    private val _objectList = MutableLiveData<MutableList<DetectedObject>>(mutableListOf())
-    val objectList: LiveData<MutableList<DetectedObject>> get() = _objectList
     private val _error = MutableLiveData<HerbError>()
     val error: LiveData<HerbError> get() = _error
     private val _isLoading = MutableLiveData<Boolean>()
@@ -70,10 +65,6 @@ class ImageViewModel : ViewModel() {
 
     private fun setLoading(boolean: Boolean) {
         _isLoading.value = boolean
-    }
-
-    fun setObjectList(objectList: MutableList<DetectedObject>) {
-        _objectList.value = objectList
     }
 
     private fun setError(error: HerbError) {
@@ -136,28 +127,6 @@ class ImageViewModel : ViewModel() {
         }
     }
 
-    fun inferImageLabelsWithDefaultModel(bitmap: Bitmap) {
-        viewModelScope.launch {
-            val inputImage = InputImage.fromBitmap(bitmap, 0)
-            defaultLabeler.process(inputImage)
-                .addOnSuccessListener { labels ->
-                    labels.onEach {
-                        Log.d("trien112", it.text)
-//                        Plant
-//                        Vegetable
-//                        Petal
-//                        Flower
-//                        Garden
-//                        Fruit
-                    }
-                }
-                .addOnFailureListener { e ->
-                    // Task failed with an exception
-                    // ...
-                }
-        }
-    }
-
     fun detectObject(image: InputImage, callback: (List<DetectedObject>) -> Unit) {
         viewModelScope.launch {
             setLoading(true)
@@ -172,10 +141,6 @@ class ImageViewModel : ViewModel() {
                     setError(ObjectDetectionError(it))
                 }
         }
-    }
-
-    private fun updateData(recognitions: MutableList<Herb>) {
-        _recognitionList.value = recognitions
     }
 
     private fun labelImage(inputImage: InputImage, listener: (herbList: List<Herb>) -> Unit) {
