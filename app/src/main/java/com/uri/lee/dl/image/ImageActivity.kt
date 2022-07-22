@@ -249,10 +249,10 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
             builder.setPositiveButton(android.R.string.yes) { _, _ -> entireImageSwitchCompat?.isChecked = false }
             if (maxConfidentLabel != null) {
                 builder.setNegativeButton(R.string.search_with_google) { _, _ ->
-                    maxConfidentLabel?.sciName?.let { openUrlWithDefaultBrowser(this, it) }
+                    maxConfidentLabel.sciName?.let { openUrlWithDefaultBrowser(this, it) }
                 }
                 builder.setNeutralButton(R.string.search_with_google_vi) { _, _ ->
-                    maxConfidentLabel?.viName?.let { openUrlWithDefaultBrowser(this, it) }
+                    maxConfidentLabel.viName?.let { openUrlWithDefaultBrowser(this, it) }
                 }
             }
             builder.show()

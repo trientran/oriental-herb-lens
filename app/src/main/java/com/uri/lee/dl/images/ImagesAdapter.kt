@@ -27,7 +27,7 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ImagesRecognitionItemBinding
 import com.uri.lee.dl.labeling.Herb
 
-class ImagesAdapter(private val context: Context) :
+class ImagesAdapter(private val context: Context, private val onItemClickListener: (Herb) -> Unit) :
     ListAdapter<Herb, ImagesHerbItemViewHolder>(HerbDiffUtil()) {
 
     /**
@@ -44,7 +44,7 @@ class ImagesAdapter(private val context: Context) :
 
     // Binding the data fields to the HerbViewHolder
     override fun onBindViewHolder(holderImage: ImagesHerbItemViewHolder, position: Int) {
-        holderImage.bindTo(getItem(position))
+        holderImage.bindTo(getItem(position), onItemClickListener)
     }
 
     private class HerbDiffUtil : DiffUtil.ItemCallback<Herb>() {
@@ -62,10 +62,11 @@ class ImagesHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding
     RecyclerView.ViewHolder(binding.root) {
     // Binding all the fields to the view - to see which UI element is bind to which field, check
     // out layout/Herb_item.xml
-    fun bindTo(herb: Herb) {
+    fun bindTo(herb: Herb, onItemClickListener: (Herb) -> Unit) {
         Glide.with(binding.root).load(herb.imageFileUri).into(binding.imageView)
         binding.idView.text = herb.id ?: binding.root.context?.getString(R.string.no_result)
         binding.sciNameView.text = herb.sciName
         binding.viNameView.text = herb.viName
+        itemView.setOnClickListener { onItemClickListener.invoke(herb) }
     }
 }

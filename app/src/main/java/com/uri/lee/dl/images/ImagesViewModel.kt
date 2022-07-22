@@ -76,10 +76,6 @@ class ImagesViewModel : ViewModel() {
 
                 labeler = ImageLabeling.getClient(options)
                 processImages(context, clipData)
-                    .catch {
-                        Timber.e(it.message ?: "Some error")
-                        throw it
-                    }
                     .onEach { addData(it) }
                     .flowOn(defaultDispatcher)
                     .launchIn(viewModelScope)

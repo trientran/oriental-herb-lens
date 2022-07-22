@@ -21,6 +21,7 @@ import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ImagesActivity : AppCompatActivity() {
@@ -43,7 +44,10 @@ class ImagesActivity : AppCompatActivity() {
         binding.clearBtn.setOnClickListener { onClearBtnClick() }
 
         // Initialising the RecyclerView and its linked Adapter
-        viewAdapter = ImagesAdapter(this)
+        viewAdapter = ImagesAdapter(this) {
+            val bottomSheet = ImagesBottomSheetDialog(it, this)
+            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
+        }
         binding.recyclerView.adapter = viewAdapter
 
         // initialize an instance of linear layout manager
@@ -100,6 +104,7 @@ class ImagesActivity : AppCompatActivity() {
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Throwable) {
+                        Timber.e(e.message ?: "Some error")
                         Toast.makeText(
                             this,
                             getString(R.string.something_went_wrong_please_try_again_or_contact_us),
