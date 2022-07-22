@@ -6,11 +6,16 @@ import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.tabs.TabLayout
+import com.google.mlkit.common.model.CustomRemoteModel
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
@@ -19,6 +24,8 @@ import com.uri.lee.dl.image.ImageActivity
 import com.uri.lee.dl.images.ImagesActivity
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -81,6 +88,23 @@ class MainActivity : AppCompatActivity() {
             signInLauncher.launch(signInIntent)
 
 
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch(ioDispatcher) {
+            // Specify the name you assigned in the Firebase console.
+            val remoteModel = CustomRemoteModel
+                .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
+                .build()
+
+            val downloadConditions = DownloadConditions.Builder().requireWifi().build()
+
+            RemoteModelManager.getInstance().download(remoteModel, downloadConditions)
+                .addOnSuccessListener {
+                    Timber.d("Model download completed")
+                }
         }
     }
 
