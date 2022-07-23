@@ -25,6 +25,7 @@ import android.graphics.Bitmap
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -34,10 +35,10 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -45,21 +46,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.ImmutableList
-import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
-import com.uri.lee.dl.BitmapInputInfo
-import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils
-import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
+import com.uri.lee.dl.*
 import com.uri.lee.dl.labeling.*
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import java.util.*
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
 class ImageActivity : AppCompatActivity(), View.OnClickListener {
 
     private val detectedObjectMap = TreeMap<Int, com.uri.lee.dl.labeling.DetectedObject>()
-    private val viewModel: ImageViewModel by viewModels()
-
+    private val viewModel: ImageViewModel by viewModels { ExtraParamsViewModelFactory(application) }
     private var bottomPromptChip: Chip? = null
     private var snackbar: Snackbar? = null
     private var entireImageSwitchCompat: SwitchCompat? = null
@@ -109,30 +109,57 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         findViewById<View>(R.id.pickImageView).setOnClickListener(this)
         findViewById<View>(R.id.photo_library_button).setOnClickListener(this)
 
-        //intent.data?.let(::detectObjects)
-
         viewModel.isLoading.observe(this) {
             findViewById<View>(R.id.loading_view).isVisible = it
         }
         viewModel.error.observe(this) {
             when (it) {
-                is HerbError.BitmapError -> showBottomPromptChip(getString(R.string.failed_to_load_file))
-                is HerbError.LabelingError -> showBottomPromptChip(getString(R.string.failed_to_label))
-                is HerbError.ObjectDetectionError -> showBottomPromptChip(getString(R.string.failed_to_detect_object))
+                is HerbEvent.BitmapError -> showSnackBar(getString(R.string.failed_to_load_file_please_try_again))
+                is HerbEvent.LabelingError -> showSnackBar(getString(R.string.failed_to_label_please_turn_on_entire_image_mode))
+                is HerbEvent.ObjectDetectionError -> showSnackBar(getString(R.string.static_image_detected_no_results_continue_to_label))
+                HerbEvent.NoHerbObjects -> showSnackBar(getString(R.string.no_herb_objects_result_please_try_entire_image_mode))
+                null -> snackbar?.dismiss()
             }
         }
-        viewModel.imageUri.observe(this) {
-            viewModel.getBitmapFromFileUri(this, it)?.apply {
-                Glide.with(this@ImageActivity).load(this).into(inputImageView as ImageView)
-                detectObjects(this)
-                entireImageSwitchCompat?.setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        inferWholeImage(this)
-                    }
+        val imageUri = viewModel.imageUri
+        imageUri.observe(this) { uri ->
+            Glide.with(this@ImageActivity).load(uri).into(inputImageView as ImageView)
+            findViewById<View>(R.id.pickImageView).isVisible = false
+            if (viewModel.isEntireImageMode.value == true) {
+                viewModel.inferEntireImageLabels(
+                    context = this@ImageActivity,
+                    uri = uri,
+                    confidence = 0.5f,
+                ) { showEntireImageLabelingResults(it) }
+            } else {
+                detectObjects(uri)
+            }
+        }
+
+        entireImageSwitchCompat?.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setEntireImageMode(isChecked, this)
+            imageUri.value?.let { uri ->
+                if (isChecked) {
+                    viewModel.inferEntireImageLabels(
+                        context = this@ImageActivity,
+                        uri = uri,
+                        confidence = 0.5f,
+                    ) { showEntireImageLabelingResults(it) }
+                } else {
+                    detectObjects(uri)
                 }
             }
-            findViewById<View>(R.id.pickImageView).isVisible = it == null
         }
+        dataStore.data
+            .map { settings -> settings[IS_ENTIRE_IMAGE_MODE_SINGLE_IMAGE] ?: false }
+            .distinctUntilChanged()
+            .onEach {
+                entireImageSwitchCompat?.isChecked = it
+                previewCardCarousel?.isVisible = !it
+                dotViewContainer?.isVisible = !it
+                if (it) bottomPromptChip?.isVisible = false
+            }
+            .launchIn(lifecycleScope)
     }
 
     override fun onStart() {
@@ -159,25 +186,16 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        entireImageSwitchCompat?.isChecked = false
-    }
-
-
     override fun onClick(view: View) {
         when (view.id) {
             R.id.close_button -> finish()
-            R.id.photo_library_button, R.id.pickImageView -> {
-                snackbar?.apply { this.dismiss() }
-                Utils.openImagePicker(this)
-            }
+            R.id.photo_library_button, R.id.pickImageView -> Utils.openImagePicker(this)
             R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.state =
                 BottomSheetBehavior.STATE_HIDDEN
         }
     }
 
-    private fun showLabelingResults(detectedObject: com.uri.lee.dl.labeling.DetectedObject) {
+    private fun showObjectsLabelingResults(detectedObject: com.uri.lee.dl.labeling.DetectedObject) {
         detectedObjectForBottomSheet = detectedObject
         val productList = detectedObject.herbList
         bottomSheetTitleView?.text = resources
@@ -185,6 +203,15 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
                 R.plurals.bottom_sheet_title, productList.size, productList.size
             )
         productRecyclerView?.adapter = HerbAdapter(this, productList)
+        bottomSheetBehavior?.peekHeight = (inputImageView?.parent as View).height / 2
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    private fun showEntireImageLabelingResults(herbList: List<Herb>) {
+        detectedObjectForBottomSheet = null
+        bottomSheetTitleView?.text =
+            resources.getQuantityString(R.plurals.bottom_sheet_title, herbList.size, herbList.size)
+        productRecyclerView?.adapter = HerbAdapter(this, herbList)
         bottomSheetBehavior?.peekHeight = (inputImageView?.parent as View).height / 2
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
     }
@@ -231,64 +258,27 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun inferWholeImage(inputBitmap: Bitmap) {
-        viewModel.inferImageLabels(inputBitmap) { herbList ->
-            var maxConfidentLabel: Herb? = null
-            val message = if (herbList.isEmpty()) {
-                getString(R.string.no_result)
-            } else {
-                maxConfidentLabel = herbList.maxBy { it.confident!! }
-                String.format(
-                    getString(R.string.static_image_classification_result),
-                    maxConfidentLabel.id,
-                    maxConfidentLabel.sciName,
-                    maxConfidentLabel.viName
-                )
-            }
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle(getString(R.string.result))
-            builder.setMessage(message)
-            builder.setPositiveButton(android.R.string.yes) { _, _ -> entireImageSwitchCompat?.isChecked = false }
-            if (maxConfidentLabel != null) {
-                builder.setNegativeButton(R.string.search_with_google) { _, _ ->
-                    maxConfidentLabel.sciName?.let { openUrlWithDefaultBrowser(this, it) }
-                }
-                builder.setNeutralButton(R.string.search_with_google_vi) { _, _ ->
-                    maxConfidentLabel.viName?.let { openUrlWithDefaultBrowser(this, it) }
-                }
-            }
-            builder.show()
-        }
-    }
-
-    private fun detectObjects(inputBitmap: Bitmap) {
+    private fun detectObjects(imageUri: Uri) {
         bottomPromptChip?.visibility = View.GONE
-        previewCardCarousel?.adapter = PreviewCardAdapter(ImmutableList.of()) { showLabelingResults(it) }
+        previewCardCarousel?.adapter = PreviewCardAdapter(ImmutableList.of()) { showObjectsLabelingResults(it) }
         previewCardCarousel?.clearOnScrollListeners()
         dotViewContainer?.removeAllViews()
         currentSelectedObjectIndex = 0
-        val image = InputImage.fromBitmap(inputBitmap, 0)
-        viewModel.detectObject(image) { onObjectsDetected(inputBitmap, it) }
+        viewModel.detectObject(this, imageUri) { entireBitmap, list -> onObjectsDetected(entireBitmap, list) }
     }
 
-    private fun onObjectsDetected(inputBitmap: Bitmap, objects: List<DetectedObject>) {
+    private fun onObjectsDetected(entireBitmap: Bitmap, objects: List<DetectedObject>) {
         detectedObjectNum = objects.size
         Log.d(TAG, "Detected objects num: $detectedObjectNum")
-        if (detectedObjectNum == 0) {
-            snackbar = Snackbar.make(
-                inputImageView!!,
-                getString(R.string.static_image_detected_no_results_continue_to_label),
-                Snackbar.LENGTH_INDEFINITE
-            )
-            snackbar?.show()
-        } else {
-            snackbar?.dismiss()
-            detectedObjectMap.clear()
-            for (i in objects.indices) {
-                val detectedObjectInfo = DetectedObjectInfo(objects[i], i, BitmapInputInfo(inputBitmap))
-                viewModel.inferImageLabels(bitmap = detectedObjectInfo.getBitmap()) {
-                    onObjectLabellingCompleted(inputBitmap, detectedObjectInfo, it)
-                }
+        detectedObjectMap.clear()
+        var herbObjectsCount = 0
+        for (i in objects.indices) {
+            val detectedGeneralObjectInfo = DetectedObjectInfo(objects[i], i, BitmapInputInfo(entireBitmap))
+            viewModel.inferObjectsLabels(bitmap = detectedGeneralObjectInfo.getBitmap()) {
+                val detectedHerbObjectInfo =
+                    DetectedObjectInfo(objects[herbObjectsCount], herbObjectsCount, BitmapInputInfo(entireBitmap))
+                onObjectLabellingCompleted(entireBitmap, detectedHerbObjectInfo, it)
+                herbObjectsCount++
             }
         }
     }
@@ -301,14 +291,10 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         Log.d(TAG, "Search completed for object index: ${detectedObjectInfo.objectIndex}")
         detectedObjectMap[detectedObjectInfo.objectIndex] =
             DetectedObject(resources, detectedObjectInfo, recognitionList)
-        if (detectedObjectMap.size < detectedObjectNum) {
-            // Hold off showing the result until the search of all detected objects completes.
-            return
-        }
 
         showBottomPromptChip(getString(R.string.static_image_prompt_detected_results))
         previewCardCarousel?.adapter =
-            PreviewCardAdapter(ImmutableList.copyOf(detectedObjectMap.values)) { showLabelingResults(it) }
+            PreviewCardAdapter(ImmutableList.copyOf(detectedObjectMap.values)) { showObjectsLabelingResults(it) }
         previewCardCarousel?.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -332,10 +318,10 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
             val dotView = createDotView(inputBitmap, labeledObject)
             dotView.setOnClickListener {
                 if (labeledObject.objectIndex == currentSelectedObjectIndex) {
-                    showLabelingResults(labeledObject)
+                    showObjectsLabelingResults(labeledObject)
                 } else {
                     selectNewObject(labeledObject.objectIndex)
-                    showLabelingResults(labeledObject)
+                    showObjectsLabelingResults(labeledObject)
                     previewCardCarousel!!.smoothScrollToPosition(labeledObject.objectIndex)
                 }
             }
@@ -404,6 +390,16 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
     private fun showBottomPromptChip(message: String) {
         bottomPromptChip?.visibility = View.VISIBLE
         bottomPromptChip?.text = message
+    }
+
+    private fun showSnackBar(message: String) {
+        snackbar = Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_INDEFINITE
+        )
+        snackbar?.setTextMaxLines(10)
+        snackbar?.show()
     }
 
     private class CardItemDecoration constructor(resources: Resources) : RecyclerView.ItemDecoration() {

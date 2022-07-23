@@ -28,7 +28,7 @@
     <string name="static_image_card_no_result_title">No result found</string>
     <string name="static_image_card_no_result_subtitle">Support text place holder</string>
     <string name="static_image_preview_card_subtitle">+%d more results</string>
-    <string name="static_image_detected_no_results_continue_to_label">No object found. Please switch on Entire Image Mode instead.</string>
+    <string name="static_image_detected_no_results_continue_to_label">No herb object found. Please switch on Entire Image Mode instead.</string>
     <string name="static_image_classification_result">This could be: \n-Herb code: %1$s. \n-Scientific name: %2$s. \n-Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
@@ -47,6 +47,7 @@
     <!-- Strings for product search settings. -->
     <string name="pref_category_product_search">Product search</string>
     <string name="pref_key_enable_auto_search" translatable="false">pkeas</string>
+    <string name="pref_key_enable_entire_image_mode_single_image" translatable="false">pref_key_enable_entire_image_mode_single_image</string>
     <string name="pref_title_enable_auto_search">Enable auto search</string>
     <string name="pref_key_confirmation_time_in_manual_search" translatable="false">ctims</string>
     <string name="pref_title_confirmation_time_in_manual_search">Confirmation time in manual search</string>
@@ -80,11 +81,14 @@
     <string name="pick_photos">Pick photos</string>
     <string name="clear_all">Clear all</string>
     <string name="no_result">No result</string>
+    <string name="no_herb_objects_result_please_try_entire_image_mode">No result found in object detection mode. Please try Entire Image mode!</string>
     <string name="something_went_wrong_please_try_again_or_contact_us">Something went wrong. Please try again or contact us!</string>
     <string name="add_photos">Add Photos</string>
     <string name="entire_image_mode">Entire image mode</string>
     <string name="result">Result</string>
     <string name="search_with_google">Google scientific name</string>
     <string name="search_with_google_vi">Google Vietnamese name</string>
+    <string name="failed_to_load_file_please_try_again">Failed to load file! Please try again or try with another image!</string>
+    <string name="failed_to_label_please_turn_on_entire_image_mode">Failed to recognise this image. Please try turning on Entire Image mode or try another image.</string>
 
 </resources>

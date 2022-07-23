@@ -49,7 +49,7 @@ class LabelImage(context: Context) {
                             imageUrl = "",
                             id = "Herb: $i",
                             sciName = "Herb code: $i",
-                            confident = 0f,
+                            confidence = 0f,
                             viName = ""
                         )
                     )

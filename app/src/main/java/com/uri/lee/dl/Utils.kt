@@ -37,8 +37,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
+import com.google.mlkit.common.model.CustomRemoteModel
+import com.google.mlkit.common.model.LocalModel
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.camera.CameraSizePair
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
@@ -302,13 +311,24 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
     return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 }
 
-
-/**
- * Simple Data object with two fields for the label and probability
- */
-data class Recognition(val label: String, val confidence: Float, val imageUri: Uri? = null) {
-    // Output probability as a string to enable easy data binding
-    val confidencePercentage = String.format("%.1f%%", confidence * 100.0f)
+fun isModelDownloaded(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
+    val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
+    // Specify the name you assigned in the Firebase console.
+    val remoteModel = CustomRemoteModel
+        .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
+        .build()
+    RemoteModelManager.getInstance().isModelDownloaded(remoteModel)
+        .addOnSuccessListener { isDownloaded ->
+            val optionsBuilder =
+                if (isDownloaded) {
+                    Timber.d("Remote model being used")
+                    CustomImageLabelerOptions.Builder(remoteModel)
+                } else {
+                    Timber.d("Local model being used")
+                    CustomImageLabelerOptions.Builder(localModel)
+                }
+            optionsBuilderCallBack.invoke(optionsBuilder)
+        }
 }
 
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
@@ -321,7 +341,13 @@ val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 
+// data store stuff
+const val SETTINGS = "SETTINGS"
+val IS_ENTIRE_IMAGE_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_ENTIRE_IMAGE_MODE")
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
+
 class BaseApplication : Application() {
+
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
