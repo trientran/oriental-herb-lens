@@ -213,7 +213,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    val searchedObject = workflowModel!!.detectedObject.value
+                    val searchedObject = workflowModel!!.detectedBitmapObject.value
                     if (searchedObject == null || java.lang.Float.isNaN(slideOffset)) {
                         return
                     }
@@ -243,7 +243,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         }
 
         bottomSheetTitleView = findViewById(R.id.bottom_sheet_title)
-        productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view).apply {
+        productRecyclerView = findViewById<RecyclerView>(R.id.herb_recycler_view).apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@CameraActivity)
             adapter = HerbAdapter(this@CameraActivity, ImmutableList.of())
@@ -278,19 +278,20 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
             // Observes changes on the object that has search completed, if happens, show the bottom sheet
             // to present search result.
-            detectedObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
+            detectedBitmapObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
                 val searchedObject = nullableSearchedObject ?: return@Observer
-                val productList = searchedObject.herbList
-                objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
-                bottomSheetTitleView?.text = resources
-                    .getQuantityString(
-                        R.plurals.bottom_sheet_title, productList.size, productList.size
-                    )
-                productRecyclerView?.adapter = HerbAdapter(this@CameraActivity, productList)
-                slidingSheetUpFromHiddenState = true
-                bottomSheetBehavior?.peekHeight =
-                    preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                searchedObject.detectedObject.herbs?.let {
+                    objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
+                    bottomSheetTitleView?.text = resources
+                        .getQuantityString(
+                            R.plurals.bottom_sheet_title, it.size, it.size
+                        )
+                    productRecyclerView?.adapter = HerbAdapter(this@CameraActivity, it)
+                    slidingSheetUpFromHiddenState = true
+                    bottomSheetBehavior?.peekHeight =
+                        preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
+                    bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                }
             })
         }
     }

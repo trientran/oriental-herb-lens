@@ -22,7 +22,7 @@
       android:background="@color/lighter_grey"/>
 
   <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/product_recycler_view"
+      android:id="@+id/herb_recycler_view"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:scrollbars="vertical"/>

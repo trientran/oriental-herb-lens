@@ -24,10 +24,9 @@ import com.uri.lee.dl.Utils
 import com.uri.lee.dl.image.DetectedObjectInfo
 
 /** Hosts the detected object info and its search result.  */
-class DetectedObject(
+class DetectedBitmapObject(
     resources: Resources,
-    private val detectedObject: DetectedObjectInfo,
-    val herbList: List<Herb>
+    val detectedObject: DetectedObjectInfo,
 ) {
 
     private val objectThumbnailCornerRadius: Int = resources.getDimensionPixelOffset(R.dimen.bounding_box_corner_radius)

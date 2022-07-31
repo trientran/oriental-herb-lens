@@ -18,165 +18,201 @@ package com.uri.lee.dl.image
 
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
-import android.app.Activity
-import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.ImmutableList
-import com.google.mlkit.vision.objects.DetectedObject
-import com.uri.lee.dl.*
-import com.uri.lee.dl.labeling.*
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils
+import com.uri.lee.dl.databinding.ActivityImageBinding
+import com.uri.lee.dl.labeling.DetectedBitmapObject
+import com.uri.lee.dl.labeling.Herb
+import com.uri.lee.dl.labeling.HerbAdapter
+import com.uri.lee.dl.labeling.PreviewCardAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.collections.set
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
-class ImageActivity : AppCompatActivity(), View.OnClickListener {
+class ImageActivity : AppCompatActivity() {
 
-    private val detectedObjectMap = TreeMap<Int, com.uri.lee.dl.labeling.DetectedObject>()
-    private val viewModel: ImageViewModel by viewModels { ExtraParamsViewModelFactory(application) }
-    private var bottomPromptChip: Chip? = null
+    private lateinit var binding: ActivityImageBinding
+    private val detectedBitmapObjectMap = TreeMap<Int, DetectedBitmapObject>()
+    private val viewModel: ImageViewModel by viewModels()
     private var snackbar: Snackbar? = null
-    private var entireImageSwitchCompat: SwitchCompat? = null
-    private var inputImageView: ImageView? = null
-    private var previewCardCarousel: RecyclerView? = null
-    private var dotViewContainer: ViewGroup? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
-    private var bottomSheetScrimView: BottomSheetScrimView? = null
-    private var bottomSheetTitleView: TextView? = null
-    private var productRecyclerView: RecyclerView? = null
 
-    private var detectedObjectForBottomSheet: com.uri.lee.dl.labeling.DetectedObject? = null
+    private var detectedBitmapObjectForBottomSheet: DetectedBitmapObject? = null
     private var dotViewSize: Int = 0
     private var detectedObjectNum = 0
     private var currentSelectedObjectIndex = 0
 
-    private var searchEngine: LabelImage? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityImageBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
-        searchEngine = LabelImage(applicationContext)
+        dotViewSize = resources.getDimensionPixelOffset(R.dimen.static_image_dot_view_size)
 
-        setContentView(R.layout.activity_image)
-
-        bottomPromptChip = findViewById(R.id.bottom_prompt_chip)
-        entireImageSwitchCompat = findViewById(R.id.entire_image_mode_switch)
-        inputImageView = findViewById(R.id.input_image_view)
-
-        previewCardCarousel = findViewById<RecyclerView>(R.id.card_recycler_view).apply {
+        binding.cardRecyclerView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@ImageActivity, RecyclerView.HORIZONTAL, false)
-            addItemDecoration(
-                CardItemDecoration(
-                    resources
-                )
-            )
+            addItemDecoration(CardItemDecoration(resources))
         }
-
-        dotViewContainer = findViewById(R.id.dot_view_container)
-        dotViewSize = resources.getDimensionPixelOffset(R.dimen.static_image_dot_view_size)
 
         setUpBottomSheet()
 
-        findViewById<View>(R.id.close_button).setOnClickListener(this)
-        findViewById<View>(R.id.pickImageView).setOnClickListener(this)
-        findViewById<View>(R.id.photo_library_button).setOnClickListener(this)
-
-        viewModel.isLoading.observe(this) {
-            findViewById<View>(R.id.loading_view).isVisible = it
-        }
-        viewModel.error.observe(this) {
-            when (it) {
-                is HerbEvent.BitmapError -> showSnackBar(getString(R.string.failed_to_load_file_please_try_again))
-                is HerbEvent.LabelingError -> showSnackBar(getString(R.string.failed_to_label_please_turn_on_entire_image_mode))
-                is HerbEvent.ObjectDetectionError -> showSnackBar(getString(R.string.static_image_detected_no_results_continue_to_label))
-                HerbEvent.NoHerbObjects -> showSnackBar(getString(R.string.no_herb_objects_result_please_try_entire_image_mode))
-                null -> snackbar?.dismiss()
-            }
-        }
-        val imageUri = viewModel.imageUri
-        imageUri.observe(this) { uri ->
-            Glide.with(this@ImageActivity).load(uri).into(inputImageView as ImageView)
-            findViewById<View>(R.id.pickImageView).isVisible = false
-            if (viewModel.isEntireImageMode.value == true) {
-                viewModel.inferEntireImageLabels(
-                    context = this@ImageActivity,
-                    uri = uri,
-                    confidence = 0.5f,
-                ) { showEntireImageLabelingResults(it) }
-            } else {
-                detectObjects(uri)
-            }
+        binding.actionBar.closeButton.setOnClickListener { finish() }
+        binding.pickImageView.setOnClickListener { resultLauncher.launch("image/*") }
+        binding.actionBar.photoLibraryButton.setOnClickListener {
+            resultLauncher.launch("image/*")
         }
 
-        entireImageSwitchCompat?.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.setEntireImageMode(isChecked, this)
-            imageUri.value?.let { uri ->
-                if (isChecked) {
-                    viewModel.inferEntireImageLabels(
-                        context = this@ImageActivity,
-                        uri = uri,
-                        confidence = 0.5f,
-                    ) { showEntireImageLabelingResults(it) }
-                } else {
-                    detectObjects(uri)
-                }
+        binding.bottomPromptChip.setOnClickListener { it.isVisible = false }
+
+        lifecycleScope.launch {
+            // repeatOnLifecycle launches the block in a new coroutine every time the
+            // lifecycle is in the STARTED state (or above) and cancels it when it's STOPPED.
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Trigger the flow and start listening for values.
+                // Note that this happens when lifecycle is STARTED and stops
+                // collecting when the lifecycle is STOPPED
+                this.setUpComponents()
             }
         }
-        dataStore.data
-            .map { settings -> settings[IS_ENTIRE_IMAGE_MODE_SINGLE_IMAGE] ?: false }
+    }
+
+    private fun CoroutineScope.setUpComponents() {
+        // objects mode switch
+        viewModel.state()
+            .mapNotNull { it.isObjectsMode }
+            .take(1)
+            .onEach { binding.actionBar.objectsModeSwitch.isChecked = it }
+            .launchIn(this)
+        binding.actionBar.objectsModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setObjectsMode(isChecked)
+            binding.actionBar.objectsModeSwitch.text =
+                if (isChecked) getString(R.string.objects_mode) else getString(R.string.whole_image_mode)
+        }
+        // seek bar
+        viewModel.state()
+            .mapNotNull { it.confidence }
+            .take(1)
+            .onEach { binding.actionBar.seekView.seekBar.setProgress((it * 100).toInt(), false) }
+            .launchIn(this)
+        binding.actionBar.seekView.seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
+                binding.actionBar.seekView.confidencePercentView.text = "$progress %"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                viewModel.setConfidence((seekBar.progress.toFloat() / 100))
+            }
+        })
+
+        viewModel.state()
+            .map { it.isLoading }
+            .distinctUntilChanged()
+            .onEach { binding.loadingView.isVisible = it }
+            .launchIn(this)
+
+        viewModel.state()
+            .map { it.imageUri }
             .distinctUntilChanged()
             .onEach {
-                entireImageSwitchCompat?.isChecked = it
-                previewCardCarousel?.isVisible = !it
-                dotViewContainer?.isVisible = !it
-                if (it) bottomPromptChip?.isVisible = false
+                Glide.with(this@ImageActivity).load(it).into(binding.inputImageView)
+                binding.pickImageView.isVisible = it == null
+                binding.actionBar.seekView.root.isVisible = it != null
+                binding.actionBar.objectsModeSwitch.isVisible = it != null
             }
-            .launchIn(lifecycleScope)
+            .launchIn(this)
+
+        viewModel.state()
+            .map { it.isObjectsMode == true && !it.objectInfoList.isNullOrEmpty() }
+            .distinctUntilChanged()
+            .onEach {
+                binding.bottomPromptChip.isVisible = it
+                binding.cardRecyclerView.isVisible = it
+                binding.dotViewContainer.isVisible = it
+            }
+            .launchIn(this)
+
+        viewModel.state()
+            .map { it.entireImageRecognizedHerbs }
+            .distinctUntilChanged()
+            .onEach { it?.let { herbs -> showEntireImageLabelingResults(herbs) } }
+            .launchIn(this)
+
+        viewModel.state()
+            .mapNotNull { it.objectInfoList }
+            .distinctUntilChanged()
+            .onEach { detectionList ->
+                viewModel.state.entireBitmap?.let { bitmap ->
+                    onObjectsDetected(inputBitmap = bitmap, objects = detectionList)
+                }
+            }
+            .launchIn(this)
+
+        viewModel.state()
+            .mapNotNull { it.imageUri }
+            .take(1)
+            .onEach { viewModel.process() }
+            .launchIn(this)
+
+        viewModel.state()
+            .map { it.event }
+            .onEach {
+                when (it) {
+                    is SingleImageState.Event.BitmapError -> showSnackBar(getString(R.string.failed_to_load_file_please_try_again))
+                    is SingleImageState.Event.LabelingError -> showSnackBar(getString(R.string.failed_to_label_entire_image_please_turn_on_objects_mode))
+                    is SingleImageState.Event.ObjectDetectionError -> showSnackBar(getString(R.string.static_image_detected_no_results_continue_to_label))
+                    SingleImageState.Event.NoHerbObjects -> showSnackBar(getString(R.string.no_herb_objects_result_please_try_turning_off_objects_mode))
+                    SingleImageState.Event.NoHerbsRecognized -> showSnackBar(getString(R.string.no_herb_result_please_try_turning_on_objects_mode))
+                    is SingleImageState.Event.DataStoreError -> showSnackBar(getString(R.string.failed_to_load_local_data_store))
+                    null -> snackbar?.dismiss()
+                    is SingleImageState.Event.Other -> showSnackBar(getString(R.string.something_went_wrong_please_try_again_or_contact_us))
+                }
+            }
+            .launchIn(this)
     }
 
     override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT <= 28 && Utils.allPermissionsGranted(this)) {
+        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
             Utils.requestRuntimePermissions(this)
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Utils.REQUEST_CODE_PHOTO_LIBRARY && resultCode == Activity.RESULT_OK && data != null) {
-            data.data?.let { viewModel.setImageUri(it) }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
+    private val resultLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { it?.apply { viewModel.setImageUri(this) } }
 
     override fun onBackPressed() {
         if (bottomSheetBehavior?.state != BottomSheetBehavior.STATE_HIDDEN) {
@@ -186,43 +222,13 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onClick(view: View) {
-        when (view.id) {
-            R.id.close_button -> finish()
-            R.id.photo_library_button, R.id.pickImageView -> Utils.openImagePicker(this)
-            R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.state =
-                BottomSheetBehavior.STATE_HIDDEN
-        }
-    }
-
-    private fun showObjectsLabelingResults(detectedObject: com.uri.lee.dl.labeling.DetectedObject) {
-        detectedObjectForBottomSheet = detectedObject
-        val productList = detectedObject.herbList
-        bottomSheetTitleView?.text = resources
-            .getQuantityString(
-                R.plurals.bottom_sheet_title, productList.size, productList.size
-            )
-        productRecyclerView?.adapter = HerbAdapter(this, productList)
-        bottomSheetBehavior?.peekHeight = (inputImageView?.parent as View).height / 2
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
-    private fun showEntireImageLabelingResults(herbList: List<Herb>) {
-        detectedObjectForBottomSheet = null
-        bottomSheetTitleView?.text =
-            resources.getQuantityString(R.plurals.bottom_sheet_title, herbList.size, herbList.size)
-        productRecyclerView?.adapter = HerbAdapter(this, herbList)
-        bottomSheetBehavior?.peekHeight = (inputImageView?.parent as View).height / 2
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
     private fun setUpBottomSheet() {
-        bottomSheetBehavior = BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet)).apply {
+        bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet)).apply {
             setBottomSheetCallback(
                 object : BottomSheetBehavior.BottomSheetCallback() {
                     override fun onStateChanged(bottomSheet: View, newState: Int) {
                         Log.d(TAG, "Bottom sheet new state: $newState")
-                        bottomSheetScrimView?.visibility =
+                        binding.bottomSheetScrimView.visibility =
                             if (newState == BottomSheetBehavior.STATE_HIDDEN) View.GONE else View.VISIBLE
                     }
 
@@ -232,9 +238,9 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
                         }
 
                         val collapsedStateHeight = bottomSheetBehavior!!.peekHeight.coerceAtMost(bottomSheet.height)
-                        val searchedObjectForBottomSheet = detectedObjectForBottomSheet
+                        val searchedObjectForBottomSheet = detectedBitmapObjectForBottomSheet
                             ?: return
-                        bottomSheetScrimView?.updateWithThumbnailTranslate(
+                        binding.bottomSheetScrimView.updateWithThumbnailTranslate(
                             searchedObjectForBottomSheet.getObjectThumbnail(),
                             collapsedStateHeight,
                             slideOffset,
@@ -246,56 +252,44 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
             state = BottomSheetBehavior.STATE_HIDDEN
         }
 
-        bottomSheetScrimView = findViewById<BottomSheetScrimView>(R.id.bottom_sheet_scrim_view).apply {
-            setOnClickListener(this@ImageActivity)
+        binding.bottomSheetScrimView.setOnClickListener {
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
         }
-
-        bottomSheetTitleView = findViewById(R.id.bottom_sheet_title)
-        productRecyclerView = findViewById<RecyclerView>(R.id.product_recycler_view)?.apply {
+        binding.bottomSheet.herbRecyclerView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@ImageActivity)
             adapter = HerbAdapter(this@ImageActivity, ImmutableList.of())
         }
     }
 
-    private fun detectObjects(imageUri: Uri) {
-        bottomPromptChip?.visibility = View.GONE
-        previewCardCarousel?.adapter = PreviewCardAdapter(ImmutableList.of()) { showObjectsLabelingResults(it) }
-        previewCardCarousel?.clearOnScrollListeners()
-        dotViewContainer?.removeAllViews()
+    private fun showEntireImageLabelingResults(herbList: List<Herb>) {
+        binding.cardRecyclerView.adapter =
+            PreviewCardAdapter(ImmutableList.of()) { showSingleObjectLabelingResults(it) }
+        binding.cardRecyclerView.clearOnScrollListeners()
+        binding.dotViewContainer.removeAllViews()
         currentSelectedObjectIndex = 0
-        viewModel.detectObject(this, imageUri) { entireBitmap, list -> onObjectsDetected(entireBitmap, list) }
+
+        detectedBitmapObjectForBottomSheet = null
+        binding.bottomSheet.bottomSheetTitle.text =
+            resources.getQuantityString(R.plurals.bottom_sheet_title, herbList.size, herbList.size)
+        binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(this, herbList)
+        bottomSheetBehavior?.peekHeight = (binding.inputImageView.parent as View).height / 2
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    private fun onObjectsDetected(entireBitmap: Bitmap, objects: List<DetectedObject>) {
+    private fun onObjectsDetected(inputBitmap: Bitmap, objects: List<DetectedObjectInfo>) {
+        Log.d(TAG, "Search completed for objects: $objects")
         detectedObjectNum = objects.size
-        Log.d(TAG, "Detected objects num: $detectedObjectNum")
-        detectedObjectMap.clear()
-        var herbObjectsCount = 0
-        for (i in objects.indices) {
-            val detectedGeneralObjectInfo = DetectedObjectInfo(objects[i], i, BitmapInputInfo(entireBitmap))
-            viewModel.inferObjectsLabels(bitmap = detectedGeneralObjectInfo.getBitmap()) {
-                val detectedHerbObjectInfo =
-                    DetectedObjectInfo(objects[herbObjectsCount], herbObjectsCount, BitmapInputInfo(entireBitmap))
-                onObjectLabellingCompleted(entireBitmap, detectedHerbObjectInfo, it)
-                herbObjectsCount++
-            }
-        }
-    }
-
-    private fun onObjectLabellingCompleted(
-        inputBitmap: Bitmap,
-        detectedObjectInfo: DetectedObjectInfo,
-        recognitionList: List<Herb>
-    ) {
-        Log.d(TAG, "Search completed for object index: ${detectedObjectInfo.objectIndex}")
-        detectedObjectMap[detectedObjectInfo.objectIndex] =
-            DetectedObject(resources, detectedObjectInfo, recognitionList)
+        detectedBitmapObjectMap.clear()
+        binding.dotViewContainer.removeAllViews()
+        objects.onEach { detectedBitmapObjectMap[it.objectIndex] = DetectedBitmapObject(resources, it) }
 
         showBottomPromptChip(getString(R.string.static_image_prompt_detected_results))
-        previewCardCarousel?.adapter =
-            PreviewCardAdapter(ImmutableList.copyOf(detectedObjectMap.values)) { showObjectsLabelingResults(it) }
-        previewCardCarousel?.addOnScrollListener(
+        binding.cardRecyclerView.adapter =
+            PreviewCardAdapter(ImmutableList.copyOf(detectedBitmapObjectMap.values)) {
+                showSingleObjectLabelingResults(it)
+            }
+        binding.cardRecyclerView.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     Log.d(TAG, "New card scroll state: $newState")
@@ -314,33 +308,44 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
                 }
             })
 
-        for (labeledObject in detectedObjectMap.values) {
+        for (labeledObject in detectedBitmapObjectMap.values) {
             val dotView = createDotView(inputBitmap, labeledObject)
             dotView.setOnClickListener {
                 if (labeledObject.objectIndex == currentSelectedObjectIndex) {
-                    showObjectsLabelingResults(labeledObject)
+                    showSingleObjectLabelingResults(labeledObject)
                 } else {
                     selectNewObject(labeledObject.objectIndex)
-                    showObjectsLabelingResults(labeledObject)
-                    previewCardCarousel!!.smoothScrollToPosition(labeledObject.objectIndex)
+                    showSingleObjectLabelingResults(labeledObject)
+                    binding.cardRecyclerView.smoothScrollToPosition(labeledObject.objectIndex)
                 }
             }
 
-            dotViewContainer?.addView(dotView)
+            binding.dotViewContainer.addView(dotView)
             val animatorSet = AnimatorInflater.loadAnimator(this, R.animator.static_image_dot_enter) as AnimatorSet
             animatorSet.setTarget(dotView)
             animatorSet.start()
         }
     }
 
+    private fun showSingleObjectLabelingResults(detectedBitmapObject: DetectedBitmapObject) {
+        detectedBitmapObjectForBottomSheet = detectedBitmapObject
+        detectedBitmapObject.detectedObject.herbs?.let {
+            binding.bottomSheet.bottomSheetTitle.text =
+                resources.getQuantityString(R.plurals.bottom_sheet_title, it.size, it.size)
+            binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(this, it)
+            bottomSheetBehavior?.peekHeight = (binding.inputImageView.parent as View).height / 2
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+    }
+
     private fun createDotView(
         inputBitmap: Bitmap,
-        detectedObject: com.uri.lee.dl.labeling.DetectedObject
+        detectedBitmapObject: DetectedBitmapObject
     ): StaticObjectDotView {
         val viewCoordinateScale: Float
         val horizontalGap: Float
         val verticalGap: Float
-        val inputImageView = inputImageView ?: throw NullPointerException()
+        val inputImageView = binding.inputImageView
         val inputImageViewRatio = inputImageView.width.toFloat() / inputImageView.height
         val inputBitmapRatio = inputBitmap.width.toFloat() / inputBitmap.height
         if (inputBitmapRatio <= inputImageViewRatio) { // Image content fills height
@@ -353,14 +358,14 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
             verticalGap = (inputImageView.height - inputBitmap.height * viewCoordinateScale) / 2
         }
 
-        val boundingBox = detectedObject.boundingBox
+        val boundingBox = detectedBitmapObject.boundingBox
         val boxInViewCoordinate = RectF(
             boundingBox.left * viewCoordinateScale + horizontalGap,
             boundingBox.top * viewCoordinateScale + verticalGap,
             boundingBox.right * viewCoordinateScale + horizontalGap,
             boundingBox.bottom * viewCoordinateScale + verticalGap
         )
-        val initialSelected = detectedObject.objectIndex == 0
+        val initialSelected = detectedBitmapObject.objectIndex == 0
         val dotView = StaticObjectDotView(this, initialSelected)
         val layoutParams = FrameLayout.LayoutParams(dotViewSize, dotViewSize)
         val dotCenter = PointF(
@@ -378,25 +383,25 @@ class ImageActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun selectNewObject(objectIndex: Int) {
-        val dotViewToDeselect = dotViewContainer!!.getChildAt(currentSelectedObjectIndex) as StaticObjectDotView
+        val dotViewToDeselect = binding.dotViewContainer.getChildAt(currentSelectedObjectIndex) as StaticObjectDotView
         dotViewToDeselect.playAnimationWithSelectedState(false)
 
         currentSelectedObjectIndex = objectIndex
 
-        val selectedDotView = dotViewContainer!!.getChildAt(currentSelectedObjectIndex) as StaticObjectDotView
+        val selectedDotView = binding.dotViewContainer.getChildAt(currentSelectedObjectIndex) as StaticObjectDotView
         selectedDotView.playAnimationWithSelectedState(true)
     }
 
     private fun showBottomPromptChip(message: String) {
-        bottomPromptChip?.visibility = View.VISIBLE
-        bottomPromptChip?.text = message
+        binding.bottomPromptChip.visibility = View.VISIBLE
+        binding.bottomPromptChip.text = message
     }
 
-    private fun showSnackBar(message: String) {
+    private fun showSnackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE) {
         snackbar = Snackbar.make(
             findViewById(android.R.id.content),
             message,
-            Snackbar.LENGTH_INDEFINITE
+            length!!,
         )
         snackbar?.setTextMaxLines(10)
         snackbar?.show()

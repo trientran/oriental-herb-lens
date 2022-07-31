@@ -1,6 +1,5 @@
 package com.uri.lee.dl.images
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -13,10 +12,10 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
+import com.uri.lee.dl.Utils.getImagePickerIntent
 import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,8 +52,8 @@ class ImagesActivity : AppCompatActivity() {
         // initialize an instance of linear layout manager
         val layoutOrientation =
             (binding.recyclerView.layoutManager as LinearLayoutManager).orientation
-        val dividerItemDecoration = DividerItemDecoration(this, layoutOrientation)
-        binding.recyclerView.addItemDecoration(dividerItemDecoration)
+        //val dividerItemDecoration = DividerItemDecoration(this, layoutOrientation)
+        //binding.recyclerView.addItemDecoration(dividerItemDecoration)
 
         lifecycleScope.launch {
             // repeatOnLifecycle launches the block in a new coroutine every time the
@@ -81,11 +80,7 @@ class ImagesActivity : AppCompatActivity() {
     private fun addImages() {
         // Create intent for picking a photo from the gallery
         //  val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        resultLauncher.launch(intent)
+        resultLauncher.launch(getImagePickerIntent(allowMultipleImages = true))
     }
 
     private fun onClearBtnClick() {

@@ -22,7 +22,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.uri.lee.dl.image.DetectedObjectInfo
-import com.uri.lee.dl.labeling.DetectedObject
+import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.settings.PreferenceUtils
 
@@ -31,7 +31,7 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
 
     val workflowState = MutableLiveData<WorkflowState>()
     val objectToSearch = MutableLiveData<DetectedObjectInfo>()
-    val detectedObject = MutableLiveData<DetectedObject>()
+    val detectedBitmapObject = MutableLiveData<DetectedBitmapObject>()
 
     private val objectIdsToSearch = HashSet<Int>()
 
@@ -121,6 +121,6 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         objectIdsToSearch.remove(detectedObject.objectId)
         setWorkflowState(WorkflowState.SEARCHED)
 
-        this.detectedObject.value = DetectedObject(context.resources, lConfirmedObject, herbs)
+        this.detectedBitmapObject.value = DetectedBitmapObject(context.resources, lConfirmedObject)
     }
 }

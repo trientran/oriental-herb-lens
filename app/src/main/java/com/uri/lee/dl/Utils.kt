@@ -40,6 +40,7 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
 import com.google.mlkit.common.model.CustomRemoteModel
@@ -192,11 +193,12 @@ object Utils {
         return null
     }
 
-    internal fun openImagePicker(activity: Activity) {
+    internal fun getImagePickerIntent(allowMultipleImages: Boolean = false): Intent {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "image/*"
-        activity.startActivityForResult(intent, REQUEST_CODE_PHOTO_LIBRARY)
+        if (allowMultipleImages) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        return intent
     }
 
     internal suspend fun loadImage(context: Context, imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
@@ -311,7 +313,7 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
     return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 }
 
-fun isModelDownloaded(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
+fun getHerbModel(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
     val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
     // Specify the name you assigned in the Firebase console.
     val remoteModel = CustomRemoteModel
@@ -343,7 +345,8 @@ const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 
 // data store stuff
 const val SETTINGS = "SETTINGS"
-val IS_ENTIRE_IMAGE_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_ENTIRE_IMAGE_MODE")
+val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
+val CONFIDENCE_LEVEL = floatPreferencesKey("CONFIDENCE_LEVEL")
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
 
 class BaseApplication : Application() {

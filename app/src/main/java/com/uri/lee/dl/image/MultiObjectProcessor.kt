@@ -123,7 +123,7 @@ class MultiObjectProcessor(
         for (i in objects.indices) {
             val result = objects[i]
             if (selectedObject == null && shouldSelectObject(graphicOverlay, result)) {
-                selectedObject = DetectedObjectInfo(result, i, inputInfo)
+                selectedObject = DetectedObjectInfo(result, i, inputInfo, null)
                 // Starts the object confirmation once an object is regarded as selected.
                 confirmationController.confirming(result.trackingId)
                 graphicOverlay.add(ObjectConfirmationGraphic(graphicOverlay, confirmationController))
@@ -148,7 +148,7 @@ class MultiObjectProcessor(
                 }
                 graphicOverlay.add(
                     ObjectDotGraphic(
-                        graphicOverlay, DetectedObjectInfo(result, i, inputInfo), objectDotAnimator
+                        graphicOverlay, DetectedObjectInfo(result, i, inputInfo, null), objectDotAnimator
                     )
                 )
             }

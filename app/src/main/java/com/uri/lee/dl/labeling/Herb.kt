@@ -28,10 +28,3 @@ data class Herb(
     val viName: String? = null,
     val confidence: Float? = null,
 )
-
-sealed interface HerbEvent {
-    data class LabelingError(val exception: Exception) : HerbEvent
-    data class ObjectDetectionError(val exception: Exception) : HerbEvent
-    data class BitmapError(val exception: Exception) : HerbEvent
-    object NoHerbObjects : HerbEvent
-}

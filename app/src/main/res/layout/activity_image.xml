@@ -5,98 +5,119 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include
-        android:id="@+id/actionBar"
-        layout="@layout/top_action_bar_in_static_image"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/top_action_bar_height"
-        android:layout_gravity="top" />
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/pickImageView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="50dp"
-        android:text="@string/pick_an_image"
-        android:textAlignment="center"
-        android:textSize="40sp" />
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/top_action_bar_in_static_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top" />
 
-    <ImageView
-        android:id="@+id/input_image_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/top_action_bar_height"
-        android:layout_marginBottom="@dimen/preview_card_carousel_height"
-        android:contentDescription="@null"
-        android:paddingStart="@dimen/static_image_view_padding_horizontal"
-        android:paddingEnd="@dimen/static_image_view_padding_horizontal" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/actionBar"
+            app:layout_constraintBottom_toTopOf="@id/card_recycler_view"
+            android:paddingStart="@dimen/static_image_view_padding_horizontal"
+            android:paddingEnd="@dimen/static_image_view_padding_horizontal">
 
-    <FrameLayout
-        android:id="@+id/dot_view_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/top_action_bar_height"
-        android:layout_marginBottom="@dimen/preview_card_carousel_height"
-        android:background="@color/transparent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-    <com.google.android.material.chip.Chip
-        android:id="@+id/bottom_prompt_chip"
-        style="@style/Widget.MaterialComponents.Chip.Entry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="112dp"
-        android:checkable="false"
-        android:clickable="false"
-        android:fontFamily="sans-serif"
-        android:textColor="@color/white"
-        android:textSize="@dimen/bottom_prompt_chip_text_size"
-        android:visibility="gone"
-        app:chipCornerRadius="@dimen/bottom_prompt_chip_corner_radius"
-        app:chipSurfaceColor="@color/dark"
-        app:closeIconVisible="false"
-        tools:visibility="visible" />
+                <ImageView
+                    android:id="@+id/input_image_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:contentDescription="Your selected image" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/card_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/preview_card_carousel_height"
-        android:layout_gravity="bottom"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp" />
+                <FrameLayout
+                    android:id="@+id/dot_view_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_constraintTop_toTopOf="@id/input_image_view"
+                    app:layout_constraintBottom_toBottomOf="@id/input_image_view"
+                    android:background="@color/transparent" />
 
-    <FrameLayout
-        android:id="@+id/loading_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/dark"
-        android:visibility="gone">
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <ProgressBar
-            android:layout_width="@dimen/search_progress_bar_size"
-            android:layout_height="@dimen/search_progress_bar_size"
-            android:layout_gravity="center"
-            android:indeterminate="true"
-            android:indeterminateTint="@color/white"
-            android:indeterminateTintMode="src_in" />
+        </ScrollView>
 
-        <TextView
+        <com.google.android.material.chip.Chip
+            android:id="@+id/bottom_prompt_chip"
+            style="@style/Widget.MaterialComponents.Chip.Entry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="@dimen/static_image_loading_view_text_margin_bottom"
-            android:text="@string/prompt_searching"
+            android:checkable="false"
+            android:fontFamily="sans-serif"
             android:textColor="@color/white"
-            android:textSize="@dimen/static_image_loading_view_text_size" />
+            android:textSize="@dimen/bottom_prompt_chip_text_size"
+            android:visibility="gone"
+            app:chipCornerRadius="@dimen/bottom_prompt_chip_corner_radius"
+            app:chipSurfaceColor="@color/dark"
+            app:closeIconVisible="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/card_recycler_view"
+            tools:visibility="visible" />
 
-    </FrameLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/card_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/preview_card_carousel_height"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-    <com.uri.lee.dl.labeling.BottomSheetScrimView
-        android:id="@+id/bottom_sheet_scrim_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
+        <FrameLayout
+            android:id="@+id/loading_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/dark"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="@dimen/search_progress_bar_size"
+                android:layout_height="@dimen/search_progress_bar_size"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/white"
+                android:indeterminateTintMode="src_in" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="@dimen/static_image_loading_view_text_margin_bottom"
+                android:text="@string/prompt_searching"
+                android:textColor="@color/white"
+                android:textSize="@dimen/static_image_loading_view_text_size" />
+
+        </FrameLayout>
+
+        <com.uri.lee.dl.labeling.BottomSheetScrimView
+            android:id="@+id/bottom_sheet_scrim_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/pickImageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="50dp"
+            android:text="@string/pick_an_image"
+            android:textAlignment="center"
+            android:textSize="40sp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <include
         android:id="@+id/bottom_sheet"

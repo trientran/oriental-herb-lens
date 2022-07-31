@@ -22,16 +22,18 @@ import android.graphics.Rect
 import android.util.Log
 import com.google.mlkit.vision.objects.DetectedObject
 import com.uri.lee.dl.InputInfo
+import com.uri.lee.dl.labeling.Herb
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 /**
  * Holds the detected object and its related image info.
  */
-class DetectedObjectInfo(
+data class DetectedObjectInfo(
     private val detectedObject: DetectedObject,
     val objectIndex: Int,
-    private val inputInfo: InputInfo
+    private val inputInfo: InputInfo,
+    val herbs: List<Herb>?,
 ) {
 
     private var bitmap: Bitmap? = null

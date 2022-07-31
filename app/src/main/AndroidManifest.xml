@@ -4,6 +4,11 @@
     package="com.uri.lee.dl"
     android:installLocation="auto">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+
     <application
         android:name=".BaseApplication"
         android:icon="@drawable/ic_launcher"
@@ -11,7 +16,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-
+        <activity
+            android:name=".camera.livecamera.LiveCameraActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="fullSensor"
+            android:exported="false" />
         <activity
             android:name=".images.ImagesActivity"
             android:exported="false"
@@ -55,11 +64,5 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
     </application>
-
-    <uses-feature android:name="android.hardware.camera" />
-
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>

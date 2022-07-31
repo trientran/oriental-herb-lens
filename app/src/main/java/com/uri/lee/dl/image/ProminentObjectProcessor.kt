@@ -116,7 +116,7 @@ class ProminentObjectProcessor(
                 // User is confirming the object selection.
                 confirmationController.confirming(visionObject.trackingId)
                 workflowModel.confirmingObject(
-                        DetectedObjectInfo(visionObject, objectIndex, inputInfo), confirmationController.progress
+                    DetectedObjectInfo(visionObject, objectIndex, inputInfo, null), confirmationController.progress
                 )
             } else {
                 // Object detected but user doesn't want to pick this one.

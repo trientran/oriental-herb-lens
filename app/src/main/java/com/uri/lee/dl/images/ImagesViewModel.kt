@@ -49,7 +49,7 @@ class ImagesViewModel : ViewModel() {
     fun inferImages(
         context: Context,
         clipData: ClipData,
-        confidence: Float = 0.0f,
+        confidence: Float = 0.5f,
     ) {
         // set the minimum confidence required:
         val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
@@ -83,7 +83,6 @@ class ImagesViewModel : ViewModel() {
     }
 
     private suspend fun getBitmapFromFileUri(context: Context, imageUri: Uri): Bitmap? =
-        // run blocking to make sure bitmap is ready for all others
         try {
             Utils.loadImage(context, imageUri, MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION)
         } catch (e: IOException) {
@@ -122,7 +121,7 @@ class ImagesViewModel : ViewModel() {
                                         id = id,
                                         sciName = sciList70[id]!!,
                                         viName = viList70[id]!!,
-                                        confident = results[0].confidence,
+                                        confidence = results[0].confidence,
                                         imageFileUri = selectedImageUri
                                     )
                                 )
