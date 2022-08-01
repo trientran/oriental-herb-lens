@@ -48,24 +48,23 @@ class PreviewCardAdapter(
 
     class CardViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        private val imageView: ImageView = itemView.findViewById(R.id.card_image)
-        private val titleView: TextView = itemView.findViewById(R.id.card_title)
-        private val subtitle1View: TextView = itemView.findViewById(R.id.card_subtitle_1)
-        private val subtitle2View: TextView = itemView.findViewById(R.id.card_subtitle_2)
-        private val imageSize: Int = itemView.resources.getDimensionPixelOffset(R.dimen.preview_card_image_size)
+        private val imageView: ImageView = itemView.findViewById(R.id.herbImage)
+        private val idView: TextView = itemView.findViewById(R.id.herbIdView)
+        private val latinView: TextView = itemView.findViewById(R.id.latinView)
+        private val vietnameseView: TextView = itemView.findViewById(R.id.vietnameseView)
 
         internal fun bindItems(bitmapObject: DetectedBitmapObject) {
             if (bitmapObject.detectedObject.herbs.isNullOrEmpty()) {
                 imageView.visibility = View.GONE
-                titleView.setText(R.string.static_image_card_no_result_title)
+                idView.setText(R.string.static_image_card_no_result_title)
             } else {
                 val mostConfidentHerb = bitmapObject.detectedObject.herbs[0]
                 imageView.visibility = View.VISIBLE
                 Glide.with(itemView.context).load(bitmapObject.getObjectThumbnail())
                     .into(imageView) // bitmapObject.getObjectThumbnail()
-                titleView.text = mostConfidentHerb.id
-                subtitle1View.text = mostConfidentHerb.sciName
-                subtitle2View.text = mostConfidentHerb.viName
+                idView.text = String.format(itemView.context.getString(R.string.herb_id), mostConfidentHerb.id ?: "")
+                latinView.text = mostConfidentHerb.latinName ?: ""
+                vietnameseView.text = mostConfidentHerb.viName ?: ""
             }
         }
     }

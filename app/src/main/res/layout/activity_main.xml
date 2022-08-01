@@ -46,7 +46,7 @@
             android:gravity="center_vertical"
             android:paddingStart="8dp"
             android:drawablePadding="8dp"
-            android:text="@string/scientific_or_vietnamese_name"
+            android:text="@string/latin_or_vietnamese_name"
             android:background="@drawable/bg_rounded_corner"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

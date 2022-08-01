@@ -15,7 +15,7 @@ import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.uri.lee.dl.LOCAL_TFLITE_MODEL_NAME
 import com.uri.lee.dl.REMOTE_TFLITE_MODEL_NAME
-import com.uri.lee.dl.herbdetails.tempherbs.sciList70
+import com.uri.lee.dl.herbdetails.tempherbs.latinList
 import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.labeling.Herb
 import timber.log.Timber
@@ -91,7 +91,7 @@ class ImageAnalyzer(
                                 recognitionList.add(
                                     Herb(
                                         id = id,
-                                        sciName = sciList70[id]!!,
+                                        latinName = latinList[id]!!,
                                         viName = viList70[id]!!,
                                         confidence = it[i].confidence
                                     )

@@ -101,12 +101,12 @@ object Utils {
         }
     }
 
-    fun openUrlWithDefaultBrowser(activity: Activity, searchedKeyWord: String) {
+    fun openUrlWithDefaultBrowser(context: Context, searchedKeyWord: String) {
         val url = "https://www.google.com/search?q=$searchedKeyWord"
         val uri = Uri.parse(url)
         val intent = Intent(Intent.ACTION_VIEW, uri)
-        if (intent.resolveActivity(activity.packageManager) != null) {
-            activity.startActivity(intent)
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
         }
     }
 
@@ -193,11 +193,11 @@ object Utils {
         return null
     }
 
-    internal fun getImagePickerIntent(allowMultipleImages: Boolean = false): Intent {
+    internal fun selectImagesIntent(): Intent {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "image/*"
-        if (allowMultipleImages) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         return intent
     }
 

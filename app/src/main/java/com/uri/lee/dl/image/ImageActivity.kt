@@ -25,6 +25,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
@@ -72,6 +73,19 @@ class ImageActivity : AppCompatActivity() {
     private var detectedObjectNum = 0
     private var currentSelectedObjectIndex = 0
 
+    private val browseImagesTimer = object : CountDownTimer(5000, 5000) {
+        override fun onTick(millisUntilFinished: Long) {
+            binding.pickImageView.isEnabled = false
+            binding.actionBar.photoLibraryButton.isEnabled = false
+            resultLauncher.launch("image/*")
+        }
+
+        override fun onFinish() {
+            binding.pickImageView.isEnabled = true
+            binding.actionBar.photoLibraryButton.isEnabled = true
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityImageBinding.inflate(layoutInflater)
@@ -90,10 +104,8 @@ class ImageActivity : AppCompatActivity() {
         setUpBottomSheet()
 
         binding.actionBar.closeButton.setOnClickListener { finish() }
-        binding.pickImageView.setOnClickListener { resultLauncher.launch("image/*") }
-        binding.actionBar.photoLibraryButton.setOnClickListener {
-            resultLauncher.launch("image/*")
-        }
+        binding.pickImageView.setOnClickListener { browseImagesTimer.start() }
+        binding.actionBar.photoLibraryButton.setOnClickListener { browseImagesTimer.start() }
 
         binding.bottomPromptChip.setOnClickListener { it.isVisible = false }
 
@@ -125,8 +137,11 @@ class ImageActivity : AppCompatActivity() {
         viewModel.state()
             .mapNotNull { it.confidence }
             .take(1)
-            .onEach { binding.actionBar.seekView.seekBar.setProgress((it * 100).toInt(), false) }
-            .launchIn(this)
+            .onEach {
+                binding.actionBar.seekView.seekBar.setProgress((it * 100).toInt(), false)
+                binding.actionBar.seekView.confidencePercentView.text =
+                    "${binding.actionBar.seekView.seekBar.progress} %"
+            }.launchIn(this)
         binding.actionBar.seekView.seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
                 binding.actionBar.seekView.confidencePercentView.text = "$progress %"
@@ -258,7 +273,7 @@ class ImageActivity : AppCompatActivity() {
         binding.bottomSheet.herbRecyclerView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@ImageActivity)
-            adapter = HerbAdapter(this@ImageActivity, ImmutableList.of())
+            adapter = HerbAdapter(ImmutableList.of())
         }
     }
 
@@ -272,7 +287,7 @@ class ImageActivity : AppCompatActivity() {
         detectedBitmapObjectForBottomSheet = null
         binding.bottomSheet.bottomSheetTitle.text =
             resources.getQuantityString(R.plurals.bottom_sheet_title, herbList.size, herbList.size)
-        binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(this, herbList)
+        binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(herbList)
         bottomSheetBehavior?.peekHeight = (binding.inputImageView.parent as View).height / 2
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
     }
@@ -332,7 +347,7 @@ class ImageActivity : AppCompatActivity() {
         detectedBitmapObject.detectedObject.herbs?.let {
             binding.bottomSheet.bottomSheetTitle.text =
                 resources.getQuantityString(R.plurals.bottom_sheet_title, it.size, it.size)
-            binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(this, it)
+            binding.bottomSheet.herbRecyclerView.adapter = HerbAdapter(it)
             bottomSheetBehavior?.peekHeight = (binding.inputImageView.parent as View).height / 2
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
         }

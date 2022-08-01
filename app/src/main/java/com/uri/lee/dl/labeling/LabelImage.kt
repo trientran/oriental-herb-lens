@@ -48,7 +48,7 @@ class LabelImage(context: Context) {
                         Herb(
                             imageUrl = "",
                             id = "Herb: $i",
-                            sciName = "Herb code: $i",
+                            latinName = "Herb code: $i",
                             confidence = 0f,
                             viName = ""
                         )

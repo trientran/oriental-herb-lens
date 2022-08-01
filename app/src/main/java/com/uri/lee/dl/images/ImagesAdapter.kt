@@ -16,7 +16,6 @@
 
 package com.uri.lee.dl.images
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -25,10 +24,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ImagesRecognitionItemBinding
-import com.uri.lee.dl.labeling.Herb
+import com.uri.lee.dl.images.ImagesState.Recognition
 
-class ImagesAdapter(private val context: Context, private val onItemClickListener: (Herb) -> Unit) :
-    ListAdapter<Herb, ImagesHerbItemViewHolder>(HerbDiffUtil()) {
+class ImagesAdapter(private val onItemClickListener: (Recognition) -> Unit) :
+    ListAdapter<Recognition, ImagesHerbItemViewHolder>(HerbDiffUtil()) {
 
     /**
      * Inflating the ViewHolder with Herb_item layout and data binding
@@ -37,7 +36,7 @@ class ImagesAdapter(private val context: Context, private val onItemClickListene
         parent: ViewGroup,
         viewType: Int
     ): ImagesHerbItemViewHolder {
-        val inflater = LayoutInflater.from(context)
+        val inflater = LayoutInflater.from(parent.context)
         val binding = ImagesRecognitionItemBinding.inflate(inflater, parent, false)
         return ImagesHerbItemViewHolder(binding)
     }
@@ -47,26 +46,30 @@ class ImagesAdapter(private val context: Context, private val onItemClickListene
         holderImage.bindTo(getItem(position), onItemClickListener)
     }
 
-    private class HerbDiffUtil : DiffUtil.ItemCallback<Herb>() {
-        override fun areItemsTheSame(oldItem: Herb, newItem: Herb): Boolean {
-            return oldItem.id == newItem.id
+    private class HerbDiffUtil : DiffUtil.ItemCallback<Recognition>() {
+        override fun areItemsTheSame(oldItem: Recognition, newItem: Recognition): Boolean {
+            return oldItem.fileUri == newItem.fileUri
         }
 
-        override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean {
-            return oldItem.sciName == newItem.sciName && oldItem.viName == newItem.viName
+        override fun areContentsTheSame(oldItem: Recognition, newItem: Recognition): Boolean {
+            return oldItem.herbs == newItem.herbs
         }
     }
 }
 
 class ImagesHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding) :
     RecyclerView.ViewHolder(binding.root) {
-    // Binding all the fields to the view - to see which UI element is bind to which field, check
-    // out layout/Herb_item.xml
-    fun bindTo(herb: Herb, onItemClickListener: (Herb) -> Unit) {
-        Glide.with(binding.root).load(herb.imageFileUri).into(binding.imageView)
-        binding.idView.text = herb.id ?: binding.root.context?.getString(R.string.no_result)
-        binding.sciNameView.text = herb.sciName
-        binding.viNameView.text = herb.viName
-        itemView.setOnClickListener { onItemClickListener.invoke(herb) }
+    fun bindTo(recognition: Recognition, onItemClickListener: (Recognition) -> Unit) {
+        Glide.with(binding.root).load(recognition.fileUri).into(binding.imageView)
+        itemView.setOnClickListener { onItemClickListener.invoke(recognition) }
+        if (recognition.herbs.isEmpty()) {
+            binding.idView.text = binding.root.context?.getString(R.string.no_result)
+            binding.latinNameView.text = ""
+            binding.viNameView.text = ""
+        } else {
+            binding.idView.text = recognition.herbs.first().id ?: ""
+            binding.latinNameView.text = recognition.herbs.first().latinName ?: ""
+            binding.viNameView.text = recognition.herbs.first().viName ?: ""
+        }
     }
 }

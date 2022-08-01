@@ -49,7 +49,7 @@ class CameraAdapter(private val context: Context) :
         }
 
         override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean {
-            return oldItem.sciName == newItem.sciName && oldItem.viName == newItem.viName
+            return oldItem.latinName == newItem.latinName && oldItem.viName == newItem.viName
         }
     }
 }
@@ -63,7 +63,7 @@ class ItemViewHolder(private val binding: LiveCameraImageRecognitionItemBinding)
         binding.idView.text = String.format(
             context.getString(R.string.static_image_classification_result),
             herb.id,
-            herb.sciName,
+            herb.latinName,
             herb.viName
         )
     }

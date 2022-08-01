@@ -73,12 +73,15 @@
         android:padding="50dp"
         android:text="@string/pick_photos"
         android:textAlignment="center"
+        android:background="?android:attr/selectableItemBackground"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
         android:id="@+id/seekView"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         layout="@layout/seek_bar_confidence"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

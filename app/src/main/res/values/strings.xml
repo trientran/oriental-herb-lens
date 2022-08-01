@@ -29,7 +29,7 @@
     <string name="static_image_card_no_result_subtitle">Support text place holder</string>
     <string name="static_image_preview_card_subtitle">+%d more results</string>
     <string name="static_image_detected_no_results_continue_to_label">An issue\'s occurred while detecting objects. You may turn off Objects mode or contactus.</string>
-    <string name="static_image_classification_result">This could be: \n-Herb code: %1$s. \n-Scientific name: %2$s. \n-Vietnamese name: %3$s.</string>
+    <string name="static_image_classification_result">This could be: \n-Herb code: %1$s. \n-Latin name: %2$s. \n-Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_camera">Camera</string>
@@ -54,7 +54,7 @@
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto search</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="scientific_or_vietnamese_name">Scientific or Vietnamese name</string>
+    <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
     <string name="n_results_found">5 results found</string>
     <string name="title_activity_herb_details">HerbDetailsActivity</string>
     <string name="tab_text_1">Tab 1</string>
@@ -87,11 +87,18 @@
     <string name="objects_mode">Objects mode</string>
     <string name="whole_image_mode">Whole image mode</string>
     <string name="result">Result</string>
-    <string name="search_with_google">Google scientific name</string>
+    <string name="search_with_google">Google Latin name</string>
     <string name="search_with_google_vi">Google Vietnamese name</string>
     <string name="failed_to_load_file_please_try_again">Failed to load file! Please try again or try another image!</string>
     <string name="failed_to_label_entire_image_please_turn_on_objects_mode">Failed to recognise this image. You may turn off Whole Image mode or try another image.</string>
     <string name="confidence">Confidence</string>
     <string name="failed_to_load_local_data_store">Failed to load local data store</string>
+    <string name="failed_to_label_one_or_some_of_the_images">Failed to label 1 or some of your images.</string>
+
+    <string name="herb_id">ID: %s</string>
+    <string name="latin_name">Latin name: %s</string>
+    <string name="vietnamese_name">Vietnamese name: %s</string>
+    <string name="english_name">English name: %s</string>
+    <string name="your_selected_image">Your selected image</string>
 
 </resources>

@@ -1,61 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:padding="16dp">
-    <!--    Add a new herb, contact, app info, logout, delete acc-->
 
-    <ImageView
-        android:id="@+id/imageView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:src="@android:drawable/alert_dark_frame"
-        android:contentDescription="The processed image" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/id_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-medium"
-        android:padding="8dp"
-        android:textColor="@color/black"
-        android:textSize="@dimen/preview_card_title_text_size"
-        tools:text="@tools:sample/lorem" />
+        <ImageView
+            android:id="@+id/localImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/your_selected_image" />
 
-    <TextView
-        android:id="@+id/sci_name_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:fontFamily="sans-serif"
-        android:textColor="@color/dark"
-        android:textSize="@dimen/preview_card_subtitle_text_size"
-        tools:text="@tools:sample/lorem" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/herbRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/vi_name_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"
-        android:fontFamily="sans-serif"
-        android:textColor="@color/dark"
-        android:textSize="@dimen/preview_card_subtitle_text_size"
-        tools:text="@tools:sample/lorem" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/search_with_google_using_scientific_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/search_with_google" />
-
-    <Button
-        android:id="@+id/search_with_google_using_vietnamese_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/search_with_google_vi" />
-
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

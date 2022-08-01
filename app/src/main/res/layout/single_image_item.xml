@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingStart="@dimen/product_item_padding"
-    android:paddingEnd="@dimen/product_item_padding">
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
 
     <ImageView
         android:id="@+id/herb_image"
@@ -17,41 +17,37 @@
         android:contentDescription="@null" />
 
     <TextView
-        android:id="@+id/card_title"
+        android:id="@+id/herbIdView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:fontFamily="sans-serif-medium"
-        android:maxLines="2"
         android:padding="8dp"
         android:textColor="@color/black"
         android:textSize="@dimen/preview_card_title_text_size"
         tools:text="@tools:sample/lorem" />
 
     <TextView
-        android:id="@+id/card_subtitle_1"
+        android:id="@+id/latinView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="8dp"
         android:fontFamily="sans-serif"
-        android:maxLines="2"
         android:textColor="@color/dark"
         android:textSize="@dimen/preview_card_subtitle_text_size"
         tools:text="@tools:sample/lorem" />
 
     <TextView
-        android:id="@+id/card_subtitle_2"
+        android:id="@+id/vietnameseView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="8dp"
         android:fontFamily="sans-serif"
-        android:maxLines="2"
         android:textColor="@color/dark"
         android:textSize="@dimen/preview_card_subtitle_text_size"
         tools:text="@tools:sample/lorem" />
-
 
     <TextView
         android:id="@+id/search_with_google_using_vietnamese_view"
@@ -66,7 +62,7 @@
         android:textStyle="italic" />
 
     <TextView
-        android:id="@+id/search_with_google_using_scientific_view"
+        android:id="@+id/search_with_google_using_latin_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"

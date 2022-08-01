@@ -10,7 +10,7 @@
             android:id="@+id/confidenceTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
             android:text="@string/confidence"
             app:layout_constraintBaseline_toBaselineOf="@+id/confidencePercentView"
             app:layout_constraintStart_toStartOf="parent" />
@@ -19,7 +19,7 @@
             android:id="@+id/confidencePercentView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintTop_toTopOf="@+id/seekBar"
             app:layout_constraintBottom_toBottomOf="@id/seekBar"
             app:layout_constraintEnd_toEndOf="parent"

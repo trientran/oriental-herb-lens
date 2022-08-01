@@ -1,9 +1,11 @@
 package com.uri.lee.dl.images
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import android.os.CountDownTimer
+import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,15 +14,15 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
-import com.uri.lee.dl.Utils.getImagePickerIntent
+import com.uri.lee.dl.Utils.selectImagesIntent
 import com.uri.lee.dl.databinding.ActivityImagesBinding
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ImagesActivity : AppCompatActivity() {
@@ -29,6 +31,7 @@ class ImagesActivity : AppCompatActivity() {
     // Contains the recognition result. Since  it is a viewModel, it will survive screen rotations
     private val viewModel: ImagesViewModel by viewModels()
     private lateinit var viewAdapter: ImagesAdapter
+    private var snackbar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,23 +40,12 @@ class ImagesActivity : AppCompatActivity() {
         setContentView(view)
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
-        binding.closeButton.setOnClickListener { finish() }
-        binding.addImagesBtn.setOnClickListener { addImages() }
-        binding.pickImagesView.setOnClickListener { addImages() }
-        binding.clearBtn.setOnClickListener { onClearBtnClick() }
-
         // Initialising the RecyclerView and its linked Adapter
-        viewAdapter = ImagesAdapter(this) {
-            val bottomSheet = ImagesBottomSheetDialog(it, this)
+        viewAdapter = ImagesAdapter {
+            val bottomSheet = ImagesBottomSheetDialog(it)
             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
         }
         binding.recyclerView.adapter = viewAdapter
-
-        // initialize an instance of linear layout manager
-        val layoutOrientation =
-            (binding.recyclerView.layoutManager as LinearLayoutManager).orientation
-        //val dividerItemDecoration = DividerItemDecoration(this, layoutOrientation)
-        //binding.recyclerView.addItemDecoration(dividerItemDecoration)
 
         lifecycleScope.launch {
             // repeatOnLifecycle launches the block in a new coroutine every time the
@@ -62,51 +54,113 @@ class ImagesActivity : AppCompatActivity() {
                 // Trigger the flow and start listening for values.
                 // Note that this happens when lifecycle is STARTED and stops
                 // collecting when the lifecycle is STOPPED
-                viewModel.recognitionList.collect {
-                    binding.pickImagesView.isVisible = it.isEmpty()
-                    viewAdapter.submitList(it)
-                }
+                this.setUpComponents()
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (Build.VERSION.SDK_INT <= 28 && Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
+    private val browseImagesTimer = object : CountDownTimer(5000, 5000) {
+        override fun onTick(millisUntilFinished: Long) {
+            binding.pickImagesView.isEnabled = false
+            binding.addImagesBtn.isEnabled = false
+            resultLauncher.launch(selectImagesIntent())
+        }
+
+        override fun onFinish() {
+            binding.pickImagesView.isEnabled = true
+            binding.addImagesBtn.isEnabled = true
         }
     }
 
-    private fun addImages() {
-        // Create intent for picking a photo from the gallery
-        //  val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        resultLauncher.launch(getImagePickerIntent(allowMultipleImages = true))
+    private fun CoroutineScope.setUpComponents() {
+        binding.closeButton.setOnClickListener { finish() }
+        binding.addImagesBtn.setOnClickListener { browseImagesTimer.start() }
+        binding.pickImagesView.setOnClickListener { browseImagesTimer.start() }
+        binding.clearBtn.setOnClickListener { viewModel.clearAllData() }
+
+        viewModel.state()
+            .map { it.recognitionList }
+            .onEach {
+                binding.clearBtn.isVisible = it.isNotEmpty()
+                binding.pickImagesView.isVisible = it.isEmpty()
+                binding.seekView.root.isVisible = it.isNotEmpty()
+                viewAdapter.submitList(it)
+            }
+            .launchIn(this)
+
+        viewModel.state()
+            .map { it.imageUris }
+            .distinctUntilChanged()
+            .onEach {
+            }
+
+        // seek bar
+        viewModel.state()
+            .mapNotNull { it.confidence }
+            .take(1)
+            .onEach {
+                binding.seekView.seekBar.setProgress((it * 100).toInt(), false)
+                binding.seekView.confidencePercentView.text = "${binding.seekView.seekBar.progress} %"
+            }
+            .launchIn(this)
+        binding.seekView.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
+                binding.seekView.confidencePercentView.text = "$progress %"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                viewModel.setConfidence((seekBar.progress.toFloat() / 100))
+            }
+        })
+
+        viewModel.state()
+            .map { it.event }
+            .onEach {
+                when (it) {
+                    is ImagesState.Event.BitmapError -> showSnackBar(getString(R.string.failed_to_load_file_please_try_again))
+                    is ImagesState.Event.LabelingError -> showSnackBar(getString(R.string.failed_to_label_one_or_some_of_the_images))
+                    is ImagesState.Event.DataStoreError -> showSnackBar(getString(R.string.failed_to_load_local_data_store))
+                    null -> snackbar?.dismiss()
+                    is ImagesState.Event.Other -> showSnackBar(getString(R.string.something_went_wrong_please_try_again_or_contact_us))
+                }
+            }
+            .launchIn(this)
     }
 
-    private fun onClearBtnClick() {
-        viewModel.clearAllData()
+    override fun onStart() {
+        super.onStart()
+        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
+            Utils.requestRuntimePermissions(this)
+        }
     }
 
     private var resultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                result.data?.clipData?.let { clipData ->
-                    for (i in 0 until clipData.itemCount) {
-                        Log.d("trien111", clipData.getItemAt(i).uri.toString())
+                val data: Intent? = result.data
+                //If multiple image selected
+                if (data?.clipData != null) {
+                    val uriList = mutableListOf<Uri>()
+                    for (i in 0 until data.clipData!!.itemCount) {
+                        uriList.add(data.clipData!!.getItemAt(i).uri)
                     }
-                    try {
-                        viewModel.inferImages(this, clipData)
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Throwable) {
-                        Timber.e(e.message ?: "Some error")
-                        Toast.makeText(
-                            this,
-                            getString(R.string.something_went_wrong_please_try_again_or_contact_us),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    viewModel.addImageUris(uriList)
+                }
+                //If single image selected
+                else if (data?.data != null) {
+                    viewModel.addImageUris(listOf(data.data!!))
                 }
             }
         }
+
+    private fun showSnackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE) {
+        snackbar = Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            length!!,
+        )
+        snackbar?.setTextMaxLines(10)
+        snackbar?.show()
+    }
 }

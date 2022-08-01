@@ -246,7 +246,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         productRecyclerView = findViewById<RecyclerView>(R.id.herb_recycler_view).apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@CameraActivity)
-            adapter = HerbAdapter(this@CameraActivity, ImmutableList.of())
+            adapter = HerbAdapter(ImmutableList.of())
         }
     }
 
@@ -286,7 +286,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                         .getQuantityString(
                             R.plurals.bottom_sheet_title, it.size, it.size
                         )
-                    productRecyclerView?.adapter = HerbAdapter(this@CameraActivity, it)
+                    productRecyclerView?.adapter = HerbAdapter(it)
                     slidingSheetUpFromHiddenState = true
                     bottomSheetBehavior?.peekHeight =
                         preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO

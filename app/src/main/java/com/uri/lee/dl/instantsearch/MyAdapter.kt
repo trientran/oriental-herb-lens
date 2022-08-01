@@ -29,11 +29,11 @@ class MyAdapter : PagingDataAdapter<Herb, MyAdapter.ProductViewHolder>(ProductDi
 
     inner class ProductViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        private val itemNameSci = view.findViewById<TextView>(R.id.itemNameSci)
+        private val itemNameLatin = view.findViewById<TextView>(R.id.itemNameLatin)
         private val itemNameVi = view.findViewById<TextView>(R.id.itemNameVi)
 
         fun bind(herb: Herb) {
-            itemNameSci.text = herb.highlightedNameSci?.toSpannedString() ?: herb.sciName
+            itemNameLatin.text = herb.highlightedNameLatin?.toSpannedString() ?: herb.latinName
             itemNameVi.text = herb.highlightedNameVi?.toSpannedString() ?: herb.viName
             itemView.setOnClickListener { onItemClick?.invoke(herb) }
         }

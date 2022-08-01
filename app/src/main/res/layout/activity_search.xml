@@ -30,7 +30,7 @@
         app:layout_constraintStart_toEndOf="@id/closeView"
         app:iconifiedByDefault="false"
         app:searchIcon="@null"
-        app:defaultQueryHint="@string/scientific_or_vietnamese_name" />
+        app:defaultQueryHint="@string/latin_or_vietnamese_name" />
 
     <ImageView
         android:id="@+id/microphoneView"

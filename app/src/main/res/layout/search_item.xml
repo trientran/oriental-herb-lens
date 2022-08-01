@@ -9,7 +9,7 @@
     tools:layout_height="50dp">
 
     <TextView
-        android:id="@+id/itemNameSci"
+        android:id="@+id/itemNameLatin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
@@ -28,7 +28,7 @@
         android:maxLines="1"
         android:textAppearance="?attr/textAppearanceBody1"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@+id/itemNameSci"
+        app:layout_constraintTop_toBottomOf="@+id/itemNameLatin"
         tools:text="@tools:sample/lorem/random" />
 
     <View

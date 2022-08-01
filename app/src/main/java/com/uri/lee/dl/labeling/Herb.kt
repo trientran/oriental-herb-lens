@@ -23,7 +23,7 @@ data class Herb(
     val imageUrl: String? = null,
     val imageFileUri: Uri? = null,
     val id: String? = null,
-    val sciName: String? = null,
+    val latinName: String? = null,
     val enName: String? = null,
     val viName: String? = null,
     val confidence: Float? = null,

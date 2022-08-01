@@ -13,7 +13,7 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.*
-import com.uri.lee.dl.herbdetails.tempherbs.sciList70
+import com.uri.lee.dl.herbdetails.tempherbs.latinList
 import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.labeling.Herb
 import kotlinx.coroutines.flow.*
@@ -92,8 +92,10 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setConfidence(confidence: Float) {
         Timber.d("setConfidence")
-        setState { copy(confidence = confidence) }
-        viewModelScope.launch { application.dataStore.edit { settings -> settings[CONFIDENCE_LEVEL] = confidence } }
+        viewModelScope.launch {
+            setState { copy(confidence = confidence) }
+            application.dataStore.edit { settings -> settings[CONFIDENCE_LEVEL] = confidence }
+        }
         process()
     }
 
@@ -184,7 +186,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
         null
     }
 
-    private fun labelImage(inputImage: InputImage, callback: (herbList: List<Herb>) -> Unit) {
+    private inline fun labelImage(inputImage: InputImage, crossinline callback: (herbList: List<Herb>) -> Unit) {
         labeler!!.process(inputImage)
             .addOnSuccessListener {
                 if (it.isEmpty()) {
@@ -204,7 +206,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
                     recognitionList.add(
                         Herb(
                             id = id,
-                            sciName = sciList70[id]!!,
+                            latinName = latinList[id]!!,
                             viName = viList70[id]!!,
                             confidence = it[i].confidence
                         )
@@ -218,7 +220,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
-    private fun setState(copiedState: SingleImageState.() -> SingleImageState) = stateFlow.update(copiedState)
+    private inline fun setState(copiedState: SingleImageState.() -> SingleImageState) = stateFlow.update(copiedState)
 
     override fun onCleared() {
         super.onCleared()

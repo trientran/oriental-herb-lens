@@ -4,8 +4,8 @@ import android.os.Parcelable
 import com.algolia.instantsearch.core.highlighting.HighlightedString
 import com.algolia.instantsearch.highlighting.Highlightable
 import com.algolia.search.model.Attribute
-import kotlinx.android.parcel.Parcelize
 import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
@@ -14,7 +14,7 @@ import kotlinx.serialization.json.JsonObject
 data class Herb(
     val objectID: String,
     val viName: String,
-    val sciName: String,
+    val latinName: String,
     val viUses: String,
     val viUsages: String,
     val viSideEffects: String,
@@ -29,8 +29,8 @@ data class Herb(
     override val _highlightResult: JsonObject? = null
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
-    val highlightedNameSci: HighlightedString?
-        get() = getHighlight(Attribute(::sciName.name))
+    val highlightedNameLatin: HighlightedString?
+        get() = getHighlight(Attribute(::latinName.name))
 
     @IgnoredOnParcel
     val highlightedNameVi: HighlightedString?

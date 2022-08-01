@@ -73,7 +73,7 @@ val viList70 = mapOf(
     "0070" to "Ý dĩ"
 )
 
-val sciList70 = mapOf(
+val latinList = mapOf(
     "0001" to "Peppermint",
     "0002" to "Stemona tuberosa",
     "0003" to "Clerodendrum canescens",
