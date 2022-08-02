@@ -24,7 +24,6 @@ import android.graphics.RectF
 import androidx.core.content.ContextCompat
 import com.uri.lee.dl.R
 import com.uri.lee.dl.camera.GraphicOverlay
-import com.uri.lee.dl.settings.PreferenceUtils
 
 /**
  * Similar to the camera reticle but with additional progress ring to indicate an object is getting
@@ -66,16 +65,8 @@ class ObjectConfirmationGraphic internal constructor(
         }
 
         innerRingPaint = Paint()
-        if (PreferenceUtils.isMultipleObjectsMode(overlay.context)) {
-            innerRingPaint.style = Style.FILL
-            innerRingPaint.color = ContextCompat.getColor(context, R.color.object_reticle_inner_ring)
-        } else {
-            innerRingPaint.style = Style.STROKE
-            innerRingPaint.strokeWidth =
-                resources.getDimensionPixelOffset(R.dimen.object_reticle_inner_ring_stroke_width).toFloat()
-            innerRingPaint.strokeCap = Cap.ROUND
-            innerRingPaint.color = ContextCompat.getColor(context, R.color.white)
-        }
+        innerRingPaint.style = Style.FILL
+        innerRingPaint.color = ContextCompat.getColor(context, R.color.object_reticle_inner_ring)
 
         outerRingFillRadius = resources.getDimensionPixelOffset(R.dimen.object_reticle_outer_ring_fill_radius)
         outerRingStrokeRadius = resources.getDimensionPixelOffset(R.dimen.object_reticle_outer_ring_stroke_radius)

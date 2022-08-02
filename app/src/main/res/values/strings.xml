@@ -41,18 +41,17 @@
     <string name="pref_category_object_detection">Object detection</string>
     <string name="pref_key_object_detector_enable_multiple_objects" translatable="false">odemo</string>
     <string name="pref_title_object_detector_enable_multiple_objects">Enable multiple objects</string>
-    <string name="pref_key_object_detector_enable_classification" translatable="false">odec</string>
     <string name="pref_title_object_detector_enable_classification">Enable classification</string>
 
     <!-- Strings for product search settings. -->
-    <string name="pref_category_product_search">Product search</string>
+    <string name="pref_category_herb_labeling">Herb labeling</string>
     <string name="pref_key_enable_auto_search" translatable="false">pkeas</string>
-    <string name="pref_title_enable_auto_search">Enable auto search</string>
+    <string name="pref_title_enable_auto_search">Enable auto labeling</string>
     <string name="pref_key_confirmation_time_in_manual_search" translatable="false">ctims</string>
-    <string name="pref_title_confirmation_time_in_manual_search">Confirmation time in manual search</string>
+    <string name="pref_title_confirmation_time_in_manual_search">Confirmation time in manual labeling</string>
     <string name="pref_summary_confirmation_time_in_manual_search">Ranges from 100ms to 1000ms</string>
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
-    <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto search</string>
+    <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
     <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
     <string name="n_results_found">5 results found</string>
@@ -100,5 +99,6 @@
     <string name="vietnamese_name">Vietnamese name: %s</string>
     <string name="english_name">English name: %s</string>
     <string name="your_selected_image">Your selected image</string>
+    <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
 
 </resources>

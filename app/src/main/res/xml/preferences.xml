@@ -11,23 +11,17 @@
 
     </androidx.preference.PreferenceCategory>
 
-    <androidx.preference.PreferenceCategory android:title="@string/pref_category_object_detection">
+    <androidx.preference.PreferenceCategory android:title="@string/pref_category_herb_labeling">
 
-        <androidx.preference.SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="@string/pref_key_object_detector_enable_multiple_objects"
+        <androidx.preference.SeekBarPreference
+            android:defaultValue="50"
+            android:key="@string/confidence"
+            android:max="100"
             android:persistent="true"
-            android:title="@string/pref_title_object_detector_enable_multiple_objects" />
-
-        <androidx.preference.SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="@string/pref_key_object_detector_enable_classification"
-            android:persistent="true"
-            android:title="@string/pref_title_object_detector_enable_classification" />
-
-    </androidx.preference.PreferenceCategory>
-
-    <androidx.preference.PreferenceCategory android:title="@string/pref_category_product_search">
+            android:summary="@string/ranges_from_0_to_100"
+            android:title="@string/confidence"
+            app:min="0"
+            app:showSeekBarValue="true" />
 
         <androidx.preference.SeekBarPreference
             android:defaultValue="500"

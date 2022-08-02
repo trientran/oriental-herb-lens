@@ -18,13 +18,24 @@ package com.uri.lee.dl.camera
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabeler
+import com.google.mlkit.vision.label.ImageLabeling
+import com.uri.lee.dl.getHerbModel
+import com.uri.lee.dl.herbdetails.tempherbs.latinList
+import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.image.DetectedObjectInfo
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.settings.PreferenceUtils
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.util.concurrent.CancellationException
 
 /** View model for handling application workflow based on camera preview.  */
 class WorkflowModel(application: Application) : AndroidViewModel(application) {
@@ -32,6 +43,8 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
     val workflowState = MutableLiveData<WorkflowState>()
     val objectToSearch = MutableLiveData<DetectedObjectInfo>()
     val detectedBitmapObject = MutableLiveData<DetectedBitmapObject>()
+    val confidence = MutableLiveData<Float>()
+    private var labeler: ImageLabeler? = null
 
     private val objectIdsToSearch = HashSet<Int>()
 
@@ -54,6 +67,14 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         CONFIRMED,
         SEARCHING,
         SEARCHED
+    }
+
+    init {
+        setConfidence(PreferenceUtils.getConfidence(application).toFloat() / 100)
+    }
+
+    fun setConfidence(confidence: Float) {
+        this.confidence.value = confidence
     }
 
     @MainThread
@@ -111,6 +132,54 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         isCameraLive = false
     }
 
+    fun label(detectedObjectInfo: DetectedObjectInfo, callback: (List<Herb>) -> Unit) {
+
+        Log.d(
+            "trien111", confidence.value.toString()
+        )
+        getHerbModel {
+            val options = it.setConfidenceThreshold(confidence.value ?: 0.5f).build()
+            labeler = ImageLabeling.getClient(options)
+            viewModelScope.launch {
+                try {
+                    labelObject(detectedObjectInfo, callback)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }
+        }
+    }
+
+    private fun labelObject(detectedObjectInfo: DetectedObjectInfo, callback: (List<Herb>) -> Unit) {
+        val inputImage = InputImage.fromBitmap(detectedObjectInfo.getBitmap(), 0)
+        labeler!!.process(inputImage)
+            .addOnSuccessListener {
+                if (it.isEmpty()) {
+                    callback.invoke(emptyList())
+                    return@addOnSuccessListener
+                }
+                val maxResultsDisplayed = it.size
+                val recognitionList = mutableListOf<Herb>()
+                for (i in 0 until maxResultsDisplayed) {
+                    val id = it[i].text.substringBefore(" ")
+                    recognitionList.add(
+                        Herb(
+                            id = id,
+                            latinName = latinList[id]!!,
+                            viName = viList70[id]!!,
+                            confidence = it[i].confidence
+                        )
+                    )
+                }
+                callback.invoke(recognitionList)
+            }
+            .addOnFailureListener {
+                Timber.e(it.message)
+            }
+    }
+
     fun onSearchCompleted(detectedObject: DetectedObjectInfo, herbs: List<Herb>) {
         val lConfirmedObject = confirmedObject
         if (detectedObject != lConfirmedObject) {
@@ -121,6 +190,7 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         objectIdsToSearch.remove(detectedObject.objectId)
         setWorkflowState(WorkflowState.SEARCHED)
 
-        this.detectedBitmapObject.value = DetectedBitmapObject(context.resources, lConfirmedObject)
+        val withHerbs = lConfirmedObject.copy(herbs = herbs)
+        this.detectedBitmapObject.value = DetectedBitmapObject(context.resources, withHerbs)
     }
 }

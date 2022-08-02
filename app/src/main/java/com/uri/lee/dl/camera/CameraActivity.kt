@@ -28,9 +28,9 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -40,10 +40,8 @@ import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
 import com.uri.lee.dl.image.MultiObjectProcessor
-import com.uri.lee.dl.image.ProminentObjectProcessor
 import com.uri.lee.dl.labeling.BottomSheetScrimView
 import com.uri.lee.dl.labeling.HerbAdapter
-import com.uri.lee.dl.labeling.LabelImage
 import com.uri.lee.dl.settings.PreferenceUtils
 import com.uri.lee.dl.settings.SettingsActivity
 import java.io.IOException
@@ -61,9 +59,8 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
     private var searchButton: ExtendedFloatingActionButton? = null
     private var searchButtonAnimator: AnimatorSet? = null
     private var searchProgressBar: ProgressBar? = null
-    private var workflowModel: WorkflowModel? = null
+    private val workflowModel: WorkflowModel by viewModels()
     private var currentWorkflowState: WorkflowModel.WorkflowState? = null
-    private var searchEngine: LabelImage? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private var bottomSheetScrimView: BottomSheetScrimView? = null
@@ -74,9 +71,6 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        searchEngine = LabelImage(applicationContext)
-
         setContentView(R.layout.activity_camera)
         preview = findViewById(R.id.camera_preview)
         graphicOverlay = findViewById<GraphicOverlay>(R.id.camera_preview_graphic_overlay).apply {
@@ -109,19 +103,13 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
     override fun onResume() {
         super.onResume()
-
-        workflowModel?.markCameraFrozen()
+        workflowModel.setConfidence(PreferenceUtils.getConfidence(this).toFloat() / 100)
+        workflowModel.markCameraFrozen()
         settingsButton?.isEnabled = true
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
         currentWorkflowState = WorkflowModel.WorkflowState.NOT_STARTED
-        cameraSource?.setFrameProcessor(
-            if (PreferenceUtils.isMultipleObjectsMode(this)) {
-                MultiObjectProcessor(graphicOverlay!!, workflowModel!!)
-            } else {
-                ProminentObjectProcessor(graphicOverlay!!, workflowModel!!)
-            }
-        )
-        workflowModel?.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
+        cameraSource?.setFrameProcessor(MultiObjectProcessor(graphicOverlay!!, workflowModel))
+        workflowModel.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
     }
 
     override fun onPause() {
@@ -134,7 +122,6 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         super.onDestroy()
         cameraSource?.release()
         cameraSource = null
-        searchEngine?.shutdown()
     }
 
     override fun onBackPressed() {
@@ -149,7 +136,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
         when (view.id) {
             R.id.product_search_button -> {
                 searchButton?.isEnabled = false
-                workflowModel?.onSearchButtonClicked()
+                workflowModel.onSearchButtonClicked()
             }
             R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.setState(BottomSheetBehavior.STATE_HIDDEN)
             R.id.close_button -> onBackPressed()
@@ -171,7 +158,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
 
     private fun startCameraPreview() {
         val cameraSource = this.cameraSource ?: return
-        val workflowModel = this.workflowModel ?: return
+        val workflowModel = this.workflowModel
         if (!workflowModel.isCameraLive) {
             try {
                 workflowModel.markCameraLive()
@@ -185,8 +172,8 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun stopCameraPreview() {
-        if (workflowModel?.isCameraLive == true) {
-            workflowModel!!.markCameraFrozen()
+        if (workflowModel.isCameraLive) {
+            workflowModel.markCameraFrozen()
             flashButton?.isSelected = false
             preview?.stop()
         }
@@ -203,7 +190,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                     graphicOverlay?.clear()
 
                     when (newState) {
-                        BottomSheetBehavior.STATE_HIDDEN -> workflowModel?.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
+                        BottomSheetBehavior.STATE_HIDDEN -> workflowModel.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
                         BottomSheetBehavior.STATE_COLLAPSED,
                         BottomSheetBehavior.STATE_EXPANDED,
                         BottomSheetBehavior.STATE_HALF_EXPANDED -> slidingSheetUpFromHiddenState = false
@@ -213,7 +200,7 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    val searchedObject = workflowModel!!.detectedBitmapObject.value
+                    val searchedObject = workflowModel.detectedBitmapObject.value
                     if (searchedObject == null || java.lang.Float.isNaN(slideOffset)) {
                         return
                     }
@@ -251,49 +238,46 @@ class CameraActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun setUpWorkflowModel() {
-        workflowModel = ViewModelProviders.of(this).get(WorkflowModel::class.java).apply {
-
-            // Observes the workflow state changes, if happens, update the overlay view indicators and
-            // camera preview state.
-            workflowState.observe(this@CameraActivity, Observer { workflowState ->
-                if (workflowState == null || Objects.equal(currentWorkflowState, workflowState)) {
-                    return@Observer
-                }
-                currentWorkflowState = workflowState
-                Log.d(TAG, "Current workflow state: ${workflowState.name}")
-
-                if (PreferenceUtils.isAutoSearchEnabled(this@CameraActivity)) {
-                    stateChangeInAutoSearchMode(workflowState)
-                } else {
-                    stateChangeInManualSearchMode(workflowState)
-                }
-            })
-
-            // Observes changes on the object to search, if happens, fire product search request.
-            objectToSearch.observe(this@CameraActivity) { detectObject ->
-                searchEngine!!.label(detectObject) { detectedObject, products ->
-                    workflowModel?.onSearchCompleted(detectedObject, products)
-                }
+        // Observes the workflow state changes, if happens, update the overlay view indicators and
+        // camera preview state.
+        workflowModel.workflowState.observe(this@CameraActivity, Observer { workflowState ->
+            if (workflowState == null || Objects.equal(currentWorkflowState, workflowState)) {
+                return@Observer
             }
+            currentWorkflowState = workflowState
+            Log.d(TAG, "Current workflow state: ${workflowState.name}")
 
-            // Observes changes on the object that has search completed, if happens, show the bottom sheet
-            // to present search result.
-            detectedBitmapObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
-                val searchedObject = nullableSearchedObject ?: return@Observer
-                searchedObject.detectedObject.herbs?.let {
-                    objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
-                    bottomSheetTitleView?.text = resources
-                        .getQuantityString(
-                            R.plurals.bottom_sheet_title, it.size, it.size
-                        )
-                    productRecyclerView?.adapter = HerbAdapter(it)
-                    slidingSheetUpFromHiddenState = true
-                    bottomSheetBehavior?.peekHeight =
-                        preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
-                    bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                }
-            })
+            if (PreferenceUtils.isAutoSearchEnabled(this@CameraActivity)) {
+                stateChangeInAutoSearchMode(workflowState)
+            } else {
+                stateChangeInManualSearchMode(workflowState)
+            }
+        })
+
+        // Observes changes on the object to search, if happens, fire product search request.
+        workflowModel.objectToSearch.observe(this@CameraActivity) { detectObject ->
+            workflowModel.label(detectObject) {
+                workflowModel.onSearchCompleted(detectObject, it)
+            }
         }
+
+        // Observes changes on the object that has search completed, if happens, show the bottom sheet
+        // to present search result.
+        workflowModel.detectedBitmapObject.observe(this@CameraActivity, Observer { nullableSearchedObject ->
+            val searchedObject = nullableSearchedObject ?: return@Observer
+            searchedObject.detectedObject.herbs?.let {
+                objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
+                bottomSheetTitleView?.text = resources
+                    .getQuantityString(
+                        R.plurals.bottom_sheet_title, it.size, it.size
+                    )
+                productRecyclerView?.adapter = HerbAdapter(it)
+                slidingSheetUpFromHiddenState = true
+                bottomSheetBehavior?.peekHeight =
+                    preview?.height?.div(2) ?: BottomSheetBehavior.PEEK_HEIGHT_AUTO
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            }
+        })
     }
 
     private fun stateChangeInAutoSearchMode(workflowState: WorkflowModel.WorkflowState) {

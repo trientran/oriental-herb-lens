@@ -22,13 +22,11 @@ import android.util.SparseArray
 import androidx.annotation.MainThread
 import androidx.core.util.forEach
 import com.google.android.gms.tasks.Task
-import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
-import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.InputInfo
 import com.uri.lee.dl.R
@@ -36,7 +34,6 @@ import com.uri.lee.dl.camera.CameraReticleAnimator
 import com.uri.lee.dl.camera.FrameProcessorBase
 import com.uri.lee.dl.camera.GraphicOverlay
 import com.uri.lee.dl.camera.WorkflowModel
-import com.uri.lee.dl.settings.PreferenceUtils
 import java.io.IOException
 import kotlin.math.hypot
 
@@ -44,7 +41,6 @@ import kotlin.math.hypot
 class MultiObjectProcessor(
     graphicOverlay: GraphicOverlay,
     private val workflowModel: WorkflowModel,
-    private val customModelPath: String? = null
 ) :
     FrameProcessorBase<List<DetectedObject>>() {
     private val confirmationController: ObjectConfirmationController = ObjectConfirmationController(graphicOverlay)
@@ -59,24 +55,9 @@ class MultiObjectProcessor(
 
     init {
         val options: ObjectDetectorOptionsBase
-        val isClassificationEnabled = PreferenceUtils.isClassificationEnabled(graphicOverlay.context)
-
-        if (customModelPath != null) {
-            val localModel = LocalModel.Builder()
-                .setAssetFilePath(customModelPath)
-                .build()
-            options = CustomObjectDetectorOptions.Builder(localModel)
-                .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-                .enableClassification() // Always enable classification for custom models
-                .build()
-        } else {
             val optionsBuilder = ObjectDetectorOptions.Builder()
                 .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-            if (isClassificationEnabled) {
-                optionsBuilder.enableClassification()
-            }
             options = optionsBuilder.build()
-        }
 
         this.detector = ObjectDetection.getClient(options)
     }
@@ -100,28 +81,17 @@ class MultiObjectProcessor(
         results: List<DetectedObject>,
         graphicOverlay: GraphicOverlay
     ) {
-        var objects = results
         if (!workflowModel.isCameraLive) {
             return
         }
 
-        if (customModelPath != null) {
-            objects = results.filter { result -> DetectedObjectInfo.hasValidLabels(result) }
-        } else if (PreferenceUtils.isClassificationEnabled(graphicOverlay.context)) {
-            val qualifiedObjects = ArrayList<DetectedObject>()
-            for (result in objects) {
-                qualifiedObjects.add(result)
-            }
-            objects = qualifiedObjects
-        }
-
-        removeAnimatorsFromUntrackedObjects(objects)
+        removeAnimatorsFromUntrackedObjects(results)
 
         graphicOverlay.clear()
 
         var selectedObject: DetectedObjectInfo? = null
-        for (i in objects.indices) {
-            val result = objects[i]
+        for (i in results.indices) {
+            val result = results[i]
             if (selectedObject == null && shouldSelectObject(graphicOverlay, result)) {
                 selectedObject = DetectedObjectInfo(result, i, inputInfo, null)
                 // Starts the object confirmation once an object is regarded as selected.
@@ -168,7 +138,7 @@ class MultiObjectProcessor(
             workflowModel.confirmingObject(selectedObject, confirmationController.progress)
         } else {
             workflowModel.setWorkflowState(
-                if (objects.isEmpty()) {
+                if (results.isEmpty()) {
                     WorkflowModel.WorkflowState.DETECTING
                 } else {
                     WorkflowModel.WorkflowState.DETECTED
