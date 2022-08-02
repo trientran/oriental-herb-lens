@@ -1,6 +1,5 @@
 package com.uri.lee.dl.camera.livecamera
 
-import android.content.Context
 import android.util.Size
 import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.LiveData
@@ -21,20 +20,19 @@ class CameraViewModel : ViewModel() {
         _recognitionList.value = recognitions
     }
 
-    fun analyzeImage(context: Context, cameraExecutor: ExecutorService): ImageAnalysis {
-
+    fun analyzeImage(cameraExecutor: ExecutorService, confidence: Float): ImageAnalysis {
         return ImageAnalysis.Builder()
             // This sets the ideal size for the image to be analyse, CameraX will choose the
             // the most suitable resolution which may not be exactly the same or hold the same
             // aspect ratio
-            .setTargetResolution(Size(224, 224))
+            .setTargetResolution(Size(600, 600))
             // How the Image Analyser should pipe in input, 1. every frame but drop no frame, or
             // 2. go to the latest frame and may drop some frame. The default is 2.
             // STRATEGY_KEEP_ONLY_LATEST. The following line is optional, kept here for clarity
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .also {
-                it.setAnalyzer(cameraExecutor, ImageAnalyzer(context) { recognitionList ->
+                it.setAnalyzer(cameraExecutor, ImageAnalyzer(confidence = confidence) { recognitionList ->
                     // updating the list of recognised objects
                     updateData(recognitionList)
                 })

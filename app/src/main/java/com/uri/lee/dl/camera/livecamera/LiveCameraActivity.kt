@@ -1,6 +1,8 @@
 package com.uri.lee.dl.camera.livecamera
 
+import android.os.Build
 import android.os.Bundle
+import android.widget.SeekBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -10,6 +12,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityLiveCameraBinding
 import timber.log.Timber
 import java.util.concurrent.Executors
@@ -38,6 +41,19 @@ class LiveCameraActivity : AppCompatActivity() {
         // and out as the list change
         binding.recyclerView.itemAnimator = null
 
+        binding.closeButton.setOnClickListener { finish() }
+
+        binding.seekView.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, b: Boolean) {
+                binding.seekView.confidencePercentView.text = "$progress %"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                startCamera(seekBar.progress.toFloat() / 100)
+            }
+        })
+
         // Attach an observer on the LiveData field of recognitionList
         // This will notify the recycler view to update every time when a new list is set on the
         // LiveData field of recognitionList.
@@ -45,7 +61,15 @@ class LiveCameraActivity : AppCompatActivity() {
             viewAdapter.submitList(it)
         }
 
-        startCamera()
+        binding.seekView.seekBar.progress = 50
+        startCamera(binding.seekView.seekBar.progress.toFloat() / 100)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
+            Utils.requestRuntimePermissions(this)
+        }
     }
 
     /**
@@ -56,7 +80,7 @@ class LiveCameraActivity : AppCompatActivity() {
      * 3. Attach both to the lifecycle of this activity
      * 4. Pipe the output of the preview object to the PreviewView on the screen
      */
-    private fun startCamera() {
+    private fun startCamera(confidence: Float) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -68,7 +92,7 @@ class LiveCameraActivity : AppCompatActivity() {
 
             preview = Preview.Builder().build()
             imageAnalyzer =
-                cameraViewModel.analyzeImage(this, Executors.newSingleThreadExecutor())
+                cameraViewModel.analyzeImage(Executors.newSingleThreadExecutor(), confidence)
 
             try {
                 // Unbind use cases before rebinding
