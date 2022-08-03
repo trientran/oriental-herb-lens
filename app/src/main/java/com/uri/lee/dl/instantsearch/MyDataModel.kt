@@ -14,7 +14,7 @@ import kotlinx.serialization.json.JsonObject
 data class Herb(
     val objectID: String,
     val viName: String,
-    val latinName: String,
+    val sciName: String,
     val viUses: String,
     val viUsages: String,
     val viSideEffects: String,
@@ -30,7 +30,7 @@ data class Herb(
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
     val highlightedNameLatin: HighlightedString?
-        get() = getHighlight(Attribute(::latinName.name))
+        get() = getHighlight(Attribute(::sciName.name)) // todo be careful if changing this because it needs to match with the field in Algolia database
 
     @IgnoredOnParcel
     val highlightedNameVi: HighlightedString?
