@@ -22,7 +22,7 @@ import android.graphics.Shader.TileMode
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /**
  * Draws the detected detectedObject info over the camera preview for multiple objects detection mode.

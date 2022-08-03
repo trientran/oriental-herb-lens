@@ -23,7 +23,7 @@ import android.graphics.Paint.Style
 import android.graphics.RectF
 import androidx.core.content.ContextCompat
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /**
  * Similar to the camera reticle but with additional progress ring to indicate an object is getting

@@ -22,8 +22,8 @@ import android.graphics.Paint.Cap
 import android.graphics.Paint.Style
 import androidx.core.content.ContextCompat
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.CameraReticleAnimator
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.CameraReticleAnimator
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /**
  * A camera reticle that locates at the center of canvas to indicate the system is active but has

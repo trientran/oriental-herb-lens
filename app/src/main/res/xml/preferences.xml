@@ -14,16 +14,6 @@
     <androidx.preference.PreferenceCategory android:title="@string/pref_category_herb_labeling">
 
         <androidx.preference.SeekBarPreference
-            android:defaultValue="50"
-            android:key="@string/confidence"
-            android:max="100"
-            android:persistent="true"
-            android:summary="@string/ranges_from_0_to_100"
-            android:title="@string/confidence"
-            app:min="0"
-            app:showSeekBarValue="true" />
-
-        <androidx.preference.SeekBarPreference
             android:defaultValue="500"
             android:key="@string/pref_key_confirmation_time_in_manual_search"
             android:max="1000"

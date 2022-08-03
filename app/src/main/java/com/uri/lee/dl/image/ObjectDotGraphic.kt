@@ -22,7 +22,7 @@ import android.graphics.Paint
 import android.graphics.Paint.Style
 import android.graphics.PointF
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /** A dot to indicate a detected object used by multiple objects detection mode.  */
 internal class ObjectDotGraphic(

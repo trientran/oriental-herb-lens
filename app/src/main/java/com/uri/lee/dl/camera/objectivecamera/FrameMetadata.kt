@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.camera
+package com.uri.lee.dl.camera.objectivecamera
 
 /** Metadata info of a camera frame.  */
 class FrameMetadata(val width: Int, val height: Int, val rotation: Int)

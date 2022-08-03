@@ -17,7 +17,7 @@
 package com.uri.lee.dl.image
 
 import android.os.CountDownTimer
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 import com.uri.lee.dl.settings.PreferenceUtils
 
 /**

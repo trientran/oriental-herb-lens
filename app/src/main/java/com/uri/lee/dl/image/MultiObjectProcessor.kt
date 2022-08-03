@@ -30,10 +30,10 @@ import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.InputInfo
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.CameraReticleAnimator
-import com.uri.lee.dl.camera.FrameProcessorBase
-import com.uri.lee.dl.camera.GraphicOverlay
-import com.uri.lee.dl.camera.WorkflowModel
+import com.uri.lee.dl.camera.objectivecamera.CameraReticleAnimator
+import com.uri.lee.dl.camera.objectivecamera.FrameProcessorBase
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.WorkflowModel
 import java.io.IOException
 import kotlin.math.hypot
 
@@ -113,7 +113,7 @@ class MultiObjectProcessor(
                 val objectDotAnimator = objectDotAnimatorArray.get(trackingId) ?: let {
                     ObjectDotAnimator(graphicOverlay).apply {
                         start()
-                        objectDotAnimatorArray[trackingId] = this
+                        objectDotAnimatorArray.put(trackingId, this)
                     }
                 }
                 graphicOverlay.add(

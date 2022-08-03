@@ -17,7 +17,7 @@
 package com.uri.lee.dl
 
 import android.graphics.Bitmap
-import com.uri.lee.dl.camera.FrameMetadata
+import com.uri.lee.dl.camera.objectivecamera.FrameMetadata
 import java.nio.ByteBuffer
 
 interface InputInfo {

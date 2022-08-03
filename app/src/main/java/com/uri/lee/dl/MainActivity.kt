@@ -17,7 +17,7 @@ import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
-import com.uri.lee.dl.camera.livecamera.LiveCameraActivity
+import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.image.ImageActivity
@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
 
         binding.searchCameraView.setOnClickListener {
-            startActivity(Intent(this, LiveCameraActivity::class.java))
+            startActivity(Intent(this, CameraActivity::class.java))
         }
 
         binding.searchMultiImagesView.setOnClickListener {
@@ -78,17 +78,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (authUI.auth.currentUser == null) {
-            val signInIntent = authUI
-                .createSignInIntentBuilder()
-                .setAvailableProviders(arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build()))
-                .setLogo(R.drawable.ic_launcher_round)
-                .setTheme(R.style.AppTheme)
-                .build()
-            signInLauncher.launch(signInIntent)
+//        if (authUI.auth.currentUser == null) {
+//            val signInIntent = authUI
+//                .createSignInIntentBuilder()
+//                .setAvailableProviders(arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build()))
+//                .setLogo(R.drawable.ic_launcher_round)
+//                .setTheme(R.style.AppTheme)
+//                .build()
+//            signInLauncher.launch(signInIntent)}
 
-
-        }
     }
 
     override fun onResume() {

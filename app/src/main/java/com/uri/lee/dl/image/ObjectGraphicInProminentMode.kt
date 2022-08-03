@@ -23,7 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.objects.DetectedObject
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /**
  * Draws the detected visionObject info over the camera preview for prominent visionObject detection mode.

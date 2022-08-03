@@ -21,7 +21,7 @@ import android.preference.PreferenceManager
 import androidx.annotation.StringRes
 import com.google.android.gms.common.images.Size
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.CameraSizePair
+import com.uri.lee.dl.camera.objectivecamera.CameraSizePair
 
 /** Utility class to retrieve shared preferences. */
 object PreferenceUtils {
@@ -42,9 +42,6 @@ object PreferenceUtils {
                 getIntPref(context, R.string.pref_key_confirmation_time_in_auto_search, 1500)
             else -> getIntPref(context, R.string.pref_key_confirmation_time_in_manual_search, 500)
         }
-
-    fun getConfidence(context: Context): Int =
-        getIntPref(context, R.string.confidence, 50)
 
     private fun getIntPref(context: Context, @StringRes prefKeyId: Int, defaultValue: Int): Int {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)

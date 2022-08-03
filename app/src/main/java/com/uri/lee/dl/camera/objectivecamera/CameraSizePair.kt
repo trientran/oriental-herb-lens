@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.camera
+package com.uri.lee.dl.camera.objectivecamera
 
 import android.hardware.Camera
 import com.google.android.gms.common.images.Size

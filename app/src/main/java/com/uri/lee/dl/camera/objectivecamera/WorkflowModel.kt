@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.camera
+package com.uri.lee.dl.camera.objectivecamera
 
 import android.app.Application
 import android.content.Context
@@ -67,14 +67,6 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         CONFIRMED,
         SEARCHING,
         SEARCHED
-    }
-
-    init {
-        setConfidence(PreferenceUtils.getConfidence(application).toFloat() / 100)
-    }
-
-    fun setConfidence(confidence: Float) {
-        this.confidence.value = confidence
     }
 
     @MainThread
@@ -132,13 +124,9 @@ class WorkflowModel(application: Application) : AndroidViewModel(application) {
         isCameraLive = false
     }
 
-    fun label(detectedObjectInfo: DetectedObjectInfo, callback: (List<Herb>) -> Unit) {
-
-        Log.d(
-            "trien111", confidence.value.toString()
-        )
+    fun label(detectedObjectInfo: DetectedObjectInfo, confidence: Float, callback: (List<Herb>) -> Unit) {
         getHerbModel {
-            val options = it.setConfidenceThreshold(confidence.value ?: 0.5f).build()
+            val options = it.setConfidenceThreshold(confidence).build()
             labeler = ImageLabeling.getClient(options)
             viewModelScope.launch {
                 try {

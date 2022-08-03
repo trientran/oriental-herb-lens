@@ -20,7 +20,7 @@ import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import androidx.core.view.animation.PathInterpolatorCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.uri.lee.dl.camera.GraphicOverlay
+import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 
 /**
  * Custom animator for the object dot.
