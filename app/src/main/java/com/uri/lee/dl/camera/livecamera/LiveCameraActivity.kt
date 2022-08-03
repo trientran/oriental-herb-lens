@@ -2,6 +2,7 @@ package com.uri.lee.dl.camera.livecamera
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.SeekBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -62,13 +63,14 @@ class LiveCameraActivity : AppCompatActivity() {
         }
 
         binding.seekView.seekBar.progress = 50
-        startCamera(binding.seekView.seekBar.progress.toFloat() / 100)
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
             Utils.requestRuntimePermissions(this)
+        } else {
+            startCamera(binding.seekView.seekBar.progress.toFloat() / 100)
         }
     }
 
