@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     tools:context=".camera.CameraActivity">
 
     <FrameLayout
@@ -12,11 +11,40 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <include
-        android:id="@+id/actionBar"
-        layout="@layout/top_action_bar_in_live_camera"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/objects_mode_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:checked="false"
+            android:padding="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="4dp"
+            android:text="@string/objects_mode"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/seekView"
+            app:layout_constraintTop_toTopOf="@+id/seekView" />
+
+        <include
+            android:id="@+id/seekView"
+            layout="@layout/seek_bar_confidence"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/objects_mode_switch" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,6 +19,7 @@ package com.uri.lee.dl.camera.objectivecamera
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.hardware.Camera
@@ -29,6 +30,7 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -40,7 +42,6 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.livecamera.LiveCameraFragment
 import com.uri.lee.dl.databinding.FragmentObjectiveCameraBinding
 import com.uri.lee.dl.image.MultiObjectProcessor
 import com.uri.lee.dl.labeling.BottomSheetScrimView
@@ -49,6 +50,7 @@ import com.uri.lee.dl.settings.PreferenceUtils
 import com.uri.lee.dl.settings.SettingsActivity
 import timber.log.Timber
 import java.io.IOException
+
 
 /** Demonstrates the object detection and visual search workflow using camera preview.  */
 class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnClickListener {
@@ -63,8 +65,8 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
     private var searchButton: ExtendedFloatingActionButton? = null
     private var searchButtonAnimator: AnimatorSet? = null
     private var searchProgressBar: ProgressBar? = null
-    private val workflowModel: WorkflowModel by viewModels()
-    private var currentWorkflowState: WorkflowModel.WorkflowState? = null
+    private val objectiveCameraViewModel: ObjectiveCameraViewModel by viewModels()
+    private var currentWorkflowState: ObjectiveCameraViewModel.WorkflowState? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private var bottomSheetScrimView: BottomSheetScrimView? = null
@@ -109,30 +111,26 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
             }
         searchProgressBar = binding.cameraPreviewOverlay.searchProgressBar
         setUpBottomSheet()
-        binding.topActionBarInLiveCamera.closeButton.setOnClickListener(this)
-        flashButton = binding.topActionBarInLiveCamera.flashButton.apply {
-            setOnClickListener(this@ObjectiveCameraFragment)
-        }
-        settingsButton = binding.topActionBarInLiveCamera.settingsButton.apply {
-            setOnClickListener(this@ObjectiveCameraFragment)
-        }
+        binding.closeButton.setOnClickListener(this)
+        flashButton = binding.flashButton.apply { setOnClickListener(this@ObjectiveCameraFragment) }
+        settingsButton = binding.settingsButton.apply { setOnClickListener(this@ObjectiveCameraFragment) }
         setUpWorkflowModel()
     }
 
 
     override fun onResume() {
         super.onResume()
-        workflowModel.markCameraFrozen()
+        objectiveCameraViewModel.markCameraFrozen()
         settingsButton?.isEnabled = true
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-        currentWorkflowState = WorkflowModel.WorkflowState.NOT_STARTED
-        cameraSource?.setFrameProcessor(MultiObjectProcessor(graphicOverlay!!, workflowModel))
-        workflowModel.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
+        currentWorkflowState = ObjectiveCameraViewModel.WorkflowState.NOT_STARTED
+        cameraSource?.setFrameProcessor(MultiObjectProcessor(graphicOverlay!!, objectiveCameraViewModel))
+        objectiveCameraViewModel.setWorkflowState(ObjectiveCameraViewModel.WorkflowState.DETECTING)
     }
 
     override fun onPause() {
         super.onPause()
-        currentWorkflowState = WorkflowModel.WorkflowState.NOT_STARTED
+        currentWorkflowState = ObjectiveCameraViewModel.WorkflowState.NOT_STARTED
         stopCameraPreview()
     }
 
@@ -146,17 +144,22 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
         when (view.id) {
             R.id.product_search_button -> {
                 searchButton?.isEnabled = false
-                workflowModel.onSearchButtonClicked()
+                objectiveCameraViewModel.onSearchButtonClicked()
             }
             R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.setState(BottomSheetBehavior.STATE_HIDDEN)
             R.id.close_button -> requireActivity().finish()
             R.id.flash_button -> {
-                if (flashButton?.isSelected == true) {
-                    flashButton?.isSelected = false
-                    cameraSource?.updateFlashMode(Camera.Parameters.FLASH_MODE_OFF)
-                } else {
-                    flashButton?.isSelected = true
-                    cameraSource?.updateFlashMode(Camera.Parameters.FLASH_MODE_TORCH)
+                view.apply {
+                    isVisible = requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
+                    setOnClickListener {
+                        if (view.isSelected) {
+                            view.isSelected = false
+                            cameraSource?.updateFlashMode(Camera.Parameters.FLASH_MODE_OFF)
+                        } else {
+                            view.isSelected = true
+                            cameraSource?.updateFlashMode(Camera.Parameters.FLASH_MODE_TORCH)
+                        }
+                    }
                 }
             }
             R.id.settings_button -> {
@@ -168,7 +171,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
 
     private fun startCameraPreview() {
         val cameraSource = this.cameraSource ?: return
-        val workflowModel = this.workflowModel
+        val workflowModel = this.objectiveCameraViewModel
         if (!workflowModel.isCameraLive) {
             try {
                 workflowModel.markCameraLive()
@@ -182,8 +185,8 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
     }
 
     private fun stopCameraPreview() {
-        if (workflowModel.isCameraLive) {
-            workflowModel.markCameraFrozen()
+        if (objectiveCameraViewModel.isCameraLive) {
+            objectiveCameraViewModel.markCameraFrozen()
             flashButton?.isSelected = false
             preview?.stop()
         }
@@ -200,7 +203,9 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                     graphicOverlay?.clear()
 
                     when (newState) {
-                        BottomSheetBehavior.STATE_HIDDEN -> workflowModel.setWorkflowState(WorkflowModel.WorkflowState.DETECTING)
+                        BottomSheetBehavior.STATE_HIDDEN -> objectiveCameraViewModel.setWorkflowState(
+                            ObjectiveCameraViewModel.WorkflowState.DETECTING
+                        )
                         BottomSheetBehavior.STATE_COLLAPSED,
                         BottomSheetBehavior.STATE_EXPANDED,
                         BottomSheetBehavior.STATE_HALF_EXPANDED -> slidingSheetUpFromHiddenState = false
@@ -210,7 +215,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    val searchedObject = workflowModel.detectedBitmapObject.value
+                    val searchedObject = objectiveCameraViewModel.detectedBitmapObject.value
                     if (searchedObject == null || java.lang.Float.isNaN(slideOffset)) {
                         return
                     }
@@ -250,7 +255,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
     private fun setUpWorkflowModel() {
         // Observes the workflow state changes, if happens, update the overlay view indicators and
         // camera preview state.
-        workflowModel.workflowState.observe(viewLifecycleOwner, Observer { workflowState ->
+        objectiveCameraViewModel.workflowState.observe(viewLifecycleOwner, Observer { workflowState ->
             if (workflowState == null || Objects.equal(currentWorkflowState, workflowState)) {
                 return@Observer
             }
@@ -265,15 +270,15 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
         })
 
         // Observes changes on the object to search, if happens, fire product search request.
-        workflowModel.objectToSearch.observe(viewLifecycleOwner) { detectObject ->
-            workflowModel.label(detectObject, confidence) {
-                workflowModel.onSearchCompleted(detectObject, it)
+        objectiveCameraViewModel.objectToSearch.observe(viewLifecycleOwner) { detectObject ->
+            objectiveCameraViewModel.label(detectObject, confidence) {
+                objectiveCameraViewModel.onSearchCompleted(detectObject, it)
             }
         }
 
         // Observes changes on the object that has search completed, if happens, show the bottom sheet
         // to present search result.
-        workflowModel.detectedBitmapObject.observe(viewLifecycleOwner, Observer { nullableSearchedObject ->
+        objectiveCameraViewModel.detectedBitmapObject.observe(viewLifecycleOwner, Observer { nullableSearchedObject ->
             val searchedObject = nullableSearchedObject ?: return@Observer
             searchedObject.detectedObject.herbs?.let {
                 objectThumbnailForBottomSheet = searchedObject.getObjectThumbnail()
@@ -290,34 +295,34 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
         })
     }
 
-    private fun stateChangeInAutoSearchMode(workflowState: WorkflowModel.WorkflowState) {
+    private fun stateChangeInAutoSearchMode(workflowState: ObjectiveCameraViewModel.WorkflowState) {
         val wasPromptChipGone = promptChip!!.visibility == View.GONE
 
         searchButton?.visibility = View.GONE
         searchProgressBar?.visibility = View.GONE
         when (workflowState) {
-            WorkflowModel.WorkflowState.DETECTING, WorkflowModel.WorkflowState.DETECTED, WorkflowModel.WorkflowState.CONFIRMING -> {
+            ObjectiveCameraViewModel.WorkflowState.DETECTING, ObjectiveCameraViewModel.WorkflowState.DETECTED, ObjectiveCameraViewModel.WorkflowState.CONFIRMING -> {
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(
-                    if (workflowState == WorkflowModel.WorkflowState.CONFIRMING)
+                    if (workflowState == ObjectiveCameraViewModel.WorkflowState.CONFIRMING)
                         R.string.prompt_hold_camera_steady
                     else
                         R.string.prompt_point_at_an_object
                 )
                 startCameraPreview()
             }
-            WorkflowModel.WorkflowState.CONFIRMED -> {
+            ObjectiveCameraViewModel.WorkflowState.CONFIRMED -> {
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(R.string.prompt_searching)
                 stopCameraPreview()
             }
-            WorkflowModel.WorkflowState.SEARCHING -> {
+            ObjectiveCameraViewModel.WorkflowState.SEARCHING -> {
                 searchProgressBar?.visibility = View.VISIBLE
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(R.string.prompt_searching)
                 stopCameraPreview()
             }
-            WorkflowModel.WorkflowState.SEARCHED -> {
+            ObjectiveCameraViewModel.WorkflowState.SEARCHED -> {
                 promptChip?.visibility = View.GONE
                 stopCameraPreview()
             }
@@ -330,26 +335,26 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
         }
     }
 
-    private fun stateChangeInManualSearchMode(workflowState: WorkflowModel.WorkflowState) {
+    private fun stateChangeInManualSearchMode(workflowState: ObjectiveCameraViewModel.WorkflowState) {
         val wasPromptChipGone = promptChip?.visibility == View.GONE
         val wasSearchButtonGone = searchButton?.visibility == View.GONE
 
         searchProgressBar?.visibility = View.GONE
         when (workflowState) {
-            WorkflowModel.WorkflowState.DETECTING, WorkflowModel.WorkflowState.DETECTED, WorkflowModel.WorkflowState.CONFIRMING -> {
+            ObjectiveCameraViewModel.WorkflowState.DETECTING, ObjectiveCameraViewModel.WorkflowState.DETECTED, ObjectiveCameraViewModel.WorkflowState.CONFIRMING -> {
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(R.string.prompt_point_at_an_object)
                 searchButton?.visibility = View.GONE
                 startCameraPreview()
             }
-            WorkflowModel.WorkflowState.CONFIRMED -> {
+            ObjectiveCameraViewModel.WorkflowState.CONFIRMED -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.VISIBLE
                 searchButton?.isEnabled = true
                 searchButton?.setBackgroundColor(Color.WHITE)
                 startCameraPreview()
             }
-            WorkflowModel.WorkflowState.SEARCHING -> {
+            ObjectiveCameraViewModel.WorkflowState.SEARCHING -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.VISIBLE
                 searchButton?.isEnabled = false
@@ -357,7 +362,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 searchProgressBar!!.visibility = View.VISIBLE
                 stopCameraPreview()
             }
-            WorkflowModel.WorkflowState.SEARCHED -> {
+            ObjectiveCameraViewModel.WorkflowState.SEARCHED -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.GONE
                 stopCameraPreview()

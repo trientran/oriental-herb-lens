@@ -4,13 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </androidx.camera.view.PreviewView>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/appBarLayout"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/top_action_bar_scrim">
+        android:background="@drawable/top_action_bar_scrim"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/close_button"
@@ -18,43 +24,24 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/cd_close_button"
+            android:foregroundTint="@color/white"
             android:padding="@dimen/top_action_button_padding"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_close_vd_white_24"
-            android:foregroundTint="@color/white" />
+            app:srcCompat="@drawable/ic_close_vd_white_24" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/objects_mode_switch"
+        <ImageView
+            android:id="@+id/flash_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:checked="false"
             android:background="?android:attr/selectableItemBackground"
-            android:text="@string/objects_mode"
-            android:textColor="@color/white"
+            android:contentDescription="@string/cd_flash_button"
+            android:padding="@dimen/top_action_button_padding"
+            app:layout_constraintStart_toEndOf="@+id/close_button"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <include
-            android:id="@+id/seekView"
-            layout="@layout/seek_bar_confidence"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/objects_mode_switch" />
+            app:srcCompat="@drawable/camera_flash" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.camera.view.PreviewView
-        android:id="@+id/cameraView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-    </androidx.camera.view.PreviewView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

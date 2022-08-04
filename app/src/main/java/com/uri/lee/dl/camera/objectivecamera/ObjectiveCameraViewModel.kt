@@ -18,7 +18,6 @@ package com.uri.lee.dl.camera.objectivecamera
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -38,7 +37,7 @@ import timber.log.Timber
 import java.util.concurrent.CancellationException
 
 /** View model for handling application workflow based on camera preview.  */
-class WorkflowModel(application: Application) : AndroidViewModel(application) {
+class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(application) {
 
     val workflowState = MutableLiveData<WorkflowState>()
     val objectToSearch = MutableLiveData<DetectedObjectInfo>()

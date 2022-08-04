@@ -16,13 +16,47 @@
 
     </com.uri.lee.dl.camera.objectivecamera.CameraSourcePreview>
 
-    <include
-        android:id="@+id/top_action_bar_in_live_camera"
-        layout="@layout/top_action_bar_in_live_camera"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:visibility="gone" />
+        android:background="@drawable/top_action_bar_scrim">
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/cd_close_button"
+            android:padding="@dimen/top_action_button_padding"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_close_vd_white_24" />
+
+        <ImageView
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/cd_settings_button"
+            android:padding="@dimen/top_action_button_padding"
+            app:layout_constraintStart_toEndOf="@+id/flash_button"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_settings_vd_white_24" />
+
+        <ImageView
+            android:id="@+id/flash_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/cd_flash_button"
+            android:padding="@dimen/top_action_button_padding"
+            app:layout_constraintStart_toEndOf="@+id/close_button"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/camera_flash" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.uri.lee.dl.labeling.BottomSheetScrimView
         android:id="@+id/bottom_sheet_scrim_view"

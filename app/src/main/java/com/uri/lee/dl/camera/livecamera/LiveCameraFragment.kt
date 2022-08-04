@@ -4,17 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.objectivecamera.ObjectiveCameraFragment
 import com.uri.lee.dl.databinding.FragmentLiveCameraBinding
 import timber.log.Timber
 import java.util.concurrent.Executors
@@ -25,7 +23,7 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
     private lateinit var imageAnalyzer: ImageAnalysis // Analysis use case, for running ML code
     private lateinit var camera: Camera
 
-    private val cameraViewModel: CameraViewModel by viewModels()
+    private val liveCameraViewModel: LiveCameraViewModel by viewModels()
 
     private lateinit var binding: FragmentLiveCameraBinding
 
@@ -50,14 +48,16 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
         // and out as the list change
         binding.recyclerView.itemAnimator = null
 
+        binding.closeButton.setOnClickListener { requireActivity().finish() }
+
+        startCamera(confidence)
+
         // Attach an observer on the LiveData field of recognitionList
         // This will notify the recycler view to update every time when a new list is set on the
         // LiveData field of recognitionList.
-        cameraViewModel.recognitionList.observe(viewLifecycleOwner) {
+        liveCameraViewModel.recognitionList.observe(viewLifecycleOwner) {
             viewAdapter.submitList(it)
         }
-
-        startCamera(confidence)
     }
 
     /**
@@ -80,7 +80,7 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
 
             preview = Preview.Builder().build()
             imageAnalyzer =
-                cameraViewModel.analyzeImage(Executors.newSingleThreadExecutor(), confidence)
+                liveCameraViewModel.analyzeImage(Executors.newSingleThreadExecutor(), confidence)
 
             try {
                 // Unbind use cases before rebinding
@@ -90,6 +90,19 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
                 // the best combination.
                 camera =
                     cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
+
+                binding.flashButton.apply {
+                    isVisible = camera.cameraInfo.hasFlashUnit()
+                    setOnClickListener {
+                        if (it.isSelected) {
+                            it.isSelected = false
+                            camera.cameraControl.enableTorch(false)
+                        } else {
+                            it.isSelected = true
+                            camera.cameraControl.enableTorch(true)
+                        }
+                    }
+                }
 
                 // Attach the preview to preview view, aka View Finder
                 preview.setSurfaceProvider(binding.cameraView.surfaceProvider)

@@ -15,14 +15,12 @@ import com.uri.lee.dl.herbdetails.tempherbs.latinList
 import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.images.ImagesState.Recognition
 import com.uri.lee.dl.labeling.Herb
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.CancellationException
 
-@ExperimentalCoroutinesApi
 class ImagesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val application = getApplication<BaseApplication>()

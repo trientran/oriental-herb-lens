@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.uri.lee.dl.labeling.Herb
 import java.util.concurrent.ExecutorService
 
-class CameraViewModel : ViewModel() {
+class LiveCameraViewModel : ViewModel() {
     // This is a LiveData field. Choosing this structure because the whole list tend to be updated
     // at once in ML and not individual elements. Updating this once for the entire list makes
     // sense.

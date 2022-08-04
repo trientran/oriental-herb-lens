@@ -20,7 +20,7 @@
         <activity
             android:name=".camera.CameraActivity"
             android:exported="false"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="locked"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".images.ImagesActivity"

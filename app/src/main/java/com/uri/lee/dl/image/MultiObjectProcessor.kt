@@ -33,14 +33,14 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.camera.objectivecamera.CameraReticleAnimator
 import com.uri.lee.dl.camera.objectivecamera.FrameProcessorBase
 import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
-import com.uri.lee.dl.camera.objectivecamera.WorkflowModel
+import com.uri.lee.dl.camera.objectivecamera.ObjectiveCameraViewModel
 import java.io.IOException
 import kotlin.math.hypot
 
 /** A processor to run object detector in multi-objects mode.  */
 class MultiObjectProcessor(
     graphicOverlay: GraphicOverlay,
-    private val workflowModel: WorkflowModel,
+    private val objectiveCameraViewModel: ObjectiveCameraViewModel,
 ) :
     FrameProcessorBase<List<DetectedObject>>() {
     private val confirmationController: ObjectConfirmationController = ObjectConfirmationController(graphicOverlay)
@@ -81,7 +81,7 @@ class MultiObjectProcessor(
         results: List<DetectedObject>,
         graphicOverlay: GraphicOverlay
     ) {
-        if (!workflowModel.isCameraLive) {
+        if (!objectiveCameraViewModel.isCameraLive) {
             return
         }
 
@@ -135,13 +135,13 @@ class MultiObjectProcessor(
         graphicOverlay.invalidate()
 
         if (selectedObject != null) {
-            workflowModel.confirmingObject(selectedObject, confirmationController.progress)
+            objectiveCameraViewModel.confirmingObject(selectedObject, confirmationController.progress)
         } else {
-            workflowModel.setWorkflowState(
+            objectiveCameraViewModel.setWorkflowState(
                 if (results.isEmpty()) {
-                    WorkflowModel.WorkflowState.DETECTING
+                    ObjectiveCameraViewModel.WorkflowState.DETECTING
                 } else {
-                    WorkflowModel.WorkflowState.DETECTED
+                    ObjectiveCameraViewModel.WorkflowState.DETECTED
                 }
             )
         }
