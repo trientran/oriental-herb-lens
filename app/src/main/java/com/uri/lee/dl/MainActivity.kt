@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.menuView.setOnClickListener {
-            val bottomSheet = BottomSheetDialog()
+            val bottomSheet = BottomSheetMenu()
             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
         }
 

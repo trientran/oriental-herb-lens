@@ -28,12 +28,12 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
-import com.uri.lee.dl.InputInfo
 import com.uri.lee.dl.R
 import com.uri.lee.dl.camera.objectivecamera.CameraReticleAnimator
 import com.uri.lee.dl.camera.objectivecamera.FrameProcessorBase
 import com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
 import com.uri.lee.dl.camera.objectivecamera.ObjectiveCameraViewModel
+import com.uri.lee.dl.labeling.InputInfo
 import java.io.IOException
 import kotlin.math.hypot
 

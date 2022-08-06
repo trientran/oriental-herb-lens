@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl
+package com.uri.lee.dl.camera.objectivecamera
 
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean

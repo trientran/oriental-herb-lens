@@ -23,9 +23,8 @@ import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.mlkit.vision.common.InputImage
-import com.uri.lee.dl.CameraInputInfo
-import com.uri.lee.dl.InputInfo
-import com.uri.lee.dl.ScopedExecutor
+import com.uri.lee.dl.labeling.CameraInputInfo
+import com.uri.lee.dl.labeling.InputInfo
 import java.nio.ByteBuffer
 
 /** Abstract base class of [FrameProcessor].  */

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl
+package com.uri.lee.dl.labeling
 
 import android.graphics.Bitmap
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.camera.objectivecamera.FrameMetadata
 import java.nio.ByteBuffer
 

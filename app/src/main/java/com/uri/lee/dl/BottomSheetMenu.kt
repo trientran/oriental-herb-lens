@@ -15,7 +15,7 @@ import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
 import timber.log.Timber
 
-class BottomSheetDialog : BottomSheetDialogFragment() {
+class BottomSheetMenu : BottomSheetDialogFragment() {
     private lateinit var binding: BottomSheetMenuBinding
 
     override fun onCreateView(

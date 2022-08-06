@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.uri.lee.dl.labeling
+package com.uri.lee.dl.image
 
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +24,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uri.lee.dl.R
+import com.uri.lee.dl.labeling.DetectedBitmapObject
 
 /** Powers the bottom card carousel for displaying the preview of item labeling result.  */
 class PreviewCardAdapter(

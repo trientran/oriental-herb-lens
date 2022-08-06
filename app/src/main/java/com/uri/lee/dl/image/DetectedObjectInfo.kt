@@ -21,8 +21,8 @@ import android.graphics.Bitmap.CompressFormat
 import android.graphics.Rect
 import android.util.Log
 import com.google.mlkit.vision.objects.DetectedObject
-import com.uri.lee.dl.InputInfo
 import com.uri.lee.dl.labeling.Herb
+import com.uri.lee.dl.labeling.InputInfo
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 

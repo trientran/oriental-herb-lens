@@ -51,7 +51,6 @@ import com.uri.lee.dl.databinding.ActivityImageBinding
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.HerbAdapter
-import com.uri.lee.dl.labeling.PreviewCardAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
