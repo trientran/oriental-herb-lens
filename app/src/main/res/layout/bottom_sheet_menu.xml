@@ -1,52 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
     android:padding="16dp">
-    <!--    Add a new herb, contact, app info, logout, delete acc-->
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/add_button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/add_a_new_herb" />
+        android:orientation="vertical">
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/logout_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/log_out" />
+        <Button
+            android:id="@+id/add_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/add_a_new_herb" />
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/delete_acc_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/delete_account" />
+        <Button
+            android:id="@+id/sign_out_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/sign_out" />
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/contact_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/contact_us" />
+        <Button
+            android:id="@+id/contact_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/contact_us" />
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/share_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/share_this_app" />
+        <Button
+            android:id="@+id/share_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/share_this_app" />
 
-    <Button
-        android:layout_margin="8dp"
-        android:id="@+id/about_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/about_us_and_this_app" />
+        <Button
+            android:id="@+id/about_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/about_us_and_this_app" />
 
-</LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

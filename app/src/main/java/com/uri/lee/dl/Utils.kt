@@ -88,9 +88,7 @@ object Utils {
         }
     }
 
-    internal fun allPermissionsGranted(context: Context): Boolean = getRequiredPermissions(
-        context
-    )
+    internal fun allPermissionsGranted(context: Context): Boolean = getRequiredPermissions(context)
         .all { checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
 
     private fun getRequiredPermissions(context: Context): Array<String> {
@@ -110,9 +108,7 @@ object Utils {
         if (intent.resolveActivity(context.packageManager) != null) context.startActivity(intent)
     }
 
-    fun Context.openUrlWithDefaultBrowser(searchedKeyWord: String) {
-        val url = "https://www.google.com/search?q=$searchedKeyWord"
-        val uri = Uri.parse(url)
+    fun Context.openUrlWithDefaultBrowser(uri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW, uri)
         if (intent.resolveActivity(packageManager) != null) startActivity(intent)
     }

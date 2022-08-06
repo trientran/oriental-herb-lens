@@ -6,7 +6,7 @@
     </plurals>
 
     <!-- Strings for home screen -->
-    <string name="app_name">Oriental Herb Lens</string>
+    <string name="app_name">Med Herb Lens</string>
     <string name="single_image">Single Image</string>
     <string name="multiple_images">Multiple Images</string>
 
@@ -100,5 +100,31 @@
     <string name="english_name">English name: %s</string>
     <string name="your_selected_image">Your selected image</string>
     <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
 
+    <string name="you_have_been_signed_out">You have been signed out</string>
+    <string name="your_account_has_been_deleted">Your account has been deleted</string>
+
+    <string name="about_us">Med Herb Lens is a non-profit project that utilises Artificial Intelligence
+        (Deep Learning - Tensorflow) to assist medicinal herbalists and traditional healers and physicians in automatically
+        recognizing and classifying 70 different medicinal plants.
+        \n\nThis project was initiated and has been led by Mr. Minh Le, a Doctor of Traditional Medicine
+        student from Thanh Dong University, Vietnam. He helped build the dataset and also assisted in evaluating
+        the authenticity of the input data.
+        \n\nIn consultation with Mr Le, this Android app has been developed by Mr Trien Tran as part of his Master of Information Technology degree\'s capstone thesis project. He is now an alumnus
+        of St. Paul University Philippines.
+        \n\nWe are looking forward to expanding the number of recognised medicinal plants to more than 3000.
+        This ambition will not be achieved without your support. There are 2 ways you may help us out:
+        \n\n- Please contribute to the dataset by capturing your own images using your own mobile and camera devices,
+        then upload them all to our server using this mobile app. The image quality does not matter, we just need
+        you to take photos of the whole plants as well as their parts and details such as fruits, blossoms, branches, and leaves shapes, both fresh and sun-dried ones, if possible.
+        \n\n- And can you please also help us fill out the rest of the Google Sheet database at your convenience by pressing the Full Herbal List button below. Within this data sheet, we need more herbal data in terms of the uses,
+        usages, side effects, precautions, and interactions. You are free to add more herbal species or modify the existing herbs.
+        You probably want to work on this Google Sheet document using your computers because mobile devices may not provide
+        you with the best comfort while editing.</string>
+
+    <string name="_70_herbs_list">70 herbs list</string>
+    <string name="full_herb_list">Full herbal list</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
+    <string name="sign_out">Sign out</string>
 </resources>

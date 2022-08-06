@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/firebase/mlkit-material-android.svg?branch=master)](https://travis-ci.org/firebase/mlkit-material-android)
 
-# Oriental Herb Lens
+# Med Herb Lens
 
 ## How to use the app
 

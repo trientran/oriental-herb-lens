@@ -52,10 +52,10 @@ class HerbAdapter(private val herbList: List<Herb>) :
             latinView.text = String.format(itemView.context.getString(R.string.latin_name), herb.latinName ?: "")
             vietnameseView.text = String.format(itemView.context.getString(R.string.vietnamese_name), herb.viName ?: "")
             searchWithGoogleLatin.setOnClickListener {
-                herb.latinName?.let { name -> Utils.openUrlWithDefaultBrowser(view.context, name) }
+                herb.latinName?.let { name -> Utils.googleItWithDefaultBrowser(view.context, name) }
             }
             searchWithGoogleVi.setOnClickListener {
-                herb.viName?.let { name -> Utils.openUrlWithDefaultBrowser(view.context, name) }
+                herb.viName?.let { name -> Utils.googleItWithDefaultBrowser(view.context, name) }
             }
         }
     }

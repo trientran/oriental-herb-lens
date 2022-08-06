@@ -6,11 +6,8 @@ import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.tabs.TabLayout
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.DownloadConditions
@@ -24,15 +21,14 @@ import com.uri.lee.dl.image.ImageActivity
 import com.uri.lee.dl.images.ImagesActivity
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    private val authStateListener = AuthStateListener(this)
+
     private val authUI = AuthUI.getInstance()
-    private val signInLauncher =
-        registerForActivityResult(FirebaseAuthUIActivityResultContract()) { onSignInResult(it) }
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
@@ -74,61 +70,27 @@ class MainActivity : AppCompatActivity() {
         binding.searchSingleImageView.setOnClickListener {
             startActivity(Intent(this, ImageActivity::class.java))
         }
+
+        downloadModel()
     }
 
     override fun onStart() {
         super.onStart()
-//        if (authUI.auth.currentUser == null) {
-//            val signInIntent = authUI
-//                .createSignInIntentBuilder()
-//                .setAvailableProviders(arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build()))
-//                .setLogo(R.drawable.ic_launcher_round)
-//                .setTheme(R.style.AppTheme)
-//                .build()
-//            signInLauncher.launch(signInIntent)}
-
+        authUI.auth.addAuthStateListener(authStateListener)
     }
 
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch(ioDispatcher) {
-            // Specify the name you assigned in the Firebase console.
-            val remoteModel = CustomRemoteModel
-                .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
-                .build()
-
-            val downloadConditions = DownloadConditions.Builder().requireWifi().build()
-
-            RemoteModelManager.getInstance().download(remoteModel, downloadConditions)
-                .addOnSuccessListener {
-                    Timber.d("Model download completed")
-                }
-        }
+    override fun onStop() {
+        super.onStop()
+        authUI.auth.removeAuthStateListener(authStateListener)
     }
 
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        val response = result.idpResponse
-        if (result.resultCode == RESULT_OK) {
-            val user = authUI.auth.currentUser
-            require(user != null)
-            // todo write to FireStore user
-        }
-    }
-
-    private fun signOut() {
-        authUI
-            .signOut(this)
-            .addOnCompleteListener {
-                // ...
-            }
-    }
-
-    private fun delete() {
-        authUI
-            .delete(this)
-            .addOnCompleteListener {
-                // ...
-            }
+    private fun downloadModel() {
+        val remoteModel = CustomRemoteModel
+            .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
+            .build()
+        val downloadConditions = DownloadConditions.Builder().requireWifi().build()
+        RemoteModelManager.getInstance().download(remoteModel, downloadConditions)
+            .addOnSuccessListener { Timber.d("Model download completed") }
     }
 
     @Deprecated("Deprecated in Java")
