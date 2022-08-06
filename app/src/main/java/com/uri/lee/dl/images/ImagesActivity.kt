@@ -1,7 +1,5 @@
 package com.uri.lee.dl.images
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -17,14 +15,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
-import com.uri.lee.dl.Utils.selectImagesIntent
 import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ImagesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityImagesBinding
 
@@ -63,7 +58,7 @@ class ImagesActivity : AppCompatActivity() {
         override fun onTick(millisUntilFinished: Long) {
             binding.pickImagesView.isEnabled = false
             binding.addImagesBtn.isEnabled = false
-            resultLauncher.launch(selectImagesIntent())
+            resultLauncher.launch("image/*")
         }
 
         override fun onFinish() {
@@ -87,12 +82,6 @@ class ImagesActivity : AppCompatActivity() {
                 viewAdapter.submitList(it)
             }
             .launchIn(this)
-
-        viewModel.state()
-            .map { it.imageUris }
-            .distinctUntilChanged()
-            .onEach {
-            }
 
         // seek bar
         viewModel.state()
@@ -136,30 +125,10 @@ class ImagesActivity : AppCompatActivity() {
     }
 
     private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val data: Intent? = result.data
-                //If multiple image selected
-                if (data?.clipData != null) {
-                    val uriList = mutableListOf<Uri>()
-                    for (i in 0 until data.clipData!!.itemCount) {
-                        uriList.add(data.clipData!!.getItemAt(i).uri)
-                    }
-                    viewModel.addImageUris(uriList)
-                }
-                //If single image selected
-                else if (data?.data != null) {
-                    viewModel.addImageUris(listOf(data.data!!))
-                }
-            }
-        }
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { viewModel.addImageUris(it) }
 
     private fun showSnackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE) {
-        snackbar = Snackbar.make(
-            findViewById(android.R.id.content),
-            message,
-            length!!,
-        )
+        snackbar = Snackbar.make(findViewById(android.R.id.content), message, length!!)
         snackbar?.setTextMaxLines(10)
         snackbar?.show()
     }

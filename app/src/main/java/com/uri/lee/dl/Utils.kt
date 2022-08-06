@@ -36,6 +36,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -43,6 +44,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
+import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.common.model.RemoteModelManager
@@ -101,13 +103,18 @@ object Utils {
         }
     }
 
-    fun openUrlWithDefaultBrowser(context: Context, searchedKeyWord: String) {
+    fun googleItWithDefaultBrowser(context: Context, searchedKeyWord: String) {
         val url = "https://www.google.com/search?q=$searchedKeyWord"
         val uri = Uri.parse(url)
         val intent = Intent(Intent.ACTION_VIEW, uri)
-        if (intent.resolveActivity(context.packageManager) != null) {
-            context.startActivity(intent)
-        }
+        if (intent.resolveActivity(context.packageManager) != null) context.startActivity(intent)
+    }
+
+    fun Context.openUrlWithDefaultBrowser(searchedKeyWord: String) {
+        val url = "https://www.google.com/search?q=$searchedKeyWord"
+        val uri = Uri.parse(url)
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        if (intent.resolveActivity(packageManager) != null) startActivity(intent)
     }
 
     fun isPortraitMode(context: Context): Boolean =
@@ -191,14 +198,6 @@ object Utils {
             Log.e(TAG, "Error: " + e.message)
         }
         return null
-    }
-
-    internal fun selectImagesIntent(): Intent {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "image/*"
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        return intent
     }
 
     internal suspend fun loadImage(context: Context, imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
@@ -331,6 +330,13 @@ fun getHerbModel(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> 
                 }
             optionsBuilderCallBack.invoke(optionsBuilder)
         }
+}
+
+class AuthStateListener(val context: Context) : FirebaseAuth.AuthStateListener {
+    override fun onAuthStateChanged(auth: FirebaseAuth) {
+        Timber.d(auth.currentUser.toString())
+        auth.currentUser ?: ContextCompat.startActivity(context, Intent(context, LoginActivity::class.java), null)
+    }
 }
 
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA

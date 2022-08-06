@@ -81,6 +81,7 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
 
     fun addImageUris(addedUris: List<Uri>) {
         Timber.d("addImageUris")
+        if (addedUris.isEmpty()) return
         viewModelScope.launch {
             val currentUriList = state.imageUris.toMutableList()
             currentUriList.addAll(addedUris)
