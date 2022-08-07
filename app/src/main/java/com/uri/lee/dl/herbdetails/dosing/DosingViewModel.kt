@@ -1,10 +1,10 @@
-package com.uri.lee.dl.herbdetails.usage
+package com.uri.lee.dl.herbdetails.dosing
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class UsageViewModel : ViewModel() {
+class DosingViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is notifications Fragment"

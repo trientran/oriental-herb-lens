@@ -13,8 +13,6 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.*
-import com.uri.lee.dl.herbdetails.tempherbs.latinList
-import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.labeling.BitmapInputInfo
 import com.uri.lee.dl.labeling.Herb
 import kotlinx.coroutines.flow.*

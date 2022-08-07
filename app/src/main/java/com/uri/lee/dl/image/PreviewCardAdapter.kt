@@ -47,7 +47,7 @@ class PreviewCardAdapter(
 
     override fun getItemCount(): Int = detectedBitmapObjectList.size
 
-    class CardViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class CardViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val imageView: ImageView = itemView.findViewById(R.id.herbImage)
         private val idView: TextView = itemView.findViewById(R.id.herbIdView)

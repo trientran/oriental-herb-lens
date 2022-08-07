@@ -1,4 +1,4 @@
-package com.uri.lee.dl.herbdetails.tempherbs
+package com.uri.lee.dl
 
 val viList70 = mapOf(
     "0001" to "Bạc hà",

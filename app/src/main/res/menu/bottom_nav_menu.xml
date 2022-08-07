@@ -3,27 +3,27 @@
 
     <item
         android:id="@+id/navigation_images"
-        android:icon="@drawable/ic_home_black_24dp"
+        android:icon="@drawable/ic_multiple_images_white"
         android:title="@string/images" />
 
     <item
         android:id="@+id/navigation_overview"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_overview"
         android:title="@string/overview" />
 
     <item
-        android:id="@+id/navigation_usage"
-        android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/usage" />
-
-    <item
         android:id="@+id/navigation_caution"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_baseline_caution"
         android:title="@string/caution" />
 
     <item
+        android:id="@+id/navigation_dosing"
+        android:icon="@drawable/ic_dosing"
+        android:title="@string/dosing" />
+
+    <item
         android:id="@+id/navigation_review"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_baseline_rate_review_24"
         android:title="@string/review" />
 
 </menu>

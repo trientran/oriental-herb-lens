@@ -6,9 +6,7 @@ import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.viewpager.widget.ViewPager
-import com.firebase.ui.auth.AuthUI
-import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
@@ -17,6 +15,7 @@ import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
+import com.uri.lee.dl.hometabs.TAB_TITLES
 import com.uri.lee.dl.image.ImageActivity
 import com.uri.lee.dl.images.ImagesActivity
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
@@ -28,8 +27,6 @@ class MainActivity : AppCompatActivity() {
 
     private val authStateListener = AuthStateListener(this)
 
-    private val authUI = AuthUI.getInstance()
-
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -38,11 +35,11 @@ class MainActivity : AppCompatActivity() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         // Setup tabbed views
-        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
-        val viewPager: ViewPager = binding.viewPager
-        viewPager.adapter = sectionsPagerAdapter
-        val tabs: TabLayout = binding.tabs
-        tabs.setupWithViewPager(viewPager)
+        binding.viewPager.adapter = SectionsPagerAdapter(this)
+        TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
+            tab.text = getString(TAB_TITLES[position])
+        }
+            .attach()
 
         setSupportActionBar(binding.toolBar)
         supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)

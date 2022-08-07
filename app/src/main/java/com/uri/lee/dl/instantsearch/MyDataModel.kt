@@ -13,18 +13,18 @@ import kotlinx.serialization.json.JsonObject
 @Parcelize
 data class Herb(
     val objectID: String,
-    val viName: String,
-    val sciName: String,
-    val viUses: String,
-    val viUsages: String,
-    val viSideEffects: String,
-    val viPrecautions: String,
-    val viInteractions: String,
-    val enUses: String,
-    val enUsages: String,
-    val enSideEffects: String,
-    val enPrecautions: String,
-    val enInteractions: String,
+    val viName: String? = null,
+    val sciName: String? = null,
+    val viUses: String? = null,
+    val viUsages: String? = null,
+    val viSideEffects: String? = null,
+    val viPrecautions: String? = null,
+    val viInteractions: String? = null,
+    val enUses: String? = null,
+    val enUsages: String? = null,
+    val enSideEffects: String? = null,
+    val enPrecautions: String? = null,
+    val enInteractions: String? = null,
     @IgnoredOnParcel
     override val _highlightResult: JsonObject? = null
 ) : Highlightable, Parcelable {
@@ -36,3 +36,19 @@ data class Herb(
     val highlightedNameVi: HighlightedString?
         get() = getHighlight(Attribute(::viName.name))
 }
+
+
+data class Herb2(
+    val viName: String? = null,
+    val sciName: String? = null,
+    val viUses: String? = null,
+    val viUsages: String? = null,
+    val viSideEffects: String? = null,
+    val viPrecautions: String? = null,
+    val viInteractions: String? = null,
+    val enUses: String? = null,
+    val enUsages: String? = null,
+    val enSideEffects: String? = null,
+    val enPrecautions: String? = null,
+    val enInteractions: String? = null,
+)

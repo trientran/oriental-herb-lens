@@ -7,9 +7,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.getHerbModel
-import com.uri.lee.dl.herbdetails.tempherbs.latinList
-import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.labeling.Herb
+import com.uri.lee.dl.latinList
+import com.uri.lee.dl.viList70
 import timber.log.Timber
 
 class ImageAnalyzer(

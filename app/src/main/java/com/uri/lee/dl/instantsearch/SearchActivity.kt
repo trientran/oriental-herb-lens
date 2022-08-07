@@ -14,6 +14,7 @@ import com.algolia.instantsearch.android.paging3.liveData
 import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
 import com.algolia.instantsearch.core.connection.ConnectionHandler
 import com.algolia.instantsearch.searchbox.connectView
+import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivitySearchBinding
@@ -47,7 +48,7 @@ class SearchActivity : AppCompatActivity() {
         val searchResultAdapter = MyAdapter()
         searchResultAdapter.onItemClick = {
             val intent = Intent(this, HerbDetailsActivity::class.java)
-            intent.putExtra("INSTANT_HERB", it)
+            intent.putExtra(INSTANT_HERB, it)
             startActivity(intent)
         }
         viewModel.paginator.liveData.observe(this) {

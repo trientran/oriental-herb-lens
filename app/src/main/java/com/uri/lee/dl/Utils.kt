@@ -21,11 +21,14 @@ import android.app.Activity
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.*
 import android.hardware.Camera
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -44,7 +47,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
+import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.common.model.RemoteModelManager
@@ -335,6 +341,7 @@ class AuthStateListener(val context: Context) : FirebaseAuth.AuthStateListener {
     }
 }
 
+const val INSTANT_HERB = "INSTANT_HERB"
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
 const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
 const val LOCAL_TFLITE_MODEL_NAME = "model_70.tflite"
@@ -350,6 +357,25 @@ const val SETTINGS = "SETTINGS"
 val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
 val CONFIDENCE_LEVEL = floatPreferencesKey("CONFIDENCE_LEVEL")
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
+
+val authUI = AuthUI.getInstance()
+
+val firestore = Firebase.firestore
+val herbCollection = firestore.collection("herbs")
+val userCollection = firestore.collection("users")
+
+fun Context.isNetworkAvailable(): Boolean {
+    val connectivityManager =
+        getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    val networkCapabilities = connectivityManager.activeNetwork ?: return false
+    val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+    return when {
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+        else -> false
+    }
+}
 
 class BaseApplication : Application() {
 

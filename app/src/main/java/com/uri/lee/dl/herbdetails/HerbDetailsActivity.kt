@@ -1,6 +1,8 @@
 package com.uri.lee.dl.herbdetails
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -29,12 +31,35 @@ class HerbDetailsActivity : AppCompatActivity() {
             setOf(
                 R.id.navigation_images,
                 R.id.navigation_overview,
-                R.id.navigation_usage,
                 R.id.navigation_caution,
+                R.id.navigation_dosing,
                 R.id.navigation_review
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.herb_details_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_like -> {
+                item.icon = getDrawable(R.drawable.ic_baseline_favorite_like)
+                true
+            }
+            R.id.action_report -> {
+                // send email
+                true
+            }
+            R.id.close -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

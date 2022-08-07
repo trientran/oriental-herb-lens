@@ -40,7 +40,7 @@
         <activity
             android:name=".herbdetails.HerbDetailsActivity"
             android:exported="false"
-            android:label="@string/title_activity_herb_details" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

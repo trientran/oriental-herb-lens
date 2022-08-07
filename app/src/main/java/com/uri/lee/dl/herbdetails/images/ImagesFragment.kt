@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.databinding.FragmentImagesBinding
+import timber.log.Timber
 
 class ImagesFragment : Fragment() {
 
@@ -24,6 +26,11 @@ class ImagesFragment : Fragment() {
     ): View {
         val homeViewModel =
             ViewModelProvider(this)[ImagesViewModel::class.java]
+
+        arguments?.getString(INSTANT_HERB)?.let {
+
+            Timber.d("trien", it.toString())
+        }
 
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
         val root: View = binding.root

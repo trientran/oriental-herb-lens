@@ -130,7 +130,6 @@
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             android:background="@color/color_primary"
-            app:tabMode="scrollable"
             app:tabMinWidth="30dp"
             app:tabTextColor="@color/white"
             app:tabIndicatorColor="@color/white"
@@ -143,21 +142,13 @@
 
   </com.google.android.material.appbar.AppBarLayout>
 
-  <androidx.core.widget.NestedScrollView
+  <androidx.viewpager2.widget.ViewPager2
+      android:id="@+id/view_pager"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:overScrollMode="never"
-      app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+      android:fillViewport="true"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabs"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-  </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

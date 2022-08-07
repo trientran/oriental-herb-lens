@@ -27,7 +27,7 @@ import com.uri.lee.dl.databinding.LiveCameraImageRecognitionItemBinding
 import com.uri.lee.dl.labeling.Herb
 
 class CameraAdapter(private val context: Context) :
-    ListAdapter<Herb, ItemViewHolder>(RecognitionDiffUtil()) {
+    ListAdapter<Herb, CameraAdapter.ItemViewHolder>(RecognitionDiffUtil()) {
 
     /**
      * Inflating the ViewHolder with recognition_item layout and data binding
@@ -48,23 +48,21 @@ class CameraAdapter(private val context: Context) :
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean {
-            return oldItem.latinName == newItem.latinName && oldItem.viName == newItem.viName
-        }
+        override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean = oldItem == newItem
     }
-}
 
-class ItemViewHolder(private val binding: LiveCameraImageRecognitionItemBinding) :
-    RecyclerView.ViewHolder(binding.root) {
+    inner class ItemViewHolder(private val binding: LiveCameraImageRecognitionItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-    // Binding all the fields to the view - to see which UI element is bind to which field, check
-    // out layout/recognition_item.xml
-    fun bindTo(herb: Herb, context: Context) {
-        binding.idView.text = String.format(
-            context.getString(R.string.static_image_classification_result),
-            herb.id,
-            herb.latinName,
-            herb.viName
-        )
+        // Binding all the fields to the view - to see which UI element is bind to which field, check
+        // out layout/recognition_item.xml
+        fun bindTo(herb: Herb, context: Context) {
+            binding.idView.text = String.format(
+                context.getString(R.string.static_image_classification_result),
+                herb.id,
+                herb.latinName,
+                herb.viName
+            )
+        }
     }
 }

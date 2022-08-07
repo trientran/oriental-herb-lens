@@ -56,8 +56,9 @@
     <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
     <string name="n_results_found">5 results found</string>
     <string name="title_activity_herb_details">HerbDetailsActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_favorite">Favorite</string>
+    <string name="tab_history">History</string>
+    <string name="tab_random">Random</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
@@ -127,4 +128,8 @@
     <string name="full_herb_list">Full herbal list</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="sign_out">Sign out</string>
+    <string name="your_herb_list_will_be_loaded_soon">Your herb list will be loaded soon if available.</string>
+    <string name="dosing">Dosing</string>
+    <string name="like">Like</string>
+    <string name="report_an_issue">Report an issue</string>
 </resources>

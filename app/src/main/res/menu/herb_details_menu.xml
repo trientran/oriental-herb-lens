@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/close"
+        android:icon="@drawable/ic_baseline_arrow_back_24"
+        app:showAsAction="ifRoom"
+        android:title="@string/cd_close_button" />
+
+    <item
+        android:id="@+id/action_like"
+        android:icon="@drawable/ic_baseline_favorite_dislike"
+        app:showAsAction="ifRoom"
+        android:title="@string/like" />
+
+    <item
+        android:id="@+id/action_report"
+        app:showAsAction="never"
+        android:title="@string/report_an_issue" />
+
+</menu>

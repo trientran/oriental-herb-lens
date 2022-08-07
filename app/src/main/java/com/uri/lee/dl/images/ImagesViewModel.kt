@@ -11,8 +11,6 @@ import com.google.mlkit.vision.label.ImageLabel
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.*
-import com.uri.lee.dl.herbdetails.tempherbs.latinList
-import com.uri.lee.dl.herbdetails.tempherbs.viList70
 import com.uri.lee.dl.images.ImagesState.Recognition
 import com.uri.lee.dl.labeling.Herb
 import kotlinx.coroutines.flow.*

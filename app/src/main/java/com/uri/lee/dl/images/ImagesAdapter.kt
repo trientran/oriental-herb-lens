@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ImagesRecognitionItemBinding
+import com.uri.lee.dl.images.ImagesAdapter.ImagesHerbItemViewHolder
 import com.uri.lee.dl.images.ImagesState.Recognition
 
 class ImagesAdapter(private val onItemClickListener: (Recognition) -> Unit) :
@@ -43,33 +44,31 @@ class ImagesAdapter(private val onItemClickListener: (Recognition) -> Unit) :
 
     // Binding the data fields to the HerbViewHolder
     override fun onBindViewHolder(holderImage: ImagesHerbItemViewHolder, position: Int) {
-        holderImage.bindTo(getItem(position), onItemClickListener)
+        holderImage.bindTo(getItem(position))
     }
 
     private class HerbDiffUtil : DiffUtil.ItemCallback<Recognition>() {
-        override fun areItemsTheSame(oldItem: Recognition, newItem: Recognition): Boolean {
-            return oldItem.fileUri == newItem.fileUri
-        }
+        override fun areItemsTheSame(oldItem: Recognition, newItem: Recognition): Boolean =
+            oldItem.fileUri == newItem.fileUri
 
-        override fun areContentsTheSame(oldItem: Recognition, newItem: Recognition): Boolean {
-            return oldItem.herbs == newItem.herbs
+        override fun areContentsTheSame(oldItem: Recognition, newItem: Recognition): Boolean = oldItem == newItem
+    }
+
+    inner class ImagesHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bindTo(recognition: Recognition) {
+            Glide.with(binding.root).load(recognition.fileUri).into(binding.imageView)
+            itemView.setOnClickListener { onItemClickListener.invoke(recognition) }
+            if (recognition.herbs.isEmpty()) {
+                binding.idView.text = binding.root.context?.getString(R.string.no_result)
+                binding.latinNameView.text = ""
+                binding.viNameView.text = ""
+            } else {
+                binding.idView.text = recognition.herbs.first().id ?: ""
+                binding.latinNameView.text = recognition.herbs.first().latinName ?: ""
+                binding.viNameView.text = recognition.herbs.first().viName ?: ""
+            }
         }
     }
 }
 
-class ImagesHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding) :
-    RecyclerView.ViewHolder(binding.root) {
-    fun bindTo(recognition: Recognition, onItemClickListener: (Recognition) -> Unit) {
-        Glide.with(binding.root).load(recognition.fileUri).into(binding.imageView)
-        itemView.setOnClickListener { onItemClickListener.invoke(recognition) }
-        if (recognition.herbs.isEmpty()) {
-            binding.idView.text = binding.root.context?.getString(R.string.no_result)
-            binding.latinNameView.text = ""
-            binding.viNameView.text = ""
-        } else {
-            binding.idView.text = recognition.herbs.first().id ?: ""
-            binding.latinNameView.text = recognition.herbs.first().latinName ?: ""
-            binding.viNameView.text = recognition.herbs.first().viName ?: ""
-        }
-    }
-}
