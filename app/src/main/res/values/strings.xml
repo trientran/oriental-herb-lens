@@ -132,4 +132,5 @@
     <string name="dosing">Dosing</string>
     <string name="like">Like</string>
     <string name="report_an_issue">Report an issue</string>
+    <string name="edit_button">edit button</string>
 </resources>

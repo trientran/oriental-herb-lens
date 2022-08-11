@@ -3,21 +3,26 @@ package com.uri.lee.dl.herbdetails
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
+import com.uri.lee.dl.instantsearch.Herb
 
 class HerbDetailsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHerbDetailsBinding
+    private val viewModel: HerbDetailsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        intent?.getParcelableExtra<Herb>(INSTANT_HERB)?.let { viewModel.setId(it.objectID) }
 
         binding = ActivityHerbDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)

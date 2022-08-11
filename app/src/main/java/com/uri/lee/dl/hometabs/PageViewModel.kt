@@ -117,26 +117,25 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
-    private fun DocumentSnapshot.toHerb() = Herb(
-        objectID = id,
-        viName = getString("viName"),
-        sciName = getString("sciName"),
-        viUses = getString("viUses"),
-        viUsages = getString("viUsages"),
-        viSideEffects = getString("viSideEffects"),
-        viPrecautions = getString("viPrecautions"),
-        viInteractions = getString("viInteractions"),
-        enUses = getString("enUses"),
-        enUsages = getString("enUsages"),
-        enSideEffects = getString("enSideEffects"),
-        enPrecautions = getString("enPrecautions"),
-        enInteractions = getString("enInteractions"),
-    )
-
     private inline fun setState(copiedState: PageState.() -> PageState) = stateFlow.update(copiedState)
 
 }
+
+fun DocumentSnapshot.toHerb() = Herb(
+    objectID = id,
+    viName = getString("viName"),
+    sciName = getString("sciName"),
+    viUses = getString("viUses"),
+    viUsages = getString("viUsages"),
+    viSideEffects = getString("viSideEffects"),
+    viPrecautions = getString("viPrecautions"),
+    viInteractions = getString("viInteractions"),
+    enUses = getString("enUses"),
+    enUsages = getString("enUsages"),
+    enSideEffects = getString("enSideEffects"),
+    enPrecautions = getString("enPrecautions"),
+    enInteractions = getString("enInteractions"),
+)
 
 data class PageState(
     val index: Int? = null,
