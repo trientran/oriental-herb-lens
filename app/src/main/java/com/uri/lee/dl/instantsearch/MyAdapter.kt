@@ -33,7 +33,7 @@ class MyAdapter : PagingDataAdapter<Herb, MyAdapter.ProductViewHolder>(ProductDi
         private val itemNameVi = view.findViewById<TextView>(R.id.itemNameVi)
 
         fun bind(herb: Herb) {
-            itemNameLatin.text = herb.highlightedNameLatin?.toSpannedString() ?: herb.sciName
+            itemNameLatin.text = herb.highlightedNameLatin?.toSpannedString() ?: herb.latinName
             itemNameVi.text = herb.highlightedNameVi?.toSpannedString() ?: herb.viName
             itemView.setOnClickListener { onItemClick?.invoke(herb) }
         }

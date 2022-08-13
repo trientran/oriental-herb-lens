@@ -51,7 +51,7 @@ class OverviewFragment : Fragment() {
                     .distinctUntilChanged()
                     .onEach {
                         binding.herbIdView.text = it.objectID
-                        binding.latinNameView.text = it.sciName
+                        binding.latinNameView.text = it.latinName
                         binding.viNameView.text = it.viName
                         binding.enNameView.text = it.viName
                         binding.overviewView.text = it.viName

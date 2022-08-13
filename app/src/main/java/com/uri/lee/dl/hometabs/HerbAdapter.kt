@@ -32,7 +32,7 @@ class HerbAdapter(private val onItemClickListener: (Herb) -> Unit) :
     private class HerbDiffUtil : DiffUtil.ItemCallback<Herb>() {
         override fun areItemsTheSame(oldItem: Herb, newItem: Herb): Boolean {
             // Id is unique.
-            return oldItem.viName == newItem.viName
+            return oldItem.objectID == newItem.objectID
         }
 
         override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean {
@@ -47,7 +47,7 @@ class HerbAdapter(private val onItemClickListener: (Herb) -> Unit) :
             Glide.with(binding.root).load(thumbnail).into(binding.imageView)
             itemView.setOnClickListener { onItemClickListener.invoke(herb) }
             binding.idView.text = herb.objectID
-            binding.latinNameView.text = herb.sciName
+            binding.latinNameView.text = herb.latinName
             binding.viNameView.text = herb.viName
         }
     }

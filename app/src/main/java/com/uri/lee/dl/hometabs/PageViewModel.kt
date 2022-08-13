@@ -123,18 +123,18 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
 
 fun DocumentSnapshot.toHerb() = Herb(
     objectID = id,
-    viName = getString("viName"),
-    sciName = getString("sciName"),
-    viUses = getString("viUses"),
-    viUsages = getString("viUsages"),
-    viSideEffects = getString("viSideEffects"),
-    viPrecautions = getString("viPrecautions"),
-    viInteractions = getString("viInteractions"),
-    enUses = getString("enUses"),
-    enUsages = getString("enUsages"),
-    enSideEffects = getString("enSideEffects"),
-    enPrecautions = getString("enPrecautions"),
+    id = id,
+    enDosing = getString("enDosing"),
     enInteractions = getString("enInteractions"),
+    enName = getString("enName"),
+    enOverview = getString("enOverview"),
+    enSideEffects = getString("enSideEffects"),
+    latinName = getString("latinName"),
+    viDosing = getString("viDosing"),
+    viInteractions = getString("viInteractions"),
+    viName = getString("viName"),
+    viOverview = getString("viOverview"),
+    viSideEffects = getString("viSideEffects"),
 )
 
 data class PageState(

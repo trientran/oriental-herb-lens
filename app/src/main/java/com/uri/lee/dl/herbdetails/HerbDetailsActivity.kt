@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -12,8 +13,14 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
 import com.uri.lee.dl.instantsearch.Herb
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class HerbDetailsActivity : AppCompatActivity() {
 
@@ -47,17 +54,28 @@ class HerbDetailsActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.herb_details_menu, menu)
+        lifecycleScope.launch {
+            viewModel.state()
+                .map { it.isLiked }
+                .distinctUntilChanged()
+                .onEach {
+                    menu.findItem(R.id.action_like).icon =
+                        if (it) getDrawable(R.drawable.ic_baseline_favorite_like) else getDrawable(R.drawable.ic_baseline_favorite_dislike)
+                }
+                .launchIn(this)
+
+        }
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_like -> {
-                item.icon = getDrawable(R.drawable.ic_baseline_favorite_like)
+                viewModel.setLike()
                 true
             }
             R.id.action_report_facebook -> {
-                // send email
+                openFacebookPage()
                 true
             }
             R.id.close -> {

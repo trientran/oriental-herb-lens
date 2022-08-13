@@ -13,6 +13,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class HerbDetailsViewModel : ViewModel() {
+
+    private lateinit var realtimeData: ListenerRegistration
+
     private val stateFlow = MutableStateFlow(HerbDetailsState())
 
     fun state(): Flow<HerbDetailsState> = stateFlow
@@ -20,18 +23,18 @@ class HerbDetailsViewModel : ViewModel() {
     val state: HerbDetailsState get() = stateFlow.value
 
     fun setId(objectID: String) {
+        Timber.d("setId")
         viewModelScope.launch { setState { copy(herb = Herb(objectID = objectID)) } }
     }
 
     fun setHerb(herb: Herb) {
         Timber.d("setHerb")
-        viewModelScope.launch {
-            setState { copy(herb = herb) }
-        }
-
+        viewModelScope.launch { setState { copy(herb = herb) } }
     }
 
-    private lateinit var realtimeData: ListenerRegistration
+    fun setLike() {
+        viewModelScope.launch { setState { copy(isLiked = !state.isLiked) } }
+    }
 
     fun getOnLineHerbData() {
         herbCollection.takeIf { state.herb?.objectID != null }?.document(state.herb!!.objectID)?.apply {
@@ -59,6 +62,7 @@ class HerbDetailsViewModel : ViewModel() {
 
 data class HerbDetailsState(
     val herb: Herb? = null,
+    val isLiked: Boolean = false,
     val isLoading: Boolean = false,
     val event: Event? = null,
 ) {

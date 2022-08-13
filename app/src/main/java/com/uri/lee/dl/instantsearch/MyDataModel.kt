@@ -12,43 +12,28 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 @Parcelize
 data class Herb(
+    // All fields must match the fields in Algolia database, unless we can annotate somehow?
     val objectID: String,
-    val viName: String? = null,
-    val sciName: String? = null,
-    val viUses: String? = null,
-    val viUsages: String? = null,
-    val viSideEffects: String? = null,
-    val viPrecautions: String? = null,
-    val viInteractions: String? = null,
-    val enUses: String? = null,
-    val enUsages: String? = null,
-    val enSideEffects: String? = null,
-    val enPrecautions: String? = null,
+    val enDosing: String? = null,
     val enInteractions: String? = null,
+    val enName: String? = null,
+    val enOverview: String? = null,
+    val enSideEffects: String? = null,
+    val id: String? = null,
+    val latinName: String? = null,
+    val viDosing: String? = null,
+    val viInteractions: String? = null,
+    val viName: String? = null,
+    val viOverview: String? = null,
+    val viSideEffects: String? = null,
     @IgnoredOnParcel
     override val _highlightResult: JsonObject? = null
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
     val highlightedNameLatin: HighlightedString?
-        get() = getHighlight(Attribute(::sciName.name)) // todo be careful if changing this because it needs to match with the field in Algolia database
+        get() = getHighlight(Attribute(::latinName.name))
 
     @IgnoredOnParcel
     val highlightedNameVi: HighlightedString?
         get() = getHighlight(Attribute(::viName.name))
 }
-
-
-data class Herb2(
-    val viName: String? = null,
-    val sciName: String? = null,
-    val viUses: String? = null,
-    val viUsages: String? = null,
-    val viSideEffects: String? = null,
-    val viPrecautions: String? = null,
-    val viInteractions: String? = null,
-    val enUses: String? = null,
-    val enUsages: String? = null,
-    val enSideEffects: String? = null,
-    val enPrecautions: String? = null,
-    val enInteractions: String? = null,
-)

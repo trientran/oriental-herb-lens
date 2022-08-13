@@ -49,7 +49,7 @@ class DosingFragment : Fragment() {
                 herbDetailsViewModel.state()
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
-                    .onEach { binding.dosingView.text = it.viUsages }
+                    .onEach { binding.dosingView.text = it.viDosing }
                     .launchIn(this)
             }
         }
