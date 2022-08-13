@@ -56,7 +56,7 @@ class HerbDetailsActivity : AppCompatActivity() {
                 item.icon = getDrawable(R.drawable.ic_baseline_favorite_like)
                 true
             }
-            R.id.action_report -> {
+            R.id.action_report_facebook -> {
                 // send email
                 true
             }

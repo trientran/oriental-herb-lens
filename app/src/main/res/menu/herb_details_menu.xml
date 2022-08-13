@@ -15,8 +15,8 @@
         android:title="@string/like" />
 
     <item
-        android:id="@+id/action_report"
+        android:id="@+id/action_report_facebook"
         app:showAsAction="never"
-        android:title="@string/report_an_issue" />
+        android:title="@string/report_an_issue_via_facebook" />
 
 </menu>

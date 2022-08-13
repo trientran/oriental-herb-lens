@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -66,6 +67,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.math.abs
+
 
 /** Utility class to provide helper methods.  */
 object Utils {
@@ -117,6 +119,16 @@ object Utils {
     fun Context.openUrlWithDefaultBrowser(uri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW, uri)
         if (intent.resolveActivity(packageManager) != null) startActivity(intent)
+    }
+
+    fun Context.openFacebookPage() {
+        val facebookUrl = "https://www.facebook.com/100084509379824"
+        try {
+            val uri = Uri.parse("fb://facewebmodal/f?href=$facebookUrl")
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (e: Exception) {
+            openUrlWithDefaultBrowser(facebookUrl.toUri())
+        }
     }
 
     fun isPortraitMode(context: Context): Boolean =

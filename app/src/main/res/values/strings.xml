@@ -108,13 +108,13 @@
 
     <string name="about_us">Med Herb Lens is a non-profit project that utilises Artificial Intelligence
         (Deep Learning - Tensorflow) to assist medicinal herbalists and traditional healers and physicians in automatically
-        recognizing and classifying 70 different medicinal plants.
+        recognizing and classifying medicinal plants.
         \n\nThis project was initiated and has been led by Mr. Minh Le, a Doctor of Traditional Medicine
         student from Thanh Dong University, Vietnam. He helped build the dataset and also assisted in evaluating
         the authenticity of the input data.
         \n\nIn consultation with Mr Le, this Android app has been developed by Mr Trien Tran as part of his Master of Information Technology degree\'s capstone thesis project. He is now an alumnus
-        of St. Paul University Philippines.
-        \n\nWe are looking forward to expanding the number of recognised medicinal plants to more than 3000.
+        of St. Paul University Philippines. If you are an iOS developer and willing to join us voluntarily, please reach out via the contact button.
+        \n\nAs of now, the developed AI model can recognise only 70 herbal plants due to limited input data (to view the full list of these 70 ones, please press the button at the end of this dialog). Therefore, we look forward to expanding the number of recognised medicinal plants to more than 3000.
         This ambition will not be achieved without your support. There are 2 ways you may help us out:
         \n\n- Please contribute to the dataset by capturing your own images using your own mobile and camera devices,
         then upload them all to our server using this mobile app. The image quality does not matter, we just need
@@ -131,6 +131,6 @@
     <string name="your_herb_list_will_be_loaded_soon">Your herb list will be loaded soon if available.</string>
     <string name="dosing">Dosing</string>
     <string name="like">Like</string>
-    <string name="report_an_issue">Report an issue</string>
+    <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
     <string name="edit_button">edit button</string>
 </resources>

@@ -1,7 +1,6 @@
 package com.uri.lee.dl
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +10,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
+import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
-import timber.log.Timber
 
 class BottomSheetMenu : BottomSheetDialogFragment() {
     private lateinit var binding: BottomSheetMenuBinding
@@ -35,18 +34,7 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.contactButton.setOnClickListener {
-            try {
-                val mails: Array<String> = arrayOf("leduchoangminh@gmail.com", "tptrien@gmail.com")
-                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("mailto:")
-                    putExtra(Intent.EXTRA_EMAIL, mails)
-                    putExtra(Intent.EXTRA_SUBJECT, "Hi")
-                    putExtra(Intent.EXTRA_TEXT, "Hello")
-                }
-                startActivity(emailIntent)
-            } catch (e: Exception) {
-                Timber.d("Failed to launch email intent")
-            }
+            it.context.openFacebookPage()
             dismiss()
         }
         binding.shareButton.setOnClickListener {
@@ -60,7 +48,7 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.aboutButton.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            AlertDialog.Builder(it.context)
                 .setMessage(getString(R.string.about_us))
                 .setCancelable(true)
                 .setPositiveButton(getString(R.string._70_herbs_list)) { _, _ ->
