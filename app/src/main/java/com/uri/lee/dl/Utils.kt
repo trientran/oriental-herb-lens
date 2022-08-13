@@ -50,6 +50,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.mlkit.common.model.CustomRemoteModel
@@ -59,6 +60,7 @@ import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.camera.objectivecamera.CameraSizePair
+import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import timber.log.Timber
@@ -372,9 +374,11 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SET
 
 val authUI = AuthUI.getInstance()
 
-val firestore = Firebase.firestore
-val herbCollection = firestore.collection("herbs")
-val userCollection = firestore.collection("users")
+val db = Firebase.firestore
+val herbCollection = db.collection("herbs") // dont change this value
+val userCollection = db.collection("users") // dont change this value
+const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
+const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
 
 fun Context.isNetworkAvailable(): Boolean {
     val connectivityManager =
@@ -388,6 +392,25 @@ fun Context.isNetworkAvailable(): Boolean {
         else -> false
     }
 }
+
+fun DocumentSnapshot.toHerb() = Herb(
+    objectID = id,
+    id = id,
+    enDosing = getString("enDosing"),
+    enInteractions = getString("enInteractions"),
+    enName = getString("enName"),
+    enOverview = getString("enOverview"),
+    enSideEffects = getString("enSideEffects"),
+    latinName = getString("latinName"),
+    viDosing = getString("viDosing"),
+    viInteractions = getString("viInteractions"),
+    viName = getString("viName"),
+    viOverview = getString("viOverview"),
+    viSideEffects = getString("viSideEffects"),
+)
+
+fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
+fun DocumentSnapshot.toHistory() = (get(USER_HISTORY_FIELD_NAME) as? List<*>) ?: emptyList<Any>()
 
 class BaseApplication : Application() {
 

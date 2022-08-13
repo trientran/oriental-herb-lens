@@ -3,8 +3,8 @@ package com.uri.lee.dl.herbdetails
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
-import com.uri.lee.dl.herbCollection
-import com.uri.lee.dl.hometabs.toHerb
+import com.google.firebase.firestore.SetOptions
+import com.uri.lee.dl.*
 import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,10 @@ import timber.log.Timber
 
 class HerbDetailsViewModel : ViewModel() {
 
-    private lateinit var realtimeData: ListenerRegistration
+    private lateinit var herbListenerRegistration: ListenerRegistration
+    private lateinit var userListenerRegistration: ListenerRegistration
+
+    private var likeList = mutableListOf<String>()
 
     private val stateFlow = MutableStateFlow(HerbDetailsState())
 
@@ -24,7 +27,11 @@ class HerbDetailsViewModel : ViewModel() {
 
     fun setId(objectID: String) {
         Timber.d("setId")
-        viewModelScope.launch { setState { copy(herb = Herb(objectID = objectID)) } }
+        viewModelScope.launch {
+            setState { copy(herb = Herb(objectID = objectID)) }
+            liveHerbUpdate(objectID)
+            liveLikeListUpdate()
+        }
     }
 
     fun setHerb(herb: Herb) {
@@ -33,12 +40,31 @@ class HerbDetailsViewModel : ViewModel() {
     }
 
     fun setLike() {
-        viewModelScope.launch { setState { copy(isLiked = !state.isLiked) } }
+        viewModelScope.launch {
+            authUI.auth.uid!!.let {
+                setState { copy(isLiked = !state.isLiked) }
+                if (state.isLiked) {
+                    likeList.add(state.herb!!.objectID)
+                    val data = hashMapOf(USER_FAVORITE_FIELD_NAME to likeList)
+                    userCollection.document(it)
+                        .set(data, SetOptions.merge())
+                        .addOnSuccessListener { Timber.d("New like successfully written!") }
+                        .addOnFailureListener { e -> Timber.e(e) }
+                } else {
+                    likeList.remove(state.herb!!.objectID)
+                    val data = hashMapOf(USER_FAVORITE_FIELD_NAME to likeList)
+                    userCollection.document(it)
+                        .set(data, SetOptions.merge())
+                        .addOnSuccessListener { Timber.d("Like successfully removed!") }
+                        .addOnFailureListener { e -> Timber.e(e) }
+                }
+            }
+        }
     }
 
-    fun getOnLineHerbData() {
-        herbCollection.takeIf { state.herb?.objectID != null }?.document(state.herb!!.objectID)?.apply {
-            realtimeData = addSnapshotListener { snapshot, e ->
+    private fun liveHerbUpdate(objectID: String) {
+        herbCollection.document(objectID).apply {
+            herbListenerRegistration = this.addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Timber.e(e)
                     return@addSnapshotListener
@@ -52,9 +78,41 @@ class HerbDetailsViewModel : ViewModel() {
         }
     }
 
+    private fun liveLikeListUpdate() {
+        userCollection.document(authUI.auth.uid!!).apply {
+            userListenerRegistration = this.addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Timber.e(e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    snapshot.toLikes()?.apply {
+                        likeList.clear()
+                        onEach { likeList.add(it.toString()) }
+                        val isLiked = snapshot.toLikes()?.contains(state.herb!!.objectID) ?: false
+                        viewModelScope.launch { setState { copy(isLiked = isLiked) } }
+                    }
+                    snapshot.toHistory().apply {
+                        val history = this.toMutableList()
+                        if (!history.contains(state.herb!!.objectID) && state.herb!!.objectID.count() >= 4) { // herb id must be at least 4 characters)
+                            history.add(state.herb!!.objectID)
+                            val data = hashMapOf(USER_HISTORY_FIELD_NAME to history)
+                            userCollection.document(authUI.auth.uid!!)
+                                .set(data, SetOptions.merge())
+                                .addOnSuccessListener { Timber.d("Successfully added to history!") }
+                                .addOnFailureListener { e -> Timber.e(e) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
-        realtimeData.remove()
+        if (this::herbListenerRegistration.isInitialized) herbListenerRegistration.remove()
+        if (this::userListenerRegistration.isInitialized) userListenerRegistration.remove()
     }
 
     private inline fun setState(copiedState: HerbDetailsState.() -> HerbDetailsState) = stateFlow.update(copiedState)

@@ -50,19 +50,17 @@ class TabsFragment : Fragment() {
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() ==
-                    viewAdapter.itemCount - 1 && !recyclerView.canScrollVertically(1) && viewAdapter.itemCount > 0
+                    viewAdapter.itemCount - 1 && !recyclerView.canScrollVertically(1) && viewAdapter.itemCount >= 10
                 ) {
                     viewModel.state.index?.let {
                         when (TAB_TITLES[it]) {
-                            R.string.tab_favorite -> viewModel.processHistoryOrFavorite(
+                            R.string.tab_favorite -> viewModel.loadMoreHistoryOrFavorite(
                                 numberOfRecyclerViewItemsLoaded = viewAdapter.itemCount,
                                 numberOfDocumentsToLoad = 10,
-                                docType = DocType.FAVORITE
                             )
-                            R.string.tab_history -> viewModel.processHistoryOrFavorite(
+                            R.string.tab_history -> viewModel.loadMoreHistoryOrFavorite(
                                 numberOfRecyclerViewItemsLoaded = viewAdapter.itemCount,
                                 numberOfDocumentsToLoad = 10,
-                                docType = DocType.HISTORY
                             )
                             R.string.tab_random -> viewModel.processRandom()
                         }

@@ -31,7 +31,6 @@ class ImagesFragment : Fragment() {
 
             Timber.d("trien", it.toString())
         }
-
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
