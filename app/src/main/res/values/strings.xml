@@ -84,6 +84,7 @@
     <string name="no_herb_result_please_try_turning_on_objects_mode">No result found. You may turn off Whole Image mode!</string>
     <string name="something_went_wrong_please_try_again_or_contact_us">Something went wrong. Please try again or contact us!</string>
     <string name="add_photos">Add Multiple Photos</string>
+    <string name="add_your_photos">Add your images</string>
     <string name="objects_mode">Objects mode</string>
     <string name="whole_image_mode">Whole image mode</string>
     <string name="result">Result</string>
@@ -95,10 +96,14 @@
     <string name="failed_to_load_local_data_store">Failed to load local data store</string>
     <string name="failed_to_label_one_or_some_of_the_images">Failed to label 1 or some of your images.</string>
 
-    <string name="herb_id">ID: %s</string>
-    <string name="latin_name">Latin name: %s</string>
-    <string name="vietnamese_name">Vietnamese name: %s</string>
-    <string name="english_name">English name: %s</string>
+    <string name="herb_id_s">ID: %s</string>
+    <string name="latin_name_s">Latin name: %s</string>
+    <string name="vietnamese_name_s">Vietnamese name: %s</string>
+    <string name="english_name_s">English name: %s</string>
+    <string name="overview_s">Overview: %s</string>
+    <string name="dosing_s">Dosing: %s</string>
+    <string name="side_effects_s">Side effects: %s</string>
+    <string name="interactions_s">Interactions: %s</string>
     <string name="your_selected_image">Your selected image</string>
     <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
     <string name="sign_in_with_google">Sign in with Google</string>
@@ -133,4 +138,7 @@
     <string name="like">Like</string>
     <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
     <string name="edit_button">edit button</string>
+    <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
+    <string name="add_more">Add more</string>
+    <string name="upload">Upload</string>
 </resources>

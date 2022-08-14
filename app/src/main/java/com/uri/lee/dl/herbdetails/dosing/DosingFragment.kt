@@ -6,13 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.FragmentDosingBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
+import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
@@ -27,7 +29,7 @@ class DosingFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val herbDetailsViewModel: HerbDetailsViewModel by viewModels()
+    private val herbDetailsViewModel: HerbDetailsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,13 +45,15 @@ class DosingFragment : Fragment() {
                     "https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri()
                 )
         }
-// todo check system language
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 herbDetailsViewModel.state()
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
-                    .onEach { binding.dosingView.text = it.viDosing }
+                    .onEach {
+                        binding.dosingView.text =
+                            getString(R.string.dosing_s, if (isSystemLanguageVietnamese) it.viDosing else it.enDosing)
+                    }
                     .launchIn(this)
             }
         }

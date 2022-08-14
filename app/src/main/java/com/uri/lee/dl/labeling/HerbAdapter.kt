@@ -48,9 +48,10 @@ class HerbAdapter(private val herbList: List<Herb>) :
             } else {
                 imageView.setImageResource(R.drawable.ic_launcher_round)
             }
-            idView.text = String.format(itemView.context.getString(R.string.herb_id), herb.id ?: "")
-            latinView.text = String.format(itemView.context.getString(R.string.latin_name), herb.latinName ?: "")
-            vietnameseView.text = String.format(itemView.context.getString(R.string.vietnamese_name), herb.viName ?: "")
+            idView.text = String.format(itemView.context.getString(R.string.herb_id_s), herb.id ?: "")
+            latinView.text = String.format(itemView.context.getString(R.string.latin_name_s), herb.latinName ?: "")
+            vietnameseView.text =
+                String.format(itemView.context.getString(R.string.vietnamese_name_s), herb.viName ?: "")
             searchWithGoogleLatin.setOnClickListener {
                 herb.latinName?.let { name -> Utils.googleItWithDefaultBrowser(view.context, name) }
             }

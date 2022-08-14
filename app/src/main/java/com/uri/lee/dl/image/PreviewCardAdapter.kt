@@ -63,7 +63,7 @@ class PreviewCardAdapter(
                 imageView.visibility = View.VISIBLE
                 Glide.with(itemView.context).load(bitmapObject.getObjectThumbnail())
                     .into(imageView) // bitmapObject.getObjectThumbnail()
-                idView.text = String.format(itemView.context.getString(R.string.herb_id), mostConfidentHerb.id ?: "")
+                idView.text = String.format(itemView.context.getString(R.string.herb_id_s), mostConfidentHerb.id ?: "")
                 latinView.text = mostConfidentHerb.latinName ?: ""
                 vietnameseView.text = mostConfidentHerb.viName ?: ""
             }

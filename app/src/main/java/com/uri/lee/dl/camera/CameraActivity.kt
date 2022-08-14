@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class CameraActivity : AppCompatActivity() {
 
@@ -66,12 +65,10 @@ class CameraActivity : AppCompatActivity() {
         } else {
             val confidence = binding.seekView.seekBar.progress.toFloat() / 100
             if (binding.objectsModeSwitch.isChecked) {
-                Timber.d("trien checked")
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.container, ObjectiveCameraFragment.newInstance(confidence))
                     .commitNow()
             } else {
-                Timber.d("trien not checked")
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.container, LiveCameraFragment.newInstance(confidence))
                     .commitNow()

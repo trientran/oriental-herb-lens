@@ -68,6 +68,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
+import java.util.*
 import kotlin.math.abs
 
 
@@ -392,6 +393,10 @@ fun Context.isNetworkAvailable(): Boolean {
         else -> false
     }
 }
+
+val systemLanguageLowercase = Locale.getDefault().displayLanguage.lowercase()
+val isSystemLanguageVietnamese =
+    systemLanguageLowercase == "vietnamese" || systemLanguageLowercase == "vi" || systemLanguageLowercase == "tiếng việt"
 
 fun DocumentSnapshot.toHerb() = Herb(
     objectID = id,
