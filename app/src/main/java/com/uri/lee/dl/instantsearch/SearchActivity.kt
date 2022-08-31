@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algolia.instantsearch.android.list.autoScrollToStart
@@ -21,6 +20,7 @@ import com.uri.lee.dl.databinding.ActivitySearchBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsActivity
 
 class SearchActivity : AppCompatActivity() {
+
     private val viewModel: MyViewModel by viewModels()
     private val connection = ConnectionHandler()
     private lateinit var binding: ActivitySearchBinding
@@ -31,7 +31,6 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         binding.closeView.setOnClickListener { finish() }
         binding.microphoneView.setOnClickListener { Utils.displaySpeechRecognizer(this) }

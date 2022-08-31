@@ -7,7 +7,6 @@ import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +20,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ImagesActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityImagesBinding
 
     // Contains the recognition result. Since  it is a viewModel, it will survive screen rotations
@@ -33,7 +33,6 @@ class ImagesActivity : AppCompatActivity() {
         binding = ActivityImagesBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         // Initialising the RecyclerView and its linked Adapter
         viewAdapter = ImagesAdapter {

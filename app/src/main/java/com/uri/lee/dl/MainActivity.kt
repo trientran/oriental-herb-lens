@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.DownloadConditions
@@ -32,7 +31,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         // Setup tabbed views
         binding.viewPager.adapter = SectionsPagerAdapter(this)

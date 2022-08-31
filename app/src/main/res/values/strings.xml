@@ -119,7 +119,7 @@
         the authenticity of the input data.
         \n\nIn consultation with Mr Le, this Android app has been developed by Mr Trien Tran as part of his Master of Information Technology degree\'s capstone thesis project. He is now an alumnus
         of St. Paul University Philippines. If you are an iOS developer and willing to join us voluntarily, please reach out via the contact button.
-        \n\nAs of now, the developed AI model can recognise only 70 herbal plants due to limited input data (to view the full list of these 70 ones, please press the button at the end of this dialog). Therefore, we look forward to expanding the number of recognised medicinal plants to more than 3000.
+        \n\nAs of now, the developed AI model can recognise only 70 herbal plants due to limited input data (to view the full list of these 70 ones, please press the button at the end of this dialog). Therefore, we look forward to expanding the number of recognised medicinal plants to almost 4000.
         This ambition will not be achieved without your support. There are 2 ways you may help us out:
         \n\n- Please contribute to the dataset by capturing your own images using your own mobile and camera devices,
         then upload them all to our server using this mobile app. The image quality does not matter, we just need
@@ -141,4 +141,7 @@
     <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
     <string name="add_more">Add more</string>
     <string name="upload">Upload</string>
+    <string name="add_images">Add images</string>
+    <string name="instruction">Instruction</string>
+    <string name="image_item">image item</string>
 </resources>

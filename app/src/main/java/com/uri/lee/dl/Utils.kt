@@ -53,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.common.model.RemoteModelManager
@@ -61,10 +62,13 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.camera.objectivecamera.CameraSizePair
 import com.uri.lee.dl.instantsearch.Herb
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -227,8 +231,7 @@ object Utils {
             var opts = BitmapFactory.Options()
             opts.inJustDecodeBounds = true
             BitmapFactory.decodeStream(inputStreamForSize, null, opts)/* outPadding= */
-            val inSampleSize = Math.max(opts.outWidth / maxImageDimension, opts.outHeight / maxImageDimension)
-
+            val inSampleSize = (opts.outWidth / maxImageDimension).coerceAtMost(opts.outHeight / maxImageDimension)
             opts = BitmapFactory.Options()
             opts.inSampleSize = inSampleSize
             inputStreamForImage = context.contentResolver.openInputStream(imageUri)
@@ -242,6 +245,55 @@ object Utils {
             inputStreamForSize?.close()
             inputStreamForImage?.close()
         }
+    }
+
+    // desiredPrefix should be uid
+    suspend fun Context.compressToJpg(
+        uri: Uri,
+        maxImageDimension: Int,
+        compressingPercentage: Int = 100,
+        desiredPrefix: String
+    ): Uri? = withContext(ioDispatcher) {
+        val imageDimension = getImageDimension(uri) ?: return@withContext null
+        if (imageDimension.first <= maxImageDimension || imageDimension.second <= maxImageDimension) return@withContext uri
+
+        var compressedFile: File? = null
+        var bitmap: Bitmap? = null
+        try {
+            compressedFile = this@compressToJpg.generateTempCameraFile(desiredPrefix)
+            bitmap = loadImage(
+                context = this@compressToJpg,
+                imageUri = uri,
+                maxImageDimension = maxImageDimension
+            )
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressingPercentage, compressedFile.outputStream())
+            bitmap?.recycle()
+            return@withContext Uri.fromFile(compressedFile)
+        } catch (cancellationException: CancellationException) {
+            compressedFile?.delete()
+            return@withContext null
+        } catch (ignore: Throwable) {
+            // NOP - OOM or whatever - just reduce quality and try again
+        } finally {
+            bitmap?.recycle()
+        }
+        compressedFile?.delete()
+        return@withContext Uri.EMPTY
+    }
+
+    private fun Context.generateTempCameraFile(prefix: String, suffix: String = ".jpg"): File {
+        var dir = cacheDir
+        dir = File(dir, "camera_images")
+        dir.mkdirs()
+        return File.createTempFile(prefix, suffix, dir)
+    }
+
+    private fun getImageDimension(uri: Uri): Pair<Int, Int>? {
+        val path = uri.path ?: return null
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeFile(File(path).absolutePath, options)
+        return options.outHeight to options.outWidth
     }
 
     internal fun displaySpeechRecognizer(activity: Activity) {
@@ -380,6 +432,9 @@ val herbCollection = db.collection("herbs") // dont change this value
 val userCollection = db.collection("users") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
 const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
+val storage = Firebase.storage
+var herbStorage = storage.reference.child("herbs")
+const val HERB_ID = "HERB_ID"
 
 fun Context.isNetworkAvailable(): Boolean {
     val connectivityManager =
@@ -416,6 +471,12 @@ fun DocumentSnapshot.toHerb() = Herb(
 
 fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
 fun DocumentSnapshot.toHistory() = (get(USER_HISTORY_FIELD_NAME) as? List<*>) ?: emptyList<Any>()
+
+// Storj
+var satelliteAddress: String? = "us-central-1.tardigrade.io:7777"
+var serializedApiKey = "13Yqft7v..."
+var passphrase = "super secret passphrase"
+
 
 class BaseApplication : Application() {
 

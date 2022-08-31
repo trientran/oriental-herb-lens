@@ -34,7 +34,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -90,7 +89,6 @@ class ImageActivity : AppCompatActivity() {
         binding = ActivityImageBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         dotViewSize = resources.getDimensionPixelOffset(R.dimen.static_image_dot_view_size)
 
