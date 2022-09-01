@@ -60,8 +60,8 @@ import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
-import com.uri.lee.dl.camera.objectivecamera.CameraSizePair
 import com.uri.lee.dl.instantsearch.Herb
+import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible

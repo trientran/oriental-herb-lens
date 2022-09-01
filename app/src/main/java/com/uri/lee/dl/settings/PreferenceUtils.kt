@@ -21,7 +21,7 @@ import android.preference.PreferenceManager
 import androidx.annotation.StringRes
 import com.google.android.gms.common.images.Size
 import com.uri.lee.dl.R
-import com.uri.lee.dl.camera.objectivecamera.CameraSizePair
+import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
 
 /** Utility class to retrieve shared preferences. */
 object PreferenceUtils {

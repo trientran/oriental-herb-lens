@@ -12,7 +12,7 @@ import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.databinding.FragmentImagesBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
-import com.uri.lee.dl.herbdetails.ImageUploadActivity
+import com.uri.lee.dl.upload.ImageUploadActivity
 import timber.log.Timber
 
 class ImagesFragment : Fragment() {

@@ -21,7 +21,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".herbdetails.ImageUploadActivity"
+            android:name=".upload.ImageUploadActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -29,12 +29,12 @@
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".camera.CameraActivity"
+            android:name=".lenscamera.CameraActivity"
             android:exported="false"
             android:screenOrientation="locked"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".images.ImagesActivity"
+            android:name=".lensimages.ImagesActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -56,7 +56,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".image.ImageActivity"
+            android:name=".lensimage.ImageActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

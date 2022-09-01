@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <com.uri.lee.dl.camera.objectivecamera.GraphicOverlay
+  <com.uri.lee.dl.lenscamera.objectivecamera.GraphicOverlay
       android:id="@+id/camera_preview_graphic_overlay"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-    <com.uri.lee.dl.camera.objectivecamera.CameraSourcePreview
+    <com.uri.lee.dl.lenscamera.objectivecamera.CameraSourcePreview
         android:id="@+id/camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,7 +14,7 @@
             android:id="@+id/camera_preview_overlay"
             layout="@layout/camera_preview_overlay" />
 
-    </com.uri.lee.dl.camera.objectivecamera.CameraSourcePreview>
+    </com.uri.lee.dl.lenscamera.objectivecamera.CameraSourcePreview>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/appBarLayout"

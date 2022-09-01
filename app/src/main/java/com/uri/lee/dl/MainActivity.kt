@@ -11,14 +11,14 @@ import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
-import com.uri.lee.dl.camera.CameraActivity
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.hometabs.TAB_TITLES
-import com.uri.lee.dl.image.ImageActivity
-import com.uri.lee.dl.images.ImagesActivity
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
+import com.uri.lee.dl.lenscamera.CameraActivity
+import com.uri.lee.dl.lensimage.ImageActivity
+import com.uri.lee.dl.lensimages.ImagesActivity
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
