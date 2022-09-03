@@ -1,18 +1,26 @@
 package com.uri.lee.dl.upload
 
+import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import android.util.Base64
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.uri.lee.dl.*
+import com.uri.lee.dl.Utils.compressToJpgByteArray
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import java.util.concurrent.CancellationException
 
+private const val MAX_IMAGE_DIMENSION = 600
 
-class ImageUploadViewModel : ViewModel() {
-
+class ImageUploadViewModel(application: Application) : AndroidViewModel(application) {
+    private val application = getApplication<BaseApplication>()
     private val stateFlow = MutableStateFlow(ImageUploadState())
+    private val imageApi = RetrofitHelper.getInstance().create(ImageApi::class.java)
 
     fun state(): Flow<ImageUploadState> = stateFlow
 
@@ -25,7 +33,7 @@ class ImageUploadViewModel : ViewModel() {
     fun clearAllData() {
         Timber.d("clearAllData")
         viewModelScope.launch {
-            setState { copy(imageUris = emptyList(), event = null) }
+            setState { copy(imageUris = emptyList(), error = null) }
         }
     }
 
@@ -39,34 +47,54 @@ class ImageUploadViewModel : ViewModel() {
         }
     }
 
-    fun setHerbId(herbId: String) {
-        viewModelScope.launch { setState { copy(herbId = herbId) } }
+    fun uploadSequentially() {
+        Timber.d("uploadSequentially")
+        globalScope.launch {
+            val uid = authUI.auth.uid ?: return@launch
+            val urls = mutableSetOf<String>()
+            try {
+                state.imageUris.onEach { uri ->
+                    val byteArray = application.compressToJpgByteArray(uri, MAX_IMAGE_DIMENSION)
+                    // should use NO_WRAP to make sure there is no break line in the string create a map of data to pass along
+                    val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+                    imageApi.uploadImage(base64String).body()?.let { urls.add(it.image.url) }
+                }
+                val upload = Upload(
+                    herbId = state.herbId!!,
+                    uid = uid,
+                    instant = clock.millis(),
+                    urls = urls.toSet(),
+                )
+                uploadCollection.add(upload).await()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = ImageUploadState.Error(e)) }
+            }
+        }
     }
 
-
-    fun upload() {
-//        val uploadTask = herbStorage.child(state.herbId!!).putFile(state.imageUris)
-//
-//// Register observers to listen for when the download is done or if it fails
-//        uploadTask.addOnFailureListener {
-//            // Handle unsuccessful uploads
-//        }.addOnSuccessListener { taskSnapshot ->
-//            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-//            // ...
-//        }
+    fun setHerbId(herbId: String) {
+        viewModelScope.launch { setState { copy(herbId = herbId) } }
     }
 
     private inline fun setState(copiedState: ImageUploadState.() -> ImageUploadState) = stateFlow.update(copiedState)
 
 }
 
+private data class Upload(
+    val herbId: String,
+    val uid: String,
+    val instant: Long,
+    val urls: Set<String>,
+)
+
 data class ImageUploadState(
     val herbId: String? = null,
     val imageUris: List<Uri> = emptyList(),
     val isSubmitting: Boolean = false,
-    val event: Event? = null,
+    val error: Error? = null,
 ) {
-    sealed interface Event {
-        data class Error(val exception: Exception) : Event
-    }
+    data class Error(val exception: Exception)
 }

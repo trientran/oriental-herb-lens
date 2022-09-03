@@ -95,7 +95,8 @@ class HerbDetailsViewModel : ViewModel() {
                     }
                     snapshot.toHistory().apply {
                         val history = this.toMutableList()
-                        if (!history.contains(state.herb!!.objectID) && state.herb!!.objectID.count() >= 4) { // herb id must be at least 4 characters)
+                        if (state.herb!!.objectID.count() >= 4) { // herb id must be at least 4 characters)
+                            history.remove(state.herb!!.objectID)
                             history.add(state.herb!!.objectID)
                             val data = hashMapOf(USER_HISTORY_FIELD_NAME to history)
                             userCollection.document(authUI.auth.uid!!)

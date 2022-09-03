@@ -11,6 +11,7 @@ import com.google.mlkit.vision.label.ImageLabel
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.*
+import com.uri.lee.dl.Utils.loadBitmapFromUri
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.lensimages.ImagesState.Recognition
 import kotlinx.coroutines.flow.*
@@ -150,7 +151,7 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private suspend fun getBitmapFromFileUri(imageUri: Uri, maxDimension: Int): Bitmap? = try {
-        Utils.loadImage(application, imageUri, maxDimension)
+        application.loadBitmapFromUri(imageUri, maxDimension)
     } catch (e: IOException) {
         Timber.e(e.message)
         setState { copy(event = ImagesState.Event.BitmapError(e)) }

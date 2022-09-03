@@ -62,16 +62,14 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.instantsearch.Herb
 import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
+import java.time.Clock
 import java.util.*
 import kotlin.math.abs
 
@@ -221,64 +219,76 @@ object Utils {
         return null
     }
 
-    internal suspend fun loadImage(context: Context, imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
+    internal suspend fun Context.loadBitmapFromUri(imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
         ioDispatcher
     ) {
         var inputStreamForSize: InputStream? = null
         var inputStreamForImage: InputStream? = null
         try {
-            inputStreamForSize = context.contentResolver.openInputStream(imageUri)
+            inputStreamForSize = contentResolver.openInputStream(imageUri)
             var opts = BitmapFactory.Options()
             opts.inJustDecodeBounds = true
             BitmapFactory.decodeStream(inputStreamForSize, null, opts)/* outPadding= */
             val inSampleSize = (opts.outWidth / maxImageDimension).coerceAtMost(opts.outHeight / maxImageDimension)
             opts = BitmapFactory.Options()
             opts.inSampleSize = inSampleSize
-            inputStreamForImage = context.contentResolver.openInputStream(imageUri)
+            inputStreamForImage = contentResolver.openInputStream(imageUri)
             val decodedBitmap = BitmapFactory.decodeStream(inputStreamForImage, null, opts)/* outPadding= */
-            maybeTransformBitmap(
-                context.contentResolver,
-                imageUri,
-                decodedBitmap
-            )
+            maybeTransformBitmap(contentResolver, imageUri, decodedBitmap)
         } finally {
             inputStreamForSize?.close()
             inputStreamForImage?.close()
         }
     }
 
-    // desiredPrefix should be uid
-    suspend fun Context.compressToJpg(
+    internal suspend fun Context.compressToJpgByteArray(
         uri: Uri,
-        maxImageDimension: Int,
-        compressingPercentage: Int = 100,
-        desiredPrefix: String
-    ): Uri? = withContext(ioDispatcher) {
-        val imageDimension = getImageDimension(uri) ?: return@withContext null
-        if (imageDimension.first <= maxImageDimension || imageDimension.second <= maxImageDimension) return@withContext uri
-
-        var compressedFile: File? = null
+        maxImageDimension: Int = 600,
+        compressingPercentage: Int = 70,
+    ): ByteArray? = withContext(ioDispatcher) {
         var bitmap: Bitmap? = null
         try {
-            compressedFile = this@compressToJpg.generateTempCameraFile(desiredPrefix)
-            bitmap = loadImage(
-                context = this@compressToJpg,
-                imageUri = uri,
-                maxImageDimension = maxImageDimension
-            )
-            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressingPercentage, compressedFile.outputStream())
+            bitmap = loadBitmapFromUri(imageUri = uri, maxImageDimension = maxImageDimension)
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressingPercentage, byteArrayOutputStream)
+            val byteArray: ByteArray = byteArrayOutputStream.toByteArray()
             bitmap?.recycle()
-            return@withContext Uri.fromFile(compressedFile)
+            return@withContext byteArray
         } catch (cancellationException: CancellationException) {
-            compressedFile?.delete()
             return@withContext null
-        } catch (ignore: Throwable) {
-            // NOP - OOM or whatever - just reduce quality and try again
+        } catch (e: Exception) {
+            Timber.e(e)
+            return@withContext null
         } finally {
             bitmap?.recycle()
         }
-        compressedFile?.delete()
-        return@withContext Uri.EMPTY
+    }
+
+    // desiredPrefix should be uid
+    internal suspend fun Context.compressToJpgFile(
+        uri: Uri,
+        desiredPrefix: String,
+        maxImageDimension: Int = 600,
+        compressingPercentage: Int = 70,
+    ): Uri? = withContext(ioDispatcher) {
+        var compressedFile: File? = null
+        var bitmap: Bitmap? = null
+        try {
+            compressedFile = this@compressToJpgFile.generateTempCameraFile(desiredPrefix)
+            bitmap = loadBitmapFromUri(imageUri = uri, maxImageDimension = maxImageDimension)
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressingPercentage, compressedFile.outputStream())
+            bitmap?.recycle()
+            return@withContext compressedFile.toUri()
+        } catch (cancellationException: CancellationException) {
+            compressedFile?.delete()
+            return@withContext null
+        } catch (e: Exception) {
+            Timber.e(e)
+            compressedFile?.delete()
+            return@withContext null
+        } finally {
+            bitmap?.recycle()
+        }
     }
 
     private fun Context.generateTempCameraFile(prefix: String, suffix: String = ".jpg"): File {
@@ -288,11 +298,10 @@ object Utils {
         return File.createTempFile(prefix, suffix, dir)
     }
 
-    private fun getImageDimension(uri: Uri): Pair<Int, Int>? {
-        val path = uri.path ?: return null
+    internal fun Context.getImageDimension(imageUri: Uri): Pair<Int, Int>? {
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(File(path).absolutePath, options)
+        BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri), null, options)/* outPadding= */
         return options.outHeight to options.outWidth
     }
 
@@ -357,7 +366,6 @@ fun Context.hideSoftKeyboard(view: View) {
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
-
 fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): Bitmap? {
     val bitmapFromUri: Bitmap? =
         // check version of Android on device
@@ -419,6 +427,8 @@ val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 
+val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+
 // data store stuff
 const val SETTINGS = "SETTINGS"
 val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
@@ -427,9 +437,12 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SET
 
 val authUI = AuthUI.getInstance()
 
+val clock: Clock = Clock.systemDefaultZone()
+
 val db = Firebase.firestore
 val herbCollection = db.collection("herbs") // dont change this value
 val userCollection = db.collection("users") // dont change this value
+val uploadCollection = db.collection("uploads") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
 const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
 val storage = Firebase.storage
