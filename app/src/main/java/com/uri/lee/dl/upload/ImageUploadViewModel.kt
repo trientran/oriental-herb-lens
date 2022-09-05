@@ -52,6 +52,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         globalScope.launch {
             val uid = authUI.auth.uid ?: return@launch
             val urls = mutableSetOf<String>()
+            setState { copy(isUploadComplete = false) }
             try {
                 state.imageUris.onEach { uri ->
                     val byteArray = application.compressToJpgByteArray(uri, MAX_IMAGE_DIMENSION)
@@ -66,6 +67,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     urls = urls.toSet(),
                 )
                 uploadCollection.add(upload).await()
+                setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -93,6 +95,7 @@ private data class Upload(
 data class ImageUploadState(
     val herbId: String? = null,
     val imageUris: List<Uri> = emptyList(),
+    val isUploadComplete: Boolean = false,
     val isSubmitting: Boolean = false,
     val error: Error? = null,
 ) {

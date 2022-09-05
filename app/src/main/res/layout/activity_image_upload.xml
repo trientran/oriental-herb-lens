@@ -90,6 +90,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="50dp"
         android:text="@string/pick_photos"
         android:textAlignment="center"
         android:textSize="40sp"
@@ -100,6 +102,7 @@
 
     <Button
         android:id="@+id/uploadBtn"
+        android:background="?android:attr/selectableItemBackground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/upload"
