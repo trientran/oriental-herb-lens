@@ -152,4 +152,5 @@
         The rule of thumbs is, as long as you are able to recognize the plants in the photos, our AI model is too ^_^.
        </string>
     <string name="upload_completed">All your images have been uploaded successfully.</string>
+    <string name="upload_in_progress_please">Upload in progress. We will notify you once completed.</string>
 </resources>

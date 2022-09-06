@@ -89,6 +89,8 @@ dependencies {
     // If you want to additionally use the CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha31"
 
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
+
     implementation 'com.google.mlkit:image-labeling:17.0.7'
     implementation 'com.google.mlkit:image-labeling-custom:17.0.1'
     implementation 'com.google.mlkit:linkfirebase:17.0.0'

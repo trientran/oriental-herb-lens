@@ -7,22 +7,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.MainActivity
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImageUploadBinding
+import com.uri.lee.dl.lensimages.ImagesBottomSheetDialog
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -52,7 +56,8 @@ class ImageUploadActivity : AppCompatActivity() {
 
         intent.getStringExtra(HERB_ID)?.let { viewModel.setHerbId(it) }
         imageUploadAdapter = ImageUploadAdapter {
-// todo open bottomsheetdialog showing full image
+            val bottomSheet = FullSizeImageViewerDialog(it)
+            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
         }
 
         val gridLayoutManager = GridLayoutManager(this, GridLayoutManager.VERTICAL)
@@ -86,8 +91,15 @@ class ImageUploadActivity : AppCompatActivity() {
                     .onEach { uriList ->
                         imageUploadAdapter.submitList(uriList)
                         binding.uploadBtn.isVisible = uriList.isNotEmpty()
-                        binding.uploadBtn.setOnClickListener { viewModel.uploadSequentially() }
-                        binding.uploadBtn.setOnClickListener { viewModel.uploadSequentially() }
+                        binding.uploadBtn.setOnClickListener {
+                            viewModel.uploadSequentially()
+                            Toast.makeText(
+                                this@ImageUploadActivity,
+                                getString(R.string.upload_in_progress_please),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
                     }
                     .launchIn(this)
             }
