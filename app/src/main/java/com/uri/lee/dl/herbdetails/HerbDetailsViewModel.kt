@@ -1,10 +1,13 @@
 package com.uri.lee.dl.herbdetails
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.uri.lee.dl.*
+import com.uri.lee.dl.herbdetails.HerbDetailsState.ImageInfo
 import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +19,7 @@ class HerbDetailsViewModel : ViewModel() {
 
     private lateinit var herbListenerRegistration: ListenerRegistration
     private lateinit var userListenerRegistration: ListenerRegistration
+    private lateinit var urisListenerRegistration: ListenerRegistration
 
     private var likeList = mutableListOf<String>()
 
@@ -31,6 +35,25 @@ class HerbDetailsViewModel : ViewModel() {
             setState { copy(herb = Herb(objectID = objectID)) }
             liveHerbUpdate(objectID)
             liveLikeListUpdate()
+            getImageUris(objectID)
+        }
+    }
+
+    private fun getImageUris(herbId: String) {
+        Log.d("trienn,", herbId)
+        val query = uploadCollection.whereEqualTo("herbId", herbId)
+        urisListenerRegistration = query.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Timber.w("Listen failed.", e)
+                return@addSnapshotListener
+            }
+            Log.d("trienn,", snapshot!!.documents.toString())
+
+            snapshot?.let {
+                val imageInfoList = mutableListOf<ImageInfo>()
+                snapshot.documents.onEach { imageInfoList.addAll(it.toImageInfoList()) }
+                viewModelScope.launch { setState { copy(imageInfoList = imageInfoList) } }
+            }
         }
     }
 
@@ -78,6 +101,15 @@ class HerbDetailsViewModel : ViewModel() {
         }
     }
 
+    private fun DocumentSnapshot.toImageInfoList(): List<ImageInfo> {
+        val imageInfoList = mutableListOf<ImageInfo>()
+        (get("urls") as? List<*>)!!.onEach {
+            it as String
+            imageInfoList.add(ImageInfo(url = it, uid = getString("uid").toString()))
+        }
+        return imageInfoList
+    }
+
     private fun liveLikeListUpdate() {
         userCollection.document(authUI.auth.uid!!).apply {
             userListenerRegistration = this.addSnapshotListener { snapshot, e ->
@@ -114,6 +146,7 @@ class HerbDetailsViewModel : ViewModel() {
         super.onCleared()
         if (this::herbListenerRegistration.isInitialized) herbListenerRegistration.remove()
         if (this::userListenerRegistration.isInitialized) userListenerRegistration.remove()
+        if (this::urisListenerRegistration.isInitialized) urisListenerRegistration.remove()
     }
 
     private inline fun setState(copiedState: HerbDetailsState.() -> HerbDetailsState) = stateFlow.update(copiedState)
@@ -121,11 +154,18 @@ class HerbDetailsViewModel : ViewModel() {
 
 data class HerbDetailsState(
     val herb: Herb? = null,
+    val imageInfoList: List<ImageInfo> = emptyList(),
     val isLiked: Boolean = false,
     val isLoading: Boolean = false,
     val event: Event? = null,
 ) {
+    data class ImageInfo(
+        val url: String,
+        val uid: String,
+    )
+
     sealed interface Event {
         data class Error(val exception: Exception) : Event
     }
 }
+

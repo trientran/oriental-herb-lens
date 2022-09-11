@@ -48,6 +48,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.*
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -63,6 +64,8 @@ import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.instantsearch.Herb
 import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -491,10 +494,48 @@ var serializedApiKey = "13Yqft7v..."
 var passphrase = "super secret passphrase"
 
 
-class BaseApplication : Application() {
+class BaseApplication : Application(), DefaultLifecycleObserver {
 
     override fun onCreate() {
-        super.onCreate()
+        super<Application>.onCreate()
         Timber.plant(Timber.DebugTree())
     }
+
+
 }
+
+private val foreground = ProcessLifecycleOwner.get().lifecycle.state()
+    .map { it.isAtLeast(Lifecycle.State.STARTED) }
+    .distinctUntilChanged()
+
+fun foreground(): Flow<Boolean> = foreground
+
+private fun Lifecycle.state(): Flow<Lifecycle.State> = callbackFlow {
+    val observer = object : DefaultLifecycleObserver {
+        override fun onCreate(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+
+        override fun onStart(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+
+        override fun onResume(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+
+        override fun onPause(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+
+        override fun onStop(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+
+        override fun onDestroy(owner: LifecycleOwner) {
+            trySend(currentState)
+        }
+    }
+    addObserver(observer)
+    awaitClose { removeObserver(observer) }
+}.flowOn(Dispatchers.Main.immediate).conflate()

@@ -148,7 +148,7 @@
     <string name="image_item">image item</string>
     <string name="how_to_take_photos">\n\nThe image quality does not matter when it comes to regular smartphones and cameras, meaning that it is OK to set the lowest image resolutions for your devices\' cameras. You may take photos in both portrait and horizontal modes, in different environments with different brightness (night vs day, indoor vs outdoor…).
         \n\nWe need details such as fruits, blossoms, branches, and leaves shapes, both fresh and sun-dried ones, if possible.
-        \n\nWhole plant photos should be taken as well if they can be recognized easily by human eyes from a distance. Herbs and shrubs are the best candidates for whole plant photos, whereas big trees probably are hard to distinguish, especially when they belong to the same family or species.
+        \n\nWhole plant photos should be taken as well if they can be recognized easily by human eyes from a distance. Herbs and shrubs are the best candidates for whole plant photos, whereas big trees are particularly hard to distinguish from a distance, especially if they belong to the same family or species.
         The rule of thumbs is, as long as you are able to recognize the plants in the photos, our AI model is too ^_^.
        </string>
     <string name="upload_completed">All your images have been uploaded successfully.</string>

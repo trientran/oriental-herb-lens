@@ -60,13 +60,15 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
                     imageApi.uploadImage(base64String).body()?.let { urls.add(it.image.url) }
                 }
-                val upload = Upload(
-                    herbId = state.herbId!!,
-                    uid = uid,
-                    instant = clock.millis(),
-                    urls = urls.toSet(),
-                )
-                uploadCollection.add(upload).await()
+                if (urls.isNotEmpty()) {
+                    val upload = Upload(
+                        herbId = state.herbId!!,
+                        uid = uid,
+                        instant = clock.millis(),
+                        urls = urls.toList(),
+                    )
+                    uploadCollection.add(upload).await()
+                }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
                 throw e
@@ -85,11 +87,12 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
 
 }
 
-private data class Upload(
+// don't change variable names
+data class Upload(
     val herbId: String,
     val uid: String,
     val instant: Long,
-    val urls: Set<String>,
+    val urls: List<String>,
 )
 
 data class ImageUploadState(

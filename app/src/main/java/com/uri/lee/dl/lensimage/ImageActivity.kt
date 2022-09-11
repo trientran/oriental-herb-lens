@@ -75,7 +75,7 @@ class ImageActivity : AppCompatActivity() {
         override fun onTick(millisUntilFinished: Long) {
             binding.pickImageView.isEnabled = false
             binding.actionBar.photoLibraryButton.isEnabled = false
-            resultLauncher.launch("image/*")
+            resultLauncher.launch(arrayOf("image/*"))
         }
 
         override fun onFinish() {
@@ -224,7 +224,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     private val resultLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { it?.apply { viewModel.setImageUri(this) } }
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { it?.apply { viewModel.setImageUri(this) } }
 
     override fun onBackPressed() {
         if (bottomSheetBehavior?.state != BottomSheetBehavior.STATE_HIDDEN) {

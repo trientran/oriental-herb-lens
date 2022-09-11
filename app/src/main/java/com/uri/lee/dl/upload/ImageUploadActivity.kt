@@ -14,24 +14,15 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import com.uri.lee.dl.HERB_ID
-import com.uri.lee.dl.MainActivity
-import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.uri.lee.dl.*
 import com.uri.lee.dl.databinding.ActivityImageUploadBinding
-import com.uri.lee.dl.lensimages.ImagesBottomSheetDialog
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ImageUploadActivity : AppCompatActivity() {
@@ -43,7 +34,7 @@ class ImageUploadActivity : AppCompatActivity() {
     private val viewModel: ImageUploadViewModel by viewModels()
 
     private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { list -> viewModel.addImageUris(list) }
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { list -> viewModel.addImageUris(list) }
 
     private val mainScope = MainScope()
     private val channelId = "image_upload"
@@ -60,7 +51,7 @@ class ImageUploadActivity : AppCompatActivity() {
             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
         }
 
-        val gridLayoutManager = GridLayoutManager(this, GridLayoutManager.VERTICAL)
+        val gridLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.layoutManager = gridLayoutManager
         binding.recyclerView.adapter = imageUploadAdapter
 
@@ -76,11 +67,11 @@ class ImageUploadActivity : AppCompatActivity() {
 
         binding.addImagesBtn.setOnClickListener {
             it.isEnabled = false
-            resultLauncher.launch("image/*")
+            resultLauncher.launch(arrayOf("image/*"))
         }
         binding.pickPhotosView.setOnClickListener {
             it.isEnabled = false
-            resultLauncher.launch("image/*")
+            resultLauncher.launch(arrayOf("image/*"))
         }
 
         lifecycleScope.launch {
@@ -88,15 +79,16 @@ class ImageUploadActivity : AppCompatActivity() {
                 viewModel.state()
                     .map { it.imageUris }
                     .distinctUntilChanged()
-                    .onEach { uriList ->
-                        imageUploadAdapter.submitList(uriList)
-                        binding.uploadBtn.isVisible = uriList.isNotEmpty()
+                    .onEach { list ->
+                        imageUploadAdapter.submitList(list)
+                        binding.uploadBtn.isVisible = list.isNotEmpty()
+                        binding.pickPhotosView.isVisible = list.isEmpty()
                         binding.uploadBtn.setOnClickListener {
                             viewModel.uploadSequentially()
                             Toast.makeText(
                                 this@ImageUploadActivity,
                                 getString(R.string.upload_in_progress_please),
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_LONG
                             ).show()
                             finish()
                         }
@@ -107,15 +99,36 @@ class ImageUploadActivity : AppCompatActivity() {
 
         createNotificationChannel()
         mainScope.launch {
+            combine(viewModel.state().map { it.isUploadComplete }.filter { it },
+                foreground()
+            ) { isUploadComplete, isForeground ->
+                isUploadComplete to isForeground
+            }
+                .distinctUntilChanged()
+                .take(1)
+                .onEach { (isUploadComplete, isForeground) ->
+                    val notificationId = 1000
+                    with(NotificationManagerCompat.from(applicationContext)) {
+                        if (isForeground && isUploadComplete) {
+                            Toast.makeText(
+                                this@ImageUploadActivity,
+                                getString(R.string.upload_completed),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@onEach
+                        }
+                        if (isUploadComplete) notify(
+                            notificationId,
+                            applicationContext.notificationBuilder().build()
+                        ) else cancel(notificationId)
+                    }
+                }
+                .launchIn(this)
             viewModel.state()
                 .map { it.isUploadComplete }
                 .distinctUntilChanged()
                 .onEach {
-                    val notificationId = 1000
-                    with(NotificationManagerCompat.from(applicationContext)) {
-                        if (it) notify(notificationId, applicationContext.notificationBuilder().build())
-                        else cancel(notificationId)
-                    }
+
                 }
                 .launchIn(this)
         }

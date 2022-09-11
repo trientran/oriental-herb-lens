@@ -57,7 +57,7 @@ class ImagesActivity : AppCompatActivity() {
         override fun onTick(millisUntilFinished: Long) {
             binding.pickImagesView.isEnabled = false
             binding.addImagesBtn.isEnabled = false
-            resultLauncher.launch("image/*")
+            resultLauncher.launch(arrayOf("image/*"))
         }
 
         override fun onFinish() {
@@ -124,7 +124,7 @@ class ImagesActivity : AppCompatActivity() {
     }
 
     private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { viewModel.addImageUris(it) }
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { viewModel.addImageUris(it) }
 
     private fun showSnackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE) {
         snackbar = Snackbar.make(findViewById(android.R.id.content), message, length!!)
