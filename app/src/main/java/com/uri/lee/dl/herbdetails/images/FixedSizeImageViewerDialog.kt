@@ -1,4 +1,4 @@
-package com.uri.lee.dl.upload
+package com.uri.lee.dl.herbdetails.images
 
 import android.net.Uri
 import android.os.Bundle
@@ -6,22 +6,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Nullable
-import com.davemorrissey.labs.subscaleview.ImageSource
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.uri.lee.dl.databinding.FullSizeImageViewerBinding
+import com.uri.lee.dl.databinding.FixedSizeImageViewerBinding
 
-class FullSizeImageViewerDialog(private val uri: Uri) : BottomSheetDialogFragment() {
+class FixedSizeImageViewerDialog(private val uri: Uri) : BottomSheetDialogFragment() {
 
-    private lateinit var binding: FullSizeImageViewerBinding
+    private lateinit var binding: FixedSizeImageViewerBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         @Nullable container: ViewGroup?,
         @Nullable savedInstanceState: Bundle?
     ): View {
-        binding = FullSizeImageViewerBinding.inflate(layoutInflater)
+        binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
-        binding.imageView.setImage(ImageSource.uri(uri))
+        Glide.with(this).load(uri).into(binding.imageView)
         return view
     }
 }

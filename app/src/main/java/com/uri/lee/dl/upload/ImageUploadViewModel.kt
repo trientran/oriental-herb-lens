@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.util.concurrent.CancellationException
 
@@ -51,6 +50,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         Timber.d("uploadSequentially")
         globalScope.launch {
             val uid = authUI.auth.uid ?: return@launch
+            state.herbId ?: return@launch
             val urls = mutableSetOf<String>()
             setState { copy(isUploadComplete = false) }
             try {
@@ -61,13 +61,9 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     imageApi.uploadImage(base64String).body()?.let { urls.add(it.image.url) }
                 }
                 if (urls.isNotEmpty()) {
-                    val upload = Upload(
-                        herbId = state.herbId!!,
-                        uid = uid,
-                        instant = clock.millis(),
-                        urls = urls.toList(),
-                    )
-                    uploadCollection.add(upload).await()
+                    herbCollection
+                        .document(state.herbId!!)
+                        .update(mapOf("images.$uid.${clock.millis()}" to urls.toList()))// Firestore does not recognise sets))
                 }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {

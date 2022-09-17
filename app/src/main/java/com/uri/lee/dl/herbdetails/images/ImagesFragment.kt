@@ -2,7 +2,6 @@ package com.uri.lee.dl.herbdetails.images
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +18,6 @@ import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.databinding.FragmentImagesBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
-import com.uri.lee.dl.upload.FullSizeImageViewerDialog
 import com.uri.lee.dl.upload.ImageUploadActivity
 import com.uri.lee.dl.upload.ImageUploadAdapter
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -27,7 +25,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class ImagesFragment : Fragment() {
 
@@ -49,15 +46,12 @@ class ImagesFragment : Fragment() {
             ViewModelProvider(this)[ImagesViewModel::class.java]
 
         arguments?.getString(INSTANT_HERB)?.let {
-
-            Timber.d("trien", it.toString())
         }
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
 
         imageUploadAdapter = ImageUploadAdapter {
-            Log.d("trien", it.toString())
-            val bottomSheet = FullSizeImageViewerDialog(it)
-            bottomSheet.show(childFragmentManager, "ModalBottomSheet")
+            val bottomSheet = FixedSizeImageViewerDialog(it)
+            bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
         }
 
         val gridLayoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
