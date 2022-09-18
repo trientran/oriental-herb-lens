@@ -75,14 +75,15 @@ class HerbDetailsViewModel : ViewModel() {
                     else -> "Other" // Need to find out why this requires else branch
                 }
                 deletionCollection.add(
-                    mapOf(
-                        "url" to uri.toString(),
-                        "uid" to uid,
-                        "herbId" to state.herb!!.id,
-                        "reason" to deleteReasonString,
-                        "requestedBy" to "${authUI.auth.uid}"
+                    ImageDeletionRequest(
+                        url = uri.toString(),
+                        uid = uid,
+                        herbId = state.herb!!.id!!,
+                        reason = deleteReasonString,
+                        requestedBy = authUI.auth.uid!!,
                     )
-                ).await()
+                )
+                    .await()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -197,4 +198,13 @@ data class HerbDetailsState(
         data class Error(val exception: Exception) : Event
     }
 }
+
+data class ImageDeletionRequest(
+    val url: String,
+    val uid: String,
+    val herbId: String,
+    val reason: String,
+    val requestedBy: String,
+)
+
 

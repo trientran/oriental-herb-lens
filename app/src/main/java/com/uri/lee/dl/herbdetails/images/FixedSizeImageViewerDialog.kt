@@ -51,5 +51,4 @@ class FixedSizeImageViewerDialog(
 interface ImageDeleteReason {
     object FaultyImage : ImageDeleteReason
     object DuplicatedImage : ImageDeleteReason
-    object Duplicate2dImage : ImageDeleteReason
 }
