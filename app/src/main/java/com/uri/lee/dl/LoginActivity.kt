@@ -5,31 +5,10 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import timber.log.Timber
 
 class LoginActivity : AppCompatActivity() {
     private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
-        if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let {
-            globalScope.launch {
-                try {
-                    userCollection.document(it.uid)
-                        .update(
-                            mapOf(
-                                "email" to it.email,
-                                "displayName" to it.displayName
-                            )
-                        ).await()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e.message)
-                }
-            }
-            finish()
-        }
+        if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let { finish() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
