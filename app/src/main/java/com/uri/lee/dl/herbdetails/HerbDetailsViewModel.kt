@@ -1,5 +1,6 @@
 package com.uri.lee.dl.herbdetails
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,12 +9,15 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.uri.lee.dl.*
 import com.uri.lee.dl.herbdetails.HerbDetailsState.ImageInfo
+import com.uri.lee.dl.herbdetails.images.ImageDeleteReason
 import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import java.util.concurrent.CancellationException
 
 class HerbDetailsViewModel : ViewModel() {
 
@@ -35,7 +39,7 @@ class HerbDetailsViewModel : ViewModel() {
             setState { copy(herb = Herb(objectID = objectID)) }
             liveHerbUpdate(objectID)
             liveLikeListUpdate()
-            getImageUris(objectID)
+            //  getImageUris(objectID)
         }
     }
 
@@ -60,6 +64,31 @@ class HerbDetailsViewModel : ViewModel() {
     fun setHerb(herb: Herb) {
         Timber.d("setHerb")
         viewModelScope.launch { setState { copy(herb = herb) } }
+    }
+
+    fun deleteImage(uri: Uri, uid: String, deleteReason: ImageDeleteReason) {
+        globalScope.launch {
+            try {
+                val deleteReasonString = when (deleteReason) {
+                    ImageDeleteReason.FaultyImage -> "Faulty image"
+                    ImageDeleteReason.DuplicatedImage -> "Duplicated Image"
+                    else -> "Other" // Need to find out why this requires else branch
+                }
+                deletionCollection.add(
+                    mapOf(
+                        "url" to uri.toString(),
+                        "uid" to uid,
+                        "herbId" to state.herb!!.id,
+                        "reason" to deleteReasonString,
+                        "requestedBy" to "${authUI.auth.uid}"
+                    )
+                ).await()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
     }
 
     fun setLike() {

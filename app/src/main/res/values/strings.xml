@@ -153,4 +153,13 @@
        </string>
     <string name="upload_completed">All your images have been uploaded successfully.</string>
     <string name="upload_in_progress_please">Upload in progress. We will notify you once completed.</string>
+
+    <string name="uploaded_by">Uploaded by: %s. \nYou may open this image in a web browser and download it by clicking on it.</string>
+    <string name="please_let_us_know_why_delete_this_image">Please let us know why you want to delete this image. Your request will be sent to admin for approval.</string>
+    <string name="duplicate_image">Duplicated image</string>
+    <string name="faulty_image">Faulty image</string>
+    <string name="cancel">Cancel</string>
+    <string name="deletion_request_sent_to_admin">Your deletion request has been sent to admin for approval.</string>
+    <string name="image_count">Image count: %s</string>
+
 </resources>

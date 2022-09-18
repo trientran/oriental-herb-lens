@@ -5,8 +5,12 @@ import android.net.Uri
 import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.uri.lee.dl.*
+import com.google.firebase.firestore.SetOptions
+import com.uri.lee.dl.BaseApplication
 import com.uri.lee.dl.Utils.compressToJpgByteArray
+import com.uri.lee.dl.authUI
+import com.uri.lee.dl.globalScope
+import com.uri.lee.dl.herbCollection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -51,19 +55,17 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         globalScope.launch {
             val uid = authUI.auth.uid ?: return@launch
             state.herbId ?: return@launch
-            val urls = mutableSetOf<String>()
+            val urlMap = mutableMapOf<String, Any>() // url string, uid string
             setState { copy(isUploadComplete = false) }
             try {
                 state.imageUris.onEach { uri ->
                     val byteArray = application.compressToJpgByteArray(uri, MAX_IMAGE_DIMENSION)
                     // should use NO_WRAP to make sure there is no break line in the string create a map of data to pass along
                     val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-                    imageApi.uploadImage(base64String).body()?.let { urls.add(it.image.url) }
+                    imageApi.uploadImage(base64String).body()?.let { urlMap[it.image.url] = uid }
                 }
-                if (urls.isNotEmpty()) {
-                    herbCollection
-                        .document(state.herbId!!)
-                        .update(mapOf("images.$uid.${clock.millis()}" to urls.toList()))// Firestore does not recognise sets))
+                if (urlMap.isNotEmpty()) {
+                    herbCollection.document(state.herbId!!).set(mapOf("images" to urlMap), SetOptions.merge())
                 }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {

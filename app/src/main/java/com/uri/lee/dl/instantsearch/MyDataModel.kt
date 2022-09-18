@@ -27,7 +27,9 @@ data class Herb(
     val viOverview: String? = null,
     val viSideEffects: String? = null,
     @IgnoredOnParcel
-    override val _highlightResult: JsonObject? = null
+    val images: Map<String, String>? = null, // url - uid
+    @IgnoredOnParcel
+    override val _highlightResult: JsonObject? = null,
 ) : Highlightable, Parcelable {
     @IgnoredOnParcel
     val highlightedNameLatin: HighlightedString?

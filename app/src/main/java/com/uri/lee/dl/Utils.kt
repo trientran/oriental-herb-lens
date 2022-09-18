@@ -445,6 +445,7 @@ val clock: Clock = Clock.systemDefaultZone()
 val db = Firebase.firestore
 val herbCollection = db.collection("herbs") // dont change this value
 val userCollection = db.collection("users") // dont change this value
+val deletionCollection = db.collection("deletions") // dont change this value
 val uploadCollection = db.collection("uploads") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
 const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
@@ -483,6 +484,7 @@ fun DocumentSnapshot.toHerb() = Herb(
     viName = getString("viName"),
     viOverview = getString("viOverview"),
     viSideEffects = getString("viSideEffects"),
+    images = get("images") as? Map<String, String>,
 )
 
 fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
