@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 class HerbDetailsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHerbDetailsBinding
+    private lateinit var navController: NavController
     private val viewModel: HerbDetailsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +38,7 @@ class HerbDetailsActivity : AppCompatActivity() {
 
         val navView: BottomNavigationView = binding.navView
 
-        val navController = findNavController(R.id.nav_host_fragment_activity_herb_details)
+        navController = findNavController(R.id.nav_host_fragment_activity_herb_details)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
@@ -66,6 +68,10 @@ class HerbDetailsActivity : AppCompatActivity() {
 
         }
         return true
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
