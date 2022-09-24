@@ -4,14 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.FragmentOverviewBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
 import com.uri.lee.dl.isSystemLanguageVietnamese
@@ -25,8 +24,7 @@ class OverviewFragment : Fragment() {
 
     private var _binding: FragmentOverviewBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
     private val herbDetailsViewModel by lazy { ViewModelProvider(requireActivity())[HerbDetailsViewModel::class.java] }
@@ -37,29 +35,71 @@ class OverviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentOverviewBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        val root = binding.root
+        val navController = findNavController()
 
-        binding.editButton.setOnClickListener {
-            requireContext()
-                .openUrlWithDefaultBrowser(
-                    "https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri()
+        binding.latinNameEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = it::latinName.name,
+                        oldValue = it.latinName ?: "",
+                    )
                 )
+            }
         }
-
+        binding.enNameEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = it::enName.name,
+                        oldValue = it.enName ?: "",
+                    )
+                )
+            }
+        }
+        binding.viNameEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = it::viName.name,
+                        oldValue = it.viName ?: "",
+                    )
+                )
+            }
+        }
+        binding.overviewEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = if (isSystemLanguageVietnamese) it::viOverview.name else it::enOverview.name,
+                        oldValue = if (isSystemLanguageVietnamese) it.viOverview ?: "" else it.enOverview ?: ""
+                    )
+                )
+            }
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 herbDetailsViewModel.state()
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
-                    .onEach {
-                        binding.herbIdView.text = getString(R.string.herb_id_s, it.objectID)
-                        binding.latinNameView.text = getString(R.string.latin_name_s, it.latinName)
-                        binding.viNameView.text = getString(R.string.vietnamese_name_s, it.viName)
-                        binding.enNameView.text = getString(R.string.english_name_s, it.enName)
-                        binding.overviewView.text = getString(
-                            R.string.overview_s,
-                            if (isSystemLanguageVietnamese) it.viOverview else it.enOverview
-                        )
+                    .onEach { herb ->
+                        binding.herbIdView.text = getString(R.string.herb_id_s, herb.objectID)
+                        binding.latinNameView.text =
+                            if (herb.latinName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.latinName
+                        binding.viNameView.text =
+                            if (herb.viName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.viName
+                        binding.enNameView.text =
+                            if (herb.enName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.enName
+                        binding.overviewView.text = if (isSystemLanguageVietnamese) {
+                            if (herb.viOverview.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.viOverview
+                        } else {
+                            if (herb.enOverview.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.enOverview
+                        }
                     }
                     .launchIn(this)
             }

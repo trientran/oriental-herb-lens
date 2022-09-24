@@ -97,13 +97,13 @@
     <string name="failed_to_label_one_or_some_of_the_images">Failed to label 1 or some of your images.</string>
 
     <string name="herb_id_s">ID: %s</string>
-    <string name="latin_name_s">Latin name: %s</string>
-    <string name="vietnamese_name_s">Vietnamese name: %s</string>
-    <string name="english_name_s">English name: %s</string>
-    <string name="overview_s">Overview: %s</string>
-    <string name="dosing_s">Dosing: %s</string>
-    <string name="side_effects_s">Side effects: %s</string>
-    <string name="interactions_s">Interactions: %s</string>
+    <string name="latin_name_s">Latin name:</string>
+    <string name="vietnamese_name_s">Vietnamese name:</string>
+    <string name="english_name_s">English name:</string>
+    <string name="overview_s">Overview:</string>
+    <string name="dosing_s">Dosing:</string>
+    <string name="side_effects_s">Side effects:</string>
+    <string name="interactions_s">Interactions:</string>
     <string name="your_selected_image">Your selected image</string>
     <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
     <string name="sign_in_with_google">Sign in with Google</string>
@@ -161,5 +161,14 @@
     <string name="cancel">Cancel</string>
     <string name="deletion_request_sent_to_admin">Your deletion request has been sent to admin for approval.</string>
     <string name="image_count">Image count: %s</string>
+    <string name="editing_s">Editing: %s</string>
+    <string name="update">Update</string>
+    <string name="add_more_images">Add more images</string>
+    <string name="please_edit_this_field">Please edit this field!</string>
+    <string name="side_effect">Side effects</string>
+    <string name="interactions">Interactions</string>
+    <string name="vietnamese_name">Vietnamese name</string>
+    <string name="english_name">English name</string>
+    <string name="latin_name">Latin name</string>
 
 </resources>

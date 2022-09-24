@@ -4,71 +4,106 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     tools:context=".herbdetails.images.ImagesFragment">
 
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="16dp">
+        android:layout_height="match_parent">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/herbIdView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="24dp"
-                android:textSize="20sp"
-                tools:text="@tools:sample/lorem" />
+                android:layout_marginBottom="12dp"
+                android:textSize="16sp"
+                tools:text="Id: 0000" />
+
+            <TextView
+                android:id="@+id/latinNameEditView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="@string/latin_name_s"
+                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
 
             <TextView
                 android:id="@+id/latinNameView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/light_blue_900"
+                android:textIsSelectable="true"
                 tools:text="@tools:sample/lorem" />
+
+            <TextView
+                android:id="@+id/viNameEditView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="@string/vietnamese_name_s"
+                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
 
             <TextView
                 android:id="@+id/viNameView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/light_blue_900"
+                android:textIsSelectable="true"
                 tools:text="@tools:sample/lorem" />
+
+            <TextView
+                android:id="@+id/enNameEditView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="@string/english_name_s"
+                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
 
             <TextView
                 android:id="@+id/enNameView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/light_blue_900"
+                android:textIsSelectable="true"
                 tools:text="@tools:sample/lorem" />
+
+            <TextView
+                android:id="@+id/overviewEditView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="@string/overview_s"
+                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
 
             <TextView
                 android:id="@+id/overviewView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="50dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/light_blue_900"
+                android:textIsSelectable="true"
                 tools:text="@tools:sample/lorem/random" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </ScrollView>
-
-    <ImageView
-        android:id="@+id/editButton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:padding="10dp"
-        android:background="?selectableItemBackground"
-        android:src="@drawable/ic_baseline_edit_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="@string/edit_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

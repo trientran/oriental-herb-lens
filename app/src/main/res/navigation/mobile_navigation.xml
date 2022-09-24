@@ -5,6 +5,8 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_images">
 
+    <include app:graph="@navigation/edit_herb_details" />
+
     <fragment
         android:id="@+id/navigation_images"
         android:name="com.uri.lee.dl.herbdetails.images.ImagesFragment"
@@ -34,4 +36,19 @@
         android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
         android:label="@string/review"
         tools:layout="@layout/fragment_review" />
+
+    <action
+        android:id="@id/editHerbDetails"
+        app:destination="@id/editHerbDetails">
+        <argument
+            android:name="herbId"
+            app:argType="string" />
+        <argument
+            android:name="fieldName"
+            app:argType="string" />
+        <argument
+            android:name="oldValue"
+            app:argType="string" />
+    </action>
+
 </navigation>

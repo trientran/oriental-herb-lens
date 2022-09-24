@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.util.concurrent.CancellationException
 
@@ -65,7 +66,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     imageApi.uploadImage(base64String).body()?.let { urlMap[it.image.url] = uid }
                 }
                 if (urlMap.isNotEmpty()) {
-                    herbCollection.document(state.herbId!!).set(mapOf("images" to urlMap), SetOptions.merge())
+                    herbCollection.document(state.herbId!!).set(mapOf("images" to urlMap), SetOptions.merge()).await()
                 }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
@@ -84,14 +85,6 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
     private inline fun setState(copiedState: ImageUploadState.() -> ImageUploadState) = stateFlow.update(copiedState)
 
 }
-
-// don't change variable names
-data class Upload(
-    val herbId: String,
-    val uid: String,
-    val instant: Long,
-    val urls: List<String>,
-)
 
 data class ImageUploadState(
     val herbId: String? = null,

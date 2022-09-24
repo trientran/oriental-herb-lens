@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="EditTextError">
+        <item name="android:layout_marginTop">1dp</item>
+        <item name="android:gravity">start</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textAppearance">@style/TextAppearance.EditText.Error</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="TextAppearance.EditText.Error" parent="">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@android:color/holo_red_light</item>
+    </style>
+
 </resources>

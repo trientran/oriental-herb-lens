@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.FragmentDosingBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
+import com.uri.lee.dl.herbdetails.overview.OverviewFragmentDirections
 import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -38,12 +38,18 @@ class DosingFragment : Fragment() {
     ): View {
         _binding = FragmentDosingBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        val navController = findNavController()
 
-        binding.editButton.setOnClickListener {
-            requireContext()
-                .openUrlWithDefaultBrowser(
-                    "https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri()
+        binding.dosingEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = if (isSystemLanguageVietnamese) it::viDosing.name else it::enDosing.name,
+                        oldValue = if (isSystemLanguageVietnamese) it.viDosing ?: "" else it.enDosing ?: ""
+                    )
                 )
+            }
         }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -51,8 +57,11 @@ class DosingFragment : Fragment() {
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
                     .onEach {
-                        binding.dosingView.text =
-                            getString(R.string.dosing_s, if (isSystemLanguageVietnamese) it.viDosing else it.enDosing)
+                        binding.dosingView.text = if (isSystemLanguageVietnamese) {
+                            if (it.viDosing.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viDosing
+                        } else {
+                            if (it.enDosing.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enDosing
+                        }
                     }
                     .launchIn(this)
             }

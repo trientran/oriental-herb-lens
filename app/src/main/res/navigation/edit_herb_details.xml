@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/editHerbDetails"
+    app:startDestination="@id/editHerbDetailsFragment">
+
+    <fragment
+        android:id="@+id/editHerbDetailsFragment"
+        android:name="com.uri.lee.dl.herbdetails.EditHerbDetailsFragment"
+        tools:layout="@layout/fragment_edit_herb_details">
+        <argument
+            android:name="herbId"
+            app:argType="string" />
+        <argument
+            android:name="fieldName"
+            app:argType="string" />
+        <argument
+            android:name="oldValue"
+            app:argType="string" />
+    </fragment>
+
+</navigation>

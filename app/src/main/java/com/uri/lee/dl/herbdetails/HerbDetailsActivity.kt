@@ -65,7 +65,6 @@ class HerbDetailsActivity : AppCompatActivity() {
                         if (it) getDrawable(R.drawable.ic_baseline_favorite_like) else getDrawable(R.drawable.ic_baseline_favorite_dislike)
                 }
                 .launchIn(this)
-
         }
         return true
     }

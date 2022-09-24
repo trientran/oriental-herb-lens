@@ -39,19 +39,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <ImageView
         android:id="@+id/addMorePhotosView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:background="?android:attr/selectableItemBackground"
-        android:drawablePadding="4dp"
-        android:gravity="center"
+        android:contentDescription="@string/add_more_images"
         android:padding="8dp"
-        android:text="@string/add_your_photos"
-        app:drawableEndCompat="@drawable/ic_baseline_add_a_photo_24"
-        app:drawableTint="@color/color_primary"
+        android:src="@drawable/ic_baseline_add_a_photo_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/color_primary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

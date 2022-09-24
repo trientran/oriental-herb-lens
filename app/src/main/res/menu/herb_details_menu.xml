@@ -4,14 +4,14 @@
 
     <item
         android:id="@+id/close"
-        android:icon="@drawable/ic_baseline_arrow_back_24"
+        android:icon="@drawable/ic_home_24dp"
         app:showAsAction="ifRoom"
-        android:title="@string/cd_close_button" />
+        android:title="@string/title_home" />
 
     <item
         android:id="@+id/action_like"
         android:icon="@drawable/ic_baseline_favorite_dislike"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:title="@string/like" />
 
     <item

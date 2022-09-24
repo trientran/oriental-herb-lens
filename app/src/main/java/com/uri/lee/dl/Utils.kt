@@ -34,6 +34,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -419,6 +420,9 @@ class AuthStateListener(val context: Context) : FirebaseAuth.AuthStateListener {
     }
 }
 
+val View.layoutInflater: LayoutInflater get() = LayoutInflater.from(context)
+fun View.bounds(): Rect = Rect(0, 0, width, height)
+
 const val INSTANT_HERB = "INSTANT_HERB"
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
 const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -429,7 +433,7 @@ val mainDispatcher = Dispatchers.Main
 val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
-
+const val HERD_FIELD = "HERD_FIELD_TO_UPDATE"
 val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
 // data store stuff

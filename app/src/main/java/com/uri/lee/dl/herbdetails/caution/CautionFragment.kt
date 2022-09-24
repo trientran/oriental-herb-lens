@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
-import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.databinding.FragmentCautionBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
+import com.uri.lee.dl.herbdetails.overview.OverviewFragmentDirections
 import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -38,27 +38,47 @@ class CautionFragment : Fragment() {
     ): View {
         _binding = FragmentCautionBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        val navController = findNavController()
 
-        binding.editButton.setOnClickListener {
-            requireContext()
-                .openUrlWithDefaultBrowser(
-                    "https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri()
+        binding.sideEffectsEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = if (isSystemLanguageVietnamese) it::viSideEffects.name else it::enSideEffects.name,
+                        oldValue = if (isSystemLanguageVietnamese) it.viSideEffects ?: "" else it.enSideEffects ?: ""
+                    )
                 )
+            }
         }
+        binding.interactionsEditView.setOnClickListener {
+            herbDetailsViewModel.state.herb?.let {
+                navController.navigate(
+                    OverviewFragmentDirections.editHerbDetails(
+                        herbId = it.objectID,
+                        fieldName = if (isSystemLanguageVietnamese) it::viInteractions.name else it::enInteractions.name,
+                        oldValue = if (isSystemLanguageVietnamese) it.viInteractions ?: "" else it.enInteractions ?: ""
+                    )
+                )
+            }
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 herbDetailsViewModel.state()
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
                     .onEach {
-                        binding.sideEffectsView.text = getString(
-                            R.string.side_effects_s,
-                            if (isSystemLanguageVietnamese) it.viSideEffects else it.enSideEffects
-                        )
-                        binding.interactionsView.text = getString(
-                            R.string.interactions_s,
-                            if (isSystemLanguageVietnamese) it.viInteractions else it.enInteractions
-                        )
+                        binding.sideEffectsView.text = if (isSystemLanguageVietnamese) {
+                            if (it.viSideEffects.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viSideEffects
+                        } else {
+                            if (it.enSideEffects.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enSideEffects
+                        }
+                        binding.interactionsView.text = if (isSystemLanguageVietnamese) {
+                            if (it.viInteractions.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viInteractions
+                        } else {
+                            if (it.enInteractions.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enInteractions
+                        }
                     }
                     .launchIn(this)
             }

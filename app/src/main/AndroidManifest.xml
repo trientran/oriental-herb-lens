@@ -21,6 +21,10 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:name=".herbdetails.EditHerbDetailsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".upload.ImageUploadActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />

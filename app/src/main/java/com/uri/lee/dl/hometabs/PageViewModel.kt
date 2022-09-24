@@ -32,6 +32,10 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
     /** Retrieves the current state. */
     val state: PageState get() = stateFlow.value
 
+    init {
+        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
+    }
+
     fun setIndex(index: Int) {
         Timber.d("setIndex")
         viewModelScope.launch {
