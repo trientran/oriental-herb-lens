@@ -17,19 +17,13 @@
     <string name="cd_flash_button">Toggle camera flash</string>
     <string name="cd_photo_library_button">Upload image</string>
     <string name="prompt_point_at_an_object">Point your camera at an object</string>
-    <string name="prompt_point_at_a_bird">Point your camera at a bird</string>
     <string name="prompt_hold_camera_steady">Keep camera still for a moment</string>
-    <string name="prompt_move_camera_closer">Move closer to search</string>
     <string name="prompt_searching">Searching&#8230;</string>
     <string name="product_search_button">Search object</string>
-    <string name="buttom_sheet_custom_model_title">Custom object found</string>
-    <string name="static_image_prompt_detected_no_results">No results found</string>
     <string name="static_image_prompt_detected_results">Tap on a dot to inspect</string>
     <string name="static_image_card_no_result_title">No result found</string>
-    <string name="static_image_card_no_result_subtitle">Support text place holder</string>
-    <string name="static_image_preview_card_subtitle">+%d more results</string>
     <string name="static_image_detected_no_results_continue_to_label">An issue\'s occurred while detecting objects. You may turn off Objects mode or contactus.</string>
-    <string name="static_image_classification_result">This could be: \n-Herb code: %1$s. \n-Latin name: %2$s. \n-Vietnamese name: %3$s.</string>
+    <string name="static_image_classification_result">This could be:  -Herb code: %1$s.  -Latin name: %2$s.  -Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_camera">Camera</string>
@@ -54,17 +48,12 @@
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
     <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
-    <string name="n_results_found">5 results found</string>
-    <string name="title_activity_herb_details">HerbDetailsActivity</string>
     <string name="tab_favorite">Favorite</string>
     <string name="tab_history">History</string>
     <string name="tab_random">Random</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="images">Images</string>
     <string name="overview">Overview</string>
-    <string name="usage">Usage</string>
     <string name="caution">Caution</string>
     <string name="review">Review</string>
     <string name="add_a_new_herb">Add a new herb</string>
@@ -74,8 +63,6 @@
     <string name="share_this_app">Share this app</string>
     <string name="about_us_and_this_app">About us and this app</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_main2">MainActivity2</string>
     <string name="pick_an_image">Pick an image</string>
     <string name="pick_photos">Pick photos</string>
     <string name="clear_all">Clear all</string>
@@ -83,7 +70,7 @@
     <string name="no_herb_objects_result_please_try_turning_off_objects_mode">No result found in object detection mode. You may turn off objects mode to switch to Whole Image mode!</string>
     <string name="no_herb_result_please_try_turning_on_objects_mode">No result found. You may turn off Whole Image mode!</string>
     <string name="something_went_wrong_please_try_again_or_contact_us">Something went wrong. Please try again or contact us!</string>
-    <string name="add_photos">Add Multiple Photos</string>
+    <string name="add_photos">Add multiple photos</string>
     <string name="add_your_photos">Add your images</string>
     <string name="objects_mode">Objects mode</string>
     <string name="whole_image_mode">Whole image mode</string>
@@ -135,11 +122,10 @@
     <string name="full_herb_list">Full herbal list</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="sign_out">Sign out</string>
-    <string name="your_herb_list_will_be_loaded_soon">Your herb list will be loaded soon if available.</string>
+    <string name="your_herb_list_will_be_loaded_soon">Your herb list will be loaded soon once available.</string>
     <string name="dosing">Dosing</string>
     <string name="like">Like</string>
     <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
-    <string name="edit_button">edit button</string>
     <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
     <string name="add_more">Add more</string>
     <string name="upload">Upload</string>

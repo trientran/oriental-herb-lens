@@ -13,6 +13,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="image item" />
+        android:contentDescription="@string/image_item" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
