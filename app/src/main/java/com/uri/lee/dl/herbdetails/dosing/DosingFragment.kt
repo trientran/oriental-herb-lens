@@ -13,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentDosingBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
-import com.uri.lee.dl.herbdetails.overview.OverviewFragmentDirections
 import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -43,8 +42,8 @@ class DosingFragment : Fragment() {
         binding.dosingEditView.setOnClickListener {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                    DosingFragmentDirections.editHerbDetails(
+                        herbId = it.id!!,
                         fieldName = if (isSystemLanguageVietnamese) it::viDosing.name else it::enDosing.name,
                         oldValue = if (isSystemLanguageVietnamese) it.viDosing ?: "" else it.enDosing ?: ""
                     )
@@ -58,9 +57,9 @@ class DosingFragment : Fragment() {
                     .distinctUntilChanged()
                     .onEach {
                         binding.dosingView.text = if (isSystemLanguageVietnamese) {
-                            if (it.viDosing.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viDosing
+                            it.viDosing.ifBlank { getString(R.string.please_edit_this_field) }
                         } else {
-                            if (it.enDosing.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enDosing
+                            it.enDosing.ifBlank { getString(R.string.please_edit_this_field) }
                         }
                     }
                     .launchIn(this)

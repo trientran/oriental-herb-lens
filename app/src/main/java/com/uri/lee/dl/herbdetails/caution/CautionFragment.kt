@@ -13,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentCautionBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
-import com.uri.lee.dl.herbdetails.overview.OverviewFragmentDirections
 import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -43,8 +42,8 @@ class CautionFragment : Fragment() {
         binding.sideEffectsEditView.setOnClickListener {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                    CautionFragmentDirections.editHerbDetails(
+                        herbId = it.id!!,
                         fieldName = if (isSystemLanguageVietnamese) it::viSideEffects.name else it::enSideEffects.name,
                         oldValue = if (isSystemLanguageVietnamese) it.viSideEffects ?: "" else it.enSideEffects ?: ""
                     )
@@ -54,8 +53,8 @@ class CautionFragment : Fragment() {
         binding.interactionsEditView.setOnClickListener {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                    CautionFragmentDirections.editHerbDetails(
+                        herbId = it.id!!,
                         fieldName = if (isSystemLanguageVietnamese) it::viInteractions.name else it::enInteractions.name,
                         oldValue = if (isSystemLanguageVietnamese) it.viInteractions ?: "" else it.enInteractions ?: ""
                     )
@@ -70,14 +69,14 @@ class CautionFragment : Fragment() {
                     .distinctUntilChanged()
                     .onEach {
                         binding.sideEffectsView.text = if (isSystemLanguageVietnamese) {
-                            if (it.viSideEffects.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viSideEffects
+                            it.viSideEffects.ifBlank { getString(R.string.please_edit_this_field) }
                         } else {
-                            if (it.enSideEffects.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enSideEffects
+                            it.enSideEffects.ifBlank { getString(R.string.please_edit_this_field) }
                         }
                         binding.interactionsView.text = if (isSystemLanguageVietnamese) {
-                            if (it.viInteractions.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.viInteractions
+                            it.viInteractions.ifBlank { getString(R.string.please_edit_this_field) }
                         } else {
-                            if (it.enInteractions.isNullOrBlank()) getString(R.string.please_edit_this_field) else it.enInteractions
+                            it.enInteractions.ifBlank { getString(R.string.please_edit_this_field) }
                         }
                     }
                     .launchIn(this)

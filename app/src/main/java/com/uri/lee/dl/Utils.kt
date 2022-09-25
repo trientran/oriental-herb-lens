@@ -49,8 +49,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import com.firebase.ui.auth.AuthUI
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
@@ -73,7 +75,12 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
+import java.text.DateFormat
 import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
 import kotlin.math.abs
 
@@ -420,6 +427,18 @@ class AuthStateListener(val context: Context) : FirebaseAuth.AuthStateListener {
     }
 }
 
+internal fun Activity.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {
+    val snackBar = Snackbar.make(findViewById(android.R.id.content), message, length!!)
+    snackBar.setTextMaxLines(10)
+    return snackBar
+}
+
+internal fun Fragment.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {
+    val snackBar = Snackbar.make(requireActivity().findViewById(android.R.id.content), message, length!!)
+    snackBar.setTextMaxLines(10)
+    return snackBar
+}
+
 val View.layoutInflater: LayoutInflater get() = LayoutInflater.from(context)
 fun View.bounds(): Rect = Rect(0, 0, width, height)
 
@@ -434,6 +453,8 @@ val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 const val HERD_FIELD = "HERD_FIELD_TO_UPDATE"
+const val REVIEW_PATH_NAME = "reviews"
+const val IMAGE_UPLOAD_PATH_NAME = "images"
 val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
 // data store stuff
@@ -488,7 +509,6 @@ fun DocumentSnapshot.toHerb() = Herb(
     viName = getString("viName"),
     viOverview = getString("viOverview"),
     viSideEffects = getString("viSideEffects"),
-    images = get("images") as? Map<String, String>,
 )
 
 fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
@@ -506,8 +526,23 @@ class BaseApplication : Application(), DefaultLifecycleObserver {
         super<Application>.onCreate()
         Timber.plant(Timber.DebugTree())
     }
+}
 
+fun getLocalizedDateStringUsingDate(timeInMilliseconds: Long): String {
+    val format: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
+    return format.format(Date.from(Instant.ofEpochMilli(timeInMilliseconds))) // 25/09/2022
+}
 
+fun getLocalizedDateStringUsingInstant(timeInMilliseconds: Long): String {
+    val localDate = Instant.ofEpochMilli(timeInMilliseconds).atZone(ZoneId.systemDefault()).toLocalDate()
+    val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+    return localDate.format(formatter) // 25 Sep, 2022 (Viet or En...)
+}
+
+fun Instant.getLocalizedDateString(): String {
+    val localDate = atZone(ZoneId.systemDefault()).toLocalDate()
+    val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+    return localDate.format(formatter) // 25 Sep, 2022 (Viet or En...)
 }
 
 private val foreground = ProcessLifecycleOwner.get().lifecycle.state()

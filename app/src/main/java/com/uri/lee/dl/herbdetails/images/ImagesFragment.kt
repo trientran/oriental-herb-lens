@@ -11,12 +11,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.uri.lee.dl.HERB_ID
-import com.uri.lee.dl.INSTANT_HERB
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentImagesBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
@@ -43,11 +41,6 @@ class ImagesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this)[ImagesViewModel::class.java]
-
-        arguments?.getString(INSTANT_HERB)?.let {
-        }
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
 
         imageUploadAdapter = ImagesAdapter { (uri, uploaderUid) ->
@@ -88,7 +81,7 @@ class ImagesFragment : Fragment() {
     }
 
     private fun goToUploadScreen() {
-        herbDetailsViewModel.state.herb?.objectID?.let {
+        herbDetailsViewModel.state.herb?.id?.let {
             val intent = Intent(requireContext(), ImageUploadActivity::class.java)
             intent.putExtra(HERB_ID, it)
             startActivity(intent)

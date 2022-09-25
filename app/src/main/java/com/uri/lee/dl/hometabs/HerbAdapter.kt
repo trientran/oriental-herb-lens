@@ -6,13 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.uri.lee.dl.FireStoreHerb
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.ImagesRecognitionItemBinding
 import com.uri.lee.dl.hometabs.HerbAdapter.TabbedHerbItemViewHolder
-import com.uri.lee.dl.instantsearch.Herb
 
-class HerbAdapter(private val onItemClickListener: (Herb) -> Unit) :
-    ListAdapter<Herb, TabbedHerbItemViewHolder>(HerbDiffUtil()) {
+class HerbAdapter(private val onItemClickListener: (FireStoreHerb) -> Unit) :
+    ListAdapter<FireStoreHerb, TabbedHerbItemViewHolder>(HerbDiffUtil()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -29,24 +29,23 @@ class HerbAdapter(private val onItemClickListener: (Herb) -> Unit) :
         holderImage.bindTo(herb)
     }
 
-    private class HerbDiffUtil : DiffUtil.ItemCallback<Herb>() {
-        override fun areItemsTheSame(oldItem: Herb, newItem: Herb): Boolean {
+    private class HerbDiffUtil : DiffUtil.ItemCallback<FireStoreHerb>() {
+        override fun areItemsTheSame(oldItem: FireStoreHerb, newItem: FireStoreHerb): Boolean {
             // Id is unique.
-            return oldItem.objectID == newItem.objectID
+            return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Herb, newItem: Herb): Boolean {
+        override fun areContentsTheSame(oldItem: FireStoreHerb, newItem: FireStoreHerb): Boolean {
             return oldItem == newItem
         }
     }
 
     inner class TabbedHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bindTo(herb: Herb) {
-            val thumbnail = R.drawable.ic_launcher
-            Glide.with(binding.root).load(thumbnail).into(binding.imageView)
+        fun bindTo(herb: FireStoreHerb) {
+            Glide.with(binding.root).load(herb.images?.keys?.random() ?: R.drawable.ic_launcher).into(binding.imageView)
             itemView.setOnClickListener { onItemClickListener.invoke(herb) }
-            binding.idView.text = herb.objectID
+            binding.idView.text = herb.id.toString()
             binding.latinNameView.text = herb.latinName
             binding.viNameView.text = herb.viName
         }

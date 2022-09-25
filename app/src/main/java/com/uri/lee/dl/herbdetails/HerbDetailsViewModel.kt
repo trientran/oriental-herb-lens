@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.toObject
 import com.uri.lee.dl.*
 import com.uri.lee.dl.herbdetails.images.ImageDeleteReason
-import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -33,11 +33,11 @@ class HerbDetailsViewModel : ViewModel() {
         viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
     }
 
-    fun setId(objectID: String) {
+    fun setId(id: Long) {
         Timber.d("setId")
         viewModelScope.launch {
-            setState { copy(herb = Herb(objectID = objectID)) }
-            liveHerbUpdate(objectID)
+            setState { copy(herb = FireStoreHerb(id = id)) }
+            liveHerbUpdate(id)
             liveLikeListUpdate()
         }
     }
@@ -77,20 +77,20 @@ class HerbDetailsViewModel : ViewModel() {
                 if (state.isLiked) {
                     userCollection
                         .document(it)
-                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayUnion(state.herb!!.objectID)).await()
+                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayUnion(state.herb!!.id)).await()
                     Timber.d("New like successfully written!")
                 } else {
                     userCollection
                         .document(it)
-                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayRemove(state.herb!!.objectID)).await()
+                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayRemove(state.herb!!.id)).await()
                     Timber.d("Like successfully removed!")
                 }
             }
         }
     }
 
-    private fun liveHerbUpdate(objectID: String) {
-        herbCollection.document(objectID).apply {
+    private fun liveHerbUpdate(id: Long) {
+        herbCollection.document(id.toString()).apply {
             herbListenerRegistration = this.addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Timber.e(e)
@@ -98,7 +98,7 @@ class HerbDetailsViewModel : ViewModel() {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    val herb = snapshot.toHerb()
+                    val herb = snapshot.toObject<FireStoreHerb>()
                     viewModelScope.launch { setState { copy(herb = herb) } }
                 }
             }
@@ -116,7 +116,7 @@ class HerbDetailsViewModel : ViewModel() {
                 try {
                     snapshot.toLikes()?.apply {
                         viewModelScope.launch {
-                            val isLiked = snapshot.toLikes()!!.contains(state.herb!!.objectID)
+                            val isLiked = snapshot.toLikes()!!.contains(state.herb!!.id)
                             setState { copy(isLiked = isLiked) }
                         }
                     }
@@ -124,9 +124,9 @@ class HerbDetailsViewModel : ViewModel() {
                     snapshot.toHistory().apply {
                         viewModelScope.launch {
                             val history = this@apply.toMutableList()
-                            if (state.herb!!.objectID.count() >= 4) { // herb id must be at least 4 characters)
-                                history.remove(state.herb!!.objectID)
-                                history.add(state.herb!!.objectID)
+                            if (state.herb!!.id.toString().count() >= 4) { // herb id must be at least 4 characters)
+                                history.remove(state.herb!!.id)
+                                history.add(state.herb!!.id)
                                 val data = hashMapOf(USER_HISTORY_FIELD_NAME to history)
                                 userCollection.document(authUI.auth.uid!!).set(data, SetOptions.merge())
                                 Timber.d("Successfully added to history!")
@@ -154,7 +154,7 @@ class HerbDetailsViewModel : ViewModel() {
 }
 
 data class HerbDetailsState(
-    val herb: Herb? = null,
+    val herb: FireStoreHerb? = null,
     val isLiked: Boolean = false,
     val isLoading: Boolean = false,
     val error: Error? = null,
@@ -165,7 +165,7 @@ data class HerbDetailsState(
 data class ImageDeletionRequest(
     val url: String,
     val uid: String,
-    val herbId: String,
+    val herbId: Long,
     val reason: String,
     val requestedBy: String,
 )

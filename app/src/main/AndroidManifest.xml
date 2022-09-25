@@ -21,10 +21,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".herbdetails.EditHerbDetailsActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".upload.ImageUploadActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -48,7 +44,8 @@
         <activity
             android:name=".herbdetails.HerbDetailsActivity"
             android:exported="false"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -170,5 +170,19 @@
     <string name="vietnamese_name">Vietnamese name</string>
     <string name="english_name">English name</string>
     <string name="latin_name">Latin name</string>
+    <string name="rate_this_herb">Rate this herb</string>
+    <string name="conditions_diabetes_liver_diseases">Conditions (diabetes, liver diseases…)</string>
+    <string name="submit">Submit</string>
+    <string name="effectiveness">Effectiveness:</string>
+    <string name="ease_of_use">Ease of use:</string>
+    <string name="your_comment">Your comment</string>
+    <string name="patient_name">Patient\'s name</string>
+    <string name="patient_age">Patient\'s age</string>
+    <string name="patient_comment">Patient\'s comment</string>
+    <string name="overall_rating">Overall rating: %.1f - %s reviews</string>
+    <string name="effectiveness_rating">Effectiveness: %.1f</string>
+    <string name="ease_of_use_rating">Ease of use %.1f</string>
+    <string name="conditions_s">Conditions: %s</string>
+    <string name="person_s">Name: %s, Age: %s</string>
 
 </resources>

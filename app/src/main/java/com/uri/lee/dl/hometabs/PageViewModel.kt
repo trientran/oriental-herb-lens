@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.ktx.toObject
 import com.uri.lee.dl.*
-import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -63,7 +63,7 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
                 val randomId = Random.nextInt(from = 1000, until = 4939).toString()
                 herbCollection.document(randomId).get().await().let {
                     val currentHerbList = state.herbs.toMutableList()
-                    currentHerbList.add(it.toHerb())
+                    it.toObject<FireStoreHerb>()?.let { herb -> currentHerbList.add(herb) }
                     setState { copy(herbs = currentHerbList) }
                     if (index == numberOfDocumentsToLoad - 1) setState { copy(isLoading = false) }
                 }
@@ -86,15 +86,15 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
                     if (snapshot != null && snapshot.exists()) {
                         personalHerbIdList = (snapshot.get(docType.docType) as? List<*>)?.reversed()
                         if (!personalHerbIdList.isNullOrEmpty()) {
-                            val newHerbList = mutableListOf<Herb>()
+                            val newHerbList = mutableListOf<FireStoreHerb>()
                             repeat(10) {
                                 if (it == personalHerbIdList!!.size) {
                                     setState { copy(isLoading = false) }
                                     return@launch
                                 }
                                 val currentHerbSnapshot =
-                                    herbCollection.document(personalHerbIdList!![it] as String).get().await()
-                                newHerbList.add(currentHerbSnapshot.toHerb())
+                                    herbCollection.document((personalHerbIdList!![it] as Long).toString()).get().await()
+                                currentHerbSnapshot.toObject<FireStoreHerb>()?.let { herb -> newHerbList.add(herb) }
                                 setState { copy(herbs = newHerbList.toList()) }
                             }
                         }
@@ -115,10 +115,10 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
                         setState { copy(isLoading = false) }
                         return@launch
                     }
-                    val currentHerbId = personalHerbIdList!![currentItemIndex] as String
-                    val currentHerbSnapshot = herbCollection.document(currentHerbId).get().await()
+                    val currentHerbId = personalHerbIdList!![currentItemIndex] as Long
+                    val currentHerbSnapshot = herbCollection.document(currentHerbId.toString()).get().await()
                     val currentHerbList = state.herbs.toMutableList()
-                    currentHerbList.add(currentHerbSnapshot.toHerb())
+                    currentHerbSnapshot.toObject<FireStoreHerb>()?.let { currentHerbList.add(it) }
                     setState { copy(herbs = currentHerbList) }
                     currentItemIndex++
                     numberOfNewDocsLoaded++
@@ -139,7 +139,7 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
 
 data class PageState(
     val index: Int? = null,
-    val herbs: List<Herb> = emptyList(),
+    val herbs: List<FireStoreHerb> = emptyList(),
     val isLoading: Boolean = false,
     val event: Event? = null,
 ) {

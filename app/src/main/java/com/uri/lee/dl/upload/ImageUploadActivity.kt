@@ -45,7 +45,7 @@ class ImageUploadActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        intent.getStringExtra(HERB_ID)?.let { viewModel.setHerbId(it) }
+        intent.getLongExtra(HERB_ID, 1001).let { viewModel.setHerbId(it) }
         imageUploadAdapter = ImageUploadAdapter {
             val bottomSheet = FullSizeImageViewerDialog(it)
             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
@@ -83,6 +83,7 @@ class ImageUploadActivity : AppCompatActivity() {
                         imageUploadAdapter.submitList(list)
                         binding.uploadBtn.isVisible = list.isNotEmpty()
                         binding.pickPhotosView.isVisible = list.isEmpty()
+                        binding.clearBtn.isVisible = list.isNotEmpty()
                         binding.uploadBtn.setOnClickListener {
                             viewModel.uploadSequentially()
                             Toast.makeText(

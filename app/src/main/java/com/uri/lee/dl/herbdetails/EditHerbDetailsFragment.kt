@@ -103,7 +103,6 @@ class EditHerbDetailsFragment : BaseViewBindingFragment<FragmentEditHerbDetailsB
         }
         binding.updateBtn.setOnClickListener {
             editHerbDetailsViewModel.update()
-            navController.popBackStack()
         }
     }
 }

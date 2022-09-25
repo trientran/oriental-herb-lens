@@ -12,10 +12,10 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.util.concurrent.CancellationException
 
-class EditHerbDetailsViewModel(herbId: String, fieldName: String, oldValue: String) : ViewModel() {
+class EditHerbDetailsViewModel(herbId: Long, fieldName: String, oldValue: String) : ViewModel() {
 
     class MyViewModelFactory(
-        private val herbId: String,
+        private val herbId: Long,
         private val fieldName: String,
         private val oldValue: String,
     ) : ViewModelProvider.Factory {
@@ -55,7 +55,7 @@ class EditHerbDetailsViewModel(herbId: String, fieldName: String, oldValue: Stri
         viewModelScope.launch {
             setState { copy(isSubmitting = true) }
             try {
-                herbCollection.document(state.herbId).update(state.fieldName, state.newValue).await()
+                herbCollection.document(state.herbId.toString()).update(state.fieldName, state.newValue).await()
                 setState { copy(isSubmitting = false, isUpdateComplete = true) }
             } catch (e: CancellationException) {
                 throw e
@@ -71,7 +71,7 @@ class EditHerbDetailsViewModel(herbId: String, fieldName: String, oldValue: Stri
 }
 
 data class EditHerbDetailsState(
-    val herbId: String,
+    val herbId: Long,
     val fieldName: String,
     val oldValue: String,
     val newValue: String,

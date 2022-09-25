@@ -42,7 +42,7 @@ class OverviewFragment : Fragment() {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
                     OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                        herbId = it.id!!,
                         fieldName = it::latinName.name,
                         oldValue = it.latinName ?: "",
                     )
@@ -53,9 +53,9 @@ class OverviewFragment : Fragment() {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
                     OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                        herbId = it.id!!,
                         fieldName = it::enName.name,
-                        oldValue = it.enName ?: "",
+                        oldValue = it.enName,
                     )
                 )
             }
@@ -64,9 +64,9 @@ class OverviewFragment : Fragment() {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
                     OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                        herbId = it.id!!,
                         fieldName = it::viName.name,
-                        oldValue = it.viName ?: "",
+                        oldValue = it.viName,
                     )
                 )
             }
@@ -75,9 +75,9 @@ class OverviewFragment : Fragment() {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
                     OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.objectID,
+                        herbId = it.id!!,
                         fieldName = if (isSystemLanguageVietnamese) it::viOverview.name else it::enOverview.name,
-                        oldValue = if (isSystemLanguageVietnamese) it.viOverview ?: "" else it.enOverview ?: ""
+                        oldValue = if (isSystemLanguageVietnamese) it.viOverview else it.enOverview
                     )
                 )
             }
@@ -88,17 +88,15 @@ class OverviewFragment : Fragment() {
                     .mapNotNull { it.herb }
                     .distinctUntilChanged()
                     .onEach { herb ->
-                        binding.herbIdView.text = getString(R.string.herb_id_s, herb.objectID)
+                        binding.herbIdView.text = getString(R.string.herb_id_s, herb.id!!)
                         binding.latinNameView.text =
-                            if (herb.latinName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.latinName
-                        binding.viNameView.text =
-                            if (herb.viName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.viName
-                        binding.enNameView.text =
-                            if (herb.enName.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.enName
+                            herb.latinName.ifBlank { getString(R.string.please_edit_this_field) }
+                        binding.viNameView.text = herb.viName.ifBlank { getString(R.string.please_edit_this_field) }
+                        binding.enNameView.text = herb.enName.ifBlank { getString(R.string.please_edit_this_field) }
                         binding.overviewView.text = if (isSystemLanguageVietnamese) {
-                            if (herb.viOverview.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.viOverview
+                            herb.viOverview.ifBlank { getString(R.string.please_edit_this_field) }
                         } else {
-                            if (herb.enOverview.isNullOrBlank()) getString(R.string.please_edit_this_field) else herb.enOverview
+                            herb.enOverview.ifBlank { getString(R.string.please_edit_this_field) }
                         }
                     }
                     .launchIn(this)

@@ -3,12 +3,31 @@ package com.uri.lee.dl
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 
 class LoginActivity : AppCompatActivity() {
     private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
-        if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let { finish() }
+        if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let {
+            lifecycleScope.launch(mainDispatcher) {
+                try {
+                    userCollection
+                        .document(it.uid)
+                        .set(mapOf("uid" to it.uid))
+                        .await()
+                    finish()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e.message)
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

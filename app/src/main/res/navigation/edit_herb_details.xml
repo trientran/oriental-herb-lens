@@ -11,7 +11,7 @@
         tools:layout="@layout/fragment_edit_herb_details">
         <argument
             android:name="herbId"
-            app:argType="string" />
+            app:argType="long" />
         <argument
             android:name="fieldName"
             app:argType="string" />

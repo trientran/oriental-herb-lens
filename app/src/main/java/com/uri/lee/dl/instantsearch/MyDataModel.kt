@@ -4,9 +4,11 @@ import android.os.Parcelable
 import com.algolia.instantsearch.core.highlighting.HighlightedString
 import com.algolia.instantsearch.highlighting.Highlightable
 import com.algolia.search.model.Attribute
+import com.uri.lee.dl.herbdetails.review.AddReviewState
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
@@ -28,6 +30,9 @@ data class Herb(
     val viSideEffects: String? = null,
     @IgnoredOnParcel
     val images: Map<String, String>? = null, // url - uid
+    @IgnoredOnParcel
+    @Transient
+    val reviews: Map<String, AddReviewState.Review>? = null, // instant - Review object
     @IgnoredOnParcel
     override val _highlightResult: JsonObject? = null,
 ) : Highlightable, Parcelable {

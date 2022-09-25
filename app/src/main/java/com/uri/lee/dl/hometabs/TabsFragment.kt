@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uri.lee.dl.INSTANT_HERB
+import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentTabsBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsActivity
@@ -43,7 +43,7 @@ class TabsFragment : Fragment() {
         binding = FragmentTabsBinding.inflate(inflater, container, false)
         viewAdapter = HerbAdapter {
             val intent = Intent(requireContext(), HerbDetailsActivity::class.java)
-            intent.putExtra(INSTANT_HERB, it)
+            intent.putExtra(HERB_ID, it.id)
             startActivity(intent)
         }
         binding.recyclerView.adapter = viewAdapter

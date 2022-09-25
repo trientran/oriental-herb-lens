@@ -12,11 +12,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.uri.lee.dl.INSTANT_HERB
+import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
-import com.uri.lee.dl.instantsearch.Herb
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -31,7 +30,7 @@ class HerbDetailsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        intent?.getParcelableExtra<Herb>(INSTANT_HERB)?.let { viewModel.setId(it.objectID) }
+        intent?.getLongExtra(HERB_ID, 1001)?.let { viewModel.setId(it) }
 
         binding = ActivityHerbDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)

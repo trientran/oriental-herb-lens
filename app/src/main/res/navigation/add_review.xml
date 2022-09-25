@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/addReview"
+    app:startDestination="@id/addReviewFragment">
+
+    <fragment
+        android:id="@+id/addReviewFragment"
+        android:name="com.uri.lee.dl.herbdetails.review.AddReviewFragment"
+        tools:layout="@layout/fragment_add_review">
+        <argument
+            android:name="herbId"
+            app:argType="long" />
+    </fragment>
+
+</navigation>

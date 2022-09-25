@@ -6,11 +6,8 @@ import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.SetOptions
-import com.uri.lee.dl.BaseApplication
+import com.uri.lee.dl.*
 import com.uri.lee.dl.Utils.compressToJpgByteArray
-import com.uri.lee.dl.authUI
-import com.uri.lee.dl.globalScope
-import com.uri.lee.dl.herbCollection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -66,7 +63,9 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     imageApi.uploadImage(base64String).body()?.let { urlMap[it.image.url] = uid }
                 }
                 if (urlMap.isNotEmpty()) {
-                    herbCollection.document(state.herbId!!).set(mapOf("images" to urlMap), SetOptions.merge()).await()
+                    herbCollection
+                        .document(state.herbId.toString())
+                        .set(mapOf(IMAGE_UPLOAD_PATH_NAME to urlMap), SetOptions.merge()).await()
                 }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
@@ -78,7 +77,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun setHerbId(herbId: String) {
+    fun setHerbId(herbId: Long) {
         viewModelScope.launch { setState { copy(herbId = herbId) } }
     }
 
@@ -87,7 +86,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
 }
 
 data class ImageUploadState(
-    val herbId: String? = null,
+    val herbId: Long? = null,
     val imageUris: List<Uri> = emptyList(),
     val isUploadComplete: Boolean = false,
     val isSubmitting: Boolean = false,
