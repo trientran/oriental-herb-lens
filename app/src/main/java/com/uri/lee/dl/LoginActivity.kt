@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -18,7 +19,7 @@ class LoginActivity : AppCompatActivity() {
                 try {
                     userCollection
                         .document(it.uid)
-                        .set(mapOf("uid" to it.uid))
+                        .set(mapOf("uid" to it.uid), SetOptions.merge())
                         .await()
                     finish()
                 } catch (e: CancellationException) {
