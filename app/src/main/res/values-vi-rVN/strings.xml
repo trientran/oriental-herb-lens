@@ -127,4 +127,9 @@
     <string name="ease_of_use_rating">Dễ dùng %.1f</string>
     <string name="conditions_s">Bệnh lý: %s</string>
     <string name="person_s">Tên: %s, Tuổi: %s</string>
+    <string name="report_an_issue_via_email">Báo cáo một vấn đề qua email</string>
+    <string name="via_facebook">Qua Facebook</string>
+    <string name="via_email">Qua email</string>
+    <string name="please_hit_ok_to_open_our_google_sheet">Vui lòng nhấn OK để mở trang Google Sheet của chúng tôi.
+        Tại đây bạn có thể thêm dược liệu mới vào cuối danh sách. Chúng tôi sẽ cập nhật dữ liệu lên máy chủ sau đó. Xin cảm ơn!</string>
 </resources>

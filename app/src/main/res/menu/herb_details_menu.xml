@@ -5,18 +5,23 @@
     <item
         android:id="@+id/close"
         android:icon="@drawable/ic_home_24dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/title_home" />
+        android:title="@string/title_home"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_like"
         android:icon="@drawable/ic_baseline_favorite_dislike"
-        app:showAsAction="always"
-        android:title="@string/like" />
+        android:title="@string/like"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_report_facebook"
-        app:showAsAction="never"
-        android:title="@string/report_an_issue_via_facebook" />
+        android:title="@string/report_an_issue_via_facebook"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_report_email"
+        android:title="@string/report_an_issue_via_email"
+        app:showAsAction="never" />
 
 </menu>

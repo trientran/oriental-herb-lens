@@ -12,6 +12,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
+import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
 
 class BottomSheetMenu : BottomSheetDialogFragment() {
@@ -26,7 +27,13 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
         val view = binding.root
 
         binding.addButton.setOnClickListener {
-            it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
+            AlertDialog.Builder(it.context)
+                .setMessage(getString(R.string.please_hit_ok_to_open_our_google_sheet))
+                .setCancelable(true)
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
+                }
+                .create().show()
             dismiss()
         }
         binding.signOutButton.setOnClickListener {
@@ -34,7 +41,12 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.contactButton.setOnClickListener {
-            it.context.openFacebookPage()
+            AlertDialog.Builder(it.context)
+                .setMessage(getString(R.string.contact_us))
+                .setCancelable(true)
+                .setPositiveButton(getString(R.string.via_facebook)) { _, _ -> it.context.openFacebookPage() }
+                .setNegativeButton(getString(R.string.via_email)) { _, _ -> it.context.sendEmail(subject = "") }
+                .create().show()
             dismiss()
         }
         binding.shareButton.setOnClickListener {
@@ -55,7 +67,6 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
                     it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
                 }
                 .setNegativeButton(getString(R.string.full_herb_list)) { _, _ ->
-                    //todo
                     it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
                 }
                 .setNeutralButton("OK") { _, _ -> dismiss() }

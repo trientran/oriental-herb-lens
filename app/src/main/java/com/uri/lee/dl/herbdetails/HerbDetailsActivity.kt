@@ -15,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openFacebookPage
+import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -80,6 +81,10 @@ class HerbDetailsActivity : AppCompatActivity() {
             }
             R.id.action_report_facebook -> {
                 openFacebookPage()
+                true
+            }
+            R.id.action_report_email -> {
+                sendEmail(subject = "${viewModel.state.herb?.id} - ${viewModel.state.herb?.latinName}")
                 true
             }
             R.id.close -> {

@@ -147,6 +147,21 @@ object Utils {
         }
     }
 
+    fun Context.sendEmail(subject: String, body: String = "") {
+        try {
+            val mails: Array<String> = arrayOf("admin@caythuoc.ml", "admin@medherblens.ml")
+            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, mails)
+                putExtra(Intent.EXTRA_SUBJECT, subject)
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+            startActivity(emailIntent)
+        } catch (e: Exception) {
+            Timber.d("Failed to launch email intent")
+        }
+    }
+
     fun isPortraitMode(context: Context): Boolean =
         context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
