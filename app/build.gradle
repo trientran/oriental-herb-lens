@@ -10,6 +10,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/Users/trientran/ICT/Android/oriental-herb-lens/keystores/release.keystore')
+            storePassword '7121322Ly'
+            keyAlias 'release.keystore'
+            keyPassword '7121322Ly'
+        }
+    }
     compileSdkVersion 32
     defaultConfig {
         applicationId "com.uri.lee.dl"
@@ -20,6 +28,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
@@ -109,4 +118,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-functions-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-appindexing'
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
 }
