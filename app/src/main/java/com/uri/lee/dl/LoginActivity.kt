@@ -41,8 +41,14 @@ class LoginActivity : AppCompatActivity() {
             .setTheme(R.style.AppTheme)
             .build()
         findViewById<Button>(R.id.sign_in_button).setOnClickListener {
+            it.isEnabled = false
             signInLauncher.launch(signInIntent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<Button>(R.id.sign_in_button).isEnabled = true
     }
 
     override fun onBackPressed() {
