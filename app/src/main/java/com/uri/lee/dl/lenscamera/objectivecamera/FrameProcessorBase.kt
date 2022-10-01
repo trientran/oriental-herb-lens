@@ -17,7 +17,6 @@
 package com.uri.lee.dl.lenscamera.objectivecamera
 
 import android.os.SystemClock
-import android.util.Log
 import androidx.annotation.GuardedBy
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.Task
@@ -25,6 +24,7 @@ import com.google.android.gms.tasks.TaskExecutors
 import com.google.mlkit.vision.common.InputImage
 import com.uri.lee.dl.labeling.CameraInputInfo
 import com.uri.lee.dl.labeling.InputInfo
+import timber.log.Timber
 import java.nio.ByteBuffer
 
 /** Abstract base class of [FrameProcessor].  */
@@ -76,7 +76,7 @@ abstract class FrameProcessorBase<T> : FrameProcessor {
         val startMs = SystemClock.elapsedRealtime()
         detectInImage(image)
             .addOnSuccessListener(executor) { results: T ->
-                Log.d(TAG, "Latency is: ${SystemClock.elapsedRealtime() - startMs}")
+                Timber.d("Latency is: ${SystemClock.elapsedRealtime() - startMs}")
                 this@FrameProcessorBase.onSuccess(CameraInputInfo(frame, frameMetaData), results, graphicOverlay)
                 processLatestFrame(graphicOverlay)
             }

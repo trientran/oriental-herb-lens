@@ -17,7 +17,6 @@
 package com.uri.lee.dl.lensimage
 
 import android.graphics.PointF
-import android.util.Log
 import android.util.SparseArray
 import androidx.annotation.MainThread
 import androidx.core.util.forEach
@@ -34,6 +33,7 @@ import com.uri.lee.dl.lenscamera.objectivecamera.CameraReticleAnimator
 import com.uri.lee.dl.lenscamera.objectivecamera.FrameProcessorBase
 import com.uri.lee.dl.lenscamera.objectivecamera.GraphicOverlay
 import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraViewModel
+import timber.log.Timber
 import java.io.IOException
 import kotlin.math.hypot
 
@@ -67,7 +67,7 @@ class MultiObjectProcessor(
         try {
             detector.close()
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to close object detector!", e)
+            Timber.e("Failed to close object detector!", e)
         }
     }
 
@@ -173,7 +173,7 @@ class MultiObjectProcessor(
     }
 
     override fun onFailure(e: Exception) {
-        Log.e(TAG, "Object detection failed!", e)
+        Timber.e("Object detection failed!", e)
     }
 
     companion object {

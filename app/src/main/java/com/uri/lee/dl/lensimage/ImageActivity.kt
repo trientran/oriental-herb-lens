@@ -26,7 +26,6 @@ import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.SeekBar
@@ -53,6 +52,7 @@ import com.uri.lee.dl.labeling.HerbAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.*
 import kotlin.collections.set
 
@@ -239,7 +239,7 @@ class ImageActivity : AppCompatActivity() {
             setBottomSheetCallback(
                 object : BottomSheetBehavior.BottomSheetCallback() {
                     override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        Log.d(TAG, "Bottom sheet new state: $newState")
+                        Timber.d("Bottom sheet new state: $newState")
                         binding.bottomSheetScrimView.visibility =
                             if (newState == BottomSheetBehavior.STATE_HIDDEN) View.GONE else View.VISIBLE
                     }
@@ -290,7 +290,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     private fun onObjectsDetected(inputBitmap: Bitmap, objects: List<DetectedObjectInfo>) {
-        Log.d(TAG, "Search completed for objects: $objects")
+        Timber.d("Search completed for objects: $objects")
         detectedObjectNum = objects.size
         detectedBitmapObjectMap.clear()
         binding.dotViewContainer.removeAllViews()
@@ -304,7 +304,7 @@ class ImageActivity : AppCompatActivity() {
         binding.cardRecyclerView.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    Log.d(TAG, "New card scroll state: $newState")
+                    Timber.d("New card scroll state: $newState")
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         for (i in 0 until recyclerView.childCount) {
                             val childView = recyclerView.getChildAt(i)

@@ -19,10 +19,10 @@ package com.uri.lee.dl.lensimage
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
 import android.graphics.Rect
-import android.util.Log
 import com.google.mlkit.vision.objects.DetectedObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.InputInfo
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
@@ -52,7 +52,7 @@ data class DetectedObjectInfo(
                         jpegBytes = stream.toByteArray()
                     }
                 } catch (e: IOException) {
-                    Log.e(TAG, "Error getting object image data!")
+                    Timber.e("Error getting object image data!")
                 }
             }
             return jpegBytes

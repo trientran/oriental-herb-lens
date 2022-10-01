@@ -33,7 +33,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -199,7 +198,7 @@ object Utils {
         // the preview sizes and hope that the camera can handle it.  Probably unlikely, but we still
         // account for it.
         if (validPreviewSizes.isEmpty()) {
-            Log.w(TAG, "No preview sizes have a corresponding same-aspect-ratio picture size.")
+            Timber.w("No preview sizes have a corresponding same-aspect-ratio picture size.")
             for (previewSize in supportedPreviewSizes) {
                 // The null picture size will let us know that we shouldn't set a picture size.
                 validPreviewSizes.add(CameraSizePair(previewSize, null))
@@ -240,7 +239,7 @@ object Utils {
             matrix.postRotate(rotationDegrees.toFloat())
             return Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true)
         } catch (e: java.lang.Exception) {
-            Log.e(TAG, "Error: " + e.message)
+            Timber.e("Error: " + e.message)
         }
         return null
     }
@@ -376,7 +375,7 @@ object Utils {
         try {
             resolver.openInputStream(imageUri)?.use { inputStream -> exif = ExifInterface(inputStream) }
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to open file to read rotation meta data: $imageUri", e)
+            Timber.e("Failed to open file to read rotation meta data: $imageUri", e)
         }
 
         return if (exif != null) {

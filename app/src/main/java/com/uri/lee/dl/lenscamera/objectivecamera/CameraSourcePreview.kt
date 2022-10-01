@@ -18,13 +18,13 @@ package com.uri.lee.dl.lenscamera.objectivecamera
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
 import com.google.android.gms.common.images.Size
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
+import timber.log.Timber
 import java.io.IOException
 
 /** Preview the camera image in the screen.  */
@@ -120,7 +120,7 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
         try {
             startIfReady()
         } catch (e: IOException) {
-            Log.e(TAG, "Could not start camera source.", e)
+            Timber.e("Could not start camera source.", e)
         }
     }
 
@@ -130,7 +130,7 @@ class CameraSourcePreview(context: Context, attrs: AttributeSet) : FrameLayout(c
             try {
                 startIfReady()
             } catch (e: IOException) {
-                Log.e(TAG, "Could not start camera source.", e)
+                Timber.e("Could not start camera source.", e)
             }
         }
 
