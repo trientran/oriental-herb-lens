@@ -111,9 +111,8 @@
         \n\n- Please contribute to the dataset by capturing your own herb images using your own mobile and camera devices,
         then upload them all to our server using this mobile app.
         \n\nThe image quality does not matter, meaning that it is OK to set the lowest image resolutions for your camera. You may take photos in both portrait and horizontal modes, in different environments with different brightness (night vs day, indoor vs outdoor…).
-        \n\nWe need details such as fruits, blossoms, branches, and leaves shapes, both fresh and sun-dried ones, if possible.
-        \n\nWhole plant photos should be taken as well if they can be recognized easily by human eyes from a distance. Herbs and shrubs are the best candidates for whole plant photos, whereas big trees probably are hard to distinguish, especially when they belong to the same family or species.
-        \n\n- And can you please also help us fill in all the herbs' details such as usage, side effects, drug interactions etc.? To do this, please browse or search using our search bar to look for the herbs that you are familiar with or have information about. Then you can click on the edit buttons to modify those details at your own convenience.
+        \n\nWe need details such as fruits, blossoms, branches, leaves, roots, and whole plant, both fresh and sun-dried ones, if possible.
+        \n\n- And can you please also help us fill in all the herbs\' details such as usage, side effects, drug interactions etc.? To do this, please browse or search using our search bar to look for the herbs that you are familiar with or have information about. Then you can click on the edit buttons to modify those details at your own convenience.
         You can also find the full list herbal plants that already exist in our database by clicking the Full Herb List button below.</string>
 
     <string name="_70_herbs_list">70 herbs list</string>
@@ -130,10 +129,10 @@
     <string name="add_images">Add images</string>
     <string name="instruction">Instruction</string>
     <string name="image_item">image item</string>
-    <string name="how_to_take_photos">\n\nThe image quality does not matter when it comes to regular smartphones and cameras, meaning that it is OK to set the lowest image resolutions for your devices\' cameras. You may take photos in both portrait and horizontal modes, in different environments with different brightness (night vs day, indoor vs outdoor…).
-        \n\nWe need details such as fruits, blossoms, branches, and leaves shapes, both fresh and sun-dried ones, if possible.
-        \n\nWhole plant photos should be taken as well if they can be recognized easily by human eyes from a distance. Herbs and shrubs are the best candidates for whole plant photos, whereas big trees are particularly hard to distinguish from a distance, especially if they belong to the same family or species.
-        The rule of thumbs is, as long as you are able to recognize the plants in the photos, our AI model is too ^_^.
+    <string name="how_to_take_photos">This app does not support capturing photos yet. Please use a camera app to take photos. The image quality does not matter when it comes to regular smartphones and cameras, meaning that it is OK to set the lowest image resolutions for your devices\' cameras, to save storage. However, we don\'t recommend photos taken in an artistic or selfie mode.
+    \n\nIt is your choice to take the photos in either portrait or horizontal mode or both, in different environments at different angles or corners with different brightness (night vs day, indoor vs outdoor…). The more the better though ^_^.
+    \n\nWe need details such as fruits, blossoms, branches, leaves, roots and whole plant, both fresh and sun-dried ones, if possible because diversity does matter ^_^. Generally, at least 50 images for each part of the plant should suffice for our AI model to learn. We limit the maximum of photo intakes to 1000 per herb.
+    \n\nThe rule of thumbs is, if you have taken a photo of a known herb but you are unable to say the name of the plant in that photo, our AI model should not be either ^_^.
        </string>
     <string name="upload_completed">All your images have been uploaded successfully.</string>
     <string name="upload_in_progress_please">Upload in progress. We will notify you once completed.</string>

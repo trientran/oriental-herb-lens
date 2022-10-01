@@ -79,7 +79,16 @@
     <string name="sign_in_with_google">Đăng nhập với Google</string>
     <string name="you_have_been_signed_out">Bạn đã đăng xuất</string>
     <string name="your_account_has_been_deleted">Tài khoản của bạn đã được xoá</string>
-    <string name="about_us">Med Herb Lens là một dự án phi lợi nhuận</string>
+    <string name="about_us">Med Herb Lens là một dự án phi lợi nhuận sử dụng Trí tuệ nhân tạo (Deep Learning - Tensorflow) để hỗ trợ các nhà thảo dược học, các bác sĩ và thầy thuốc y học cổ truyền trong việc tự động nhận dạng và phân loại các loại cây thuốc.
+ \n\nDự án này được khởi xướng và được dẫn dắt bởi anh Lê Đức Hoàng Minh, một sinh viên bác sĩ Y học cổ truyền trường Đại học Thành Đông, Việt Nam. Anh đã giúp xây dựng bộ dữ liệu và cũng hỗ trợ đánh giá tính xác thực của dữ liệu đầu vào.
+ \n\nVới sự hỗ trợ của anh Minh, dự án này đã được triển khai và phát triển dưới dạng ứng dụng Android bởi Trần Phát Triển như một phần của luận án tốt nghiệp Thạc sĩ Công nghệ Thông tin của anh ấy. Anh hiện là cựu sinh viên Đại học Công giáo La Mã St. Paul Philippines.
+ \n\nHiện tại, mô hình AI trong dự án này hiện chỉ có thể nhận dạng 70 cây thảo dược với độ chính xác khoảng 40-60% trong khi chúng tôi đang thu thập thêm dữ liệu hình ảnh (vui lòng nhấn vào nút bên dưới để xem dánh sách dược liệu được hỗ trợ).
+ \n\nNgoài ra, dự án này chỉ được triển khai trên nền tảng di động Android. Chúng tôi rất muốn phát triển thêm phiên bản dành cho iPhone nhưng điều kiện về thời gian và nhân lực chưa cho phép. Nếu bạn biết lập trình ứng dụng iOS và muốn giúp đỡ trên tinh thần phi lợi nhuận, xin hãy liên hệ với chúng tôi.
+ \n\nChúng tôi thật sự mong muốn mở rộng số lượng cây thuốc lên gần 4000. Tham vọng này sẽ không đạt được nếu không có sự hỗ trợ của quý bạn. Có 2 cách bạn có thể giúp chúng tôi:
+ \n\n- Vui lòng đóng góp vào tập dữ liệu bằng cách chụp các hình ảnh thảo dược của riêng bạn bằng thiết bị di động hoặc máy ảnh, sau đó tải tất cả chúng lên máy chủ của chúng tôi bằng ứng dụng di động Android này. Chất lượng hình ảnh không quan trọng, vì vậy bạn có thể chụp những bức ảnh này với độ phân giải hình ảnh thấp nhất để tiết kiệm bộ nhớ. Chúng tôi cần ảnh chụp toàn thân và/hoặc các bộ phận và chi tiết của chúng như hình dạng trái cây, hoa, cành, lá, và rễ, cả dược liệu tươi và khô, nếu có thể.
+ \n\n- Và xin hãy giúp chúng tôi biên tập / chỉnh sửa thông tin chi tiết dược liệu bằng cách nhấp vào nút chỉnh sửa trên trang thông tin của từng dược liệu. Chúng tôi cần thêm dữ liệu về công dụng, cách sử dụng, tác dụng phụ, tương tác thuốc…
+ \n\nXin trân trọng cảm ơn rất nhiều.
+</string>
     <string name="_70_herbs_list">danh sách 70 dược liệu</string>
     <string name="full_herb_list">Danh sách dược liệu đầy đủ</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Bạn có chắc chắn muốn xoá tài khoản không?</string>
@@ -94,7 +103,10 @@
     <string name="add_images">Thêm nhiều ảnh</string>
     <string name="instruction">Hướng dẫn</string>
     <string name="image_item">ảnh</string>
-    <string name="how_to_take_photos">Cách chụp hình</string>
+    <string name="how_to_take_photos">Ứng dụng này chưa hỗ trợ chụp ảnh. Xin hãy dùng ứng dụng chụp ảnh có sẵn trên thiết bị di động của bạn để chụp. Chất lượng hình ảnh không quan trọng trong mô hình trí tuệ nhân tạo của chúng tôi. Bạn có thể giữ chế độ chụp ảnh hiện tại hoặc chỉnh chế độ chụp với độ phân giải hay chất lượng thấp nhất để tiết kiệm dung lượng bộ nhớ điện thoại. Chúng tôi không khuyến khích bạn chụp ở chế độ nghệ thuật hay selfie.
+    \n\nBạn được tự do chụp ở chế độ chân dung (ảnh đứng) hay phong cảnh (ảnh nằm ngang), trong các môi trường khác nhau từ nhiều góc chụp khác nhau với độ sáng tối khác nhau (ban ngày/ban đêm, trong nhà hay ngoài trời…).
+    \n\nChúng tôi cần hình của bộ phận trái/quả, hoa, cành, lá, rễ, hoặc toàn thân - cả tươi và khô, nếu nhìn những bộ phận này bằng mắt thường chúng ta có thể dễ dàng nhận ra tên dược liệu. Nói chung, ít nhất 50 tấm hình của một (bộ phận) dược liệu cũng đã đủ để mô hình AI học cách nhận diện. Chúng tôi giới hạn số lượng hình lưu trữ tối đa trên máy chủ cho mỗi dược liệu là 1000 ảnh.
+    \n\nNguyên tắc vàng là, nếu bạn chụp hình 1 loại dược liệu mà bạn biết tên nhưng lại không thể nhận ra nó trong ảnh chụp thì mô hình AI của chúng tôi cũng không có khả năng đó ^_^.</string>
     <string name="upload_completed">Tất cả hình của bạn đã được tải lên thành công</string>
     <string name="upload_in_progress_please">Đang tải ảnh lên máy chủ. Bạn sẽ được thông báo sau khi quá trình này hoàn tất.</string>
     <string name="uploaded_by">Đăng bởi: %s. Bạn có thể nhấp lên ảnh để mở nó bằng trình duyệt web và lưu ảnh về máy nếu muốn.</string>
