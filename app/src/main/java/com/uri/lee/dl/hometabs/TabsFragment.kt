@@ -5,32 +5,37 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uri.lee.dl.HERB_ID
-import com.uri.lee.dl.R
+import com.uri.lee.dl.*
 import com.uri.lee.dl.databinding.FragmentTabsBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsActivity
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class TabsFragment : Fragment() {
 
+    private val userViewModel: UserViewModel by activityViewModels()
+
+    private val homeTabViewModel: HomeTabViewModel by viewModels()
+
     private lateinit var binding: FragmentTabsBinding
-    private val viewModel: PageViewModel by viewModels()
+
     private lateinit var viewAdapter: HerbAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.getInt(ARG_SECTION_NUMBER)?.let { viewModel.setIndex(it) }
+        arguments?.getInt(ARG_SECTION_NUMBER)?.let { homeTabViewModel.setIndex(it) }
     }
 
     override fun onCreateView(
@@ -38,64 +43,68 @@ class TabsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentTabsBinding.inflate(inflater, container, false)
-        viewAdapter = HerbAdapter {
+        viewAdapter = HerbAdapter(viewModel = userViewModel) {
             val intent = Intent(requireContext(), HerbDetailsActivity::class.java)
-            intent.putExtra(HERB_ID, it.id)
+            intent.putExtra(HERB_ID, it)
             startActivity(intent)
         }
         binding.recyclerView.adapter = viewAdapter
-        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() ==
-                    viewAdapter.itemCount - 1 && !recyclerView.canScrollVertically(1) && viewAdapter.itemCount >= 10
-                ) {
-                    viewModel.state.index?.let {
-                        when (TAB_TITLES[it]) {
-                            R.string.tab_favorite -> viewModel.loadMoreHistoryOrFavorite(
-                                numberOfRecyclerViewItemsLoaded = viewAdapter.itemCount,
-                                numberOfDocumentsToLoad = 10,
-                            )
-                            R.string.tab_history -> viewModel.loadMoreHistoryOrFavorite(
-                                numberOfRecyclerViewItemsLoaded = viewAdapter.itemCount,
-                                numberOfDocumentsToLoad = 10,
-                            )
-                            R.string.tab_random -> viewModel.processRandom()
-                        }
+        when (TAB_TITLES[homeTabViewModel.state.tabIndex!!]) {
+            R.string.tab_random -> {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        userViewModel.state()
+                            .map { it.randomHerbIds }
+                            .distinctUntilChanged()
+                            .onEach {
+                                binding.placeHolderView.isVisible = it.isEmpty()
+                                viewAdapter.submitList(it)
+                            }
+                            .launchIn(this)
                     }
                 }
-                super.onScrolled(recyclerView, dx, dy)
+                binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() ==
+                            viewAdapter.itemCount - 1 && !recyclerView.canScrollVertically(1) &&
+                            viewAdapter.itemCount >= PAGING_ITEM_COUNT_ONE_GO
+                        ) {
+                            userViewModel.processRandom()
+                        }
+                        super.onScrolled(recyclerView, dx, dy)
+                    }
+                })
             }
-        })
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state()
-                    .map { it.herbs }
-                    .distinctUntilChanged()
-                    .onEach {
-                        binding.placeHolderView.isVisible = it.isEmpty()
-                        viewAdapter.submitList(it)
+            R.string.tab_favorite -> {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        userViewModel.state()
+                            .map { it.favoriteHerbIds }
+                            .distinctUntilChanged()
+                            .onEach {
+                                binding.placeHolderView.isVisible = it.isEmpty()
+                                viewAdapter.submitList(it)
+                            }
+                            .launchIn(this)
                     }
-                    .launchIn(this)
-
-                viewModel.state()
-                    .map { it.isLoading }
-                    .distinctUntilChanged()
-                    .onEach { binding.progressBar.isVisible = it }
-                    .launchIn(this)
-
-                viewModel.state()
-                    .mapNotNull { it.error }
-                    .onEach {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.something_went_wrong_please_try_again_or_contact_us),
-                            LENGTH_SHORT
-                        ).show()
-                        viewModel.setNoError()
+                }
+            }
+            R.string.tab_history -> {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        userViewModel.state()
+                            .map { it.historyHerbIds }
+                            .distinctUntilChanged()
+                            .onEach {
+                                binding.placeHolderView.isVisible = it.isEmpty()
+                                viewAdapter.submitList(it)
+                            }
+                            .launchIn(this)
                     }
-                    .launchIn(this)
+                }
             }
         }
+
         return binding.root
     }
 

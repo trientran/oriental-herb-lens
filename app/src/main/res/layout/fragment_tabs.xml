@@ -21,19 +21,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="40sp"
+        android:padding="24dp"
         android:textAlignment="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="@string/your_herb_list_will_be_loaded_soon" />
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="@dimen/search_progress_bar_size"
-        android:layout_height="@dimen/search_progress_bar_size"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

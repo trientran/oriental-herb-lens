@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.mlkit.common.model.CustomRemoteModel
@@ -13,7 +14,6 @@ import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.databinding.ActivityMainBinding
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
-import com.uri.lee.dl.hometabs.TAB_TITLES
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
 import com.uri.lee.dl.lenscamera.CameraActivity
@@ -23,6 +23,8 @@ import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private val viewModel: UserViewModel by viewModels()
 
     private val authStateListener = AuthStateListener(this)
 
