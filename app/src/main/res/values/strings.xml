@@ -170,5 +170,8 @@
     <string name="via_facebook">Via Facebook</string>
     <string name="via_email">Via email</string>
     <string name="please_hit_ok_to_open_our_google_sheet">Please hit OK to open our Google Sheet database where you can add a new herb at the end of the herb list. We will then add it to our database. Thank you!</string>
+    <string name="stack_overflow">We are experiencing server downtime. Please come back later!</string>
+    <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
+    <string name="you_have_been_banned">You have been banned from using our service due to your inappropriate activities. If you believe this is a mistake, please contact us!</string>
 
 </resources>

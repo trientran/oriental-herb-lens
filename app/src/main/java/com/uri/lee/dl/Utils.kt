@@ -19,6 +19,7 @@ package com.uri.lee.dl
 import android.Manifest
 import android.app.Activity
 import android.app.Application
+import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
@@ -491,6 +492,7 @@ val clock: Clock = Clock.systemDefaultZone()
 val db = Firebase.firestore
 val herbCollection = db.collection("herbs") // dont change this value
 val userCollection = db.collection("users") // dont change this value
+val configCollection = db.collection("config") // dont change this value
 val deletionCollection = db.collection("deletions") // dont change this value
 val uploadCollection = db.collection("uploads") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
@@ -608,3 +610,16 @@ private fun Lifecycle.state(): Flow<Lifecycle.State> = callbackFlow {
     addObserver(observer)
     awaitClose { removeObserver(observer) }
 }.flowOn(Dispatchers.Main.immediate).conflate()
+
+fun Context.goToPlayStore() {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+    } catch (e: ActivityNotFoundException) {
+        startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+            )
+        )
+    }
+}
