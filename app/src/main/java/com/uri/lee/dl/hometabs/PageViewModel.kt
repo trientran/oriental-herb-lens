@@ -51,7 +51,7 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
                 throw e
             } catch (e: Exception) {
                 Timber.e(e)
-                setState { copy(event = PageState.Event.Error(e)) }
+                setState { copy(error = PageState.Error(e)) }
             }
         }
     }
@@ -79,7 +79,7 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
                     setState { copy(isLoading = true) }
                     if (e != null) {
                         Timber.e(e)
-                        setState { copy(event = PageState.Event.Error(e)) }
+                        setState { copy(error = PageState.Error(e)) }
                         setState { copy(isLoading = false) }
                         return@launch
                     }
@@ -128,6 +128,11 @@ class PageViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setNoError() {
+        Timber.d("setNoError")
+        viewModelScope.launch { setState { copy(error = null) } }
+    }
+
     override fun onCleared() {
         super.onCleared()
         if (this::personalListListenerRegistration.isInitialized) personalListListenerRegistration.remove()
@@ -141,11 +146,9 @@ data class PageState(
     val index: Int? = null,
     val herbs: List<FireStoreHerb> = emptyList(),
     val isLoading: Boolean = false,
-    val event: Event? = null,
+    val error: Error? = null,
 ) {
-    sealed interface Event {
-        data class Error(val exception: Exception) : Event
-    }
+    data class Error(val exception: Exception)
 }
 
 enum class DocType(val docType: String) {

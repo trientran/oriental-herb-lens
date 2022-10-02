@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import android.widget.Toast.LENGTH_LONG
+import android.widget.Toast.LENGTH_SHORT
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,10 +19,7 @@ import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentTabsBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsActivity
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TabsFragment : Fragment() {
@@ -87,16 +84,14 @@ class TabsFragment : Fragment() {
                     .launchIn(this)
 
                 viewModel.state()
-                    .map { it.event }
+                    .mapNotNull { it.error }
                     .onEach {
-                        when (it) {
-                            is PageState.Event.Error -> Toast.makeText(
-                                requireContext(),
-                                getString(R.string.something_went_wrong_please_try_again_or_contact_us),
-                                LENGTH_LONG
-                            ).show()
-                            null -> Unit
-                        }
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.something_went_wrong_please_try_again_or_contact_us),
+                            LENGTH_SHORT
+                        ).show()
+                        viewModel.setNoError()
                     }
                     .launchIn(this)
             }
