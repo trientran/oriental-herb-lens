@@ -31,7 +31,7 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
                 .setMessage(getString(R.string.please_hit_ok_to_open_our_google_sheet))
                 .setCancelable(true)
                 .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
+                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1kHEIYrblHtqSEEcGyQO7zq_0_hhTZAziLEoZ5yJx_-U/edit?usp=sharing".toUri())
                 }
                 .create().show()
             dismiss()
@@ -67,7 +67,7 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
                     it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
                 }
                 .setNegativeButton(getString(R.string.full_herb_list)) { _, _ ->
-                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
+                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1kHEIYrblHtqSEEcGyQO7zq_0_hhTZAziLEoZ5yJx_-U/edit?usp=sharing".toUri())
                 }
                 .setNeutralButton("OK") { _, _ -> dismiss() }
                 .create().show()
