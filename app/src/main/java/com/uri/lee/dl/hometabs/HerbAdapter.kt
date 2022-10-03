@@ -1,6 +1,5 @@
 package com.uri.lee.dl.hometabs
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -43,7 +42,6 @@ class HerbAdapter(private val viewModel: UserViewModel, private val onItemClickL
     inner class TabbedHerbItemViewHolder(private val binding: ImagesRecognitionItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bindTo(herbId: Long) {
-            Log.d("trienn", herbId.toString())
             viewModel.loadSingleHerb(herbId) { herb ->
                 Glide
                     .with(binding.root)
