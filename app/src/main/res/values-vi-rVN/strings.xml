@@ -67,8 +67,8 @@
     <string name="failed_to_load_local_data_store">Không truy xuất dữ liệu trên máy được</string>
     <string name="failed_to_label_one_or_some_of_the_images">Không thể gắn nhãn cho 1 hay vài ảnh của bạn.</string>
     <string name="herb_id_s">ID: %s</string>
-    <string name="latin_name_s">Tên Latin:</string>
-    <string name="vietnamese_name_s">Tên tiếng Việt:</string>
+    <string name="latin_name_s">Tên Latin: %s</string>
+    <string name="vietnamese_name_s">Tên tiếng Việt: %s</string>
     <string name="english_name_s">Tên tiếng Anh:</string>
     <string name="overview_s">Tổng quan</string>
     <string name="dosing_s">Liều dùng:</string>

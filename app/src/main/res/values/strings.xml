@@ -83,8 +83,8 @@
     <string name="failed_to_label_one_or_some_of_the_images">Failed to label 1 or some of your images.</string>
 
     <string name="herb_id_s">ID: %s</string>
-    <string name="latin_name_s">Latin name:</string>
-    <string name="vietnamese_name_s">Vietnamese name:</string>
+    <string name="latin_name_s">Latin name: %s</string>
+    <string name="vietnamese_name_s">Vietnamese name: %s</string>
     <string name="english_name_s">English name:</string>
     <string name="overview_s">Overview:</string>
     <string name="dosing_s">Dosing:</string>
