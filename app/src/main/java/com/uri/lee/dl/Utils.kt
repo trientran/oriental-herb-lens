@@ -501,6 +501,11 @@ val storage = Firebase.storage
 var herbStorage = storage.reference.child("herbs")
 const val HERB_ID = "HERB_ID"
 
+const val PRIVACY_POLICY_EN = "https://medherblens.ml/pages/privacy-policy"
+const val PRIVACY_POLICY_VI = "https://caythuoc.ml/pages/privacy-policy"
+const val TERMS_OF_SERVICE_EN = "https://medherblens.ml/pages/terms-of-service"
+const val TERMS_OF_SERVICE_VI = "https://caythuoc.ml/pages/terms-of-service"
+
 fun Context.isNetworkAvailable(): Boolean {
     val connectivityManager =
         getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager

@@ -42,6 +42,10 @@ class LoginActivity : AppCompatActivity() {
             .createSignInIntentBuilder()
             .setAvailableProviders(listOf(AuthUI.IdpConfig.GoogleBuilder().build()))
             .setLogo(R.drawable.ic_launcher_round)
+            .setTosAndPrivacyPolicyUrls(
+                if (isSystemLanguageVietnamese) TERMS_OF_SERVICE_VI else TERMS_OF_SERVICE_EN,
+                if (isSystemLanguageVietnamese) PRIVACY_POLICY_VI else PRIVACY_POLICY_EN
+            )
             .setTheme(R.style.AppTheme)
             .build()
         findViewById<Button>(R.id.sign_in_button).setOnClickListener {
