@@ -1,6 +1,5 @@
 package com.uri.lee.dl.lenscamera
 
-import android.os.Build
 import android.os.Bundle
 import android.widget.SeekBar
 import androidx.activity.viewModels
@@ -60,7 +59,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun launchCamera() {
-        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
+        if (!Utils.allPermissionsGranted(this)) {
             Utils.requestRuntimePermissions(this)
         } else {
             val confidence = binding.seekView.seekBar.progress.toFloat() / 100
@@ -78,7 +77,7 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val shouldShowSeekBarAndSwitch = !(Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this))
+        val shouldShowSeekBarAndSwitch = Utils.allPermissionsGranted(this)
         binding.seekView.root.isVisible = shouldShowSeekBarAndSwitch
         binding.objectsModeSwitch.isVisible = shouldShowSeekBarAndSwitch
         if (supportFragmentManager.findFragmentById(R.id.container) == null) launchCamera()
