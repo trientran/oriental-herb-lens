@@ -32,6 +32,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
         try {
+            checkAdminStatus()
             processRandom()
             liveHistoryAndFavoriteUpdate()
         } catch (e: CancellationException) {
@@ -59,6 +60,15 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             herbCollection.document(herbId.toString()).get().await().let {
                 it.toObject<FireStoreHerb>()?.let { herb -> callback.invoke(herb) }
+            }
+        }
+    }
+
+    private fun checkAdminStatus() {
+        Timber.d("checkAdminStatus")
+        viewModelScope.launch {
+            userCollection.document(authUI.auth.uid!!).get().await().let {
+                it.getBoolean(USER_IS_ADMIN_FIELD_NAME)?.let { setState { copy(isAdmin = it) } }
             }
         }
     }
@@ -99,6 +109,7 @@ data class UserState(
     val randomHerbIds: List<Long> = emptyList(),
     val favoriteHerbIds: List<Long> = emptyList(),
     val historyHerbIds: List<Long> = emptyList(),
+    val isAdmin: Boolean = false,
     val error: Error? = null,
 ) {
     data class Error(val exception: Exception)

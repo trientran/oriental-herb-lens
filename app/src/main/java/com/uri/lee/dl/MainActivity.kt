@@ -7,6 +7,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -24,10 +25,7 @@ import com.uri.lee.dl.instantsearch.SearchActivity
 import com.uri.lee.dl.lenscamera.CameraActivity
 import com.uri.lee.dl.lensimage.ImageActivity
 import com.uri.lee.dl.lensimages.ImagesActivity
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.system.exitProcess
@@ -127,6 +125,17 @@ class MainActivity : AppCompatActivity() {
                                     sendEmail(subject = "")
                                 }
                                 .create().show()
+                        }
+                    }
+                    .launchIn(this)
+
+                userViewModel.state()
+                    .map { it.isAdmin }
+                    .distinctUntilChanged()
+                    .onEach {
+                        binding.adminButton.isVisible = it
+                        binding.adminButton.setOnClickListener {
+                            startActivity(Intent(this@MainActivity, AdminActivity::class.java))
                         }
                     }
                     .launchIn(this)

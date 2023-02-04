@@ -173,5 +173,7 @@
     <string name="stack_overflow">We are experiencing server downtime. Please come back later!</string>
     <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
     <string name="you_have_been_banned">You have been banned from using our service due to your inappropriate activities. If you believe this is a mistake, please contact us!</string>
+    <string name="admin">Admin</string>
+    <string name="export_csv">Export image urls as a CSV file</string>
 
 </resources>

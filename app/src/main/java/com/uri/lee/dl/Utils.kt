@@ -497,6 +497,7 @@ val deletionCollection = db.collection("deletions") // dont change this value
 val uploadCollection = db.collection("uploads") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
 const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
+const val USER_IS_ADMIN_FIELD_NAME = "isAdmin" // dont change this value
 val storage = Firebase.storage
 var herbStorage = storage.reference.child("herbs")
 const val HERB_ID = "HERB_ID"

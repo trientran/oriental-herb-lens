@@ -147,4 +147,6 @@
     <string name="stack_overflow">Máy chủ gặp sự cố. Vui lòng quay lại sau!</string>
     <string name="please_update_android">Thành thật xin lỗi vì sự bất tiện này! Xin hãy cập nhật ứng dụng lên phiên bản mới nhất để tiếp tục sử dụng!</string>
     <string name="you_have_been_banned">Bạn không thể sử dụng ứng dụng này được nữa vì bạn đã có những hoạt động không phù hợp. Vui lòng liên hệ chúng tôi nếu bạn nghĩ chúng tôi đã hiểu nhầm!</string>
+    <string name="admin">Admin</string>
+    <string name="export_csv">Xuất file CSV chứa URL của tất cả hình ảnh</string>
 </resources>
