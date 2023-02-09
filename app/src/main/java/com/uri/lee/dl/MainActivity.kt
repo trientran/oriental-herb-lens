@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.common.model.CustomRemoteModel
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
@@ -37,7 +38,13 @@ class MainActivity : AppCompatActivity() {
 
     private val configViewModel: ConfigViewModel by viewModels()
 
-    private val authStateListener = AuthStateListener(this)
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+        Timber.d(auth.currentUser.toString())
+        if (auth.currentUser == null) {
+            finishAffinity()
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
+    }
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)

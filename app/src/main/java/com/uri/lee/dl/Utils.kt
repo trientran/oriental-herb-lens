@@ -40,7 +40,6 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
@@ -60,7 +59,6 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -440,13 +438,6 @@ fun getHerbModel(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> 
                 }
             optionsBuilderCallBack.invoke(optionsBuilder)
         }
-}
-
-class AuthStateListener(val context: Context) : FirebaseAuth.AuthStateListener {
-    override fun onAuthStateChanged(auth: FirebaseAuth) {
-        Timber.d(auth.currentUser.toString())
-        auth.currentUser ?: ContextCompat.startActivity(context, Intent(context, LoginActivity::class.java), null)
-    }
 }
 
 internal fun Activity.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -14,6 +15,15 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 
 class LoginActivity : AppCompatActivity() {
+
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+        Timber.d(auth.currentUser.toString())
+        if (auth.currentUser != null) {
+            finishAffinity()
+            startActivity(Intent(this, MainActivity::class.java))
+        }
+    }
+
     private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
         if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let {
             lifecycleScope.launch(mainDispatcher) {
@@ -22,10 +32,6 @@ class LoginActivity : AppCompatActivity() {
                         .document(it.uid)
                         .set(mapOf("uid" to it.uid), SetOptions.merge())
                         .await()
-                    val i = baseContext.packageManager.getLaunchIntentForPackage(baseContext.packageName)
-                    i!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    startActivity(i)
-                    finish()
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -59,8 +65,13 @@ class LoginActivity : AppCompatActivity() {
         findViewById<Button>(R.id.sign_in_button).isEnabled = true
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finishAffinity()
+    override fun onStart() {
+        super.onStart()
+        authUI.auth.addAuthStateListener(authStateListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        authUI.auth.removeAuthStateListener(authStateListener)
     }
 }
