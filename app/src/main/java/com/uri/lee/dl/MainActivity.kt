@@ -1,9 +1,12 @@
 package com.uri.lee.dl
 
 import android.app.Activity
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.view.Window
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +23,8 @@ import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityMainBinding
+import com.uri.lee.dl.databinding.NewHerbDialogBinding
+import com.uri.lee.dl.herbdetails.HerbDetailsActivity
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
@@ -32,6 +37,7 @@ import timber.log.Timber
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
 
     private val userViewModel: UserViewModel by viewModels()
@@ -84,6 +90,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.searchSingleImageView.setOnClickListener {
             startActivity(Intent(this, ImageActivity::class.java))
+        }
+
+        binding.addHerbButton.setOnClickListener {
+            CustomDialogClass(this) {
+                userViewModel.addHerb(it) { id ->
+                    val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
+                    intent.putExtra(HERB_ID, id)
+                    startActivity(intent)
+                }
+            }.show()
         }
 
         downloadModel()
@@ -182,5 +198,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+}
+
+private class CustomDialogClass(context: Context, private val onSubmitClick: (FireStoreHerb) -> Unit) :
+    Dialog(context) {
+
+    private lateinit var binding: NewHerbDialogBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = NewHerbDialogBinding.inflate(layoutInflater)
+        val view = binding.root
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(view)
+
+        binding.submitBtn.setOnClickListener {
+            // val fields = listOf(binding.enNameView, binding.viNameView, binding.latinNameView)
+            // if (fields.all { it.text.isBlank() }) { binding.instructionView.textColors = ColorStateList() }
+            if (binding.viNameView.text.isBlank()) {
+                binding.viNameLayoutView.error = context.getString(R.string.please_edit_this_field)
+            } else {
+                val newHerb = FireStoreHerb(
+                    id = clock.millis(),
+                    enName = binding.enNameView.text.toString(),
+                    latinName = binding.latinNameView.text.toString(),
+                    viName = binding.viNameView.text.toString(),
+                )
+                onSubmitClick(newHerb)
+                dismiss()
+            }
+        }
     }
 }

@@ -16,6 +16,7 @@ import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
 
 class BottomSheetMenu : BottomSheetDialogFragment() {
+
     private lateinit var binding: BottomSheetMenuBinding
 
     override fun onCreateView(

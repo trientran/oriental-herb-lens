@@ -149,4 +149,8 @@
     <string name="you_have_been_banned">Bạn không thể sử dụng ứng dụng này được nữa vì bạn đã có những hoạt động không phù hợp. Vui lòng liên hệ chúng tôi nếu bạn nghĩ chúng tôi đã hiểu nhầm!</string>
     <string name="admin">Admin</string>
     <string name="export_csv">Xuất file CSV chứa URL của tất cả hình ảnh</string>
+    <string name="please_only_add_a_new_herb_if_etc">Vui lòng chỉ thêm tên dược liệu mới nếu bạn (1) có hình ảnh của dược liệu đó và muốn tải chúng lên, và (2) bạn không thể tìm thấy tên dược liệu bằng thanh tìm kiếm hoặc trong danh sách Tất cả dược liệu.</string>
+    <string name="all_herbs">Tất cả</string>
+    <string name="please_enter_at_least_of_these_names_for_the_new_herb">Vui lòng điền vào ít nhất 1 trong 3 trường sau đây:</string>
+
 </resources>

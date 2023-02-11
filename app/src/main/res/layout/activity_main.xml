@@ -159,4 +159,15 @@
         android:text="@string/admin"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/addHerbButton"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/add_a_new_herb"
+        android:padding="16dp"
+        android:src="@drawable/ic_baseline_add_circle_24"
+        android:layout_gravity="bottom|end"
+        app:tint="@color/color_primary" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
