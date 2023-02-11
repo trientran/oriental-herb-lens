@@ -27,16 +27,6 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
         binding = BottomSheetMenuBinding.inflate(layoutInflater)
         val view = binding.root
 
-        binding.addButton.setOnClickListener {
-            AlertDialog.Builder(it.context)
-                .setMessage(getString(R.string.please_hit_ok_to_open_our_google_sheet))
-                .setCancelable(true)
-                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1kHEIYrblHtqSEEcGyQO7zq_0_hhTZAziLEoZ5yJx_-U/edit?usp=sharing".toUri())
-                }
-                .create().show()
-            dismiss()
-        }
         binding.signOutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             dismiss()

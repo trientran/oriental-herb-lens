@@ -155,7 +155,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="24dp"
-        android:background="?android:attr/selectableItemBackground"
         android:text="@string/admin"
         android:visibility="gone" />
 
