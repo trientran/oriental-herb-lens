@@ -33,9 +33,9 @@
     <string name="pref_title_confirmation_time_in_auto_search">Thời gian chờ xác nhận ở chế độ gắn nhãn tự động</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Trong khoảng 500–2000 mili giây</string>
     <string name="latin_or_vietnamese_name">Tên Latin hay Việt</string>
-    <string name="tab_favorite">Yêu thích</string>
-    <string name="tab_history">Lịch sử</string>
-    <string name="tab_random">Đại trà</string>
+    <string name="favorite">Yêu thích</string>
+    <string name="history">Lịch sử</string>
+    <string name="random">Đại trà</string>
     <string name="title_home">Trang chủ</string>
     <string name="images">Ảnh</string>
     <string name="overview">Tổng quan</string>

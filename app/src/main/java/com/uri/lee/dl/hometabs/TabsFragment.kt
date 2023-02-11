@@ -31,7 +31,8 @@ class TabsFragment : Fragment() {
 
     private lateinit var binding: FragmentTabsBinding
 
-    private lateinit var viewAdapter: HerbAdapter
+    private lateinit var herbAdapterByHerbId: HerbAdapterByHerbId
+    private lateinit var herbAdapterByHerbObject: HerbAdapterByHerbObject
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,61 +44,62 @@ class TabsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentTabsBinding.inflate(inflater, container, false)
-        viewAdapter = HerbAdapter(viewModel = userViewModel) {
+        herbAdapterByHerbId = HerbAdapterByHerbId(viewModel = userViewModel) {
             val intent = Intent(requireContext(), HerbDetailsActivity::class.java)
             intent.putExtra(HERB_ID, it)
             startActivity(intent)
         }
-        binding.recyclerView.adapter = viewAdapter
-        when (TAB_TITLES[homeTabViewModel.state.tabIndex!!]) {
-            R.string.tab_random -> {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+        herbAdapterByHerbObject = HerbAdapterByHerbObject {
+            val intent = Intent(requireContext(), HerbDetailsActivity::class.java)
+            intent.putExtra(HERB_ID, it)
+            startActivity(intent)
+        }
+        binding.recyclerView.adapter = if (TAB_TITLES[homeTabViewModel.state.tabIndex!!] == R.string.all_herbs) {
+            herbAdapterByHerbObject
+        } else {
+            herbAdapterByHerbId
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                when (TAB_TITLES[homeTabViewModel.state.tabIndex!!]) {
+                    R.string.all_herbs -> {
                         userViewModel.state()
-                            .map { it.randomHerbIds }
+                            .map { it.allHerbs }
                             .distinctUntilChanged()
                             .onEach {
                                 binding.placeHolderView.isVisible = it.isEmpty()
-                                viewAdapter.submitList(it)
+                                herbAdapterByHerbObject.submitList(it)
                             }
                             .launchIn(this)
+                        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                                if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() ==
+                                    herbAdapterByHerbObject.itemCount - 1 && !recyclerView.canScrollVertically(1) &&
+                                    herbAdapterByHerbObject.itemCount >= PAGING_ITEM_COUNT_ONE_GO
+                                ) {
+                                    userViewModel.processAllHerbsPaging()
+                                }
+                                super.onScrolled(recyclerView, dx, dy)
+                            }
+                        })
                     }
-                }
-                binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                        if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() ==
-                            viewAdapter.itemCount - 1 && !recyclerView.canScrollVertically(1) &&
-                            viewAdapter.itemCount >= PAGING_ITEM_COUNT_ONE_GO
-                        ) {
-                            userViewModel.processRandom()
-                        }
-                        super.onScrolled(recyclerView, dx, dy)
-                    }
-                })
-            }
-            R.string.tab_favorite -> {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    R.string.favorite -> {
                         userViewModel.state()
                             .map { it.favoriteHerbIds }
                             .distinctUntilChanged()
                             .onEach {
                                 binding.placeHolderView.isVisible = it.isEmpty()
-                                viewAdapter.submitList(it)
+                                herbAdapterByHerbId.submitList(it)
                             }
                             .launchIn(this)
                     }
-                }
-            }
-            R.string.tab_history -> {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    R.string.history -> {
                         userViewModel.state()
                             .map { it.historyHerbIds }
                             .distinctUntilChanged()
                             .onEach {
                                 binding.placeHolderView.isVisible = it.isEmpty()
-                                viewAdapter.submitList(it)
+                                herbAdapterByHerbId.submitList(it)
                             }
                             .launchIn(this)
                     }

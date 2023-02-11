@@ -9,9 +9,9 @@ import com.bumptech.glide.Glide
 import com.uri.lee.dl.R
 import com.uri.lee.dl.UserViewModel
 import com.uri.lee.dl.databinding.ImagesRecognitionItemBinding
-import com.uri.lee.dl.hometabs.HerbAdapter.TabbedHerbItemViewHolder
+import com.uri.lee.dl.hometabs.HerbAdapterByHerbId.TabbedHerbItemViewHolder
 
-class HerbAdapter(private val viewModel: UserViewModel, private val onItemClickListener: (Long) -> Unit) :
+class HerbAdapterByHerbId(private val viewModel: UserViewModel, private val onItemClickListener: (Long) -> Unit) :
     ListAdapter<Long, TabbedHerbItemViewHolder>(HerbDiffUtil()) {
 
     override fun onCreateViewHolder(

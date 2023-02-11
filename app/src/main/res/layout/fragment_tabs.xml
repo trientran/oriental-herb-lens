@@ -14,7 +14,8 @@
         android:orientation="vertical"
         android:paddingBottom="0dp"
         app:layoutManager="LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="48dp" />
 
     <TextView
         android:id="@+id/placeHolderView"

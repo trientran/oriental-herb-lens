@@ -48,9 +48,9 @@
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
     <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
-    <string name="tab_favorite">Favorite</string>
-    <string name="tab_history">History</string>
-    <string name="tab_random">Random</string>
+    <string name="favorite">Favorite</string>
+    <string name="history">History</string>
+    <string name="random">Random</string>
     <string name="title_home">Home</string>
     <string name="images">Images</string>
     <string name="overview">Overview</string>
@@ -118,7 +118,7 @@
     <string name="full_herb_list">Full herbal list</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="sign_out">Sign out</string>
-    <string name="your_herb_list_will_be_loaded_soon">Your herb list will be loaded soon once available.</string>
+    <string name="your_herb_list_will_be_loaded_soon">Herb list will be loaded soon once available.</string>
     <string name="dosing">Dosing</string>
     <string name="like">Like</string>
     <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>

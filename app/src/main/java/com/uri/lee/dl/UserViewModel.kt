@@ -3,6 +3,7 @@ package com.uri.lee.dl
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.flow.Flow
@@ -12,10 +13,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.util.concurrent.CancellationException
-import kotlin.random.Random
 
-val TAB_TITLES = arrayOf(R.string.tab_favorite, R.string.tab_history, R.string.tab_random)
-const val PAGING_ITEM_COUNT_ONE_GO = 10
+val TAB_TITLES = arrayOf(R.string.all_herbs, R.string.favorite, R.string.history)
+const val PAGING_ITEM_COUNT_ONE_GO = 10L
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -33,7 +33,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
         try {
             checkAdminStatus()
-            processRandom()
+            processAllHerbsFirstBatch()
             liveHistoryAndFavoriteUpdate()
         } catch (e: CancellationException) {
             throw e
@@ -43,14 +43,43 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun processRandom() {
-        Timber.d("processRandom")
+    private fun processAllHerbsFirstBatch() {
+        Timber.d("processAllHerbsFirstBatch")
         viewModelScope.launch {
-            repeat(PAGING_ITEM_COUNT_ONE_GO) {
-                val randomId = Random.nextLong(from = 1000, until = 4939)
-                val currentHerbIdList = state.randomHerbIds.toMutableList()
-                currentHerbIdList.add(randomId)
-                setState { copy(randomHerbIds = currentHerbIdList) }
+            try {
+                val documentSnapshots = herbCollection
+                    .orderBy(if (isSystemLanguageVietnamese) "viName" else "latinName")
+                    .limit(PAGING_ITEM_COUNT_ONE_GO)
+                    .get()
+                    .await()
+                val allHerbs = buildList<FireStoreHerb> { documentSnapshots.onEach { add(it.toObject()) } }
+                val lastVisibleDocumentSnapshot = documentSnapshots.documents[documentSnapshots.size() - 1]
+                setState { copy(allHerbs = allHerbs, lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = UserState.Error(e)) }
+            }
+        }
+    }
+
+    fun processAllHerbsPaging() {
+        Timber.d("processAllHerbsPaging")
+        viewModelScope.launch {
+            try {
+                val nextDocumentSnapshots = herbCollection
+                    .orderBy(if (isSystemLanguageVietnamese) "viName" else "latinName")
+                    .startAfter(state.lastVisibleDocumentSnapshot as DocumentSnapshot)
+                    .limit(PAGING_ITEM_COUNT_ONE_GO)
+                    .get()
+                    .await()
+                val nextBatch = buildList<FireStoreHerb> { nextDocumentSnapshots.onEach { add(it.toObject()) } }
+                val allHerbs = state.allHerbs.toMutableList()
+                allHerbs.addAll(nextBatch)
+                val lastVisibleDocumentSnapshot = nextDocumentSnapshots.documents[nextDocumentSnapshots.size() - 1]
+                setState { copy(allHerbs = allHerbs, lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = UserState.Error(e)) }
             }
         }
     }
@@ -124,7 +153,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 }
 
 data class UserState(
-    val randomHerbIds: List<Long> = emptyList(),
+    val allHerbs: List<FireStoreHerb> = emptyList(),
+    val lastVisibleDocumentSnapshot: DocumentSnapshot? = null,
     val favoriteHerbIds: List<Long> = emptyList(),
     val historyHerbIds: List<Long> = emptyList(),
     val isAdmin: Boolean = false,
