@@ -5,7 +5,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -17,10 +19,8 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import com.uri.lee.dl.isSystemLanguageVietnamese
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class HerbDetailsActivity : AppCompatActivity() {
@@ -52,6 +52,33 @@ class HerbDetailsActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        //    navController.addOnDestinationChangedListener{ controller, destination, arguments ->
+//            title = when (destination.id) {
+//                R.id.navigation_images -> "My title"
+//                R.id.navigation_overview -> "My title2"
+//                R.id.navigation_caution -> "My title3"
+//                R.id.navigation_dosing -> "My title3"
+//                R.id.navigation_review -> "My title4"
+//                else -> "Default title"
+//            }
+//        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state()
+                    .mapNotNull { it.herb }
+                    .onEach { herb ->
+                        title = if (isSystemLanguageVietnamese) {
+                            herb.viName.takeIf { it.isNotBlank() } ?: herb.latinName.takeIf { it.isNotBlank() }
+                            ?: return@onEach
+                        } else {
+                            herb.enName.takeIf { it.isNotBlank() } ?: herb.latinName.takeIf { it.isNotBlank() }
+                            ?: return@onEach
+                        }
+                    }
+                    .launchIn(this)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
