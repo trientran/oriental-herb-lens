@@ -178,5 +178,6 @@
     <string name="please_only_add_a_new_herb_if_etc">Please only add a new herb if you (1) have photos of that herb and you are ready to upload them and (2) you couldn\'t find the herb by using the search bar or using the All-herbs tab.</string>
     <string name="all_herbs">All herbs</string>
     <string name="please_enter_at_least_of_these_names_for_the_new_herb">Please enter at least one of these fields for the new herb:</string>
+    <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
 
 </resources>

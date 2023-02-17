@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -85,14 +86,34 @@ class ImageUploadActivity : AppCompatActivity() {
                         binding.pickPhotosView.isVisible = list.isEmpty()
                         binding.clearBtn.isVisible = list.isNotEmpty()
                         binding.uploadBtn.setOnClickListener {
+                            it.isEnabled = false
                             viewModel.uploadSequentially()
                             Toast.makeText(
                                 this@ImageUploadActivity,
                                 getString(R.string.upload_in_progress_please),
                                 Toast.LENGTH_LONG
                             ).show()
-                            finish()
                         }
+                    }
+                    .launchIn(this)
+
+                viewModel.state()
+                    .mapNotNull { it.uploadedImagesCount }
+                    .distinctUntilChanged()
+                    .onEach { count ->
+                        setOf(
+                            binding.addImagesBtn,
+                            binding.clearBtn,
+                            binding.uploadBtn,
+                            binding.pickPhotosView,
+                            binding.instructionView,
+                            binding.recyclerView
+                        ).onEach { it.visibility = View.GONE }
+                        binding.progressTextView.isVisible = true
+                        binding.progressTextView.text = getString(
+                            R.string.n_images_have_been_uploaded_etc,
+                            "$count/${imageUploadAdapter.itemCount}"
+                        )
                     }
                     .launchIn(this)
             }

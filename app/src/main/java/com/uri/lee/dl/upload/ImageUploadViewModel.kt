@@ -60,12 +60,17 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     val byteArray = application.compressToJpgByteArray(uri, MAX_IMAGE_DIMENSION)
                     // should use NO_WRAP to make sure there is no break line in the string create a map of data to pass along
                     val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-                    imageApi.uploadImage(base64String).body()?.let { urlMap[it.image.url] = uid }
+                    imageApi.uploadImage(base64String).body()?.let {
+                        urlMap[it.image.url] = uid
+                        setState { copy(uploadedImagesCount = urlMap.size - 1) }
+                    }
                 }
                 if (urlMap.isNotEmpty()) {
                     herbCollection
                         .document(state.herbId.toString())
-                        .set(mapOf(IMAGE_UPLOAD_PATH_NAME to urlMap), SetOptions.merge()).await()
+                        .set(mapOf(IMAGE_UPLOAD_PATH_NAME to urlMap), SetOptions.merge())
+                        .await()
+                    setState { copy(uploadedImagesCount = urlMap.size) }
                 }
                 setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
@@ -88,6 +93,8 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
 data class ImageUploadState(
     val herbId: Long? = null,
     val imageUris: List<Uri> = emptyList(),
+    val uploadedImagesCount: Int? = null,
+    val isFinalizingUpload: Boolean = false,
     val isUploadComplete: Boolean = false,
     val isSubmitting: Boolean = false,
     val error: Error? = null,

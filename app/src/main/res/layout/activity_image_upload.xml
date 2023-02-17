@@ -104,4 +104,20 @@
         android:text="@string/upload"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <TextView
+        android:id="@+id/progressTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="50sp"
+        android:layout_margin="24dp"
+        android:textAlignment="center"
+        android:visibility="gone"
+        android:background="@color/color_accent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/n_images_have_been_uploaded_etc" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
