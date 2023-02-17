@@ -43,17 +43,17 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun processAllHerbsFirstBatch() {
-        Timber.d("processAllHerbsFirstBatch")
-        viewModelScope.launch {
-            try {
-                val documentSnapshots = herbCollection
-                    .orderBy(if (isSystemLanguageVietnamese) "viName" else "latinName")
-                    .limit(PAGING_ITEM_COUNT_ONE_GO)
-                    .get()
-                    .await()
-                val allHerbs = buildList<FireStoreHerb> { documentSnapshots.onEach { add(it.toObject()) } }
-                val lastVisibleDocumentSnapshot = documentSnapshots.documents[documentSnapshots.size() - 1]
+     fun processAllHerbsFirstBatch() {
+         Timber.d("processAllHerbsFirstBatch")
+         viewModelScope.launch {
+             try {
+                 val documentSnapshots = herbCollection
+                     .orderBy(if (isSystemLanguageVietnamese) "viName" else "latinName")
+                     .limit(PAGING_ITEM_COUNT_ONE_GO)
+                     .get()
+                     .await()
+                 val allHerbs = buildList<FireStoreHerb> { documentSnapshots.onEach { add(it.toObject()) } }
+                 val lastVisibleDocumentSnapshot = documentSnapshots.documents[documentSnapshots.size() - 1]
                 setState { copy(allHerbs = allHerbs, lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
             } catch (e: Exception) {
                 Timber.e(e)

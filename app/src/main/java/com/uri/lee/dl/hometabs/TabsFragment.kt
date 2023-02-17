@@ -110,6 +110,13 @@ class TabsFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (TAB_TITLES[homeTabViewModel.state.tabIndex!!] == R.string.all_herbs) {
+            userViewModel.processAllHerbsFirstBatch()
+        }
+    }
+
     companion object {
         private const val ARG_SECTION_NUMBER = "section_number"
 
