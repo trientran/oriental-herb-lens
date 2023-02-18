@@ -136,7 +136,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
         detector.process(InputImage.fromBitmap(entireBitmap, 0))
             .addOnSuccessListener { objects ->
                 if (objects.isEmpty()) {
-                    setState { copy(event = SingleImageState.Event.NoHerbObjects) }
+                    setState { copy(event = SingleImageState.Event.NoHerbObjects, isLoading = false) }
                 } else {
                     var herbObjectsCount = -1
                     val newObjectInfoList = mutableListOf<DetectedObjectInfo>()
@@ -162,7 +162,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
                             }
                             if (i == objects.size - 1) {
                                 if (newObjectInfoList.isEmpty()) {
-                                    setState { copy(event = SingleImageState.Event.NoHerbObjects) }
+                                    setState { copy(event = SingleImageState.Event.NoHerbObjects, isLoading = false) }
                                 } else {
                                     setState { copy(objectInfoList = newObjectInfoList.toList()) }
                                 }
