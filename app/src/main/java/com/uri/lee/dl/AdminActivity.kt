@@ -8,7 +8,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.uri.lee.dl.databinding.ActivityAdminBinding
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -25,7 +27,7 @@ class AdminActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        binding.exportCsvFileView.setOnClickListener { adminViewModel.loadImageUrls() }
+        binding.exportCsvFileView.setOnClickListener { adminViewModel.generateMultipleCSVs() }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 adminViewModel.state()
@@ -34,7 +36,7 @@ class AdminActivity : AppCompatActivity() {
                         val sendIntent = Intent()
                         sendIntent.action = Intent.ACTION_SEND
                         sendIntent.putExtra(Intent.EXTRA_STREAM, it)
-                        sendIntent.type = "text/csv"
+                        sendIntent.type = "application/zip"
                         startActivity(Intent.createChooser(sendIntent, "SHARE"))
                     }
                     .launchIn(this)

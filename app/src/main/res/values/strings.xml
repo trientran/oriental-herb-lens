@@ -174,10 +174,11 @@
     <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
     <string name="you_have_been_banned">You have been banned from using our service due to your inappropriate activities. If you believe this is a mistake, please contact us!</string>
     <string name="admin">Admin</string>
-    <string name="export_csv">Export image urls as a CSV file</string>
+    <string name="export_csvs">Export multiple CSV files</string>
     <string name="please_only_add_a_new_herb_if_etc">Please only add a new herb if you (1) have photos of that herb and you are ready to upload them and (2) you couldn\'t find the herb by using the search bar or using the All-herbs tab.</string>
     <string name="all_herbs">All herbs</string>
     <string name="please_enter_at_least_of_these_names_for_the_new_herb">Please enter at least one of these fields for the new herb:</string>
     <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
+    <string name="update_recognizable_herbs_list">Update recognizable herb list</string>
 
 </resources>

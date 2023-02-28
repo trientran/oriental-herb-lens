@@ -7,14 +7,21 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.time.Instant
 import java.util.concurrent.CancellationException
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class AdminViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -42,38 +49,88 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadImageUrls() {
+    fun generateMultipleCSVs() {
         Timber.d("loadImageUrls")
         viewModelScope.launch(ioDispatcher) {
             setState { copy(fileUri = null) }
             herbCollection.whereNotEqualTo("images", null).get().await().let { documents ->
-                val filename = "imageUrls.csv"
                 val path = application.getExternalFilesDir(null)
-                val fileOut = File(path, filename)
-                fileOut.delete()
-                fileOut.createNewFile()
+
+                // zip file declaration
+                val zipFile = File(path, "herbs_${Instant.now().epochSecond}.zip")
+                val zipOutputStream = ZipOutputStream(FileOutputStream(zipFile))
+
+                // herb list file declaration
+                val herbListCsv = File(path, "herbs.csv")
+                herbListCsv.delete()
+                herbListCsv.createNewFile()
+
+                // in every document/herb, we write to each CSV a full list of images for that specific herb
+                // then, we add that file immediately into the zip file
+                //
                 for (document in documents) {
                     document.toObject<FireStoreHerb>().let { fireStoreHerb ->
                         Timber.d(fireStoreHerb.toString())
-                        fireStoreHerb.images?.forEach {
-                            fileOut.appendText("${it.key},${fireStoreHerb.id}")
-                            fileOut.appendText("\n")
-                            Timber.d(it.key + it.value)
+
+                        // create a single CSV to store all the images URL for this herb
+                        val filename = "${fireStoreHerb.id}.csv"
+                        val csv = File(path, filename)
+                        csv.delete()
+                        csv.createNewFile()
+                        fireStoreHerb.images?.let {
+                            val imagesCount = fireStoreHerb.images.count()
+                            fireStoreHerb.images.onEachIndexed { index, entry ->
+                                csv.appendText(entry.key)
+                                if (index < imagesCount - 1) csv.appendText("\n")
+                            }
                         }
+
+                        // add this CSV into the zip file now
+                        val fileInputStream = FileInputStream(csv)
+                        val zipEntry = ZipEntry(csv.name)
+                        zipOutputStream.putNextEntry(zipEntry)
+                        val buffer = ByteArray(1024)
+                        var length: Int
+                        while (fileInputStream.read(buffer).also { length = it } > 0) {
+                            zipOutputStream.write(buffer, 0, length)
+                        }
+                        zipOutputStream.closeEntry()
+                        fileInputStream.close()
+
+                        // also write to the herb list file this herb id and name
+                        herbListCsv.appendText("${fireStoreHerb.id},${fireStoreHerb.viName}")
+                        herbListCsv.appendText("\n")
                     }
                 }
-                fileOut.appendText("\nhjj")
+                // add herb list file into the zip file as well, and finally close the stream
+                val fileInputStream = FileInputStream(herbListCsv)
+                val zipEntry = ZipEntry(herbListCsv.name)
+                zipOutputStream.putNextEntry(zipEntry)
+                val buffer = ByteArray(1024)
+                var length: Int
+                while (fileInputStream.read(buffer).also { length = it } > 0) {
+                    zipOutputStream.write(buffer, 0, length)
+                }
+                zipOutputStream.closeEntry()
+                fileInputStream.close()
+                zipOutputStream.close()
+
+                // set file uri to the zip file uri
                 setState {
                     copy(
                         fileUri = FileProvider.getUriForFile(
                             application,
                             "${application.packageName}.fileprovider",
-                            fileOut
+                            zipFile
                         )
                     )
                 }
             }
         }
+    }
+
+    fun clearURIs() {
+        viewModelScope.launch { setState { copy(fileUri = null, error = null) } }
     }
 
     private fun liveDeletionRequestUpdate() {
@@ -105,7 +162,6 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private inline fun setState(copiedState: AdminState.() -> AdminState) = stateFlow.update(copiedState)
-
 }
 
 data class AdminState(

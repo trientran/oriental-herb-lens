@@ -18,11 +18,11 @@ android {
             keyPassword '7121322Ly'
         }
     }
-    compileSdkVersion 32
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.uri.lee.dl"
-        minSdkVersion 23
-        targetSdkVersion 32
+        minSdkVersion 26
+        targetSdkVersion 33
         versionCode 4
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

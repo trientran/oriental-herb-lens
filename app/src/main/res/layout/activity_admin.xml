@@ -7,23 +7,40 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/deletion_request_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:orientation="vertical"
         android:paddingBottom="0dp"
         app:layoutManager="LinearLayoutManager"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/updateHerbListView"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/updateHerbListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:padding="24dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/exportCsvFileView"
+        android:text="@string/update_recognizable_herbs_list" />
 
     <TextView
         android:id="@+id/exportCsvFileView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="40sp"
+        android:textSize="20sp"
         android:padding="24dp"
+        android:background="?android:attr/selectableItemBackground"
         android:textAlignment="center"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/export_csv" />
+        android:text="@string/export_csvs" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
