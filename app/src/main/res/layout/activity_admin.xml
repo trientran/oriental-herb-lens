@@ -14,11 +14,24 @@
         app:layoutManager="LinearLayoutManager"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/updateHerbListView"
+        app:layout_constraintBottom_toTopOf="@+id/syncRecognizedHerbListView"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/updateHerbListView"
+        android:id="@+id/syncRecognizedHerbListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:padding="24dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/syncToBeRecognizedHerbListView"
+        android:text="@string/sync_recognized_herbs" />
+
+    <TextView
+        android:id="@+id/syncToBeRecognizedHerbListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
@@ -28,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/exportCsvFileView"
-        android:text="@string/update_recognizable_herbs_list" />
+        android:text="@string/sync_to_be_recognized_herbs" />
 
     <TextView
         android:id="@+id/exportCsvFileView"
@@ -42,5 +55,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="@string/export_csvs" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

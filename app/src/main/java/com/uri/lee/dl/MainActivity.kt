@@ -1,5 +1,6 @@
 package com.uri.lee.dl
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolBar)
         supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false);
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         binding.searchView.setOnClickListener {
             startActivity(Intent(this, SearchActivity::class.java))
@@ -166,11 +168,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onStart() {
         super.onStart()
         authUI.auth.addAuthStateListener(authStateListener)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onStop() {
         super.onStop()
         authUI.auth.removeAuthStateListener(authStateListener)

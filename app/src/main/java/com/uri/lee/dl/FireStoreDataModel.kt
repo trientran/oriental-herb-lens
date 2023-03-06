@@ -22,7 +22,12 @@ data class FireStoreHerb(
 
 data class FireStoreMobile(
     val bannedUsers: List<String> = emptyList(),
+    val recognizedLatinHerbs: Map<String, String> = emptyMap(), // herbId, latin name
+    val recognizedViHerbs: Map<String, String> = emptyMap(), // HerbId, viet name
+    val toBeRecognizedLatinHerbs: Map<String, String> = emptyMap(), // herbId, latin name
+    val toBeRecognizedViHerbs: Map<String, String> = emptyMap(), // HerbId, viet name
     val herbCount: Int? = null,
+    val recognizedHerbsCount: Int? = null,
     val mustUpdateAndroid: Boolean = false,
     val shouldUpdateAndroid: Boolean = false,
     val stackOverflow: Boolean = false,

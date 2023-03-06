@@ -153,6 +153,7 @@
     <string name="all_herbs">Tất cả</string>
     <string name="please_enter_at_least_of_these_names_for_the_new_herb">Vui lòng điền vào ít nhất 1 trong 3 trường sau đây:</string>
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
-    <string name="update_recognizable_herbs_list">Đồng bộ dược liệu có thể nhận dạng</string>
+    <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
+    <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
 
 </resources>

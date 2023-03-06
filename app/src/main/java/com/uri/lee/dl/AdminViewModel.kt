@@ -7,13 +7,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -52,7 +50,7 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     fun generateMultipleCSVs() {
         Timber.d("loadImageUrls")
         viewModelScope.launch(ioDispatcher) {
-            setState { copy(fileUri = null) }
+            setState { copy(fileUri = null, isSubmitting = true) }
             herbCollection.whereNotEqualTo("images", null).get().await().let { documents ->
                 val path = application.getExternalFilesDir(null)
 
@@ -122,7 +120,8 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
                             application,
                             "${application.packageName}.fileprovider",
                             zipFile
-                        )
+                        ),
+                        isSubmitting = false,
                     )
                 }
             }
@@ -131,6 +130,66 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearURIs() {
         viewModelScope.launch { setState { copy(fileUri = null, error = null) } }
+    }
+
+    fun syncToBeRecognizedHerbs() {
+        viewModelScope.launch {
+            setState { copy(isSubmitting = true) }
+            try {
+                herbCollection.get().await().let {
+                    val latinMap = mutableMapOf<String, String>() // herbId, latin name
+                    val viMap = mutableMapOf<String, String>() // herbId, viet name
+                    it.documents.forEach { doc ->
+                        doc.toObject<FireStoreHerb>()?.let { herb ->
+                            latinMap[herb.id!!.toString()] = herb.latinName
+                            viMap[herb.id.toString()] = herb.viName
+                        }
+                    }
+                    configCollection
+                        .document("mobile")
+                        .update(
+                            mapOf(
+                                "toBeRecognizedLatinHerbs" to latinMap,
+                                "toBeRecognizedViHerbs" to viMap,
+                                "herbCount" to it.documents.count()
+                            )
+                        )
+                        .await()
+                    setState { copy(isSubmitting = false) }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = AdminState.Error(e), isSubmitting = false) }
+            }
+        }
+    }
+
+    fun syncRecognizedHerbs() {
+        viewModelScope.launch {
+            setState { copy(isSubmitting = true) }
+            try {
+                configCollection.document("mobile").get().await().toObject<FireStoreMobile>()?.let {
+                    configCollection
+                        .document("mobile")
+                        .update(
+                            mapOf(
+                                "recognizedLatinHerbs" to it.toBeRecognizedLatinHerbs,
+                                "recognizedViHerbs" to it.toBeRecognizedViHerbs,
+                                "recognizedHerbsCount" to it.toBeRecognizedViHerbs.count()
+                            )
+                        )
+                        .await()
+                }
+                setState { copy(isSubmitting = false) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = AdminState.Error(e), isSubmitting = false) }
+            }
+        }
     }
 
     private fun liveDeletionRequestUpdate() {
@@ -167,6 +226,7 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
 data class AdminState(
     val fileUri: Uri? = null,
     val error: Error? = null,
+    val isSubmitting: Boolean = false,
 ) {
     data class Error(val exception: Exception)
 }
