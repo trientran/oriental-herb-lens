@@ -1,5 +1,6 @@
 package com.uri.lee.dl.lenscamera.livecamera
 
+import android.os.Bundle
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -8,13 +9,13 @@ import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.Herb
-import com.uri.lee.dl.latinList
-import com.uri.lee.dl.viList70
 import timber.log.Timber
 
 class ImageAnalyzer(
     private val confidence: Float,
     private val maxResultsDisplayed: Int = 1,
+    val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
+    val recognizedViHerbs: Bundle? = null, // HerbId, viet name
     private val recognitionListener: (herbs: List<Herb>) -> Unit,
 ) : ImageAnalysis.Analyzer {
     @ExperimentalGetImage
@@ -35,12 +36,12 @@ class ImageAnalyzer(
                     herbList.add(Herb())
                 } else {
                     for (i in 0 until maxResultsDisplayed) {
-                        val id = it[i].text.substringBefore(" ")
+                        val id = it[i].text
                         herbList.add(
                             Herb(
                                 id = id,
-                                latinName = latinList[id]!!,
-                                viName = viList70[id]!!,
+                                latinName = recognizedLatinHerbs!!.getString(id),
+                                viName = recognizedViHerbs!!.getString(id),
                                 confidence = it[i].confidence
                             )
                         )

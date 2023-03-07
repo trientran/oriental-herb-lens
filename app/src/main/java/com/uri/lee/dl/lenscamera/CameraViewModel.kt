@@ -7,7 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.BaseApplication
 import com.uri.lee.dl.CONFIDENCE_LEVEL
 import com.uri.lee.dl.dataStore
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.CancellationException
@@ -40,7 +44,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
 
     private suspend fun getConfidence() {
         application.dataStore.data
-            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.5f }
+            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.7f }
             .take(1)
             .collect { confidence -> setState { copy(confidence = confidence) } }
     }

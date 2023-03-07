@@ -42,6 +42,8 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
+import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
+import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.databinding.FragmentObjectiveCameraBinding
 import com.uri.lee.dl.labeling.BottomSheetScrimView
 import com.uri.lee.dl.labeling.HerbAdapter
@@ -84,6 +86,13 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentObjectiveCameraBinding.inflate(inflater, container, false)
+        val intent = requireActivity().intent
+        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
+        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
+        objectiveCameraViewModel.setRecognizedHerbs(
+            recognizedLatinHerbs = latinBundle!!,
+            recognizedViHerbs = viBundle!!
+        )
         return binding.root
     }
 
@@ -146,6 +155,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 searchButton?.isEnabled = false
                 objectiveCameraViewModel.onSearchButtonClicked()
             }
+
             R.id.bottom_sheet_scrim_view -> bottomSheetBehavior?.setState(BottomSheetBehavior.STATE_HIDDEN)
             R.id.close_button -> requireActivity().finish()
             R.id.flash_button -> {
@@ -162,6 +172,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                     }
                 }
             }
+
             R.id.settings_button -> {
                 settingsButton?.isEnabled = false
                 startActivity(Intent(requireContext(), SettingsActivity::class.java))
@@ -206,9 +217,11 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                         BottomSheetBehavior.STATE_HIDDEN -> objectiveCameraViewModel.setWorkflowState(
                             ObjectiveCameraViewModel.WorkflowState.DETECTING
                         )
+
                         BottomSheetBehavior.STATE_COLLAPSED,
                         BottomSheetBehavior.STATE_EXPANDED,
                         BottomSheetBehavior.STATE_HALF_EXPANDED -> slidingSheetUpFromHiddenState = false
+
                         BottomSheetBehavior.STATE_DRAGGING, BottomSheetBehavior.STATE_SETTLING -> {
                         }
                     }
@@ -311,21 +324,25 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 )
                 startCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.CONFIRMED -> {
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(R.string.prompt_searching)
                 stopCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.SEARCHING -> {
                 searchProgressBar?.visibility = View.VISIBLE
                 promptChip?.visibility = View.VISIBLE
                 promptChip?.setText(R.string.prompt_searching)
                 stopCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.SEARCHED -> {
                 promptChip?.visibility = View.GONE
                 stopCameraPreview()
             }
+
             else -> promptChip?.visibility = View.GONE
         }
 
@@ -347,6 +364,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 searchButton?.visibility = View.GONE
                 startCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.CONFIRMED -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.VISIBLE
@@ -354,6 +372,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 searchButton?.setBackgroundColor(Color.WHITE)
                 startCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.SEARCHING -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.VISIBLE
@@ -362,11 +381,13 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
                 searchProgressBar!!.visibility = View.VISIBLE
                 stopCameraPreview()
             }
+
             ObjectiveCameraViewModel.WorkflowState.SEARCHED -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.GONE
                 stopCameraPreview()
             }
+
             else -> {
                 promptChip?.visibility = View.GONE
                 searchButton?.visibility = View.GONE

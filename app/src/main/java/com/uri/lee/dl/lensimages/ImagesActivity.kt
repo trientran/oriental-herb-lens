@@ -13,10 +13,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import com.uri.lee.dl.R
+import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
+import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 
 class ImagesActivity : AppCompatActivity() {
@@ -33,6 +39,10 @@ class ImagesActivity : AppCompatActivity() {
         binding = ActivityImagesBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
+        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
+        viewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
 
         // Initialising the RecyclerView and its linked Adapter
         viewAdapter = ImagesAdapter {

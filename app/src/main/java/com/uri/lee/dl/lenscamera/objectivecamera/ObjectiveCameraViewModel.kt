@@ -18,6 +18,7 @@ package com.uri.lee.dl.lenscamera.objectivecamera
 
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
 import androidx.annotation.MainThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -28,16 +29,19 @@ import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
-import com.uri.lee.dl.latinList
 import com.uri.lee.dl.lensimage.DetectedObjectInfo
 import com.uri.lee.dl.settings.PreferenceUtils
-import com.uri.lee.dl.viList70
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.CancellationException
 
 /** View model for handling application workflow based on camera preview.  */
 class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val stateFlow = MutableStateFlow(ObjectiveState())
 
     val workflowState = MutableLiveData<WorkflowState>()
     val objectToSearch = MutableLiveData<DetectedObjectInfo>()
@@ -150,12 +154,12 @@ class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(appl
                 val maxResultsDisplayed = it.size
                 val recognitionList = mutableListOf<Herb>()
                 for (i in 0 until maxResultsDisplayed) {
-                    val id = it[i].text.substringBefore(" ")
+                    val id = it[i].text
                     recognitionList.add(
                         Herb(
                             id = id,
-                            latinName = latinList[id]!!,
-                            viName = viList70[id]!!,
+                            latinName = state.recognizedLatinHerbs!!.getString(id),
+                            viName = state.recognizedViHerbs!!.getString(id),
                             confidence = it[i].confidence
                         )
                     )
@@ -180,4 +184,25 @@ class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(appl
         val withHerbs = lConfirmedObject.copy(herbs = herbs)
         this.detectedBitmapObject.value = DetectedBitmapObject(context.resources, withHerbs)
     }
+
+    /** Emits the current state. */
+    fun state(): Flow<ObjectiveState> = stateFlow
+
+    /** Retrieves the current state. */
+    val state: ObjectiveState get() = stateFlow.value
+
+    init {
+        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
+    }
+
+    fun setRecognizedHerbs(recognizedLatinHerbs: Bundle, recognizedViHerbs: Bundle) {
+        setState { copy(recognizedLatinHerbs = recognizedLatinHerbs, recognizedViHerbs = recognizedViHerbs) }
+    }
+
+    private inline fun setState(copiedState: ObjectiveState.() -> ObjectiveState) = stateFlow.update(copiedState)
 }
+
+data class ObjectiveState(
+    val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
+    val recognizedViHerbs: Bundle? = null, // HerbId, viet name
+)

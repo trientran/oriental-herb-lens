@@ -13,6 +13,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
+import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.databinding.FragmentLiveCameraBinding
 import timber.log.Timber
 import java.util.concurrent.Executors
@@ -49,6 +51,11 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
         binding.recyclerView.itemAnimator = null
 
         binding.closeButton.setOnClickListener { requireActivity().finish() }
+
+        val intent = requireActivity().intent
+        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
+        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
+        liveCameraViewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
 
         startCamera(confidence)
 

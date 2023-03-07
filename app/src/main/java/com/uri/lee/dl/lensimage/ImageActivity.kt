@@ -44,16 +44,23 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
+import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
+import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImageBinding
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.HerbAdapter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.*
+import java.util.TreeMap
 import kotlin.collections.set
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
@@ -89,6 +96,10 @@ class ImageActivity : AppCompatActivity() {
         binding = ActivityImageBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
+        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
+        viewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
 
         dotViewSize = resources.getDimensionPixelOffset(R.dimen.static_image_dot_view_size)
 

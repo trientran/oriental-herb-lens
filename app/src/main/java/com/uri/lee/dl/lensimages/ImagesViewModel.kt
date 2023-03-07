@@ -3,6 +3,7 @@ package com.uri.lee.dl.lensimages
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Bundle
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,11 +11,19 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabel
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
-import com.uri.lee.dl.*
+import com.uri.lee.dl.BaseApplication
+import com.uri.lee.dl.CONFIDENCE_LEVEL
+import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_LABELING
 import com.uri.lee.dl.Utils.loadBitmapFromUri
+import com.uri.lee.dl.dataStore
+import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.lensimages.ImagesState.Recognition
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
@@ -51,7 +60,7 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
 
     private suspend fun getConfidence() {
         application.dataStore.data
-            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.5f }
+            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.7f }
             .take(1)
             .collect { confidence -> setState { copy(confidence = confidence) } }
     }
@@ -121,12 +130,12 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
                     val maxResultsDisplayed = labels.size
                     val herbs = mutableListOf<Herb>()
                     for (i in 0 until maxResultsDisplayed) {
-                        val id = labels[i].text.substringBefore(" ")
+                        val id = labels[i].text
                         herbs.add(
                             Herb(
                                 id = id,
-                                latinName = latinList[id]!!,
-                                viName = viList70[id]!!,
+                                latinName = state.recognizedLatinHerbs!!.getString(id),
+                                viName = state.recognizedViHerbs!!.getString(id),
                                 confidence = labels[i].confidence
                             )
                         )
@@ -148,6 +157,10 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
                 Timber.e(it.message)
                 setState { copy(event = ImagesState.Event.LabelingError(it)) }
             }
+    }
+
+    fun setRecognizedHerbs(recognizedLatinHerbs: Bundle, recognizedViHerbs: Bundle) {
+        setState { copy(recognizedLatinHerbs = recognizedLatinHerbs, recognizedViHerbs = recognizedViHerbs) }
     }
 
     private suspend fun getBitmapFromFileUri(imageUri: Uri, maxDimension: Int): Bitmap? = try {
@@ -173,6 +186,8 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
 data class ImagesState(
     val imageUris: List<Uri> = emptyList(),
     val recognitionList: List<Recognition> = emptyList(),
+    val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
+    val recognizedViHerbs: Bundle? = null, // HerbId, viet name
     val confidence: Float? = null,
     val event: Event? = null,
 ) {
