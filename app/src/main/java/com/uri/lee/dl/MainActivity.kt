@@ -75,11 +75,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SearchActivity::class.java))
         }
 
-        binding.menuView.setOnClickListener {
-            val bottomSheet = BottomSheetMenu()
-            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
-        }
-
         binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
 
         binding.addHerbButton.setOnClickListener {
@@ -100,6 +95,13 @@ class MainActivity : AppCompatActivity() {
                     .mapNotNull { it.mobile }
                     .distinctUntilChanged()
                     .onEach {
+                        binding.menuView.setOnClickListener { _ ->
+                            val bottomSheet = BottomSheetMenu(
+                                recognizedViHerbs = it.recognizedViHerbs,
+                                recognizedLatinHerbs = it.recognizedLatinHerbs
+                            )
+                            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
+                        }
                         if (it.stackOverflow) {
                             AlertDialog.Builder(this@MainActivity)
                                 .setMessage(getString(R.string.stack_overflow))

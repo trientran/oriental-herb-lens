@@ -103,16 +103,16 @@
         \n\nThis project was initiated and has been led by Mr. Minh Le, a Doctor of Traditional Medicine
         student from Thanh Dong University, Vietnam. He helped build the dataset and also assisted in evaluating
         the authenticity of the input data.
-        \n\nIn consultation with Mr Le, this Android app has been developed by Mr Trien Tran as part of his Master of Information Technology degree\'s capstone thesis project. He is now an alumnus
+        \n\nIn consultation with Mr Le, this Android app has been developed by Mr Trien Tran. He is an alumnus
         of St. Paul University Philippines. If you are an iOS developer or backend engineer with Nodejs knowledge and willing to join us voluntarily, please reach out via the contact button.
-        \n\nAs of now, the developed AI model can recognise only 7 herbal plants due to limited input data (to view the list of these 7 ones, please press the button at the end of this dialog). Therefore, we look forward to expanding the number of recognised medicinal plants to almost 4000.
+        \n\nAs of now, the developed AI model can recognise only 7 herbal plants due to limited input data. Therefore, we look forward to expanding the number of recognised medicinal plants to as many as possible.
         This ambition will not be achieved without your support. There are 2 ways you may help us out:
         \n\n- Please contribute to the dataset by capturing your own herb images using your own mobile and camera devices,
         then upload them all to our server using this mobile app.
         \n\nThe image quality does not matter, meaning that it is OK to set the lowest image resolutions for your camera. You may take photos in both portrait and horizontal modes, in different environments with different brightness (night vs day, indoor vs outdoor…).
         \n\nWe need details such as fruits, blossoms, branches, leaves, roots, and whole plant, both fresh and sun-dried ones, if possible.
         \n\n- And can you please also help us fill in all the herbs\' details such as usage, side effects, drug interactions etc.? To do this, please browse or search using our search bar to look for the herbs that you are familiar with or have information about. Then you can click on the edit buttons to modify those details at your own convenience.
-        You can also find the full list herbal plants that already exist in our database by clicking the Full Herb List button below.</string>
+      </string>
 
     <string name="_70_herbs_list">70 herbs list</string>
     <string name="full_herb_list">Full herbal list</string>
@@ -181,5 +181,6 @@
     <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
     <string name="sync_recognized_herbs">Sync recognized herbs</string>
     <string name="sync_to_be_recognized_herbs">Sync to-be-recognized herbs</string>
+    <string name="recognized_herb_list">Recognized herbs list</string>
 
 </resources>

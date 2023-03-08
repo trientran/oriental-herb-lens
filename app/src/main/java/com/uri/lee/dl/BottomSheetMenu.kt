@@ -5,28 +5,42 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.Nullable
 import androidx.appcompat.app.AlertDialog
-import androidx.core.net.toUri
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.uri.lee.dl.Utils.openFacebookPage
-import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
 
-class BottomSheetMenu : BottomSheetDialogFragment() {
+class BottomSheetMenu(
+    private val recognizedViHerbs: Map<String, String>,
+    private val recognizedLatinHerbs: Map<String, String>
+) : BottomSheetDialogFragment() {
 
     private lateinit var binding: BottomSheetMenuBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        @Nullable container: ViewGroup?,
-        @Nullable savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = BottomSheetMenuBinding.inflate(layoutInflater)
         val view = binding.root
 
+        binding.herbList.setOnClickListener {
+            AlertDialog.Builder(it.context)
+                .setMessage(
+                    if (isSystemLanguageVietnamese) {
+                        recognizedViHerbs.values.sorted().joinToString("\n")
+                    } else {
+                        recognizedLatinHerbs.values.sorted().joinToString("\n")
+                    }
+                )
+                .setCancelable(true)
+                .setNeutralButton("OK") { _, _ -> dismiss() }
+                .create().show()
+            dismiss()
+        }
         binding.signOutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             dismiss()
@@ -54,12 +68,6 @@ class BottomSheetMenu : BottomSheetDialogFragment() {
             AlertDialog.Builder(it.context)
                 .setMessage(getString(R.string.about_us))
                 .setCancelable(true)
-                .setPositiveButton(getString(R.string._70_herbs_list)) { _, _ ->
-                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1lWiEq53_1m0tQCvunHNzYT1GFimZiAl_RqP4PNP9grU/edit?usp=sharing".toUri())
-                }
-                .setNegativeButton(getString(R.string.full_herb_list)) { _, _ ->
-                    it.context.openUrlWithDefaultBrowser("https://docs.google.com/spreadsheets/d/1kHEIYrblHtqSEEcGyQO7zq_0_hhTZAziLEoZ5yJx_-U/edit?usp=sharing".toUri())
-                }
                 .setNeutralButton("OK") { _, _ -> dismiss() }
                 .create().show()
             dismiss()

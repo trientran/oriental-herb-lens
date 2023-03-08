@@ -81,15 +81,15 @@
     <string name="your_account_has_been_deleted">Tài khoản của bạn đã được xoá</string>
     <string name="about_us">Med Herb Lens là một dự án phi lợi nhuận sử dụng Trí tuệ nhân tạo (Deep Learning - Tensorflow) để hỗ trợ các nhà thảo dược học, các bác sĩ và thầy thuốc y học cổ truyền trong việc tự động nhận dạng và phân loại các loại cây thuốc.
  \n\nDự án này được khởi xướng và được dẫn dắt bởi anh Lê Đức Hoàng Minh, một sinh viên bác sĩ Y học cổ truyền trường Đại học Thành Đông, Việt Nam. Anh đã giúp xây dựng bộ dữ liệu và cũng hỗ trợ đánh giá tính xác thực của dữ liệu đầu vào.
- \n\nVới sự hỗ trợ của anh Minh, dự án này đã được triển khai và phát triển dưới dạng ứng dụng Android bởi Trần Phát Triển như một phần của luận án tốt nghiệp Thạc sĩ Công nghệ Thông tin của anh ấy. Anh hiện là cựu sinh viên Đại học Công giáo La Mã St. Paul Philippines.
- \n\nHiện tại, mô hình AI trong dự án này hiện chỉ có thể nhận dạng 70 cây thảo dược với độ chính xác khoảng 40-60% trong khi chúng tôi đang thu thập thêm dữ liệu hình ảnh (vui lòng nhấn vào nút bên dưới để xem dánh sách dược liệu được hỗ trợ).
+ \n\nVới sự hỗ trợ của anh Minh, dự án này đã được triển khai và phát triển dưới dạng ứng dụng Android bởi Trần Phát Triển. Anh hiện là cựu sinh viên Đại học Công giáo La Mã St. Paul Philippines.
+ \n\nHiện tại, mô hình AI trong dự án này hiện chỉ có thể nhận dạng 7 cây thảo dược với độ chính xác khoảng 70-90% trong khi chúng tôi đang thu thập thêm dữ liệu hình ảnh.
  \n\nNgoài ra, dự án này chỉ được triển khai trên nền tảng di động Android. Chúng tôi rất muốn phát triển thêm phiên bản dành cho iPhone nhưng điều kiện về thời gian và nhân lực chưa cho phép. Nếu bạn biết lập trình ứng dụng iOS hoặc backend (Nodejs) và muốn giúp đỡ trên tinh thần phi lợi nhuận, xin hãy liên hệ với chúng tôi.
- \n\nChúng tôi thật sự mong muốn mở rộng số lượng cây thuốc lên gần 4000. Tham vọng này sẽ không đạt được nếu không có sự hỗ trợ của quý bạn. Có 2 cách bạn có thể giúp chúng tôi:
+ \n\nChúng tôi thật sự mong muốn mở rộng số lượng cây thuốc càng nhiều càng tốt. Tham vọng này sẽ không đạt được nếu không có sự hỗ trợ của quý bạn. Có 2 cách bạn có thể giúp chúng tôi:
  \n\n- Vui lòng đóng góp vào tập dữ liệu bằng cách chụp các hình ảnh thảo dược của riêng bạn bằng thiết bị di động hoặc máy ảnh, sau đó tải tất cả chúng lên máy chủ của chúng tôi bằng ứng dụng di động Android này. Chất lượng hình ảnh không quan trọng, vì vậy bạn có thể chụp những bức ảnh này với độ phân giải hình ảnh thấp nhất để tiết kiệm bộ nhớ. Chúng tôi cần ảnh chụp toàn thân và/hoặc các bộ phận và chi tiết của chúng như hình dạng trái cây, hoa, cành, lá, và rễ, cả dược liệu tươi và khô, nếu có thể.
  \n\n- Và xin hãy giúp chúng tôi biên tập / chỉnh sửa thông tin chi tiết dược liệu bằng cách nhấp vào nút chỉnh sửa trên trang thông tin của từng dược liệu. Chúng tôi cần thêm dữ liệu về công dụng, cách sử dụng, tác dụng phụ, tương tác thuốc…
  \n\nXin trân trọng cảm ơn rất nhiều.
 </string>
-    <string name="_70_herbs_list">danh sách 70 dược liệu</string>
+    <string name="_70_herbs_list">danh sách 7 dược liệu</string>
     <string name="full_herb_list">Danh sách dược liệu đầy đủ</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Bạn có chắc chắn muốn xoá tài khoản không?</string>
     <string name="sign_out">Đăng xuất</string>
@@ -155,5 +155,6 @@
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
     <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
     <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
+    <string name="recognized_herb_list">Danh sách dược liệu nhận dạng được</string>
 
 </resources>

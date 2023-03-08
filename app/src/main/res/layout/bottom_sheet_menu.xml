@@ -10,6 +10,13 @@
         android:orientation="vertical">
 
         <Button
+            android:id="@+id/herbList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/recognized_herb_list" />
+
+        <Button
             android:id="@+id/sign_out_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
