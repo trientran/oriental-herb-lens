@@ -1,6 +1,5 @@
 package com.uri.lee.dl.lensimages
 
-import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.widget.SeekBar
@@ -128,9 +127,7 @@ class ImagesActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
-        }
+        if (Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
     }
 
     private var resultLauncher =

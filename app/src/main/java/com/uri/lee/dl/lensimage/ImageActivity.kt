@@ -23,7 +23,6 @@ import android.graphics.Bitmap
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
@@ -229,9 +228,7 @@ class ImageActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
-        }
+        if (Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
     }
 
     private val resultLauncher =

@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -20,10 +19,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.uri.lee.dl.*
+import com.uri.lee.dl.HERB_ID
+import com.uri.lee.dl.MainActivity
+import com.uri.lee.dl.R
+import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImageUploadBinding
+import com.uri.lee.dl.foreground
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 
 class ImageUploadActivity : AppCompatActivity() {
@@ -173,22 +183,18 @@ class ImageUploadActivity : AppCompatActivity() {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val descriptionText = getString(R.string.upload_completed)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, getString(R.string.app_name), importance).apply {
-                description = descriptionText
-            }
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val descriptionText = getString(R.string.upload_completed)
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelId, getString(R.string.app_name), importance).apply {
+            description = descriptionText
         }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT <= 28 && !Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
-        }
+        if (Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
     }
 
     override fun onResume() {
