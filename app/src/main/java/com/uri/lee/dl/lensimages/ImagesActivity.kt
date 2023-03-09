@@ -127,7 +127,7 @@ class ImagesActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+        Utils.requestReadExternalStoragePermission(this)
     }
 
     private var resultLauncher =

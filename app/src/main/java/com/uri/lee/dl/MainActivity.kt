@@ -190,6 +190,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         authUI.auth.addAuthStateListener(authStateListener)
+        Utils.requestNotificationPermission(this)
     }
 
     @SuppressLint("RestrictedApi")

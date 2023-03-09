@@ -194,7 +194,8 @@ class ImageUploadActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Utils.allPermissionsGranted(this)) Utils.requestRuntimePermissions(this)
+        Utils.requestReadExternalStoragePermission(this)
+        Utils.requestNotificationPermission(this)
     }
 
     override fun onResume() {

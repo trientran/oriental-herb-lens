@@ -26,7 +26,17 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.ImageDecoder
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.YuvImage
 import android.hardware.Camera
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -71,9 +81,19 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.instantsearch.Herb
 import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -86,7 +106,8 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 
 
@@ -115,6 +136,26 @@ object Utils {
                 activity, allNeededPermissions.toTypedArray(), /* requestCode= */ 0
             )
         }
+    }
+
+    internal fun requestRuntimePermission(activity: Activity, permission: String) {
+        if (checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, arrayOf(permission), 1)
+        }
+    }
+
+    internal fun requestNotificationPermission(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            requestRuntimePermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    internal fun requestCameraPermission(activity: Activity) {
+        requestRuntimePermission(activity, Manifest.permission.CAMERA)
+    }
+
+    internal fun requestReadExternalStoragePermission(activity: Activity) {
+        if (Build.VERSION.SDK_INT <= 28)
+            requestRuntimePermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
     }
 
     internal fun allPermissionsGranted(context: Context): Boolean = getRequiredPermissions(context)
@@ -349,6 +390,7 @@ object Utils {
             ExifInterface.ORIENTATION_UNDEFINED, ExifInterface.ORIENTATION_NORMAL ->
                 // Set the matrix to be null to skip the image transform.
                 null
+
             ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> Matrix().apply { postScale(-1.0f, 1.0f) }
 
             ExifInterface.ORIENTATION_ROTATE_90 -> Matrix().apply { postRotate(90f) }
@@ -360,6 +402,7 @@ object Utils {
                 postRotate(-90.0f)
                 postScale(-1.0f, 1.0f)
             }
+
             else ->
                 // Set the matrix to be null to skip the image transform.
                 null

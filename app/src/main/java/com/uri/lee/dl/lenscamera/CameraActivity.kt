@@ -59,19 +59,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun launchCamera() {
-        if (!Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
+        Utils.requestCameraPermission(this)
+        val confidence = binding.seekView.seekBar.progress.toFloat() / 100
+        if (binding.objectsModeSwitch.isChecked) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, ObjectiveCameraFragment.newInstance(confidence))
+                .commitNow()
         } else {
-            val confidence = binding.seekView.seekBar.progress.toFloat() / 100
-            if (binding.objectsModeSwitch.isChecked) {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, ObjectiveCameraFragment.newInstance(confidence))
-                    .commitNow()
-            } else {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, LiveCameraFragment.newInstance(confidence))
-                    .commitNow()
-            }
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, LiveCameraFragment.newInstance(confidence))
+                .commitNow()
         }
     }
 
