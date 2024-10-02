@@ -108,6 +108,8 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.12.0' // Replace with your Glide version
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3' // OkHttp
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     implementation platform('com.google.firebase:firebase-bom:33.3.0')

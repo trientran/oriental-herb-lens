@@ -42,6 +42,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.view.LayoutInflater
@@ -63,6 +65,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.bumptech.glide.Glide
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
+import com.bumptech.glide.load.model.GlideUrl
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
@@ -587,6 +592,13 @@ class BaseApplication : Application(), DefaultLifecycleObserver {
 
     override fun onCreate() {
         super<Application>.onCreate()
+        // Set up Glide with custom OkHttpClient
+        val client = createUnsafeOkHttpClient()
+
+        Glide.get(this).registry.replace(
+            GlideUrl::class.java, InputStream::class.java,
+            OkHttpUrlLoader.Factory(client)
+        )
         FirebaseApp.initializeApp(this)
         val firebaseAppCheck = FirebaseAppCheck.getInstance()
         if (BuildConfig.DEBUG) {
