@@ -54,7 +54,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                      .await()
                  val allHerbs = buildList<FireStoreHerb> { documentSnapshots.onEach { add(it.toObject()) } }
                  val lastVisibleDocumentSnapshot = documentSnapshots.documents[documentSnapshots.size() - 1]
-                setState { copy(allHerbs = allHerbs, lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
+                setState { copy(allHerbs = allHerbs.distinct(), lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
             } catch (e: Exception) {
                 Timber.e(e)
                 setState { copy(error = UserState.Error(e)) }
@@ -76,7 +76,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 val allHerbs = state.allHerbs.toMutableList()
                 allHerbs.addAll(nextBatch)
                 val lastVisibleDocumentSnapshot = nextDocumentSnapshots.documents[nextDocumentSnapshots.size() - 1]
-                setState { copy(allHerbs = allHerbs, lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
+                setState { copy(allHerbs = allHerbs.distinct(), lastVisibleDocumentSnapshot = lastVisibleDocumentSnapshot) }
             } catch (e: Exception) {
                 Timber.e(e)
                 setState { copy(error = UserState.Error(e)) }
@@ -133,11 +133,11 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                         val historyHerbIds = (snapshot.get(USER_HISTORY_FIELD_NAME) as? List<*>)
                             ?.reversed()
                             ?.mapNotNull { it as? Long }
-                        historyHerbIds?.let { setState { copy(historyHerbIds = it) } }
+                        historyHerbIds?.let { setState { copy(historyHerbIds = it.distinct()) } }
                         val favoriteHerbIds = (snapshot.get(USER_FAVORITE_FIELD_NAME) as? List<*>)
                             ?.reversed()
                             ?.mapNotNull { it as? Long }
-                        favoriteHerbIds?.let { setState { copy(favoriteHerbIds = it) } }
+                        favoriteHerbIds?.let { setState { copy(favoriteHerbIds = it.distinct()) } }
                     }
                 }
             }

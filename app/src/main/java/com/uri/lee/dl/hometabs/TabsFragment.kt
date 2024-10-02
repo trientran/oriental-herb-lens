@@ -64,7 +64,7 @@ class TabsFragment : Fragment() {
                 when (TAB_TITLES[homeTabViewModel.state.tabIndex!!]) {
                     R.string.all_herbs -> {
                         userViewModel.state()
-                            .map { it.allHerbs }
+                            .map { it.allHerbs.distinct() }
                             .distinctUntilChanged()
                             .onEach {
                                 binding.placeHolderView.isVisible = it.isEmpty()
