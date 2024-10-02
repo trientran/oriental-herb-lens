@@ -16,7 +16,7 @@ interface ImageApi {
     @FormUrlEncoded
     suspend fun uploadImage(
         @Field("source") base64String: String,
-        @Field("key") key: String = "26qrIzVXzPe1m1NrnbvgRvMslW0NAvzPmrCgWLDd",
+        @Field("key") key: String = "imge_11zJ_34276db55badeb61b8f7259a29db882a00665519f10a20abbd0823b8ddb114a7b98bbfcf62cb73479f1d0272f7ed0d7ffe44035e0fc0f5167ac0e0a2ea58d3b6",
         @Field("format") format: String = "json"
     ): Response<UploadedImage>
 }
