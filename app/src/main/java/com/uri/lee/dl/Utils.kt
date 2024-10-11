@@ -42,8 +42,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.view.LayoutInflater
@@ -147,6 +145,14 @@ object Utils {
         if (checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, arrayOf(permission), 1)
         }
+    }
+
+    internal fun requestRuntimeLocationPermission(activity: Activity) {
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+            1
+        )
     }
 
     internal fun requestNotificationPermission(activity: Activity) {

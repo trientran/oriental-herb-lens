@@ -1,10 +1,13 @@
 package com.uri.lee.dl.upload
 
+import android.Manifest
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -12,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isVisible
@@ -24,8 +28,12 @@ import com.uri.lee.dl.MainActivity
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImageUploadBinding
+import com.uri.lee.dl.fetchCatchingPermittedLocation
 import com.uri.lee.dl.foreground
+import com.uri.lee.dl.isLocationServiceEnabled
+import com.uri.lee.dl.requestLocationEnabled
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -35,6 +43,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ImageUploadActivity : AppCompatActivity() {
 
@@ -44,8 +53,57 @@ class ImageUploadActivity : AppCompatActivity() {
 
     private val viewModel: ImageUploadViewModel by viewModels()
 
-    private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { list -> viewModel.addImageUris(list) }
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { list ->
+        viewModel.addImageUris(list)
+    }
+
+    private val locationServiceResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                lifecycleScope.launch {
+                    delay(500)
+                    fetchCatchingPermittedLocation(
+                        onLocationFetched = { location ->
+                            Timber.v("Device location: $location")
+                            viewModel.setDeviceLocation(location)
+                        },
+                        onFailure = { it.printStackTrace() }
+                    )
+                }
+            } else {
+                Toast.makeText(this, "Location service is not available", Toast.LENGTH_LONG).show()
+            }
+        }
+
+    private var locationPermissionResultLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            Timber.v("Location permission result: $result")
+            val isGranted = result.any { it.value }
+            lifecycleScope.launch {
+                if (isGranted) {
+                    if (isLocationServiceEnabled()) {
+                        fetchCatchingPermittedLocation(
+                            onLocationFetched = { location ->
+                                Timber.v("Device location: $location")
+                                viewModel.setDeviceLocation(location)
+                            },
+                            onFailure = { it.printStackTrace() }
+                        )
+                    } else {
+                        this@ImageUploadActivity.requestLocationEnabled(
+                            locationPermissionResultLauncher = locationServiceResultLauncher,
+                            coroutineScope = lifecycleScope,
+                        )
+                    }
+                } else {
+                    AlertDialog.Builder(this@ImageUploadActivity)
+                        .setMessage(getString(R.string.location_permission_is_required))
+                        .setCancelable(true)
+                        .setNeutralButton("OK") { dialog, _ -> dialog.dismiss() }
+                        .create().show()
+                }
+            }
+        }
 
     private val mainScope = MainScope()
     private val channelId = "image_upload"
@@ -81,9 +139,37 @@ class ImageUploadActivity : AppCompatActivity() {
             resultLauncher.launch(arrayOf("image/*"))
         }
         binding.pickPhotosView.setOnClickListener {
-            it.isEnabled = false
-            resultLauncher.launch(arrayOf("image/*"))
+//            it.isEnabled = false
+//            resultLauncher.launch(arrayOf("image/*"))
+
+            locationPermissionResultLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                )
+            )
         }
+
+
+//        if (isLocationPermissionGranted()) {
+//            ActivityCompat.requestPermissions(
+//                this,
+//                arrayOf(
+//                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION
+//                ),
+//                1001
+//            )
+//        } else if (!isLocationServiceEnabled()) {
+//            openLocationSettings()
+//        } else {
+//            // fetch location
+//            mainScope.launch {
+//                lastLocation().let {
+//                    Timber.v("Device location: $it")
+//                }
+//            }
+//        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -148,6 +234,20 @@ class ImageUploadActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
                             return@onEach
+                        }
+                        if (ActivityCompat.checkSelfPermission(
+                                this@ImageUploadActivity,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return@with
                         }
                         if (isUploadComplete) notify(
                             notificationId,

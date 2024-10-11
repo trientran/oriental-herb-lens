@@ -6,8 +6,13 @@ import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.SetOptions
-import com.uri.lee.dl.*
+import com.uri.lee.dl.BaseApplication
+import com.uri.lee.dl.DeviceLocation
+import com.uri.lee.dl.IMAGE_UPLOAD_PATH_NAME
 import com.uri.lee.dl.Utils.compressToJpgByteArray
+import com.uri.lee.dl.authUI
+import com.uri.lee.dl.globalScope
+import com.uri.lee.dl.herbCollection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -45,6 +50,13 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
             val currentUriList = state.imageUris.toMutableList()
             currentUriList.addAll(addedUris)
             setState { copy(imageUris = currentUriList) }
+        }
+    }
+
+    fun setDeviceLocation(location: DeviceLocation) {
+        Timber.d("setDeviceLocation $location")
+        viewModelScope.launch {
+            setState { copy(location = location) }
         }
     }
 
@@ -98,6 +110,7 @@ data class ImageUploadState(
     val isUploadComplete: Boolean = false,
     val isSubmitting: Boolean = false,
     val error: Error? = null,
+    val location: DeviceLocation? = null,
 ) {
     data class Error(val exception: Exception)
 }

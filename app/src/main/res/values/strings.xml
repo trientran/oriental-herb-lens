@@ -182,5 +182,6 @@
     <string name="sync_recognized_herbs">Sync recognized herbs</string>
     <string name="sync_to_be_recognized_herbs">Sync to-be-recognized herbs</string>
     <string name="recognized_herb_list">Recognized herbs list</string>
+    <string name="location_permission_is_required" />
 
 </resources>
