@@ -53,8 +53,15 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun setDeviceLocation(location: DeviceLocation) {
-        Timber.d("setDeviceLocation $location")
+    fun setLocation(location: DeviceLocation) {
+        Timber.d("setLocation $location")
+        viewModelScope.launch {
+            setState { copy(location = location.toHerbLocation()) }
+        }
+    }
+
+    fun setLocation(location: ImageUploadState.HerbLocation) {
+        Timber.d("setLocation $location")
         viewModelScope.launch {
             setState { copy(location = location) }
         }
@@ -110,7 +117,15 @@ data class ImageUploadState(
     val isUploadComplete: Boolean = false,
     val isSubmitting: Boolean = false,
     val error: Error? = null,
-    val location: DeviceLocation? = null,
+    val location: HerbLocation? = null,
 ) {
     data class Error(val exception: Exception)
+
+    data class HerbLocation(
+        val lat: Double,
+        val long: Double,
+        val addressLine: String,
+    )
 }
+
+private fun DeviceLocation.toHerbLocation() = ImageUploadState.HerbLocation(lat, long, addressLine)

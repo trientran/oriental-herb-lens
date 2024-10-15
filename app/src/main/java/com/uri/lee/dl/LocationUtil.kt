@@ -38,10 +38,7 @@ suspend fun Activity.getCurrentLocation(): DeviceLocation {
         val deviceLocation = DeviceLocation(
             lat = location.latitude,
             long = location.longitude,
-            suburb = address?.locality ?: "",
-            postCode = address?.postalCode ?: "",
-            state = address?.adminArea ?: "",
-            countryCode = address?.countryCode ?: "",
+            addressLine = address?.getAddressLine(0) ?: "",
         )
         Timber.v("Device location: $deviceLocation")
         deviceLocation
@@ -67,10 +64,7 @@ suspend fun Activity.fetchCatchingPermittedLocation(
 data class DeviceLocation(
     val lat: Double,
     val long: Double,
-    val suburb: String,
-    val postCode: String,
-    val state: String,
-    val countryCode: String,
+    val addressLine: String,
 )
 
 fun Context.isLocationPermissionGranted(): Boolean {

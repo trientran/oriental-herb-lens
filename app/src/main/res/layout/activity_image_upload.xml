@@ -80,44 +80,113 @@
         app:layout_constraintBottom_toTopOf="@id/uploadBtn"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
-    <TextView
-        android:id="@+id/pick_photos_view"
+    <LinearLayout
+        android:id="@+id/locationGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:padding="50dp"
-        android:text="@string/pick_photos"
-        android:textAlignment="center"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
 
-    <Button
-        android:id="@+id/uploadBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/upload"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/locationInstructionTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="8dp"
+            android:text="@string/please_use_your_current_location_or"
+            android:textAlignment="textStart"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/pickPhotosView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/currentLocationBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/current_location"
+            app:layout_constraintBottom_toTopOf="@id/addressLine"
+            app:layout_constraintTop_toBottomOf="@id/locationInstructionTv" />
+
+        <Button
+            android:id="@+id/searchLocationBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/search_for_a_location"
+            app:layout_constraintBottom_toTopOf="@id/addressLine"
+            app:layout_constraintTop_toBottomOf="@id/locationInstructionTv" />
+
+        <TextView
+            android:id="@+id/addressLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="8dp"
+            android:text="@string/address"
+            android:textAlignment="textStart"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/pickPhotosView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/currentLocationBtn" />
+
+        <com.mapbox.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:mapbox_cameraBearing="0.0"
+            app:mapbox_cameraPitch="0.0"
+            app:mapbox_cameraTargetLat="-25.2744"
+            app:mapbox_cameraTargetLng="133.7751"
+            app:mapbox_cameraZoom="2.0" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/progressTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:background="@color/color_accent"
+        android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="50sp"
-        android:layout_margin="24dp"
-        android:textAlignment="center"
         android:visibility="gone"
-        android:background="@color/color_accent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/n_images_have_been_uploaded_etc" />
+
+    <Button
+        android:id="@+id/uploadBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/upload"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <Button
+        android:id="@+id/pickPhotosView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/pick_photos"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

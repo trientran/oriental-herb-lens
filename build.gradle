@@ -5,7 +5,7 @@ buildscript {
         google()
         mavenCentral()
         mavenLocal()
-
+        gradlePluginPortal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
@@ -25,12 +25,6 @@ plugins {
 }
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        mavenLocal()
-    }
-
     // See: https://github.com/ben-manes/gradle-versions-plugin
     dependencyUpdates.resolutionStrategy = {
         componentSelection { rules ->

@@ -49,6 +49,7 @@
     <string name="about_us_and_this_app">Về chúng tôi và ứng dụng này</string>
     <string name="pick_an_image">Chọn một ảnh</string>
     <string name="pick_photos">Chọn nhiều ảnh</string>
+    <string name="please_use_your_current_location_or">Chúng tôi muốn biết nơi bạn chụp ảnh. Vui lòng sử dụng định vị của bạn hoặc tìm kiếm một địa điểm:</string>
     <string name="clear_all">Xoá hết</string>
     <string name="no_result">Không có kết quả</string>
     <string name="no_herb_objects_result_please_try_turning_off_objects_mode">Không có kết quả ở chế độ Đối Tượng. Bạn có thể tắt chế độ Đối Tượng để chuyển sang chế độ Toàn Ảnh!</string>
@@ -156,5 +157,9 @@
     <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
     <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
     <string name="recognized_herb_list">Danh sách dược liệu nhận dạng được</string>
+    <string name="location_permission_is_required">Bạn cần cho phép truy cập định vị di động để có thể xác định vị trí của bạn.</string>
+    <string name="current_location">Sử dụng định vị</string>
+    <string name="search_for_a_location">Tìm kiếm địa điểm</string>
+    <string name="address">Địa chỉ: </string>
 
 </resources>
