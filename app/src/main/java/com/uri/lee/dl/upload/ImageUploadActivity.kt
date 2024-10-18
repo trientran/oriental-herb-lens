@@ -40,6 +40,7 @@ import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.gestures.gestures
 import com.uri.lee.dl.DeviceLocation
 import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.MainActivity
@@ -197,6 +198,17 @@ class ImageUploadActivity : AppCompatActivity() {
             startAutocompleteIntent()
         }
 
+        // Add a long click listener
+        binding.mapView.gestures.addOnMapLongClickListener { point ->
+            viewModel.setLocation(
+                ImageUploadState.HerbLocation(
+                    lat = point.latitude(),
+                    long = point.longitude(),
+                    addressLine = null
+                )
+            )
+            true  // Return true to indicate the long-click was handled
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel
@@ -371,7 +383,7 @@ class ImageUploadActivity : AppCompatActivity() {
 
         // Build the autocomplete intent with field, country, and type filters applied
         val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-            .setCountries(mutableListOf("AU", "VN"))
+            .setCountries(mutableListOf("AU", "VN", "NZ"))
             .build(this)
         startAutocomplete.launch(intent)
     }

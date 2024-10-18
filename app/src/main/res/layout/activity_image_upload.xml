@@ -143,12 +143,12 @@
         <com.mapbox.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:mapbox_cameraBearing="0.0"
             app:mapbox_cameraPitch="0.0"
-            app:mapbox_cameraTargetLat="-25.2744"
-            app:mapbox_cameraTargetLng="133.7751"
-            app:mapbox_cameraZoom="2.0" />
+            app:mapbox_cameraTargetLat="14.0583"
+            app:mapbox_cameraTargetLng="108.2772"
+            app:mapbox_cameraZoom="4.0" />
 
     </LinearLayout>
 

@@ -1,6 +1,7 @@
 package com.uri.lee.dl.upload
 
 import android.app.Application
+import android.location.Geocoder
 import android.net.Uri
 import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import java.util.Locale
 import java.util.concurrent.CancellationException
 
 private const val MAX_IMAGE_DIMENSION = 600
@@ -63,7 +65,17 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
     fun setLocation(location: ImageUploadState.HerbLocation) {
         Timber.d("setLocation $location")
         viewModelScope.launch {
-            setState { copy(location = location) }
+            val setLocation = if (location.addressLine == null) {
+                val geocoder = Geocoder(application, Locale.getDefault())
+                val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
+                Timber.v("Parsed location addresses: $addresses")
+                addresses?.firstOrNull()?.let {
+                    location.copy(addressLine = it.getAddressLine(0))
+                }
+            } else {
+                location
+            }
+            setState { copy(location = setLocation) }
         }
     }
 
@@ -124,7 +136,7 @@ data class ImageUploadState(
     data class HerbLocation(
         val lat: Double,
         val long: Double,
-        val addressLine: String,
+        val addressLine: String?,
     )
 }
 

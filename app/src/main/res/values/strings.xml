@@ -64,7 +64,7 @@
     <string name="about_us_and_this_app">About us and this app</string>
     <string name="pick_an_image">Pick an image</string>
     <string name="pick_photos">Pick photos</string>
-    <string name="please_use_your_current_location_or">We\'d like to know where your images were taken. Please use your current location or search for a location:</string>
+    <string name="please_use_your_current_location_or">We\'d like to know the general area where this plant grows. You don\'t need to provide an exact location. You can either use your current location or search for one.</string>
     <string name="clear_all">Clear all</string>
     <string name="no_result">No result</string>
     <string name="no_herb_objects_result_please_try_turning_off_objects_mode">No result found in object detection mode. You may turn off objects mode to switch to Whole Image mode!</string>
