@@ -33,7 +33,13 @@ class FixedSizeImageViewerDialog(
         binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
         Glide.with(this).load(uriPair.first).into(binding.imageView)
-        Json.decodeFromString<ImageDetail>(uriPair.second).let { imageDetail ->
+        try {
+            Json.decodeFromString<ImageDetail>(uriPair.second)
+        } catch (e: Exception) {
+            binding.mapView.visibility = View.GONE
+            binding.uploadByView.text = getString(R.string.uploaded_by, "")
+            null
+        }?.let { imageDetail ->
             binding.uploadByView.text = getString(R.string.uploaded_by, imageDetail.uid)
             binding.mapView.visibility = View.VISIBLE
             binding.mapView.mapboxMap.loadStyle(
