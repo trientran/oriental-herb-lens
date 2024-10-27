@@ -84,7 +84,7 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
         globalScope.launch {
             val uid = authUI.auth.uid ?: return@launch
             state.herbId ?: return@launch
-            val urlMap = mutableMapOf<String, Any>() // url string, uid string
+            val urlMap = mutableMapOf<String, Any>() // url string, uid and lat lng string
             setState { copy(isUploadComplete = false) }
             try {
                 state.imageUris.onEach { uri ->
@@ -92,7 +92,16 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
                     // should use NO_WRAP to make sure there is no break line in the string create a map of data to pass along
                     val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
                     imageApi.uploadImage(base64String).body()?.let {
-                        urlMap[it.image.url] = uid
+                        // create a json string of uid and lat lng of selected location
+                        val jsonString = """
+    {
+        "uid": "$uid",
+        "lat": ${state.location?.lat},
+        "lng": ${state.location?.long}
+    }
+""".trimIndent()
+
+                        urlMap[it.image.url] = jsonString
                         setState { copy(uploadedImagesCount = urlMap.size - 1) }
                     }
                 }

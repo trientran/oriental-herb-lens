@@ -19,6 +19,13 @@
             android:background="@color/color_primary_dark"
             android:orientation="horizontal">
 
+            <!--            <ImageButton-->
+            <!--                android:id="@+id/locationBtn"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                app:srcCompat="@drawable/baseline_location_on_24"-->
+            <!--                app:drawableTint="@color/lighter_grey" />-->
+
             <TextView
                 android:id="@+id/deleteBtn"
                 android:layout_width="wrap_content"
@@ -40,6 +47,14 @@
         </LinearLayout>
 
         <!--   not sure why  SubsamplingScaleImageView cannot be displayed in images viewer but the upload image viewer    -->
+        <com.mapbox.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="600dp"
+            app:mapbox_cameraBearing="0.0"
+            app:mapbox_cameraPitch="0.0"
+            app:mapbox_cameraZoom="4.0" />
+
         <ImageView
             android:id="@+id/imageView"
             android:layout_marginTop="8dp"

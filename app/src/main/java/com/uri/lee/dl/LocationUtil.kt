@@ -6,18 +6,29 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.location.LocationManager
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
+import com.mapbox.geojson.Point
+import com.mapbox.maps.MapView
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -127,6 +138,49 @@ fun Activity.requestLocationEnabled(
     }
 }
 
-
 fun Context.isUserCurrentLocationAvailable(): Boolean =
     isLocationPermissionGranted() && isLocationServiceEnabled()
+
+fun MapView.addAnnotationToMap(context: Context, lat: Double, long: Double) {
+// Create an instance of the Annotation API and get the PointAnnotationManager.
+    bitmapFromDrawableRes(
+        context,
+        R.drawable.red_marker
+    )?.let {
+        val annotationApi = annotations
+        val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+// Set options for the resulting symbol layer.
+        val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+// Define a geographic coordinate.
+            .withPoint(Point.fromLngLat(long, lat))
+// Specify the bitmap you assigned to the point annotation
+// The bitmap will be added to map style automatically.
+            .withIconImage(it)
+// Add the resulting pointAnnotation to the map.
+        pointAnnotationManager.create(pointAnnotationOptions)
+    }
+}
+
+private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int) =
+    convertDrawableToBitmap(AppCompatResources.getDrawable(context, resourceId))
+
+private fun convertDrawableToBitmap(sourceDrawable: Drawable?): Bitmap? {
+    if (sourceDrawable == null) {
+        return null
+    }
+    return if (sourceDrawable is BitmapDrawable) {
+        sourceDrawable.bitmap
+    } else {
+// copying drawable object to not manipulate on the same reference
+        val constantState = sourceDrawable.constantState ?: return null
+        val drawable = constantState.newDrawable().mutate()
+        val bitmap: Bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth, drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        bitmap
+    }
+}
