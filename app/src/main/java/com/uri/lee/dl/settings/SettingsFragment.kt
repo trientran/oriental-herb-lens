@@ -22,7 +22,7 @@ import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
-import com.uri.lee.dl.camera.CameraSource
+import com.uri.lee.dl.lenscamera.objectivecamera.CameraSource
 
 /** Configures App settings.  */
 class SettingsFragment : PreferenceFragmentCompat() {

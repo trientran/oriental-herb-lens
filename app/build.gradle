@@ -6,19 +6,29 @@ plugins {
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id 'com.google.firebase.appdistribution'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
-    compileSdkVersion 32
+    signingConfigs {
+        release {
+            storeFile file('/Users/trientran/ICT/Android/oriental-herb-lens/keystores/release.keystore')
+            storePassword '7121322Ly'
+            keyAlias 'release.keystore'
+            keyPassword '7121322Ly'
+        }
+    }
     defaultConfig {
         applicationId "com.uri.lee.dl"
-        minSdkVersion 23
-        targetSdkVersion 32
-        versionCode 1
+        minSdkVersion 26
+        targetSdkVersion 35
+        compileSdk 35
+        versionCode 6
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
@@ -28,11 +38,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     aaptOptions {
@@ -45,45 +55,81 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
+    namespace 'com.uri.lee.dl'
 }
 
 dependencies {
-    implementation 'com.android.volley:volley:1.2.1' // todo use retrofit and dagger 2 and rxjava
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    implementation "androidx.annotation:annotation:1.4.0"
-    implementation "androidx.core:core-ktx:1.8.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
-    implementation 'androidx.preference:preference-ktx:1.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
+    implementation "androidx.annotation:annotation:1.8.2"
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6"
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.6'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2'
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
+    implementation 'com.google.android.libraries.places:places:4.0.0'
+    implementation 'com.mapbox.maps:android:11.7.0'
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
-    implementation 'com.algolia:instantsearch-android:3.1.0'
-    implementation 'com.algolia:instantsearch-android-paging3:3.1.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1"
+
+    implementation 'com.algolia:instantsearch-android:3.3.1'
+    implementation 'com.algolia:instantsearch-android-paging3:3.3.1'
+
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     // Object feature and model
-    implementation 'com.google.mlkit:object-detection:17.0.0'
+    implementation 'com.google.mlkit:object-detection:17.0.2'
     // Custom model
-    implementation 'com.google.mlkit:object-detection-custom:17.0.0'
+    implementation 'com.google.mlkit:object-detection-custom:17.0.2'
 
-    api 'com.google.guava:guava:30.1-jre'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    api 'com.google.guava:guava:32.0.1-jre'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.4.2'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.4.2'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.2'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.8.2'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
 
-    implementation platform('com.google.firebase:firebase-bom:30.1.0')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
+    // CameraX core library using the camera2 implementation
+    def camerax_version = "1.0.2"
+    implementation "androidx.camera:camera-camera2:1.3.4"
+    // If you want to additionally use the CameraX Lifecycle library
+    implementation "androidx.camera:camera-lifecycle:1.3.4"
+    // If you want to additionally use the CameraX View class
+    implementation "androidx.camera:camera-view:1.3.4"
+
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
+
+    implementation 'com.google.mlkit:image-labeling:17.0.9'
+    implementation 'com.google.mlkit:image-labeling-custom:17.0.3'
+    implementation 'com.google.mlkit:linkfirebase:17.0.0'
+
+    implementation 'com.jakewharton.timber:timber:5.0.1'
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.15.1'
+    // Replace with your Glide version
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0' // OkHttp
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+
+    implementation platform('com.google.firebase:firebase-bom:33.4.0')
+    implementation 'com.google.firebase:firebase-appindexing:20.0.0'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.firebaseui:firebase-ui-auth:8.0.1'
+    implementation 'com.firebaseui:firebase-ui-auth:8.0.2'
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-functions-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
-    implementation 'com.google.firebase:firebase-inappmessaging-display-ktx'
     implementation 'com.google.firebase:firebase-appindexing'
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    implementation 'com.google.firebase:firebase-appcheck-debug:18.0.0'
 }

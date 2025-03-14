@@ -5,33 +5,54 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_images">
 
+    <include app:graph="@navigation/edit_herb_details" />
+    <include app:graph="@navigation/add_review" />
+
     <fragment
         android:id="@+id/navigation_images"
         android:name="com.uri.lee.dl.herbdetails.images.ImagesFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_overview" />
-
-    <fragment
-        android:id="@+id/navigation_overview"
-        android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
-        android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_images" />
 
     <fragment
-        android:id="@+id/navigation_usage"
-        android:name="com.uri.lee.dl.herbdetails.usage.UsageFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_usage" />
+        android:id="@+id/navigation_overview"
+        android:name="com.uri.lee.dl.herbdetails.overview.OverviewFragment"
+        tools:layout="@layout/fragment_overview" />
 
     <fragment
         android:id="@+id/navigation_caution"
         android:name="com.uri.lee.dl.herbdetails.caution.CautionFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_usage" />
+        tools:layout="@layout/fragment_caution" />
+
+    <fragment
+        android:id="@+id/navigation_dosing"
+        android:name="com.uri.lee.dl.herbdetails.dosing.DosingFragment"
+        tools:layout="@layout/fragment_dosing" />
 
     <fragment
         android:id="@+id/navigation_review"
         android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_usage" />
+        tools:layout="@layout/fragment_review" />
+
+    <action
+        android:id="@id/editHerbDetails"
+        app:destination="@id/editHerbDetails">
+        <argument
+            android:name="herbId"
+            app:argType="long" />
+        <argument
+            android:name="fieldName"
+            app:argType="string" />
+        <argument
+            android:name="oldValue"
+            app:argType="string" />
+    </action>
+
+    <action
+        android:id="@id/addReview"
+        app:destination="@id/addReview">
+        <argument
+            android:name="herbId"
+            app:argType="long" />
+    </action>
+
 </navigation>

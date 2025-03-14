@@ -1,247 +1,259 @@
-/*
- * Copyright 2020 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.uri.lee.dl
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
+import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
-import android.os.Handler
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
+import android.speech.RecognizerIntent
+import android.view.Window
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.algolia.instantsearch.android.list.autoScrollToStart
-import com.algolia.instantsearch.android.paging3.liveData
-import com.algolia.instantsearch.android.searchbox.SearchBoxViewAppCompat
-import com.algolia.instantsearch.core.connection.ConnectionHandler
-import com.algolia.instantsearch.searchbox.connectView
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.mlkit.common.model.CustomRemoteModel
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.linkfirebase.FirebaseModelSource
+import com.uri.lee.dl.Utils.displaySpeechRecognizer
+import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityMainBinding
-import com.uri.lee.dl.instantsearch.MyAdapter
-import com.uri.lee.dl.instantsearch.MyViewModel
+import com.uri.lee.dl.databinding.NewHerbDialogBinding
+import com.uri.lee.dl.herbdetails.HerbDetailsActivity
+import com.uri.lee.dl.hometabs.SectionsPagerAdapter
+import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
+import com.uri.lee.dl.instantsearch.SearchActivity
+import com.uri.lee.dl.lenscamera.CameraActivity
+import com.uri.lee.dl.lensimage.ImageActivity
+import com.uri.lee.dl.lensimages.ImagesActivity
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: MyViewModel by viewModels()
-    private val connection = ConnectionHandler()
+    private lateinit var binding: ActivityMainBinding
 
-    private enum class DetectionMode(val titleResId: Int, val subtitleResId: Int) {
-        ODT_LIVE(R.string.mode_odt_live_title, R.string.mode_odt_live_subtitle),
-        ODT_STATIC(R.string.mode_odt_static_title, R.string.mode_odt_static_subtitle),
-        CUSTOM_MODEL_LIVE(R.string.custom_model_live_title, R.string.custom_model_live_subtitle)
+    private val userViewModel: UserViewModel by viewModels()
+
+    private val configViewModel: ConfigViewModel by viewModels()
+
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+        Timber.d(auth.currentUser.toString())
+        if (auth.currentUser == null) {
+            finishAffinity()
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
     }
 
-    private lateinit var binding: ActivityMainBinding
-    private val handler = Handler()
-
-    private lateinit var auth: FirebaseAuth
-    private val authUI = AuthUI.getInstance()
-    private val signInLauncher =
-        registerForActivityResult(FirebaseAuthUIActivityResultContract()) { onSignInResult(it) }
-
+    @SuppressLint("RestrictedApi")
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
-        auth = Firebase.auth
+        // Setup tabbed views
+        binding.viewPager.adapter = SectionsPagerAdapter(this)
+        TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
+            tab.text = getString(TAB_TITLES[position])
+        }
+            .attach()
 
-        binding.modeRecyclerView.apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = ModeItemAdapter(DetectionMode.values())
+        setSupportActionBar(binding.toolBar)
+        supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        binding.searchView.setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
         }
 
-        binding.menuView.setOnClickListener {
-            val bottomSheet = BottomSheetDialog()
-            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
-        }
+        binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
 
-        setupAlgoliaSearch(view)
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val view = currentFocus
-            if (view is SearchView.SearchAutoComplete) {
-                val outRect = Rect()
-                view.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    binding.scrollView.requestFocus()
+        binding.addHerbButton.setOnClickListener {
+            CustomDialogClass(this) {
+                userViewModel.addHerb(it) { id ->
+                    val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
+                    intent.putExtra(HERB_ID, id)
+                    startActivity(intent)
                 }
+            }.show()
+        }
+
+        downloadModel()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                configViewModel.state()
+                    .mapNotNull { it.mobile }
+                    .distinctUntilChanged()
+                    .onEach {
+                        binding.menuView.setOnClickListener { _ ->
+                            val bottomSheet = BottomSheetMenu(
+                                recognizedViHerbs = it.recognizedViHerbs,
+                                recognizedLatinHerbs = it.recognizedLatinHerbs
+                            )
+                            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
+                        }
+                        if (it.stackOverflow) {
+                            AlertDialog.Builder(this@MainActivity)
+                                .setMessage(getString(R.string.stack_overflow))
+                                .setCancelable(false)
+                                .setNeutralButton(getString(android.R.string.ok)) { _, _ ->
+                                    this@MainActivity.finish()
+                                    exitProcess(0)
+                                }
+                                .create()
+                                .show()
+                        }
+                        if (it.mustUpdateAndroid) {
+                            AlertDialog.Builder(this@MainActivity)
+                                .setMessage(getString(R.string.please_update_android))
+                                .setCancelable(false)
+                                .setNeutralButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
+                                .create().show()
+                        }
+                        if (it.shouldUpdateAndroid) {
+                            AlertDialog.Builder(this@MainActivity)
+                                .setMessage(getString(R.string.please_update_android))
+                                .setCancelable(true)
+                                .setPositiveButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
+                                .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> }
+                                .create().show()
+                        }
+                        if (it.bannedUsers.contains(authUI.auth.uid)) {
+                            AlertDialog.Builder(this@MainActivity)
+                                .setMessage(getString(R.string.you_have_been_banned))
+                                .setCancelable(false)
+                                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+                                    this@MainActivity.finish()
+                                    exitProcess(0)
+                                }
+                                .setNegativeButton(getString(R.string.contact_us)) { _, _ ->
+                                    sendEmail(subject = "")
+                                }
+                                .create().show()
+                        }
+
+                        val latinBundle = Bundle()
+                        val viBundle = Bundle()
+                        for (entry in it.recognizedLatinHerbs.entries) {
+                            latinBundle.putString(entry.key, entry.value)
+                        }
+                        for (entry in it.recognizedViHerbs.entries) {
+                            viBundle.putString(entry.key, entry.value)
+                        }
+                        binding.searchCameraView.setOnClickListener {
+                            val intent = Intent(this@MainActivity, CameraActivity::class.java)
+                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
+                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
+                            startActivity(intent)
+                        }
+
+                        binding.searchMultiImagesView.setOnClickListener {
+                            val intent = Intent(this@MainActivity, ImagesActivity::class.java)
+                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
+                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
+                            startActivity(intent)
+                        }
+                        binding.searchSingleImageView.setOnClickListener {
+                            val intent = Intent(this@MainActivity, ImageActivity::class.java)
+                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
+                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
+                            startActivity(intent)
+                        }
+                    }
+                    .launchIn(this)
+
+                userViewModel.state()
+                    .map { it.isAdmin }
+                    .distinctUntilChanged()
+                    .onEach {
+                        binding.adminButton.isVisible = it
+                        binding.adminButton.setOnClickListener {
+                            startActivity(Intent(this@MainActivity, AdminActivity::class.java))
+                        }
+                    }
+                    .launchIn(this)
             }
         }
-        return super.dispatchTouchEvent(event)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onStart() {
         super.onStart()
-        if (auth.currentUser == null) {
-            val signInIntent = authUI
-                .createSignInIntentBuilder()
-                .setAvailableProviders(arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build()))
-                .setLogo(R.drawable.ic_launcher_round)
-                .setTheme(R.style.AppTheme)
-                .build()
-            signInLauncher.launch(signInIntent)
-        }
+        authUI.auth.addAuthStateListener(authStateListener)
+        Utils.requestNotificationPermission(this)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        connection.clear()
+    @SuppressLint("RestrictedApi")
+    override fun onStop() {
+        super.onStop()
+        authUI.auth.removeAuthStateListener(authStateListener)
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (!Utils.allPermissionsGranted(this)) {
-            Utils.requestRuntimePermissions(this)
-        }
-    }
-
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        val response = result.idpResponse
-        if (result.resultCode == RESULT_OK) {
-            val user = auth.currentUser
-            require(user != null)
-            // todo write to FireStore user
-        }
-    }
-
-    private fun signOut() {
-        authUI
-            .signOut(this)
-            .addOnCompleteListener {
-                // ...
-            }
-    }
-
-    private fun delete() {
-        authUI
-            .delete(this)
-            .addOnCompleteListener {
-                // ...
-            }
-    }
-
-    private fun setupAlgoliaSearch(view: ConstraintLayout) {
-        val searchResultAdapter = MyAdapter()
-        searchResultAdapter.onItemClick = {
-            val intent = Intent(this@MainActivity, HerbDetailsActivity::class.java)
-            intent.putExtra("INSTANT_HERB", it)
-            startActivity(intent)
-        }
-        viewModel.paginator.liveData.observe(this) {
-            searchResultAdapter.submitData(lifecycle, it)
-        }
-        binding.herbSearchList.let {
-            it.itemAnimator = null
-            it.adapter = searchResultAdapter
-            it.layoutManager = LinearLayoutManager(this)
-            it.autoScrollToStart(searchResultAdapter)
-        }
-
-        val searchBoxView = SearchBoxViewAppCompat(binding.searchView)
-        connection += viewModel.searchBox.connectView(searchBoxView)
-
-        val searchAutoComplete: SearchView.SearchAutoComplete =
-            binding.searchView.findViewById(androidx.appcompat.R.id.search_src_text)
-        searchAutoComplete.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                binding.herbSearchList.isVisible = true
-            } else {
-                hideSoftKeyboard(view)
-                handler.postDelayed({ binding.herbSearchList.isVisible = false }, 200)
-            }
-        }
+    private fun downloadModel() {
+        val remoteModel = CustomRemoteModel
+            .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
+            .build()
+        val downloadConditions = DownloadConditions.Builder().requireWifi().build()
+        RemoteModelManager.getInstance().download(remoteModel, downloadConditions)
+            .addOnSuccessListener { Timber.d("Model download completed") }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Utils.REQUEST_CODE_PHOTO_LIBRARY &&
-            resultCode == Activity.RESULT_OK &&
-            data != null
-        ) {
-            val intent = Intent(this, StaticObjectDetectionActivity::class.java)
-            intent.data = data.data
-            startActivity(intent)
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    private inner class ModeItemAdapter(private val detectionModes: Array<DetectionMode>) :
-        RecyclerView.Adapter<ModeItemAdapter.ModeItemViewHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ModeItemViewHolder {
-            return ModeItemViewHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(
-                        R.layout.detection_mode_item, parent, false
-                    )
-            )
-        }
-
-        override fun onBindViewHolder(modeItemViewHolder: ModeItemViewHolder, position: Int) =
-            modeItemViewHolder.bindDetectionMode(detectionModes[position])
-
-        override fun getItemCount(): Int = detectionModes.size
-
-        private inner class ModeItemViewHolder internal constructor(view: View) : RecyclerView.ViewHolder(view) {
-
-            private val titleView: TextView = view.findViewById(R.id.mode_title)
-            private val subtitleView: TextView = view.findViewById(R.id.mode_subtitle)
-
-            fun bindDetectionMode(detectionMode: DetectionMode) {
-                titleView.setText(detectionMode.titleResId)
-                subtitleView.setText(detectionMode.subtitleResId)
-                itemView.setOnClickListener {
-                    val activity = this@MainActivity
-                    when (detectionMode) {
-                        DetectionMode.ODT_LIVE ->
-                            activity.startActivity(Intent(activity, LiveObjectDetectionActivity::class.java))
-                        DetectionMode.ODT_STATIC -> Utils.openImagePicker(activity)
-                        DetectionMode.CUSTOM_MODEL_LIVE ->
-                            activity.startActivity(
-                                Intent(
-                                    activity,
-                                    CustomModelObjectDetectionActivity::class.java
-                                )
-                            )
-                    }
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            when (requestCode) {
+                Utils.SPEECH_REQUEST_CODE -> {
+                    val spokenText: String = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)!![0]
+                    val intent = Intent(this, SearchActivity::class.java)
+                    intent.putExtra(SPOKEN_TEXT_EXTRA, spokenText)
+                    startActivity(intent)
                 }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+}
+
+private class CustomDialogClass(context: Context, private val onSubmitClick: (FireStoreHerb) -> Unit) :
+    Dialog(context) {
+
+    private lateinit var binding: NewHerbDialogBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = NewHerbDialogBinding.inflate(layoutInflater)
+        val view = binding.root
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(view)
+
+        binding.submitBtn.setOnClickListener {
+            // val fields = listOf(binding.enNameView, binding.viNameView, binding.latinNameView)
+            // if (fields.all { it.text.isBlank() }) { binding.instructionView.textColors = ColorStateList() }
+            if (binding.viNameView.text.isBlank()) {
+                binding.viNameLayoutView.error = context.getString(R.string.please_edit_this_field)
+            } else {
+                val newHerb = FireStoreHerb(
+                    id = clock.millis(),
+                    enName = binding.enNameView.text.toString(),
+                    latinName = binding.latinNameView.text.toString(),
+                    viName = binding.viNameView.text.toString(),
+                )
+                onSubmitClick(newHerb)
+                dismiss()
             }
         }
     }
 }
+
+const val RECOGNIZED_LATIN_HERBS_KEY = "recognizedLatinHerbs"
+const val RECOGNIZED_VI_HERBS_KEY = "recognizedLatinHerbs"

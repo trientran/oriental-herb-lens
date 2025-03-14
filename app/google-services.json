@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "305495327770",
+    "project_id": "oriental-herb-lens-41d17",
+    "storage_bucket": "oriental-herb-lens-41d17.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305495327770:android:05e3116718bdded1ccfda3",
+        "android_client_info": {
+          "package_name": "com.uri.lee.dl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "305495327770-e1epck1kmjs9c1e9a4p4rq5896m5ldrn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCn2BKQxq2ItyamkdhddMfxQRa39lCax8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "305495327770-e1epck1kmjs9c1e9a4p4rq5896m5ldrn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

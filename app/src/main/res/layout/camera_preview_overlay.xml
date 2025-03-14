@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <com.uri.lee.dl.camera.GraphicOverlay
+  <com.uri.lee.dl.lenscamera.objectivecamera.GraphicOverlay
       android:id="@+id/camera_preview_graphic_overlay"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
+      android:layout_height="match_parent" />
 
   <FrameLayout
       android:id="@+id/static_overlay_container"
@@ -53,7 +55,7 @@
         android:textSize="@dimen/search_button_text_size"
         android:visibility="gone"
         app:icon="@drawable/ic_image_search_vd_black_24"
-        app:iconTint="@color/black"/>
+        app:iconTint="@color/black" />
   </FrameLayout>
 
-</merge>
+</RelativeLayout>

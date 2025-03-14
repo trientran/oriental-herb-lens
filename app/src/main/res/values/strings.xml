@@ -6,38 +6,24 @@
     </plurals>
 
     <!-- Strings for home screen -->
-    <string name="app_name">Oriental Herb Lens</string>
+    <string name="app_name">Med Herb Lens</string>
     <string name="single_image">Single Image</string>
     <string name="multiple_images">Multiple Images</string>
 
     <string name="camera">Camera</string>
-    <string name="entry_java_title">Java</string>
-    <string name="entry_java_subtitle">Run the MLKit Showcase written in Java.</string>
-    <string name="entry_kotlin_title">Kotlin</string>
-    <string name="entry_kotlin_subtitle">Run the MLKit Showcase written in Kotlin.</string>
-    <string name="mode_odt_live_title">Object Detection: Live Camera</string>
-    <string name="mode_odt_live_subtitle">A device’s live camera can be used to detect objects in an environment.</string>
-    <string name="mode_odt_static_title">Object Detection: Static Image</string>
-    <string name="mode_odt_static_subtitle">One or more objects can be detected from a provided image.</string>
-    <string name="custom_model_live_title">Object Detection: Live Camera with Custom Classification (Birds)</string>
-    <string name="custom_model_live_subtitle">A device\'s live camera can be used to detect birds in an environment.</string>
-    <string name="settings_title">MLKit Showcase Settings</string>
+    <string name="settings_title">Lens Settings</string>
     <string name="cd_settings_button">Settings</string>
     <string name="cd_close_button">Back</string>
     <string name="cd_flash_button">Toggle camera flash</string>
     <string name="cd_photo_library_button">Upload image</string>
     <string name="prompt_point_at_an_object">Point your camera at an object</string>
-    <string name="prompt_point_at_a_bird">Point your camera at a bird</string>
     <string name="prompt_hold_camera_steady">Keep camera still for a moment</string>
-    <string name="prompt_move_camera_closer">Move closer to search</string>
     <string name="prompt_searching">Searching&#8230;</string>
     <string name="product_search_button">Search object</string>
-    <string name="buttom_sheet_custom_model_title">Custom object found</string>
-    <string name="static_image_prompt_detected_no_results">No results found</string>
     <string name="static_image_prompt_detected_results">Tap on a dot to inspect</string>
     <string name="static_image_card_no_result_title">No result found</string>
-    <string name="static_image_card_no_result_subtitle">Support text place holder</string>
-    <string name="static_image_preview_card_subtitle">+%d more results</string>
+    <string name="static_image_detected_no_results_continue_to_label">An issue\'s occurred while detecting objects. You may turn off Objects mode or contactus.</string>
+    <string name="static_image_classification_result">This could be:  -Herb code: %1$s.  -Latin name: %2$s.  -Vietnamese name: %3$s.</string>
 
     <!-- Strings for camera settings. -->
     <string name="pref_category_camera">Camera</string>
@@ -49,30 +35,25 @@
     <string name="pref_category_object_detection">Object detection</string>
     <string name="pref_key_object_detector_enable_multiple_objects" translatable="false">odemo</string>
     <string name="pref_title_object_detector_enable_multiple_objects">Enable multiple objects</string>
-    <string name="pref_key_object_detector_enable_classification" translatable="false">odec</string>
     <string name="pref_title_object_detector_enable_classification">Enable classification</string>
 
     <!-- Strings for product search settings. -->
-    <string name="pref_category_product_search">Product search</string>
+    <string name="pref_category_herb_labeling">Herb labeling</string>
     <string name="pref_key_enable_auto_search" translatable="false">pkeas</string>
-    <string name="pref_title_enable_auto_search">Enable auto search</string>
+    <string name="pref_title_enable_auto_search">Enable auto labeling</string>
     <string name="pref_key_confirmation_time_in_manual_search" translatable="false">ctims</string>
-    <string name="pref_title_confirmation_time_in_manual_search">Confirmation time in manual search</string>
+    <string name="pref_title_confirmation_time_in_manual_search">Confirmation time in manual labeling</string>
     <string name="pref_summary_confirmation_time_in_manual_search">Ranges from 100ms to 1000ms</string>
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
-    <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto search</string>
+    <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="scientific_or_vietnamese">Scientific or Vietnamese</string>
-    <string name="n_results_found">5 results found</string>
-    <string name="title_activity_herb_details">HerbDetailsActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
+    <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
+    <string name="favorite">Favorite</string>
+    <string name="history">History</string>
+    <string name="random">Random</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="images">Images</string>
     <string name="overview">Overview</string>
-    <string name="usage">Usage</string>
     <string name="caution">Caution</string>
     <string name="review">Review</string>
     <string name="add_a_new_herb">Add a new herb</string>
@@ -81,5 +62,125 @@
     <string name="contact_us">Contact us</string>
     <string name="share_this_app">Share this app</string>
     <string name="about_us_and_this_app">About us and this app</string>
+    <string name="pick_an_image">Pick an image</string>
+    <string name="pick_photos">Pick photos</string>
+    <string name="please_use_your_current_location_or">We\'d like to know the general area where this plant grows. You don\'t need to provide an exact location. You can either use your current location or search for one.</string>
+    <string name="clear_all">Clear all</string>
+    <string name="no_result">No result</string>
+    <string name="no_herb_objects_result_please_try_turning_off_objects_mode">No result found in object detection mode. You may turn off objects mode to switch to Whole Image mode!</string>
+    <string name="no_herb_result_please_try_turning_on_objects_mode">No result found. You may turn off Whole Image mode!</string>
+    <string name="something_went_wrong_please_try_again_or_contact_us">Something went wrong. Please try again or contact us!</string>
+    <string name="add_photos">Add multiple photos</string>
+    <string name="add_your_photos">Add your images</string>
+    <string name="objects_mode">Objects mode</string>
+    <string name="whole_image_mode">Whole image mode</string>
+    <string name="result">Result</string>
+    <string name="search_with_google">Google Latin name</string>
+    <string name="search_with_google_vi">Google Vietnamese name</string>
+    <string name="failed_to_load_file_please_try_again">Failed to load file! Please try again or try another image!</string>
+    <string name="failed_to_label_entire_image_please_turn_on_objects_mode">Failed to recognise this image. You may turn off Whole Image mode or try another image.</string>
+    <string name="confidence">Confidence</string>
+    <string name="failed_to_load_local_data_store">Failed to load local data store</string>
+    <string name="failed_to_label_one_or_some_of_the_images">Failed to label 1 or some of your images.</string>
+
+    <string name="herb_id_s">ID: %s</string>
+    <string name="latin_name_s">Latin name: %s</string>
+    <string name="vietnamese_name_s">Vietnamese name: %s</string>
+    <string name="english_name_s">English name:</string>
+    <string name="overview_s">Overview:</string>
+    <string name="dosing_s">Dosing:</string>
+    <string name="side_effects_s">Side effects:</string>
+    <string name="interactions_s">Interactions:</string>
+    <string name="your_selected_image">Your selected image</string>
+    <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+
+    <string name="you_have_been_signed_out">You have been signed out</string>
+    <string name="your_account_has_been_deleted">Your account has been deleted</string>
+
+    <string name="about_us">Med Herb Lens is a non-profit project that utilises Artificial Intelligence
+        (Deep Learning - Tensorflow) to assist medicinal herbalists and traditional healers and physicians in automatically
+        recognizing and classifying medicinal plants.
+        There are 2 ways you may help us out:
+        \n\n- Please contribute to the dataset by capturing your own herb images using your own mobile and camera devices,
+        then upload them all to our server using this mobile app.
+        \n\nThe image quality does not matter, meaning that it is OK to set the lowest image resolutions for your camera. You may take photos in both portrait and horizontal modes, in different environments with different brightness (night vs day, indoor vs outdoor…).
+        \n\nWe need details such as fruits, blossoms, branches, leaves, roots, and whole plant, both fresh and sun-dried ones, if possible.
+        \n\n- And can you please also help us fill in all the herbs\' details such as usage, side effects, drug interactions etc.? To do this, please browse or search using our search bar to look for the herbs that you are familiar with or have information about. Then you can click on the edit buttons to modify those details at your own convenience.
+        You can also find the full list herbal plants that already exist in our database by clicking the Full Herb List button below.
+      </string>
+
+    <string name="_70_herbs_list">70 herbs list</string>
+    <string name="full_herb_list">Full herbal list</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
+    <string name="sign_out">Sign out</string>
+    <string name="your_herb_list_will_be_loaded_soon">Herb list will be loaded soon once available.</string>
+    <string name="dosing">Dosing</string>
+    <string name="like">Like</string>
+    <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
+    <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
+    <string name="add_more">Add more</string>
+    <string name="upload">Upload</string>
+    <string name="add_images">Add images</string>
+    <string name="instruction">Instruction</string>
+    <string name="image_item">image item</string>
+    <string name="how_to_take_photos">This app does not support capturing photos yet. Please use a camera app to take photos. The image quality does not matter when it comes to regular smartphones and cameras, meaning that it is OK to set the lowest image resolutions for your devices\' cameras, to save storage. However, we don\'t recommend photos taken in an artistic or selfie mode.
+    \n\nIt is your choice to take the photos in either portrait or horizontal mode or both, in different environments at different angles or corners with different brightness (night vs day, indoor vs outdoor…). The more the better though ^_^.
+    \n\nWe need details such as fruits, blossoms, branches, leaves, roots and whole plant, both fresh and sun-dried ones, if possible because diversity does matter ^_^. Generally, at least 50 images for each part of the plant should suffice for our AI model to learn. We limit the maximum of photo intakes to 1000 per herb.
+    \n\nThe rule of thumbs is, if you have taken a photo of a known herb but you are unable to say the name of the plant in that photo, our AI model should not be either ^_^.
+       </string>
+    <string name="upload_completed">All your images have been uploaded successfully.</string>
+    <string name="upload_in_progress_please">Upload in progress. We will notify you once completed.</string>
+
+    <string name="uploaded_by">Uploaded by: %s. \nYou may open this image in a web browser and download it by clicking on it.</string>
+    <string name="please_let_us_know_why_delete_this_image">Please let us know why you want to delete this image. Your request will be sent to admin for approval.</string>
+    <string name="duplicate_image">Duplicated image</string>
+    <string name="faulty_image">Faulty image</string>
+    <string name="cancel">Cancel</string>
+    <string name="deletion_request_sent_to_admin">Your deletion request has been sent to admin for approval.</string>
+    <string name="image_count">Image count: %s</string>
+    <string name="editing_s">Editing: %s</string>
+    <string name="update">Update</string>
+    <string name="add_more_images">Add more images</string>
+    <string name="please_edit_this_field">Please edit this field!</string>
+    <string name="side_effect">Side effects</string>
+    <string name="interactions">Interactions</string>
+    <string name="vietnamese_name">Vietnamese name</string>
+    <string name="english_name">English name</string>
+    <string name="latin_name">Latin name</string>
+    <string name="rate_this_herb">Rate this herb</string>
+    <string name="conditions_diabetes_liver_diseases">Conditions (diabetes, liver diseases…)</string>
+    <string name="submit">Submit</string>
+    <string name="effectiveness">Effectiveness:</string>
+    <string name="ease_of_use">Ease of use:</string>
+    <string name="your_comment">Your comment</string>
+    <string name="patient_name">Patient\'s name</string>
+    <string name="patient_age">Patient\'s age</string>
+    <string name="patient_comment">Patient\'s comment</string>
+    <string name="overall_rating">Overall rating: %.1f - %s reviews</string>
+    <string name="effectiveness_rating">Effectiveness: %.1f</string>
+    <string name="ease_of_use_rating">Ease of use %.1f</string>
+    <string name="conditions_s">Conditions: %s</string>
+    <string name="person_s">Name: %s, Age: %s</string>
+    <string name="report_an_issue_via_email">Report an issue via email</string>
+    <string name="via_facebook">Via Facebook</string>
+    <string name="via_email">Via email</string>
+    <string name="please_hit_ok_to_open_our_google_sheet">Please hit OK to open our Google Sheet database where you can add a new herb at the end of the herb list. We will then add it to our database. Thank you!</string>
+    <string name="stack_overflow">We are experiencing server downtime. Please come back later!</string>
+    <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
+    <string name="you_have_been_banned">You have been banned from using our service due to your inappropriate activities. If you believe this is a mistake, please contact us!</string>
+    <string name="admin">Admin</string>
+    <string name="export_csvs">Export multiple CSV files</string>
+    <string name="please_only_add_a_new_herb_if_etc">Please only add a new herb if you (1) have photos of that herb and you are ready to upload them and (2) you couldn\'t find the herb by using the search bar or using the All-herbs tab.</string>
+    <string name="all_herbs">All herbs</string>
+    <string name="please_enter_at_least_of_these_names_for_the_new_herb">Please enter at least one of these fields for the new herb:</string>
+    <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
+    <string name="sync_recognized_herbs">Sync recognized herbs</string>
+    <string name="sync_to_be_recognized_herbs">Sync to-be-recognized herbs</string>
+    <string name="recognized_herb_list">Recognized herbs list</string>
+    <string name="location_permission_is_required">Location permission is required to fetch your current location.</string>
+    <string name="current_location">Current location</string>
+    <string name="search_for_a_location">Search for a location</string>
+    <string name="address">Address:</string>
 
 </resources>

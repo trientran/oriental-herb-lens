@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <plurals name="bottom_sheet_title" tools:ignore="UnusedQuantity">
+        <item quantity="one">%d kết quả</item>
+        <item quantity="other">%d kết quả</item>
+    </plurals>
+    <string name="app_name">Med Herb Lens</string>
+    <string name="single_image">Một hình</string>
+    <string name="multiple_images">Nhiều hình</string>
+    <string name="camera">Camera</string>
+    <string name="settings_title">Cài đặt ống kính</string>
+    <string name="cd_settings_button">Cài đặt</string>
+    <string name="cd_close_button">Quay lại</string>
+    <string name="cd_flash_button">Bật đèn pin</string>
+    <string name="cd_photo_library_button">Đăng hình</string>
+    <string name="prompt_point_at_an_object">Hướng camera về phía dược liệu</string>
+    <string name="prompt_hold_camera_steady">Giữ yên camera của bạn một tí</string>
+    <string name="prompt_searching">Đang tìm&#8230;</string>
+    <string name="product_search_button">Tìm đối tượng</string>
+    <string name="static_image_prompt_detected_results">Nhấn dấu chấm hình tròn để kiểm tra</string>
+    <string name="static_image_card_no_result_title">Không có kết quả</string>
+    <string name="static_image_detected_no_results_continue_to_label">Có lỗi xảy ra khi dò tìm đối tượng. Bạn có thể tắt chế độ Đối Tượng hoặc liên hệ chúng tôi.</string>
+    <string name="static_image_classification_result">Có thể là:  -Mã dược liệu: %1$s.  -Tên Latin: %2$s.  -Tên tiếng Việt: %3$s.</string>
+    <string name="pref_category_camera">Camera</string>
+    <string name="pref_title_rear_camera_preview_size">Kích thước ảnh xem trước camera sau</string>
+    <string name="pref_category_object_detection">Phát hiện đối tượng</string>
+    <string name="pref_title_object_detector_enable_multiple_objects">Bật chế độ đa đối tượng</string>
+    <string name="pref_title_object_detector_enable_classification">Bật chế độ phân loại hình</string>
+    <string name="pref_category_herb_labeling">Gắn nhãn dược liệu</string>
+    <string name="pref_title_enable_auto_search">Bật chế độ gắn nhãn tự động</string>
+    <string name="pref_title_confirmation_time_in_manual_search">Thời gian chờ xác nhận ở chế độ gắn nhãn thủ công</string>
+    <string name="pref_summary_confirmation_time_in_manual_search">Trong khoảng 100–1000 mili giây</string>
+    <string name="pref_title_confirmation_time_in_auto_search">Thời gian chờ xác nhận ở chế độ gắn nhãn tự động</string>
+    <string name="pref_summary_confirmation_time_in_auto_search">Trong khoảng 500–2000 mili giây</string>
+    <string name="latin_or_vietnamese_name">Tên Latin hay Việt</string>
+    <string name="favorite">Yêu thích</string>
+    <string name="history">Lịch sử</string>
+    <string name="random">Đại trà</string>
+    <string name="title_home">Trang chủ</string>
+    <string name="images">Ảnh</string>
+    <string name="overview">Tổng quan</string>
+    <string name="caution">Lưu ý</string>
+    <string name="review">Đánh giá</string>
+    <string name="add_a_new_herb">Thêm dược liệu mới</string>
+    <string name="log_out">Đăng xuất</string>
+    <string name="delete_account">Xoá tài khoản</string>
+    <string name="contact_us">Liên hệ chúng tôi</string>
+    <string name="share_this_app">Chia sẻ ứng dụng này</string>
+    <string name="about_us_and_this_app">Về chúng tôi và ứng dụng này</string>
+    <string name="pick_an_image">Chọn một ảnh</string>
+    <string name="pick_photos">Chọn nhiều ảnh</string>
+    <string name="please_use_your_current_location_or">Chúng tôi muốn biết nơi bạn chụp ảnh. Vui lòng sử dụng định vị của bạn hoặc tìm kiếm một địa điểm:</string>
+    <string name="clear_all">Xoá hết</string>
+    <string name="no_result">Không có kết quả</string>
+    <string name="no_herb_objects_result_please_try_turning_off_objects_mode">Không có kết quả ở chế độ Đối Tượng. Bạn có thể tắt chế độ Đối Tượng để chuyển sang chế độ Toàn Ảnh!</string>
+    <string name="no_herb_result_please_try_turning_on_objects_mode">Không có kết quả. Bạn có thể tắt chế độ Toàn Ảnh để bật chế độ Đối Tượng!</string>
+    <string name="something_went_wrong_please_try_again_or_contact_us">Có lỗi xảy ra. Xin thử lại hoặc liên hệ chúng tôi!</string>
+    <string name="add_photos">Thêm nhiều ảnh</string>
+    <string name="add_your_photos">Thêm ảnh của bạn</string>
+    <string name="objects_mode">Chế độ Đối Tượng</string>
+    <string name="whole_image_mode">Chế độ Toàn Ảnh</string>
+    <string name="result">Kết quả</string>
+    <string name="search_with_google">Tra Google tên Latin</string>
+    <string name="search_with_google_vi">Tra Google tên tiếng Việt</string>
+    <string name="failed_to_load_file_please_try_again">Không truy xuất tệp tin được. Vui lòng thử lại hoặc thử ảnh khác!</string>
+    <string name="failed_to_label_entire_image_please_turn_on_objects_mode">Không nhận diện được ảnh này. Bạn có thể tắt chế độ Toàn Ảnh hoặc thử hình khác.</string>
+    <string name="confidence">Độ tin cậy</string>
+    <string name="failed_to_load_local_data_store">Không truy xuất dữ liệu trên máy được</string>
+    <string name="failed_to_label_one_or_some_of_the_images">Không thể gắn nhãn cho 1 hay vài ảnh của bạn.</string>
+    <string name="herb_id_s">ID: %s</string>
+    <string name="latin_name_s">Tên Latin: %s</string>
+    <string name="vietnamese_name_s">Tên tiếng Việt: %s</string>
+    <string name="english_name_s">Tên tiếng Anh:</string>
+    <string name="overview_s">Tổng quan</string>
+    <string name="dosing_s">Liều dùng:</string>
+    <string name="side_effects_s">Tác dụng phụ:</string>
+    <string name="interactions_s">Tương tác thuốc:</string>
+    <string name="your_selected_image">Hình được chọn của bạn</string>
+    <string name="ranges_from_0_to_100">Trong khoảng 0–100</string>
+    <string name="sign_in_with_google">Đăng nhập với Google</string>
+    <string name="you_have_been_signed_out">Bạn đã đăng xuất</string>
+    <string name="your_account_has_been_deleted">Tài khoản của bạn đã được xoá</string>
+    <string name="about_us">Med Herb Lens là một dự án phi lợi nhuận sử dụng Trí tuệ nhân tạo (Deep Learning - Tensorflow) để hỗ trợ các nhà thảo dược học, các bác sĩ và thầy thuốc y học cổ truyền trong việc tự động nhận dạng và phân loại các loại cây thuốc.
+ \n\nDự án này được khởi xướng và được dẫn dắt bởi anh Lê Đức Hoàng Minh, một sinh viên bác sĩ Y học cổ truyền trường Đại học Thành Đông, Việt Nam. Anh đã giúp xây dựng bộ dữ liệu và cũng hỗ trợ đánh giá tính xác thực của dữ liệu đầu vào.
+ \n\nVới sự hỗ trợ của anh Minh, dự án này đã được triển khai và phát triển dưới dạng ứng dụng Android bởi Trần Phát Triển. Anh hiện là cựu sinh viên Đại học Công giáo La Mã St. Paul Philippines.
+ \n\nHiện tại, mô hình AI trong dự án này hiện chỉ có thể nhận dạng 7 cây thảo dược với độ chính xác khoảng 70-90% trong khi chúng tôi đang thu thập thêm dữ liệu hình ảnh.
+ \n\nNgoài ra, dự án này chỉ được triển khai trên nền tảng di động Android. Chúng tôi rất muốn phát triển thêm phiên bản dành cho iPhone nhưng điều kiện về thời gian và nhân lực chưa cho phép. Nếu bạn biết lập trình ứng dụng iOS hoặc backend (Nodejs) và muốn giúp đỡ trên tinh thần phi lợi nhuận, xin hãy liên hệ với chúng tôi.
+ \n\nChúng tôi thật sự mong muốn mở rộng số lượng cây thuốc càng nhiều càng tốt. Tham vọng này sẽ không đạt được nếu không có sự hỗ trợ của quý bạn. Có 2 cách bạn có thể giúp chúng tôi:
+ \n\n- Vui lòng đóng góp vào tập dữ liệu bằng cách chụp các hình ảnh thảo dược của riêng bạn bằng thiết bị di động hoặc máy ảnh, sau đó tải tất cả chúng lên máy chủ của chúng tôi bằng ứng dụng di động Android này. Chất lượng hình ảnh không quan trọng, vì vậy bạn có thể chụp những bức ảnh này với độ phân giải hình ảnh thấp nhất để tiết kiệm bộ nhớ. Chúng tôi cần ảnh chụp toàn thân và/hoặc các bộ phận và chi tiết của chúng như hình dạng trái cây, hoa, cành, lá, và rễ, cả dược liệu tươi và khô, nếu có thể.
+ \n\n- Và xin hãy giúp chúng tôi biên tập / chỉnh sửa thông tin chi tiết dược liệu bằng cách nhấp vào nút chỉnh sửa trên trang thông tin của từng dược liệu. Chúng tôi cần thêm dữ liệu về công dụng, cách sử dụng, tác dụng phụ, tương tác thuốc…
+ \n\nXin trân trọng cảm ơn rất nhiều.
+</string>
+    <string name="_70_herbs_list">danh sách 7 dược liệu</string>
+    <string name="full_herb_list">Danh sách dược liệu đầy đủ</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Bạn có chắc chắn muốn xoá tài khoản không?</string>
+    <string name="sign_out">Đăng xuất</string>
+    <string name="your_herb_list_will_be_loaded_soon">Danh sách dược liệu của bạn sẽ được hạ tải khi có dữ liệu</string>
+    <string name="dosing">Liều dùng</string>
+    <string name="like">Thích</string>
+    <string name="report_an_issue_via_facebook">"Báo cáo một vấn đề qua Facebook "</string>
+    <string name="please_upload_images_for_this_herb">Dược liệu này chưa có ảnh. Xin hãy nhấn vào đây để đăng ảnh.</string>
+    <string name="add_more">Thêm nữa</string>
+    <string name="upload">Tải lên</string>
+    <string name="add_images">Thêm nhiều ảnh</string>
+    <string name="instruction">Hướng dẫn</string>
+    <string name="image_item">ảnh</string>
+    <string name="how_to_take_photos">Ứng dụng này chưa hỗ trợ chụp ảnh. Xin hãy dùng ứng dụng chụp ảnh có sẵn trên thiết bị di động của bạn để chụp. Chất lượng hình ảnh không quan trọng trong mô hình trí tuệ nhân tạo của chúng tôi. Bạn có thể giữ chế độ chụp ảnh hiện tại hoặc chỉnh chế độ chụp với độ phân giải hay chất lượng thấp nhất để tiết kiệm dung lượng bộ nhớ điện thoại. Chúng tôi không khuyến khích bạn chụp ở chế độ nghệ thuật hay selfie.
+    \n\nBạn được tự do chụp ở chế độ chân dung (ảnh đứng) hay phong cảnh (ảnh nằm ngang), trong các môi trường khác nhau từ nhiều góc chụp khác nhau với độ sáng tối khác nhau (ban ngày/ban đêm, trong nhà hay ngoài trời…).
+    \n\nChúng tôi cần hình của bộ phận trái/quả, hoa, cành, lá, rễ, hoặc toàn thân - cả tươi và khô, nếu nhìn những bộ phận này bằng mắt thường chúng ta có thể dễ dàng nhận ra tên dược liệu. Nói chung, ít nhất 50 tấm hình của một (bộ phận) dược liệu cũng đã đủ để mô hình AI học cách nhận diện. Chúng tôi giới hạn số lượng hình lưu trữ tối đa trên máy chủ cho mỗi dược liệu là 1000 ảnh.
+    \n\nNguyên tắc vàng là, nếu bạn chụp hình 1 loại dược liệu mà bạn biết tên nhưng lại không thể nhận ra nó trong ảnh chụp thì mô hình AI của chúng tôi cũng không có khả năng đó ^_^.</string>
+    <string name="upload_completed">Tất cả hình của bạn đã được tải lên thành công</string>
+    <string name="upload_in_progress_please">Đang tải ảnh lên máy chủ. Bạn sẽ được thông báo sau khi quá trình này hoàn tất.</string>
+    <string name="uploaded_by">Đăng bởi: %s. Bạn có thể nhấp lên ảnh để mở nó bằng trình duyệt web và lưu ảnh về máy nếu muốn.</string>
+    <string name="please_let_us_know_why_delete_this_image">Vui lòng cho chúng tôi biết tại sao bạn muốn xoá ảnh này. Yêu cầu của bạn sẽ được gửi đến admin.</string>
+    <string name="duplicate_image">Ảnh bị trùng lặp</string>
+    <string name="faulty_image">Sai ảnh hay sai dược liệu</string>
+    <string name="cancel">Bỏ qua</string>
+    <string name="deletion_request_sent_to_admin">Yêu cầu xoá ảnh đã được gửi đến admin.</string>
+    <string name="image_count">Bộ đếm hình: %s</string>
+    <string name="editing_s">Bạn đang biên tập: %s</string>
+    <string name="update">Cập nhật</string>
+    <string name="add_more_images">Thêm nhiều hình</string>
+    <string name="please_edit_this_field">Vui lòng biên tập!</string>
+    <string name="side_effect">Tác dụng phụ</string>
+    <string name="interactions">Tương tác thuốc</string>
+    <string name="vietnamese_name">Tên tiếng Việt</string>
+    <string name="english_name">Tên tiếng Anh</string>
+    <string name="latin_name">Tên Latin</string>
+    <string name="rate_this_herb">Đánh giá dược liệu này</string>
+    <string name="conditions_diabetes_liver_diseases">Bệnh lý (tiểu đường, tim mạch…)</string>
+    <string name="submit">Đăng</string>
+    <string name="effectiveness">Hiệu quả</string>
+    <string name="ease_of_use">Dễ dùng</string>
+    <string name="your_comment">Bình luận của bạn</string>
+    <string name="patient_name">Tên bệnh nhân</string>
+    <string name="patient_age">Tuổi bệnh nhân</string>
+    <string name="patient_comment">Bình luận của bệnh nhân</string>
+    <string name="overall_rating">Đánh giá chung: %.1f - %s lượt đánh giá</string>
+    <string name="effectiveness_rating">Hiệu quả: %.1f</string>
+    <string name="ease_of_use_rating">Dễ dùng %.1f</string>
+    <string name="conditions_s">Bệnh lý: %s</string>
+    <string name="person_s">Tên: %s, Tuổi: %s</string>
+    <string name="report_an_issue_via_email">Báo cáo một vấn đề qua email</string>
+    <string name="via_facebook">Qua Facebook</string>
+    <string name="via_email">Qua email</string>
+    <string name="please_hit_ok_to_open_our_google_sheet">Vui lòng nhấn OK để mở trang Google Sheet của chúng tôi.
+        Tại đây bạn có thể thêm dược liệu mới vào cuối danh sách. Chúng tôi sẽ cập nhật dữ liệu lên máy chủ sau đó. Xin cảm ơn!</string>
+    <string name="stack_overflow">Máy chủ gặp sự cố. Vui lòng quay lại sau!</string>
+    <string name="please_update_android">Thành thật xin lỗi vì sự bất tiện này! Xin hãy cập nhật ứng dụng lên phiên bản mới nhất để tiếp tục sử dụng!</string>
+    <string name="you_have_been_banned">Bạn không thể sử dụng ứng dụng này được nữa vì bạn đã có những hoạt động không phù hợp. Vui lòng liên hệ chúng tôi nếu bạn nghĩ chúng tôi đã hiểu nhầm!</string>
+    <string name="admin">Admin</string>
+    <string name="export_csvs">Xuất nhiều file CSV hình ảnh</string>
+    <string name="please_only_add_a_new_herb_if_etc">Vui lòng chỉ thêm tên dược liệu mới nếu bạn (1) có hình ảnh của dược liệu đó và muốn tải chúng lên, và (2) bạn không thể tìm thấy tên dược liệu bằng thanh tìm kiếm hoặc trong danh sách Tất cả dược liệu.</string>
+    <string name="all_herbs">Tất cả</string>
+    <string name="please_enter_at_least_of_these_names_for_the_new_herb">Vui lòng điền vào ít nhất 1 trong 3 trường sau đây:</string>
+    <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
+    <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
+    <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
+    <string name="recognized_herb_list">Danh sách dược liệu nhận dạng được</string>
+    <string name="location_permission_is_required">Bạn cần cho phép truy cập định vị di động để có thể xác định vị trí của bạn.</string>
+    <string name="current_location">Sử dụng định vị</string>
+    <string name="search_for_a_location">Tìm kiếm địa điểm</string>
+    <string name="address">Địa chỉ: </string>
+
+</resources>

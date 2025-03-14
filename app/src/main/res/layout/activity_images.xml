@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".lensimages.ImagesActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/top_action_bar_scrim">
+
+        <TextView
+            android:id="@+id/addImagesBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/add_photos"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:drawableRightCompat="@drawable/ic_baseline_add_photo_alternate_24"
+            tools:layout_editor_absoluteX="232dp" />
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/cd_close_button"
+            android:padding="@dimen/top_action_button_padding"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_close_vd_white_24"
+            android:foregroundTint="@color/white" />
+
+        <TextView
+            android:id="@+id/clear_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/clear_all"
+            android:textColor="@color/white"
+            app:layout_constraintStart_toEndOf="@id/close_button"
+            app:layout_constraintEnd_toStartOf="@id/addImagesBtn"
+            app:layout_constraintTop_toTopOf="parent"
+            app:drawableRightCompat="@drawable/ic_baseline_delete_forever_24"
+            tools:layout_editor_absoluteX="89dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layoutManager="LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+        app:layout_constraintBottom_toTopOf="@id/seekView" />
+
+    <TextView
+        android:id="@+id/pickImagesView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="50dp"
+        android:text="@string/pick_photos"
+        android:textAlignment="center"
+        android:background="?android:attr/selectableItemBackground"
+        android:textSize="40sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/seekView"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        layout="@layout/seek_bar_confidence"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/recyclerView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
