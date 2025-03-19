@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
+import kotlin.math.roundToInt
 
 /** Presents the list of herb items as labeling results.  */
 class HerbAdapter(private val herbList: List<Herb>) :
@@ -48,7 +49,16 @@ class HerbAdapter(private val herbList: List<Herb>) :
             } else {
                 imageView.setImageResource(R.drawable.ic_launcher_round)
             }
-            idView.text = String.format(itemView.context.getString(R.string.herb_id_s), herb.id ?: "")
+            idView.text = String.format(
+                itemView.context.getString(R.string.herb_id_s),
+                "${herb.id} (Confidence: ${
+                    herb.confidence?.times(100)?.roundToInt()
+                }%, Image processing duration: ${herb.bitmapProcessingTime}ms, Inference duration: ${herb.inferenceProcessingTime}ms, Total duration: ${
+                    herb.bitmapProcessingTime?.plus(
+                        herb.inferenceProcessingTime ?: 0
+                    )
+                }ms)" ?: ""
+            )
             latinView.text = String.format(itemView.context.getString(R.string.latin_name_s), herb.latinName ?: "")
             vietnameseView.text =
                 String.format(itemView.context.getString(R.string.vietnamese_name_s), herb.viName ?: "")
