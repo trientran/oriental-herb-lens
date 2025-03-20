@@ -27,4 +27,6 @@ data class Herb(
     val enName: String? = null,
     val viName: String? = null,
     val confidence: Float? = null,
+    val bitmapProcessingTime: Long? = null,
+    val inferenceProcessingTime: Long? = null,
 )

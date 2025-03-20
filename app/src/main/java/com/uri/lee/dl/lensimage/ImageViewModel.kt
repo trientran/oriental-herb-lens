@@ -7,6 +7,8 @@ import android.os.Bundle
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.ktx.toObject
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
@@ -15,10 +17,12 @@ import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.uri.lee.dl.BaseApplication
 import com.uri.lee.dl.CONFIDENCE_LEVEL
+import com.uri.lee.dl.FireStoreMobile
 import com.uri.lee.dl.IS_OBJECTS_MODE_SINGLE_IMAGE
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_LABELING
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION
 import com.uri.lee.dl.Utils.loadBitmapFromUri
+import com.uri.lee.dl.configCollection
 import com.uri.lee.dl.dataStore
 import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.BitmapInputInfo
@@ -35,6 +39,7 @@ import java.util.concurrent.CancellationException
 
 class ImageViewModel(application: Application) : AndroidViewModel(application) {
 
+    private lateinit var listenerRegistration: ListenerRegistration
     private val application = getApplication<BaseApplication>()
     private val stateFlow = MutableStateFlow(SingleImageState())
 
@@ -55,6 +60,29 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
         viewModelScope.launch { load() }
+        liveMobileUpdate()
+    }
+
+    private fun liveMobileUpdate() {
+        listenerRegistration = configCollection.document("mobile").addSnapshotListener { snapshot, e ->
+            viewModelScope.launch {
+                if (e != null) {
+                    Timber.e(e)
+                    return@launch
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    val mobile = snapshot.toObject<FireStoreMobile>()
+                    viewModelScope.launch {
+                        setState {
+                            copy(
+                                recognizedLatinHerbsMap = mobile?.recognizedLatinHerbs,
+                                recognizedViHerbsMap = mobile?.recognizedViHerbs
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private suspend fun load() {
@@ -134,10 +162,19 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
 
     private suspend fun inferEntireImageLabels() {
         Timber.d("inferEntireImageLabels")
+        val first = System.currentTimeMillis()
         val entireBitmap = getBitmapFromFileUri(state.imageUri!!, MAX_IMAGE_DIMENSION_FOR_LABELING) ?: return
         setState { copy(entireBitmap = entireBitmap) }
         val inputImage = InputImage.fromBitmap(entireBitmap, 0)
-        labelImage(inputImage = inputImage) { setState { copy(entireImageRecognizedHerbs = it, isLoading = false) } }
+        val bitmapDuration = System.currentTimeMillis() - first
+        labelImage(inputImage = inputImage, bitmapDuration = bitmapDuration) {
+            setState {
+                copy(
+                    entireImageRecognizedHerbs = it,
+                    isLoading = false
+                )
+            }
+        }
     }
 
     private suspend fun detectObject() {
@@ -197,9 +234,15 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
         null
     }
 
-    private inline fun labelImage(inputImage: InputImage, crossinline callback: (herbList: List<Herb>) -> Unit) {
+    private inline fun labelImage(
+        inputImage: InputImage,
+        bitmapDuration: Long? = null,
+        crossinline callback: (herbList: List<Herb>) -> Unit
+    ) {
+        var first: Long = System.currentTimeMillis()
         labeler!!.process(inputImage)
             .addOnSuccessListener {
+                val duration = System.currentTimeMillis().minus(first)
                 if (it.isEmpty()) {
                     if (state.isObjectsMode == true) {
                         callback.invoke(emptyList())
@@ -217,9 +260,11 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
                     recognitionList.add(
                         Herb(
                             id = id,
-                            latinName = state.recognizedLatinHerbs!!.getString(id),
-                            viName = state.recognizedViHerbs!!.getString(id),
-                            confidence = it[i].confidence
+                            latinName = state.recognizedLatinHerbsMap!![id],
+                            viName = state.recognizedViHerbsMap!![id],
+                            confidence = it[i].confidence,
+                            bitmapProcessingTime = bitmapDuration,
+                            inferenceProcessingTime = duration
                         )
                     )
                 }
@@ -240,6 +285,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
         super.onCleared()
         try {
+            if (this::listenerRegistration.isInitialized) listenerRegistration.remove()
             detector.close()
             labeler?.close()
         } catch (e: IOException) {
@@ -257,6 +303,8 @@ data class SingleImageState(
     val entireImageRecognizedHerbs: List<Herb>? = null,
     val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
     val recognizedViHerbs: Bundle? = null, // HerbId, viet name
+    val recognizedLatinHerbsMap: Map<String, String>? = null, // herbId, latin name
+    val recognizedViHerbsMap: Map<String, String>? = null, // HerbId, viet name
     val isLoading: Boolean = false,
     val event: Event? = null,
 ) {

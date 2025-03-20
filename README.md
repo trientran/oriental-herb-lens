@@ -1,44 +1,67 @@
-[![Build Status](https://travis-ci.org/firebase/mlkit-material-android.svg?branch=master)](https://travis-ci.org/firebase/mlkit-material-android)
+# 🌿 Med Herb Lens
 
-# Med Herb Lens
+**Med Herb Lens** is an AI-powered Android application designed specifically for the identification of medicinal plants. Developed as a proof-of-concept, the app aims to bridge the gap between traditional herbal knowledge and modern deep learning technologies. It supports both offline and online modes, making it ideal for use in remote areas where medicinal flora are commonly found.
 
-## How to use the app
+## 🚀 Features
 
-This app supports three herb image recognition scenarios: live camera, single static image, and
-multiple images.
+- 📸 **Image-Based Recognition**
+  - Real-time plant recognition via the camera
+  - Static image analysis from the gallery
+  - Batch image processing
+  - On-device inference using TFLite for offline recognition
 
-### Live Camera scenario
+- 🔍 **Text-Based Search**
+  - Find medicinal plants by entering Latin or Vietnamese names
+  - Search powered by Algolia for fast and relevant results
 
-It uses the camera preview as input and contains three workflow: object detection & visual search,
-object detection & custom classification, and barcode detection. There's also a Settings page to
-allow you to configure several options:
-- Camera
-  - Preview Size - Specify the preview size of rear camera manually (Default size is chose appropriately based on screen size)
-- Object detection
-    - Enable Multiple Objects -- Enable multiple objects to be detected at once.
-    - Enable classification -- Enable coarse classification
-- Product search
-    - Enable auto search -- If enabled, search request will be fired automatically once object is detected and confirmed, otherwise a search button will appear to trigger search manually
-    - Confirmation time in manual search -- Required time that an manually-detected object needs to be in focus before it is confirmed.
-    - Confirmation time in auto search -- Required time that an auto-detected object needs to be in focus before it is confirmed.
-- Barcode detection
-    - Barcode reticle width -- Size of barcode reticle width relative to the camera preview width
-    - Barcode reticle height -- Size of the barcode reticle height relative to the camera preview height
-    - Enable Barcode size check -- Will prompt user to "move closer" if the detected barcode is too small
-    - Delay loading result -- Simulates a case where the detected barcode requires further
-      processing before displaying the result.
+- 🧠 **AI-Powered Identification**
+  - EfficientNetB0 model trained on curated herb datasets
+  - Lightweight and fast inference (~300-400ms per image)
+  - Transfer learning and data augmentation for better accuracy
 
-### Single Static Image scenario
+- 🌐 **Cloud-Hosted Knowledge Base**
+  - Plant profiles with scientific/common names, medicinal uses, and images
+  - Continuously updated by user contributions
+  - Synced with Firebase Firestore
 
-During this scenario, the app will prompt the user to select an image from the “Image Picker” (
-gallery), detect objects in the selected image, and then perform visual search on those objects.
-There are well designed UI components (overlay dots, card carousel etc.) to indicate the detected
-objects and search results.
+- 📡 **Offline Mode Support**
+  - Identification and contributions work offline
+  - Data synced automatically when connection is restored
 
-### Multiple Static Images scenario
+- 🧑‍🤝‍🧑 **Community-Driven Contributions**
+  - Upload new images
+  - Review and verify AI predictions
+  - Improve the dataset and model over time
 
-### Full-text search
+- 🔐 **User Management and Notifications**
+  - Firebase Authentication
+  - Cloud Messaging for updates and sync alerts
 
-## Copyright
+## 🛠 Tech Stack
 
-© Uri Lee, 2020.
+- Android (Kotlin, Jetpack Libraries, ViewModel, Navigation Component)
+- Firebase (Firestore, Cloud Functions, Auth, Cloud Messaging)
+- TensorFlow Lite (TFLite)
+- ML Kit
+- Algolia (Search)
+
+## 📊 Model Performance
+
+- Initial training on 7 species: 100% accuracy on validation set
+- Model size optimized for mobile deployment
+- Example recognition confidence:
+  - *Cordyline fruticosa*: 68%
+  - *Polyscias fruticosa*: 88%
+  - *Stachytarpheta jamaicensis*: 98%
+  - *Piper sarmentosum*: 100%
+
+## 📈 Future Work
+
+- Expand dataset with more plant species
+- Improve model generalization and reduce misidentification
+- Enhance UI/UX with user feedback
+- Explore integration with DNA-based bioinformatics tools
+
+## 📄 License
+
+This project is published under the [CC BY-NC-ND 4.0 License](http://creativecommons.org/licenses/by-nc-nd/4.0/).
