@@ -26,6 +26,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
+import com.uri.lee.dl.BaseApplication
 import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
@@ -48,7 +49,7 @@ class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(appl
     val detectedBitmapObject = MutableLiveData<DetectedBitmapObject>()
     val confidence = MutableLiveData<Float>()
     private var labeler: ImageLabeler? = null
-
+    private val application = getApplication<BaseApplication>()
     private val objectIdsToSearch = HashSet<Int>()
 
     var isCameraLive = false
@@ -128,7 +129,7 @@ class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun label(detectedObjectInfo: DetectedObjectInfo, confidence: Float, callback: (List<Herb>) -> Unit) {
-        getHerbModel {
+        getHerbModel(application) {
             val options = it.setConfidenceThreshold(confidence).build()
             labeler = ImageLabeling.getClient(options)
             viewModelScope.launch {

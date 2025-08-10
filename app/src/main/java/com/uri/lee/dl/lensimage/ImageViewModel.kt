@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.firestore.toObject
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
 import com.google.mlkit.vision.label.ImageLabeling
@@ -141,7 +141,7 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
     fun process() {
         Timber.d("process")
         if (state.imageUri == null || state.confidence == null || state.isObjectsMode == null) return
-        getHerbModel {
+        getHerbModel(application) {
             val options = it.setConfidenceThreshold(state.confidence!!).build()
             labeler = ImageLabeling.getClient(options)
             viewModelScope.launch {

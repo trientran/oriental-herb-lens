@@ -1,11 +1,12 @@
 package com.uri.lee.dl.lenscamera.livecamera
 
+import android.app.Application
 import android.os.Bundle
 import android.util.Size
 import androidx.camera.core.ImageAnalysis
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveState
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.ExecutorService
 
-class LiveCameraViewModel : ViewModel() {
+class LiveCameraViewModel(application: Application) : AndroidViewModel(application) {
     // This is a LiveData field. Choosing this structure because the whole list tend to be updated
     // at once in ML and not individual elements. Updating this once for the entire list makes
     // sense.
@@ -45,7 +46,8 @@ class LiveCameraViewModel : ViewModel() {
                 it.setAnalyzer(cameraExecutor, ImageAnalyzer(
                     confidence = confidence,
                     recognizedLatinHerbs = state.recognizedLatinHerbs,
-                    recognizedViHerbs = state.recognizedViHerbs
+                    recognizedViHerbs = state.recognizedViHerbs,
+                    context = getApplication(),
                 ) { recognitionList ->
                     // updating the list of recognised objects
                     updateData(recognitionList)

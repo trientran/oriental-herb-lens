@@ -101,7 +101,7 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
     private fun process(uriList: List<Uri>) {
         Timber.d("processCumulatively")
         if (state.confidence == null) return
-        getHerbModel {
+        getHerbModel(application) {
             val options = it.setConfidenceThreshold(state.confidence!!).build()
             labeler = ImageLabeling.getClient(options)
             viewModelScope.launch {

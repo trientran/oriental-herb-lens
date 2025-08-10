@@ -1,5 +1,6 @@
 package com.uri.lee.dl.lenscamera.livecamera
 
+import android.content.Context
 import android.os.Bundle
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -16,12 +17,13 @@ class ImageAnalyzer(
     private val maxResultsDisplayed: Int = 1,
     val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
     val recognizedViHerbs: Bundle? = null, // HerbId, viet name
+    private val context: Context,
     private val recognitionListener: (herbs: List<Herb>) -> Unit,
 ) : ImageAnalysis.Analyzer {
     @ExperimentalGetImage
     override fun analyze(imageProxy: ImageProxy) {
         val inputImage = imageProxy.image?.let { InputImage.fromMediaImage(it, imageProxy.imageInfo.rotationDegrees) }
-        getHerbModel {
+        getHerbModel(context) {
             val options = it.setConfidenceThreshold(confidence).setMaxResultCount(maxResultsDisplayed).build()
             val labeler = ImageLabeling.getClient(options)
             inputImage?.let { image -> processImage(labeler, image, imageProxy) }

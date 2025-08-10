@@ -69,18 +69,15 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.firebase.ui.auth.AuthUI
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
-import com.google.mlkit.common.model.CustomRemoteModel
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import com.google.mlkit.common.model.LocalModel
-import com.google.mlkit.common.model.RemoteModelManager
-import com.google.mlkit.linkfirebase.FirebaseModelSource
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.instantsearch.Herb
@@ -474,25 +471,17 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
 
     return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 }
+const val DOWNLOADED_MODEL_FILE_PATH: String = "model_file_path"
+const val MODEL_PREFS = "model_prefs"
 
-fun getHerbModel(optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
+fun getHerbModel(context: Context, optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
     val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
-    // Specify the name you assigned in the Firebase console.
-    val remoteModel = CustomRemoteModel
-        .Builder(FirebaseModelSource.Builder(REMOTE_TFLITE_MODEL_NAME).build())
-        .build()
-    RemoteModelManager.getInstance().isModelDownloaded(remoteModel)
-        .addOnSuccessListener { isDownloaded ->
-            val optionsBuilder =
-                if (isDownloaded) {
-                    Timber.d("Remote model being used")
-                    CustomImageLabelerOptions.Builder(remoteModel)
-                } else {
-                    Timber.d("Local model being used")
-                    CustomImageLabelerOptions.Builder(localModel)
-                }
-            optionsBuilderCallBack.invoke(optionsBuilder)
-        }
+    val downloadedModelFilePath = context
+        .getSharedPreferences(MODEL_PREFS, Context.MODE_PRIVATE)
+        .getString(DOWNLOADED_MODEL_FILE_PATH, null)
+    val remoteModel = downloadedModelFilePath?.let { LocalModel.Builder().setAbsoluteFilePath(it).build() }
+    val optionsBuilder = CustomImageLabelerOptions.Builder(remoteModel ?: localModel)
+    optionsBuilderCallBack.invoke(optionsBuilder)
 }
 
 internal fun Activity.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {
