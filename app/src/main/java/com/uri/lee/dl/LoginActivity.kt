@@ -1,9 +1,11 @@
 package com.uri.lee.dl
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -14,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 
+@SuppressLint("RestrictedApi")
 class LoginActivity : AppCompatActivity() {
 
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
@@ -35,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    Timber.e(e.message)
+                    Timber.e(e)
                 }
             }
         }
@@ -43,6 +46,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(R.layout.activity_login)
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()

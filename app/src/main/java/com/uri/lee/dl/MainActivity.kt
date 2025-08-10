@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -62,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(bundle)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(view)
 
         // Setup tabbed views
