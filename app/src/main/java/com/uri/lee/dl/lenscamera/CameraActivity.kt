@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.widget.SeekBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -74,9 +73,6 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val shouldShowSeekBarAndSwitch = Utils.allPermissionsGranted(this)
-        binding.seekView.root.isVisible = shouldShowSeekBarAndSwitch
-        binding.objectsModeSwitch.isVisible = shouldShowSeekBarAndSwitch
         if (supportFragmentManager.findFragmentById(R.id.container) == null) launchCamera()
     }
 }
