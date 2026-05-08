@@ -14,6 +14,62 @@
       },
       "oauth_client": [
         {
+          "client_id": "305495327770-0k63g1vr2l8dt31qp6st3eaht0rbg73f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "07740a7c8f4e8f442f6226bf1775dd7f6914bc71"
+          }
+        },
+        {
+          "client_id": "305495327770-4j4efdd9tflrrvh54vg933jgtqa6eg1l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "f1cff8abcbea04d85c07d2a8edf528db4732511f"
+          }
+        },
+        {
+          "client_id": "305495327770-65so96cf1cevdr0mooim5m64mvemovo2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "4dd0aa06dfb39f33332c1df6363b3aa21e477ffc"
+          }
+        },
+        {
+          "client_id": "305495327770-avhnk92cpkjoudj63v7kc9e6jbuk3f5h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "03a51f9b3a102ed2feae91c4e15ad627f632bbfd"
+          }
+        },
+        {
+          "client_id": "305495327770-jjbaq2tnlr7ttc1eoklhig87g3b8ieor.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "a42e243955e0781b3ea66c5a43a143f6839f4b68"
+          }
+        },
+        {
+          "client_id": "305495327770-lcmudn3cmatbppt7dd4s4ail96jicsgg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "477b7d69e79fe6f2ea488315246743728ae8c794"
+          }
+        },
+        {
+          "client_id": "305495327770-mtgjtq9ipsjpoor67mvfctd85vdk08ld.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uri.lee.dl",
+            "certificate_hash": "e9a0765ebc35c9ff5174dd9d662a447293938ac3"
+          }
+        },
+        {
           "client_id": "305495327770-e1epck1kmjs9c1e9a4p4rq5896m5ldrn.apps.googleusercontent.com",
           "client_type": 3
         }
