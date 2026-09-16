@@ -60,7 +60,7 @@ task("ktlint", type: JavaExec, group: "verification") {
 
     description = "Check Kotlin code style."
     classpath = configurations.ktlint
-    main = "com.github.shyiko.ktlint.Main"
+    mainClass = "com.github.shyiko.ktlint.Main"
     args = [
         "--format",
         "--android",
