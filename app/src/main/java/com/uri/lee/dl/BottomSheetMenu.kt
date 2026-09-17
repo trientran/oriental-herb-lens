@@ -5,16 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
-import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.BottomSheetMenuBinding
 
 class BottomSheetMenu(
-    private val recognizedViHerbs: Map<String, String>,
-    private val recognizedLatinHerbs: Map<String, String>
 ) : BottomSheetDialogFragment() {
 
     private lateinit var binding: BottomSheetMenuBinding
@@ -28,31 +25,19 @@ class BottomSheetMenu(
         val view = binding.root
 
         binding.herbList.setOnClickListener {
-            AlertDialog.Builder(it.context)
-                .setMessage(
-                    if (isSystemLanguageVietnamese) {
-                        recognizedViHerbs.values.sorted().joinToString("\n")
-                    } else {
-                        recognizedLatinHerbs.values.sorted().joinToString("\n")
-                    }
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing".toUri()
                 )
-                .setCancelable(true)
-                .setNeutralButton("OK") { _, _ -> dismiss() }
-                .create().show()
-            dismiss()
+            )
         }
         binding.signOutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             dismiss()
         }
         binding.contactButton.setOnClickListener {
-            AlertDialog.Builder(it.context)
-                .setMessage(getString(R.string.contact_us))
-                .setCancelable(true)
-                .setPositiveButton(getString(R.string.via_facebook)) { _, _ -> it.context.openFacebookPage() }
-                .setNegativeButton(getString(R.string.via_email)) { _, _ -> it.context.sendEmail(subject = "") }
-                .create().show()
-            dismiss()
+            it.context.sendEmail(subject = "")
         }
         binding.shareButton.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
@@ -65,12 +50,12 @@ class BottomSheetMenu(
             dismiss()
         }
         binding.aboutButton.setOnClickListener {
-            AlertDialog.Builder(it.context)
-                .setMessage(getString(R.string.about_us))
-                .setCancelable(true)
-                .setNeutralButton("OK") { _, _ -> dismiss() }
-                .create().show()
-            dismiss()
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    "https://med-herb-lens.web.app/".toUri()
+                )
+            )
         }
         return view
     }

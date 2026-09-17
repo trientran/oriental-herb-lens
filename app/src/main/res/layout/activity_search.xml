@@ -31,7 +31,7 @@
         app:layout_constraintStart_toEndOf="@id/closeView"
         app:iconifiedByDefault="false"
         app:searchIcon="@null"
-        app:defaultQueryHint="@string/latin_or_vietnamese_name" />
+        app:defaultQueryHint="@string/plant_name" />
 
     <ImageView
         android:id="@+id/microphoneView"

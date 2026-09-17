@@ -204,7 +204,7 @@ object Utils {
 
     fun Context.sendEmail(subject: String, body: String = "") {
         try {
-            val mails: Array<String> = arrayOf("admin@caythuoc.ml", "admin@medherblens.ml")
+            val mails: Array<String> = arrayOf("tptrien@gmail.com")
             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:")
                 putExtra(Intent.EXTRA_EMAIL, mails)

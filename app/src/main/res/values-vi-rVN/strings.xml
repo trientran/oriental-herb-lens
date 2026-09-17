@@ -32,7 +32,7 @@
     <string name="pref_summary_confirmation_time_in_manual_search">Trong khoảng 100–1000 mili giây</string>
     <string name="pref_title_confirmation_time_in_auto_search">Thời gian chờ xác nhận ở chế độ gắn nhãn tự động</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Trong khoảng 500–2000 mili giây</string>
-    <string name="latin_or_vietnamese_name">Tên Latin hay Việt</string>
+    <string name="plant_name">Tên cây thuốc</string>
     <string name="favorite">Yêu thích</string>
     <string name="history">Lịch sử</string>
     <string name="random">Đại trà</string>
@@ -156,7 +156,7 @@
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
     <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
     <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
-    <string name="recognized_herb_list">Danh sách dược liệu nhận dạng được</string>
+    <string name="view_plant_list">Xem danh sách cây thuốc</string>
     <string name="location_permission_is_required">Bạn cần cho phép truy cập định vị di động để có thể xác định vị trí của bạn.</string>
     <string name="current_location">Sử dụng định vị</string>
     <string name="search_for_a_location">Tìm kiếm địa điểm</string>

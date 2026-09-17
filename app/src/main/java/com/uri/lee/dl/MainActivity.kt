@@ -110,10 +110,7 @@ class MainActivity : AppCompatActivity() {
                     .distinctUntilChanged()
                     .onEach {
                         binding.menuView.setOnClickListener { _ ->
-                            val bottomSheet = BottomSheetMenu(
-                                recognizedViHerbs = it.recognizedViHerbs,
-                                recognizedLatinHerbs = it.recognizedLatinHerbs
-                            )
+                            val bottomSheet = BottomSheetMenu()
                             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
                         }
                         if (it.stackOverflow) {

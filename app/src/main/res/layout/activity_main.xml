@@ -47,7 +47,7 @@
                     android:drawablePadding="8dp"
                     android:gravity="center_vertical"
                     android:paddingStart="8dp"
-                    android:text="@string/latin_or_vietnamese_name"
+                    android:text="@string/plant_name"
                     app:drawableStartCompat="@drawable/ic_baseline_search_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

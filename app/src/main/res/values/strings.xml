@@ -47,7 +47,7 @@
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="latin_or_vietnamese_name">Latin or Vietnamese name</string>
+    <string name="plant_name">Plant name</string>
     <string name="favorite">Favorite</string>
     <string name="history">History</string>
     <string name="random">Random</string>
@@ -177,7 +177,7 @@
     <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
     <string name="sync_recognized_herbs">Sync recognized herbs</string>
     <string name="sync_to_be_recognized_herbs">Sync to-be-recognized herbs</string>
-    <string name="recognized_herb_list">Recognized herbs list</string>
+    <string name="view_plant_list">View plant list</string>
     <string name="location_permission_is_required">Location permission is required to fetch your current location.</string>
     <string name="current_location">Current location</string>
     <string name="search_for_a_location">Search for a location</string>
