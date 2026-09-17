@@ -17,11 +17,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ml.modeldownloader.CustomModel
-import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
-import com.google.firebase.ml.modeldownloader.DownloadType
-import com.google.firebase.ml.modeldownloader.FirebaseModelDownloader
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.remoteConfig
+import com.google.firebase.remoteconfig.remoteConfigSettings
+import com.google.firebase.storage.storage
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityMainBinding
@@ -40,7 +41,12 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import kotlin.system.exitProcess
+
+private const val MODEL_URL = "model_url"
+
+private const val REMOTE_MODEL_NAME = "my_remote_model.tflite"
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,6 +64,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
+
     @SuppressLint("RestrictedApi")
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
@@ -65,6 +73,8 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(view)
+
+        setUpRemoteConfig()
 
         // Setup tabbed views
         binding.viewPager.adapter = SectionsPagerAdapter(this)
@@ -92,8 +102,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }.show()
         }
-
-        downloadModel()
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -205,20 +213,46 @@ class MainActivity : AppCompatActivity() {
         authUI.auth.removeAuthStateListener(authStateListener)
     }
 
+    private fun setUpRemoteConfig() {
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 3600
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+        remoteConfig.fetchAndActivate()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val updated = task.result
+                    Timber.d("Config params updated: $updated")
+                    downloadModel()
+                } else {
+                    Timber.e(task.exception, "Fetch failed")
+                }
+            }
+    }
+
     private fun downloadModel() {
-        val conditions = CustomModelDownloadConditions.Builder()
-            .requireWifi()
-            .build()
-        FirebaseModelDownloader.getInstance()
-            .getModel(REMOTE_TFLITE_MODEL_NAME, DownloadType.LOCAL_MODEL_UPDATE_IN_BACKGROUND, conditions)
-            .addOnSuccessListener { model: CustomModel? ->
-                val sharedPreferences = getSharedPreferences(MODEL_PREFS, MODE_PRIVATE)
-                sharedPreferences.edit { model?.let { putString(DOWNLOADED_MODEL_FILE_PATH, it.localFilePath) } }
-                Timber.d("Model download completed ${model?.localFilePath}")
-            }
-            .addOnFailureListener { exception ->
-                Timber.tag("MODEL_DOWNLOAD").e(exception, "Model download failed")
-            }
+        val sharedPreferences = getSharedPreferences(MODEL_PREFS, MODE_PRIVATE)
+        val localFile = File(cacheDir, REMOTE_MODEL_NAME)
+        val savedModelUrl = sharedPreferences.getString(MODEL_URL, "")
+        val remoteModelUrl = remoteConfig.getString(MODEL_URL)
+        Timber.d("savedModelUrl: $savedModelUrl")
+        Timber.d("remoteModelUrl: $remoteModelUrl")
+        if (remoteModelUrl != savedModelUrl) {
+            Timber.d("downloading model")
+            val storage = Firebase.storage
+            val modelRef = storage.getReferenceFromUrl(remoteModelUrl)
+            modelRef.getFile(localFile)
+                .addOnSuccessListener {
+                    Timber.d("download succeeded")
+                    sharedPreferences.edit { putString(MODEL_URL, remoteModelUrl) }
+                    sharedPreferences.edit { putString(DOWNLOADED_MODEL_FILE_PATH, localFile.absolutePath) }
+                    Timber.d("Model path saved: ${localFile.absolutePath}")
+                }
+                .addOnFailureListener {
+                    Timber.e(it, "download failed")
+                }
+        }
     }
 
     @Deprecated("Deprecated in Java")

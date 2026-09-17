@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<defaults>
+    <entry>
+        <key>model_url</key>
+        <value>gs://oriental-herb-lens-41d17.appspot.com/model.tflite</value>
+    </entry>
+</defaults>
