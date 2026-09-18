@@ -22,25 +22,35 @@ class LoginActivity : AppCompatActivity() {
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
         Timber.d(auth.currentUser.toString())
         if (auth.currentUser != null) {
-            finishAffinity()
-            startActivity(Intent(this, MainActivity::class.java))
+            lifecycleScope.launch(mainDispatcher) {
+                try {
+                    auth.currentUser?.let {
+                        userCollection
+                            .document(it.uid)
+                            .set(
+                                mapOf(
+                                    "uid" to it.uid,
+                                    "email" to it.email,
+                                    "name" to it.displayName
+                                ), SetOptions.merge()
+                            )
+                            .await()
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e)
+                } finally {
+                    finishAffinity()
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                }
+            }
         }
     }
 
     private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
         if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let {
-            lifecycleScope.launch(mainDispatcher) {
-                try {
-                    userCollection
-                        .document(it.uid)
-                        .set(mapOf("uid" to it.uid), SetOptions.merge())
-                        .await()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e)
-                }
-            }
+
         }
     }
 

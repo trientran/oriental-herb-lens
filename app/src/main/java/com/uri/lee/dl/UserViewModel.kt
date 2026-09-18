@@ -114,33 +114,37 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private fun checkAdminStatus() {
         Timber.d("checkAdminStatus")
         viewModelScope.launch {
-            userCollection.document(authUI.auth.uid!!).get().await().let {
-                it.getBoolean(USER_IS_ADMIN_FIELD_NAME)?.let { setState { copy(isAdmin = it) } }
+            authUI.auth.uid?.let { uid ->
+                userCollection.document(uid).get().await().let {
+                    it.getBoolean(USER_IS_ADMIN_FIELD_NAME)?.let { setState { copy(isAdmin = it) } }
+                }
             }
         }
     }
 
     private fun liveHistoryAndFavoriteUpdate() {
-        personalListListenerRegistration = userCollection.document(authUI.auth.uid!!)
-            .addSnapshotListener { snapshot, e ->
-                viewModelScope.launch {
-                    if (e != null) {
-                        Timber.e(e)
-                        setState { copy(error = UserState.Error(e)) }
-                        return@launch
-                    }
-                    if (snapshot != null && snapshot.exists()) {
-                        val historyHerbIds = (snapshot.get(USER_HISTORY_FIELD_NAME) as? List<*>)
-                            ?.reversed()
-                            ?.mapNotNull { it as? Long }
-                        historyHerbIds?.let { setState { copy(historyHerbIds = it.distinct()) } }
-                        val favoriteHerbIds = (snapshot.get(USER_FAVORITE_FIELD_NAME) as? List<*>)
-                            ?.reversed()
-                            ?.mapNotNull { it as? Long }
-                        favoriteHerbIds?.let { setState { copy(favoriteHerbIds = it.distinct()) } }
+        authUI.auth.uid?.let { uid ->
+            personalListListenerRegistration = userCollection.document(uid)
+                .addSnapshotListener { snapshot, e ->
+                    viewModelScope.launch {
+                        if (e != null) {
+                            Timber.e(e)
+                            setState { copy(error = UserState.Error(e)) }
+                            return@launch
+                        }
+                        if (snapshot != null && snapshot.exists()) {
+                            val historyHerbIds = (snapshot.get(USER_HISTORY_FIELD_NAME) as? List<*>)
+                                ?.reversed()
+                                ?.mapNotNull { it as? Long }
+                            historyHerbIds?.let { setState { copy(historyHerbIds = it.distinct()) } }
+                            val favoriteHerbIds = (snapshot.get(USER_FAVORITE_FIELD_NAME) as? List<*>)
+                                ?.reversed()
+                                ?.mapNotNull { it as? Long }
+                            favoriteHerbIds?.let { setState { copy(favoriteHerbIds = it.distinct()) } }
+                        }
                     }
                 }
-            }
+        }
     }
 
     override fun onCleared() {
