@@ -22,9 +22,11 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Keystore files - keep these OUTSIDE the repo entirely
 *.jks
 *.keystore
+*.pepk
+keystores/
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
