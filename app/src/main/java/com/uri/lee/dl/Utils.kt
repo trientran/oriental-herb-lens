@@ -583,8 +583,6 @@ var satelliteAddress: String? = "us-central-1.tardigrade.io:7777"
 var serializedApiKey = "13Yqft7v..."
 var passphrase = "super secret passphrase"
 
-private const val MAP_PRODUCTS_API_KEY = "AIzaSyCUZPUl0eP0Wt52o2RtGRH7xdQuBLtavP8"
-
 class BaseApplication : Application(), DefaultLifecycleObserver {
 
     override fun onCreate() {
@@ -593,7 +591,7 @@ class BaseApplication : Application(), DefaultLifecycleObserver {
         val client = createUnsafeOkHttpClient()
 
         // Initialize the SDK
-        Places.initializeWithNewPlacesApiEnabled(applicationContext, MAP_PRODUCTS_API_KEY)
+        Places.initializeWithNewPlacesApiEnabled(applicationContext, BuildConfig.MAP_PRODUCTS_API_KEY)
 
         Glide.get(this).registry.replace(
             GlideUrl::class.java, InputStream::class.java,
