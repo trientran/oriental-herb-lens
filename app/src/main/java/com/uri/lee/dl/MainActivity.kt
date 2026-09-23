@@ -44,7 +44,7 @@ import timber.log.Timber
 import java.io.File
 import kotlin.system.exitProcess
 
-private const val MODEL_URL = "model_url"
+internal const val MODEL_URL = "model_url"
 
 private const val REMOTE_MODEL_NAME = "my_remote_model.tflite"
 

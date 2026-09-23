@@ -3,6 +3,9 @@ package com.uri.lee.dl.testing.fixtures
 /**
  * Real Vietnamese and international names for the 70 labels of the original herb model, keyed by label id.
  * Used as realistic test data (diacritics, multi-word names) for mapping and search tests.
+ *
+ * Kept exactly as found: most Vietnamese names here are Unicode NFD (base letter + combining marks),
+ * the rest NFC. Code that compares or searches this text must normalise it first.
  */
 
 val viNames70: Map<String, String> = mapOf(

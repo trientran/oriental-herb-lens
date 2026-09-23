@@ -38,6 +38,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.CancellationException
+import com.uri.lee.dl.labeling.toHerbs
+import com.uri.lee.dl.labeling.toRawLabel
 
 /** View model for handling application workflow based on camera preview.  */
 class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(application) {
@@ -152,19 +154,10 @@ class ObjectiveCameraViewModel(application: Application) : AndroidViewModel(appl
                     callback.invoke(emptyList())
                     return@addOnSuccessListener
                 }
-                val maxResultsDisplayed = it.size
-                val recognitionList = mutableListOf<Herb>()
-                for (i in 0 until maxResultsDisplayed) {
-                    val id = it[i].text
-                    recognitionList.add(
-                        Herb(
-                            id = id,
-                            latinName = state.recognizedLatinHerbs!!.getString(id),
-                            viName = state.recognizedViHerbs!!.getString(id),
-                            confidence = it[i].confidence
-                        )
-                    )
-                }
+                val recognitionList = it.map { label -> label.toRawLabel() }.toHerbs(
+                    latinNameOf = { id -> state.recognizedLatinHerbs!!.getString(id) },
+                    viNameOf = { id -> state.recognizedViHerbs!!.getString(id) },
+                )
                 callback.invoke(recognitionList)
             }
             .addOnFailureListener {
