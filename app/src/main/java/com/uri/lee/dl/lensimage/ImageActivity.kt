@@ -24,13 +24,13 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import android.os.CountDownTimer
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -43,8 +43,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
-import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
-import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImageBinding
 import com.uri.lee.dl.labeling.DetectedBitmapObject
@@ -67,7 +65,7 @@ class ImageActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityImageBinding
     private val detectedBitmapObjectMap = TreeMap<Int, DetectedBitmapObject>()
-    private val viewModel: ImageViewModel by viewModels()
+    private val viewModel: ImageViewModel by viewModel()
     private var snackbar: Snackbar? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
@@ -96,9 +94,6 @@ class ImageActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
-        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
-        viewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
 
         dotViewSize = resources.getDimensionPixelOffset(R.dimen.static_image_dot_view_size)
 
@@ -130,18 +125,18 @@ class ImageActivity : AppCompatActivity() {
 
     private fun CoroutineScope.setUpComponents() {
         // objects mode switch
-        viewModel.state()
+        viewModel.state
             .mapNotNull { it.isObjectsMode }
             .take(1)
             .onEach { binding.actionBar.objectsModeSwitch.isChecked = it }
             .launchIn(this)
         binding.actionBar.objectsModeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.setObjectsMode(isChecked)
+            viewModel.onAction(SingleImageAction.DetectObjectsChanged(isChecked))
             binding.actionBar.objectsModeSwitch.text =
                 if (isChecked) getString(R.string.objects_mode) else getString(R.string.whole_image_mode)
         }
         // seek bar
-        viewModel.state()
+        viewModel.state
             .mapNotNull { it.confidence }
             .take(1)
             .onEach {
@@ -156,17 +151,17 @@ class ImageActivity : AppCompatActivity() {
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                viewModel.setConfidence((seekBar.progress.toFloat() / 100))
+                viewModel.onAction(SingleImageAction.ConfidenceChanged(seekBar.progress.toFloat() / 100))
             }
         })
 
-        viewModel.state()
+        viewModel.state
             .map { it.isLoading }
             .distinctUntilChanged()
             .onEach { binding.loadingView.isVisible = it }
             .launchIn(this)
 
-        viewModel.state()
+        viewModel.state
             .map { it.imageUri }
             .distinctUntilChanged()
             .onEach {
@@ -177,7 +172,7 @@ class ImageActivity : AppCompatActivity() {
             }
             .launchIn(this)
 
-        viewModel.state()
+        viewModel.state
             .map { it.isObjectsMode == true && !it.objectInfoList.isNullOrEmpty() }
             .distinctUntilChanged()
             .onEach {
@@ -187,29 +182,23 @@ class ImageActivity : AppCompatActivity() {
             }
             .launchIn(this)
 
-        viewModel.state()
+        viewModel.state
             .map { it.entireImageRecognizedHerbs }
             .distinctUntilChanged()
             .onEach { it?.let { herbs -> showEntireImageLabelingResults(herbs) } }
             .launchIn(this)
 
-        viewModel.state()
+        viewModel.state
             .mapNotNull { it.objectInfoList }
             .distinctUntilChanged()
             .onEach { detectionList ->
-                viewModel.state.entireBitmap?.let { bitmap ->
+                viewModel.state.value.entireBitmap?.let { bitmap ->
                     onObjectsDetected(inputBitmap = bitmap, objects = detectionList)
                 }
             }
             .launchIn(this)
 
-        viewModel.state()
-            .mapNotNull { it.imageUri }
-            .take(1)
-            .onEach { viewModel.process() }
-            .launchIn(this)
-
-        viewModel.state()
+        viewModel.state
             .map { it.event }
             .onEach {
                 when (it) {
@@ -232,7 +221,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     private val resultLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { it?.apply { viewModel.setImageUri(this) } }
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { it?.let { uri -> viewModel.onAction(SingleImageAction.ImagePicked(uri)) } }
 
     override fun onBackPressed() {
         if (bottomSheetBehavior?.state != BottomSheetBehavior.STATE_HIDDEN) {

@@ -1,10 +1,10 @@
 package com.uri.lee.dl.lensimages
 
 import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import android.os.CountDownTimer
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -12,8 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import com.uri.lee.dl.R
-import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
-import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +27,7 @@ class ImagesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityImagesBinding
 
     // Contains the recognition result. Since  it is a viewModel, it will survive screen rotations
-    private val viewModel: ImagesViewModel by viewModels()
+    private val viewModel: ImagesViewModel by viewModel()
     private lateinit var viewAdapter: ImagesAdapter
     private var snackbar: Snackbar? = null
 
@@ -39,9 +37,6 @@ class ImagesActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
-        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
-        viewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
 
         // Initialising the RecyclerView and its linked Adapter
         viewAdapter = ImagesAdapter {
@@ -79,9 +74,9 @@ class ImagesActivity : AppCompatActivity() {
         binding.closeButton.setOnClickListener { finish() }
         binding.addImagesBtn.setOnClickListener { browseImagesTimer.start() }
         binding.pickImagesView.setOnClickListener { browseImagesTimer.start() }
-        binding.clearBtn.setOnClickListener { viewModel.clearAllData() }
+        binding.clearBtn.setOnClickListener { viewModel.onAction(ImagesAction.ClearAll) }
 
-        viewModel.state()
+        viewModel.state
             .map { it.recognitionList }
             .onEach {
                 binding.clearBtn.isVisible = it.isNotEmpty()
@@ -92,7 +87,7 @@ class ImagesActivity : AppCompatActivity() {
             .launchIn(this)
 
         // seek bar
-        viewModel.state()
+        viewModel.state
             .mapNotNull { it.confidence }
             .take(1)
             .onEach {
@@ -107,11 +102,11 @@ class ImagesActivity : AppCompatActivity() {
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {
-                viewModel.setConfidence((seekBar.progress.toFloat() / 100))
+                viewModel.onAction(ImagesAction.ConfidenceChanged(seekBar.progress.toFloat() / 100))
             }
         })
 
-        viewModel.state()
+        viewModel.state
             .map { it.event }
             .onEach {
                 when (it) {
@@ -131,7 +126,7 @@ class ImagesActivity : AppCompatActivity() {
     }
 
     private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { viewModel.addImageUris(it) }
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { viewModel.onAction(ImagesAction.ImagesPicked(it)) }
 
     private fun showSnackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE) {
         snackbar = Snackbar.make(findViewById(android.R.id.content), message, length!!)

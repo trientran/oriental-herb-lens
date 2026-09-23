@@ -2,7 +2,7 @@ package com.uri.lee.dl.lenscamera
 
 import android.os.Bundle
 import android.widget.SeekBar
-import androidx.activity.viewModels
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
-    private val viewModel: CameraViewModel by viewModels()
+    private val viewModel: CameraViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +34,7 @@ class CameraActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // seek bar
-                viewModel.state()
+                viewModel.state
                     .mapNotNull { it.confidence }
                     .distinctUntilChanged()
                     .onEach {
@@ -50,7 +50,7 @@ class CameraActivity : AppCompatActivity() {
 
                     override fun onStartTrackingTouch(seekBar: SeekBar) {}
                     override fun onStopTrackingTouch(seekBar: SeekBar) {
-                        viewModel.setConfidence((seekBar.progress.toFloat() / 100))
+                        viewModel.onAction(CameraAction.ConfidenceChanged(seekBar.progress.toFloat() / 100))
                     }
                 })
             }

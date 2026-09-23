@@ -1,289 +1,169 @@
 package com.uri.lee.dl.lensimage
 
-import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Bundle
-import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.toObject
+import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.label.ImageLabeler
-import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
-import com.uri.lee.dl.BaseApplication
-import com.uri.lee.dl.CONFIDENCE_LEVEL
-import com.uri.lee.dl.FireStoreMobile
-import com.uri.lee.dl.IS_OBJECTS_MODE_SINGLE_IMAGE
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_LABELING
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION
-import com.uri.lee.dl.Utils.loadBitmapFromUri
-import com.uri.lee.dl.configCollection
-import com.uri.lee.dl.dataStore
-import com.uri.lee.dl.getHerbModel
+import com.uri.lee.dl.data.ml.MlKitClassifierImage
+import com.uri.lee.dl.data.platform.BitmapLoader
+import com.uri.lee.dl.domain.repository.SettingsRepository
+import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.labeling.BitmapInputInfo
 import com.uri.lee.dl.labeling.Herb
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.update
+import com.uri.lee.dl.labeling.toHerbs
+import com.uri.lee.dl.lensimage.SingleImageState.Event
+import com.uri.lee.dl.ui.common.MviViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.io.IOException
-import java.util.concurrent.CancellationException
-import com.uri.lee.dl.labeling.toHerbs
-import com.uri.lee.dl.labeling.toRawLabel
+import kotlin.time.measureTimedValue
 
-class ImageViewModel(application: Application) : AndroidViewModel(application) {
+sealed interface SingleImageAction {
+    data class ImagePicked(val uri: Uri) : SingleImageAction
+    data class DetectObjectsChanged(val enabled: Boolean) : SingleImageAction
+    data class ConfidenceChanged(val value: Float) : SingleImageAction
+}
 
-    private lateinit var listenerRegistration: ListenerRegistration
-    private val application = getApplication<BaseApplication>()
-    private val stateFlow = MutableStateFlow(SingleImageState())
+class ImageViewModel(
+    private val recognizeHerbs: RecognizeHerbsUseCase,
+    private val settings: SettingsRepository,
+    private val bitmaps: BitmapLoader,
+) : MviViewModel<SingleImageState, SingleImageAction>(SingleImageState()) {
 
-    private var labeler: ImageLabeler? = null
-    private var detector: ObjectDetector = ObjectDetection.getClient(
+    // Object detection stays on ML Kit's built-in model; only herb labelling goes through the domain.
+    private val detector: ObjectDetector = ObjectDetection.getClient(
         ObjectDetectorOptions.Builder()
             .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
             .enableMultipleObjects()
             .build()
     )
-
-    /** Emits the current state. */
-    fun state(): Flow<SingleImageState> = stateFlow
-
-    /** Retrieves the current state. */
-    val state: SingleImageState get() = stateFlow.value
+    private var processing: Job? = null
 
     init {
-        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
-        viewModelScope.launch { load() }
-        liveMobileUpdate()
-    }
-
-    private fun liveMobileUpdate() {
-        listenerRegistration = configCollection.document("mobile").addSnapshotListener { snapshot, e ->
-            viewModelScope.launch {
-                if (e != null) {
-                    Timber.e(e)
-                    return@launch
+        viewModelScope.launch {
+            setState { copy(isLoading = true) }
+            try {
+                val saved = settings.scanSettings.first()
+                setState {
+                    copy(isObjectsMode = saved.detectObjectsInSingleImage, confidence = saved.minConfidence, isLoading = false)
                 }
-                if (snapshot != null && snapshot.exists()) {
-                    val mobile = snapshot.toObject<FireStoreMobile>()
-                    viewModelScope.launch {
-                        setState {
-                            copy(
-                                recognizedLatinHerbsMap = mobile?.recognizedLatinHerbs,
-                                recognizedViHerbsMap = mobile?.recognizedViHerbs
-                            )
-                        }
-                    }
-                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(event = Event.DataStoreError(e), isLoading = false) }
             }
         }
     }
 
-    private suspend fun load() {
-        setState { copy(isLoading = true) }
-        try {
-            isObjectsMode()
-            getConfidence()
-            setState { copy(isLoading = false) }
+    override fun onAction(action: SingleImageAction) {
+        when (action) {
+            is SingleImageAction.ImagePicked -> {
+                setState { copy(imageUri = action.uri) }
+                process()
+            }
+            is SingleImageAction.DetectObjectsChanged -> {
+                setState { copy(isObjectsMode = action.enabled) }
+                viewModelScope.launch { settings.setDetectObjectsInSingleImage(action.enabled) }
+                process()
+            }
+            is SingleImageAction.ConfidenceChanged -> {
+                setState { copy(confidence = action.value) }
+                viewModelScope.launch { settings.setMinConfidence(action.value) }
+                process()
+            }
+        }
+    }
+
+    private fun process() {
+        val uri = currentState.imageUri ?: return
+        val confidence = currentState.confidence ?: return
+        val detectObjects = currentState.isObjectsMode ?: return
+        processing?.cancel()
+        processing = viewModelScope.launch {
+            setState { copy(event = null, isLoading = true, objectInfoList = null, entireImageRecognizedHerbs = null) }
+            try {
+                if (detectObjects) labelDetectedObjects(uri, confidence) else labelEntireImage(uri, confidence)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: MlKitException) {
+                Timber.e(e)
+                setState { copy(event = Event.LabelingError(e)) }
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(event = Event.Other(e)) }
+            } finally {
+                setState { copy(isLoading = false) }
+            }
+        }
+    }
+
+    private suspend fun labelEntireImage(uri: Uri, confidence: Float) {
+        val (bitmap, bitmapTime) = measureTimedValue { loadBitmap(uri, MAX_IMAGE_DIMENSION_FOR_LABELING) }
+        bitmap ?: return
+        setState { copy(entireBitmap = bitmap) }
+        val (herbs, inferenceTime) = measureTimedValue { label(bitmap, confidence) }
+        if (herbs.isEmpty()) {
+            setState { copy(event = Event.NoHerbsRecognized) }
+            return
+        }
+        val timed = herbs.map {
+            it.copy(bitmapProcessingTime = bitmapTime.inWholeMilliseconds, inferenceProcessingTime = inferenceTime.inWholeMilliseconds)
+        }
+        setState { copy(entireImageRecognizedHerbs = timed) }
+    }
+
+    private suspend fun labelDetectedObjects(uri: Uri, confidence: Float) {
+        val bitmap = loadBitmap(uri, MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION) ?: return
+        setState { copy(entireBitmap = bitmap) }
+        val objects = try {
+            detector.process(InputImage.fromBitmap(bitmap, 0)).await()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Timber.e(e)
-            setState { copy(event = SingleImageState.Event.DataStoreError(e), isLoading = false) }
+            setState { copy(event = Event.ObjectDetectionError(e)) }
+            return
+        }
+        // Keep only objects the model recognises as herbs, each paired with its own detection box.
+        val herbObjects = objects.mapNotNull { detected ->
+            val crop = DetectedObjectInfo(detected, objectIndex = 0, inputInfo = BitmapInputInfo(bitmap), herbs = null)
+            val herbs = label(crop.getBitmap(), confidence)
+            herbs.takeIf { it.isNotEmpty() }?.let { detected to it }
+        }.mapIndexed { index, (detected, herbs) ->
+            DetectedObjectInfo(detected, objectIndex = index, inputInfo = BitmapInputInfo(bitmap), herbs = herbs)
+        }
+        if (herbObjects.isEmpty()) {
+            setState { copy(event = Event.NoHerbObjects) }
+        } else {
+            setState { copy(objectInfoList = herbObjects) }
         }
     }
 
-    private suspend fun isObjectsMode() {
-        application.dataStore.data
-            .map { settings -> settings[IS_OBJECTS_MODE_SINGLE_IMAGE] ?: true }
-            .take(1)
-            .collect { isObjectsMode -> setState { copy(isObjectsMode = isObjectsMode) } }
-    }
+    private suspend fun label(bitmap: Bitmap, confidence: Float): List<Herb> =
+        recognizeHerbs(MlKitClassifierImage(InputImage.fromBitmap(bitmap, 0)), confidence).toHerbs()
 
-    private suspend fun getConfidence() {
-        application.dataStore.data
-            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.7f }
-            .take(1)
-            .collect { confidence -> setState { copy(confidence = confidence) } }
-    }
 
-    fun setImageUri(imageUri: Uri) {
-        Timber.d("setImageUri")
-        viewModelScope.launch {
-            setState { copy(imageUri = imageUri) }
-        }
-    }
-
-    fun setObjectsMode(checked: Boolean) {
-        Timber.d("setObjectsMode")
-        viewModelScope.launch {
-            setState { copy(isObjectsMode = checked) }
-            application.dataStore.edit { settings -> settings[IS_OBJECTS_MODE_SINGLE_IMAGE] = checked }
-            process()
-        }
-    }
-
-    fun setConfidence(confidence: Float) {
-        Timber.d("setConfidence")
-        viewModelScope.launch {
-            setState { copy(confidence = confidence) }
-            application.dataStore.edit { settings -> settings[CONFIDENCE_LEVEL] = confidence }
-        }
-        process()
-    }
-
-    fun process() {
-        Timber.d("process")
-        if (state.imageUri == null || state.confidence == null || state.isObjectsMode == null) return
-        getHerbModel(application) {
-            val options = it.setConfidenceThreshold(state.confidence!!).build()
-            labeler = ImageLabeling.getClient(options)
-            viewModelScope.launch {
-                setState {
-                    copy(event = null, isLoading = true, objectInfoList = null, entireImageRecognizedHerbs = null)
-                }
-                try {
-                    if (state.isObjectsMode == true) detectObject() else inferEntireImageLabels()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    setState { copy(event = SingleImageState.Event.Other(e), isLoading = false) }
-                }
-            }
-        }
-    }
-
-    private suspend fun inferEntireImageLabels() {
-        Timber.d("inferEntireImageLabels")
-        val first = System.currentTimeMillis()
-        val entireBitmap = getBitmapFromFileUri(state.imageUri!!, MAX_IMAGE_DIMENSION_FOR_LABELING) ?: return
-        setState { copy(entireBitmap = entireBitmap) }
-        val inputImage = InputImage.fromBitmap(entireBitmap, 0)
-        val bitmapDuration = System.currentTimeMillis() - first
-        labelImage(inputImage = inputImage, bitmapDuration = bitmapDuration) {
-            setState {
-                copy(
-                    entireImageRecognizedHerbs = it,
-                    isLoading = false
-                )
-            }
-        }
-    }
-
-    private suspend fun detectObject() {
-        Timber.d("detectObject")
-        val entireBitmap = getBitmapFromFileUri(state.imageUri!!, MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION) ?: return
-        setState { copy(entireBitmap = entireBitmap) }
-        detector.process(InputImage.fromBitmap(entireBitmap, 0))
-            .addOnSuccessListener { objects ->
-                if (objects.isEmpty()) {
-                    setState { copy(event = SingleImageState.Event.NoHerbObjects, isLoading = false) }
-                } else {
-                    var herbObjectsCount = -1
-                    val newObjectInfoList = mutableListOf<DetectedObjectInfo>()
-                    for (i in objects.indices) {
-                        val detectedGeneralObjectInfo = DetectedObjectInfo(
-                            detectedObject = objects[i],
-                            objectIndex = i,
-                            inputInfo = BitmapInputInfo(entireBitmap),
-                            herbs = null
-                        )
-                        labelImage(
-                            inputImage = InputImage.fromBitmap(detectedGeneralObjectInfo.getBitmap(), 0),
-                        ) { herbs ->
-                            if (herbs.isNotEmpty()) {
-                                herbObjectsCount++
-                                val detectedHerbObjectInfo = DetectedObjectInfo(
-                                    detectedObject = objects[herbObjectsCount],
-                                    objectIndex = herbObjectsCount,
-                                    inputInfo = BitmapInputInfo(entireBitmap),
-                                    herbs = herbs
-                                )
-                                newObjectInfoList.add(detectedHerbObjectInfo)
-                            }
-                            if (i == objects.size - 1) {
-                                if (newObjectInfoList.isEmpty()) {
-                                    setState { copy(event = SingleImageState.Event.NoHerbObjects, isLoading = false) }
-                                } else {
-                                    setState { copy(objectInfoList = newObjectInfoList.toList()) }
-                                }
-                                setState { copy(isLoading = false) }
-                            }
-                        }
-                    }
-                }
-            }
-            .addOnFailureListener {
-                Timber.e(it.message)
-                setState { copy(event = SingleImageState.Event.ObjectDetectionError(it), isLoading = false) }
-            }
-    }
-
-    private suspend fun getBitmapFromFileUri(imageUri: Uri, maxDimension: Int): Bitmap? = try {
-        application.loadBitmapFromUri(imageUri, maxDimension)
+    private suspend fun loadBitmap(uri: Uri, maxDimension: Int): Bitmap? = try {
+        bitmaps.load(uri, maxDimension)
     } catch (e: IOException) {
-        Timber.e(e.message)
-        setState { copy(event = SingleImageState.Event.BitmapError(e)) }
+        Timber.e(e)
+        setState { copy(event = Event.BitmapError(e)) }
         null
     }
 
-    private inline fun labelImage(
-        inputImage: InputImage,
-        bitmapDuration: Long? = null,
-        crossinline callback: (herbList: List<Herb>) -> Unit
-    ) {
-        var first: Long = System.currentTimeMillis()
-        labeler!!.process(inputImage)
-            .addOnSuccessListener {
-                val duration = System.currentTimeMillis().minus(first)
-                if (it.isEmpty()) {
-                    if (state.isObjectsMode == true) {
-                        callback.invoke(emptyList())
-                    } else {
-                        setState {
-                            copy(event = SingleImageState.Event.NoHerbsRecognized, isLoading = false)
-                        }
-                    }
-                    return@addOnSuccessListener
-                }
-                val recognitionList = it.map { label -> label.toRawLabel() }
-                    .toHerbs(
-                        latinNameOf = { id -> state.recognizedLatinHerbsMap!![id] },
-                        viNameOf = { id -> state.recognizedViHerbsMap!![id] },
-                    )
-                    .map { herb -> herb.copy(bitmapProcessingTime = bitmapDuration, inferenceProcessingTime = duration) }
-                callback.invoke(recognitionList)
-            }
-            .addOnFailureListener {
-                Timber.e(it.message)
-                setState { copy(event = SingleImageState.Event.LabelingError(it), isLoading = false) }
-            }
-    }
-
-    fun setRecognizedHerbs(recognizedLatinHerbs: Bundle, recognizedViHerbs: Bundle) {
-        setState { copy(recognizedLatinHerbs = recognizedLatinHerbs, recognizedViHerbs = recognizedViHerbs) }
-    }
-
-    private inline fun setState(copiedState: SingleImageState.() -> SingleImageState) = stateFlow.update(copiedState)
-
     override fun onCleared() {
-        super.onCleared()
-        try {
-            if (this::listenerRegistration.isInitialized) listenerRegistration.remove()
-            detector.close()
-            labeler?.close()
-        } catch (e: IOException) {
-            Timber.e("Failed to close the detector or labeler!")
-        }
+        detector.close()
     }
 }
 
@@ -294,10 +174,6 @@ data class SingleImageState(
     val entireBitmap: Bitmap? = null,
     val objectInfoList: List<DetectedObjectInfo>? = null,
     val entireImageRecognizedHerbs: List<Herb>? = null,
-    val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
-    val recognizedViHerbs: Bundle? = null, // HerbId, viet name
-    val recognizedLatinHerbsMap: Map<String, String>? = null, // herbId, latin name
-    val recognizedViHerbsMap: Map<String, String>? = null, // HerbId, viet name
     val isLoading: Boolean = false,
     val event: Event? = null,
 ) {
@@ -307,7 +183,7 @@ data class SingleImageState(
         data class BitmapError(val exception: Exception) : Event
         data class DataStoreError(val exception: Exception) : Event
         data class Other(val exception: Exception) : Event
-        object NoHerbObjects : Event
-        object NoHerbsRecognized : Event
+        data object NoHerbObjects : Event
+        data object NoHerbsRecognized : Event
     }
 }

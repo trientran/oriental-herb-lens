@@ -91,6 +91,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
+        binding.searchCameraView.setOnClickListener { startActivity(Intent(this, CameraActivity::class.java)) }
+        binding.searchMultiImagesView.setOnClickListener { startActivity(Intent(this, ImagesActivity::class.java)) }
+        binding.searchSingleImageView.setOnClickListener { startActivity(Intent(this, ImageActivity::class.java)) }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -142,33 +145,6 @@ class MainActivity : AppCompatActivity() {
                                 .create().show()
                         }
 
-                        val latinBundle = Bundle()
-                        val viBundle = Bundle()
-                        for (entry in it.recognizedLatinHerbs.entries) {
-                            latinBundle.putString(entry.key, entry.value)
-                        }
-                        for (entry in it.recognizedViHerbs.entries) {
-                            viBundle.putString(entry.key, entry.value)
-                        }
-                        binding.searchCameraView.setOnClickListener {
-                            val intent = Intent(this@MainActivity, CameraActivity::class.java)
-                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
-                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
-                            startActivity(intent)
-                        }
-
-                        binding.searchMultiImagesView.setOnClickListener {
-                            val intent = Intent(this@MainActivity, ImagesActivity::class.java)
-                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
-                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
-                            startActivity(intent)
-                        }
-                        binding.searchSingleImageView.setOnClickListener {
-                            val intent = Intent(this@MainActivity, ImageActivity::class.java)
-                            intent.putExtra(RECOGNIZED_LATIN_HERBS_KEY, latinBundle)
-                            intent.putExtra(RECOGNIZED_VI_HERBS_KEY, viBundle)
-                            startActivity(intent)
-                        }
                     }
                     .launchIn(this)
 
@@ -257,5 +233,3 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-const val RECOGNIZED_LATIN_HERBS_KEY = "recognizedLatinHerbs"
-const val RECOGNIZED_VI_HERBS_KEY = "recognizedLatinHerbs"

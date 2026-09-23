@@ -30,6 +30,6 @@ class CsvTest {
 
     @Test
     fun `trailing newline adds no row and a BOM is ignored`() {
-        assertEquals(listOf(listOf("x", "y")), Csv.parse("﻿x,y\r\n"))
+        assertEquals(listOf(listOf("x", "y")), Csv.parse("\uFEFFx,y\r\n"))
     }
 }

@@ -1,6 +1,12 @@
 package com.uri.lee.dl.lenscamera.livecamera
 
 import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlinx.coroutines.launch
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,9 +18,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
-import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.databinding.FragmentLiveCameraBinding
 import timber.log.Timber
 import java.util.concurrent.Executors
@@ -25,7 +28,7 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
     private lateinit var imageAnalyzer: ImageAnalysis // Analysis use case, for running ML code
     private lateinit var camera: Camera
 
-    private val liveCameraViewModel: LiveCameraViewModel by viewModels()
+    private val liveCameraViewModel: LiveCameraViewModel by viewModel()
 
     private lateinit var binding: FragmentLiveCameraBinding
 
@@ -52,18 +55,12 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
 
         binding.closeButton.setOnClickListener { requireActivity().finish() }
 
-        val intent = requireActivity().intent
-        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
-        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
-        liveCameraViewModel.setRecognizedHerbs(recognizedLatinHerbs = latinBundle!!, recognizedViHerbs = viBundle!!)
-
         startCamera(confidence)
 
-        // Attach an observer on the LiveData field of recognitionList
-        // This will notify the recycler view to update every time when a new list is set on the
-        // LiveData field of recognitionList.
-        liveCameraViewModel.recognitionList.observe(viewLifecycleOwner) {
-            viewAdapter.submitList(it)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                liveCameraViewModel.state.collect { viewAdapter.submitList(it.herbs) }
+            }
         }
     }
 
@@ -86,8 +83,13 @@ class LiveCameraFragment(private val confidence: Float) : Fragment() {
                     CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
             preview = Preview.Builder().build()
-            imageAnalyzer =
-                liveCameraViewModel.analyzeImage(Executors.newSingleThreadExecutor(), confidence)
+            imageAnalyzer = ImageAnalysis.Builder()
+                // CameraX picks the closest supported resolution
+                .setTargetResolution(Size(600, 600))
+                // Drop stale frames rather than queue them
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also { it.setAnalyzer(Executors.newSingleThreadExecutor(), liveCameraViewModel.analyzer(confidence)) }
 
             try {
                 // Unbind use cases before rebinding

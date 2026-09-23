@@ -472,16 +472,6 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
 const val DOWNLOADED_MODEL_FILE_PATH: String = "model_file_path"
 const val MODEL_PREFS = "model_prefs"
 
-fun getHerbModel(context: Context, optionsBuilderCallBack: (CustomImageLabelerOptions.Builder) -> Unit) {
-    val localModel = LocalModel.Builder().setAssetFilePath(LOCAL_TFLITE_MODEL_NAME).build()
-    val downloadedModelFilePath = context
-        .getSharedPreferences(MODEL_PREFS, Context.MODE_PRIVATE)
-        .getString(DOWNLOADED_MODEL_FILE_PATH, null)
-    val remoteModel = downloadedModelFilePath?.let { LocalModel.Builder().setAbsoluteFilePath(it).build() }
-    val optionsBuilder = CustomImageLabelerOptions.Builder(remoteModel ?: localModel)
-    optionsBuilderCallBack.invoke(optionsBuilder)
-}
-
 internal fun Activity.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {
     val snackBar = Snackbar.make(findViewById(android.R.id.content), message, length!!)
     snackBar.setTextMaxLines(10)
@@ -500,8 +490,6 @@ fun View.bounds(): Rect = Rect(0, 0, width, height)
 const val INSTANT_HERB = "INSTANT_HERB"
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
 const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
-const val LOCAL_TFLITE_MODEL_NAME = "herb_model.tflite"
-const val REMOTE_TFLITE_MODEL_NAME = "herb_model"
 val defaultDispatcher = Dispatchers.Default
 val mainDispatcher = Dispatchers.Main
 val ioDispatcher = Dispatchers.IO

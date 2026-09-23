@@ -11,7 +11,7 @@ internal object Csv {
         var row = mutableListOf<String>()
         val field = StringBuilder()
         var inQuotes = false
-        var i = if (text.startsWith('﻿')) 1 else 0
+        var i = if (text.startsWith('\uFEFF')) 1 else 0
 
         fun endField() {
             row.add(field.toString())

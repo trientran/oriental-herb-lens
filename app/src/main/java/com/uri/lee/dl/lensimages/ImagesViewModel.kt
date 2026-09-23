@@ -1,186 +1,116 @@
 package com.uri.lee.dl.lensimages
 
-import android.app.Application
-import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Bundle
-import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.label.ImageLabel
-import com.google.mlkit.vision.label.ImageLabeler
-import com.google.mlkit.vision.label.ImageLabeling
-import com.uri.lee.dl.BaseApplication
-import com.uri.lee.dl.CONFIDENCE_LEVEL
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_LABELING
-import com.uri.lee.dl.Utils.loadBitmapFromUri
-import com.uri.lee.dl.dataStore
-import com.uri.lee.dl.getHerbModel
+import com.uri.lee.dl.data.ml.MlKitClassifierImage
+import com.uri.lee.dl.data.platform.BitmapLoader
+import com.uri.lee.dl.domain.repository.SettingsRepository
+import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.labeling.Herb
+import com.uri.lee.dl.labeling.toHerbs
+import com.uri.lee.dl.lensimages.ImagesState.Event
 import com.uri.lee.dl.lensimages.ImagesState.Recognition
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.update
+import com.uri.lee.dl.ui.common.MviViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
-import java.util.concurrent.CancellationException
-import com.uri.lee.dl.labeling.toHerbs
-import com.uri.lee.dl.labeling.toRawLabel
 
-class ImagesViewModel(application: Application) : AndroidViewModel(application) {
+sealed interface ImagesAction {
+    data class ImagesPicked(val uris: List<Uri>) : ImagesAction
+    data class ConfidenceChanged(val value: Float) : ImagesAction
+    data object ClearAll : ImagesAction
+}
 
-    private val application = getApplication<BaseApplication>()
-    private val stateFlow = MutableStateFlow(ImagesState())
+class ImagesViewModel(
+    private val recognizeHerbs: RecognizeHerbsUseCase,
+    private val settings: SettingsRepository,
+    private val bitmaps: BitmapLoader,
+) : MviViewModel<ImagesState, ImagesAction>(ImagesState()) {
 
-    private var labeler: ImageLabeler? = null
-
-    /** Emits the current state. */
-    fun state(): Flow<ImagesState> = stateFlow
-
-    /** Retrieves the current state. */
-    val state: ImagesState get() = stateFlow.value
+    private var processing: Job? = null
 
     init {
-        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
-        viewModelScope.launch { load() }
-    }
-
-    private suspend fun load() {
-        try {
-            getConfidence()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Timber.e(e)
-            setState { copy(event = ImagesState.Event.DataStoreError(e)) }
-        }
-    }
-
-    private suspend fun getConfidence() {
-        application.dataStore.data
-            .map { settings -> settings[CONFIDENCE_LEVEL] ?: 0.7f }
-            .take(1)
-            .collect { confidence -> setState { copy(confidence = confidence) } }
-    }
-
-    fun setConfidence(confidence: Float) {
-        Timber.d("setConfidence")
         viewModelScope.launch {
-            setState { copy(confidence = confidence, recognitionList = emptyList()) }
-            application.dataStore.edit { settings -> settings[CONFIDENCE_LEVEL] = confidence }
-            process(state.imageUris)
-        }
-    }
-
-    fun clearAllData() {
-        Timber.d("clearAllData")
-        viewModelScope.launch {
-            setState {
-                copy(
-                    imageUris = emptyList(),
-                    event = null,
-                    recognitionList = emptyList()
-                )
+            try {
+                val saved = settings.scanSettings.first()
+                setState { copy(confidence = saved.minConfidence) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(event = Event.DataStoreError(e)) }
             }
         }
     }
 
-    fun addImageUris(addedUris: List<Uri>) {
-        Timber.d("addImageUris")
-        if (addedUris.isEmpty()) return
-        viewModelScope.launch {
-            val currentUriList = state.imageUris.toMutableList()
-            currentUriList.addAll(addedUris)
-            setState { copy(imageUris = currentUriList) }
-            process(addedUris)
+    override fun onAction(action: ImagesAction) {
+        when (action) {
+            is ImagesAction.ImagesPicked -> {
+                if (action.uris.isEmpty()) return
+                setState { copy(imageUris = imageUris + action.uris) }
+                label(action.uris)
+            }
+            is ImagesAction.ConfidenceChanged -> {
+                setState { copy(confidence = action.value, recognitionList = emptyList()) }
+                viewModelScope.launch { settings.setMinConfidence(action.value) }
+                processing?.cancel()
+                label(currentState.imageUris)
+            }
+            ImagesAction.ClearAll -> {
+                processing?.cancel()
+                setState { copy(imageUris = emptyList(), event = null, recognitionList = emptyList()) }
+            }
         }
     }
 
-    private fun process(uriList: List<Uri>) {
-        Timber.d("processCumulatively")
-        if (state.confidence == null) return
-        getHerbModel(application) {
-            val options = it.setConfidenceThreshold(state.confidence!!).build()
-            labeler = ImageLabeling.getClient(options)
-            viewModelScope.launch {
-                setState { copy(event = null) }
-                try {
-                    labelImages(uriList)
+    /** Labels [uris] one by one, appending a result row per image (empty when nothing matched). */
+    private fun label(uris: List<Uri>) {
+        val confidence = currentState.confidence ?: return
+        val previous = processing
+        processing = viewModelScope.launch {
+            previous?.join() // keep result rows in the order images were added
+            setState { copy(event = null) }
+            for (uri in uris) {
+                val herbs = try {
+                    labelImage(uri, confidence) ?: continue
                 } catch (e: CancellationException) {
                     throw e
+                } catch (e: MlKitException) {
+                    Timber.e(e)
+                    setState { copy(event = Event.LabelingError(e)) }
+                    continue
                 } catch (e: Exception) {
                     Timber.e(e)
-                    setState { copy(event = ImagesState.Event.Other(e)) }
+                    setState { copy(event = Event.Other(e)) }
+                    continue
                 }
+                setState { copy(recognitionList = recognitionList + Recognition(fileUri = uri, herbs = herbs)) }
             }
         }
     }
 
-    private suspend fun labelImages(addedUris: List<Uri>) {
-        addedUris.onEach { uri ->
-            val entireBitmap = getBitmapFromFileUri(uri, MAX_IMAGE_DIMENSION_FOR_LABELING) ?: return
-            val inputImage = InputImage.fromBitmap(entireBitmap, 0)
-            labelSingleImage(inputImage) { labels ->
-                val currentRecognitionList = state.recognitionList.toMutableList()
-                if (labels.isEmpty()) {
-                    currentRecognitionList.add(Recognition(fileUri = uri, herbs = emptyList()))
-                } else {
-                    val herbs = labels.map { it.toRawLabel() }.toHerbs(
-                        latinNameOf = { id -> state.recognizedLatinHerbs!!.getString(id) },
-                        viNameOf = { id -> state.recognizedViHerbs!!.getString(id) },
-                    )
-                    currentRecognitionList.add(Recognition(fileUri = uri, herbs = herbs))
-                }
-                setState { copy(recognitionList = currentRecognitionList) }
-            }
-        }
-    }
-
-    private inline fun labelSingleImage(
-        inputImage: InputImage,
-        crossinline callback: (imageLabelList: List<ImageLabel>) -> Unit
-    ) {
-        labeler!!.process(inputImage)
-            .addOnSuccessListener { callback.invoke(it) }
-            .addOnFailureListener {
-                Timber.e(it.message)
-                setState { copy(event = ImagesState.Event.LabelingError(it)) }
-            }
-    }
-
-    fun setRecognizedHerbs(recognizedLatinHerbs: Bundle, recognizedViHerbs: Bundle) {
-        setState { copy(recognizedLatinHerbs = recognizedLatinHerbs, recognizedViHerbs = recognizedViHerbs) }
-    }
-
-    private suspend fun getBitmapFromFileUri(imageUri: Uri, maxDimension: Int): Bitmap? = try {
-        application.loadBitmapFromUri(imageUri, maxDimension)
-    } catch (e: IOException) {
-        Timber.e(e.message)
-        setState { copy(event = ImagesState.Event.BitmapError(e)) }
-        null
-    }
-
-    private inline fun setState(copiedState: ImagesState.() -> ImagesState) = stateFlow.update(copiedState)
-
-    override fun onCleared() {
-        super.onCleared()
-        try {
-            labeler?.close()
+    /** Null when the image couldn't be decoded (reported as an event). */
+    private suspend fun labelImage(uri: Uri, confidence: Float): List<Herb>? {
+        val bitmap = try {
+            bitmaps.load(uri, MAX_IMAGE_DIMENSION_FOR_LABELING)
         } catch (e: IOException) {
-            Timber.e("Failed to close the detector or labeler!")
-        }
+            Timber.e(e)
+            setState { copy(event = Event.BitmapError(e)) }
+            null
+        } ?: return null
+        return recognizeHerbs(MlKitClassifierImage(InputImage.fromBitmap(bitmap, 0)), confidence).toHerbs()
     }
 }
 
 data class ImagesState(
     val imageUris: List<Uri> = emptyList(),
     val recognitionList: List<Recognition> = emptyList(),
-    val recognizedLatinHerbs: Bundle? = null, // herbId, latin name
-    val recognizedViHerbs: Bundle? = null, // HerbId, viet name
     val confidence: Float? = null,
     val event: Event? = null,
 ) {
