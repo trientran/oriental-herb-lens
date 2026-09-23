@@ -47,6 +47,5 @@ class HerbMappingTest {
         assertEquals("Đinh lăng", herb.viName)
         assertNull(herb.latinName)
         assertNull(herb.images)
-        assertNull(herb.reviews)
     }
 }

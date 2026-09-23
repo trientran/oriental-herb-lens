@@ -508,7 +508,6 @@ val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 const val HERD_FIELD = "HERD_FIELD_TO_UPDATE"
-const val REVIEW_PATH_NAME = "reviews"
 const val IMAGE_UPLOAD_PATH_NAME = "images"
 val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
@@ -523,7 +522,6 @@ val db = Firebase.firestore
 val herbCollection = db.collection("herbs") // dont change this value
 val userCollection = db.collection("users") // dont change this value
 val configCollection = db.collection("config") // dont change this value
-val deletionCollection = db.collection("deletions") // dont change this value
 val uploadCollection = db.collection("uploads") // dont change this value
 const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
 const val USER_HISTORY_FIELD_NAME = "history" // dont change this value

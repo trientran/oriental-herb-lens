@@ -47,7 +47,6 @@ class HerbDetailsActivity : AppCompatActivity() {
                 R.id.navigation_overview,
                 R.id.navigation_caution,
                 R.id.navigation_dosing,
-                R.id.navigation_review
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -58,7 +57,6 @@ class HerbDetailsActivity : AppCompatActivity() {
 //                R.id.navigation_overview -> "My title2"
 //                R.id.navigation_caution -> "My title3"
 //                R.id.navigation_dosing -> "My title3"
-//                R.id.navigation_review -> "My title4"
 //                else -> "Default title"
 //            }
 //        }

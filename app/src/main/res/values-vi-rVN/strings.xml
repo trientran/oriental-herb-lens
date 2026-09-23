@@ -40,8 +40,6 @@
     <string name="images">Ảnh</string>
     <string name="overview">Tổng quan</string>
     <string name="caution">Lưu ý</string>
-    <string name="review">Đánh giá</string>
-    <string name="add_a_new_herb">Thêm dược liệu mới</string>
     <string name="log_out">Đăng xuất</string>
     <string name="delete_account">Xoá tài khoản</string>
     <string name="contact_us">Liên hệ chúng tôi</string>
@@ -111,11 +109,6 @@
     <string name="upload_completed">Tất cả hình của bạn đã được tải lên thành công</string>
     <string name="upload_in_progress_please">Đang tải ảnh lên máy chủ. Bạn sẽ được thông báo sau khi quá trình này hoàn tất.</string>
     <string name="uploaded_by">Đăng bởi: %s. Bạn có thể nhấp lên ảnh để mở nó bằng trình duyệt web và lưu ảnh về máy nếu muốn.</string>
-    <string name="please_let_us_know_why_delete_this_image">Vui lòng cho chúng tôi biết tại sao bạn muốn xoá ảnh này. Yêu cầu của bạn sẽ được gửi đến admin.</string>
-    <string name="duplicate_image">Ảnh bị trùng lặp</string>
-    <string name="faulty_image">Sai ảnh hay sai dược liệu</string>
-    <string name="cancel">Bỏ qua</string>
-    <string name="deletion_request_sent_to_admin">Yêu cầu xoá ảnh đã được gửi đến admin.</string>
     <string name="image_count">Bộ đếm hình: %s</string>
     <string name="editing_s">Bạn đang biên tập: %s</string>
     <string name="update">Cập nhật</string>
@@ -127,19 +120,7 @@
     <string name="english_name">Tên tiếng Anh</string>
     <string name="latin_name">Tên Latin</string>
     <string name="rate_this_herb">Đánh giá dược liệu này</string>
-    <string name="conditions_diabetes_liver_diseases">Bệnh lý (tiểu đường, tim mạch…)</string>
-    <string name="submit">Đăng</string>
-    <string name="effectiveness">Hiệu quả</string>
-    <string name="ease_of_use">Dễ dùng</string>
     <string name="your_comment">Bình luận của bạn</string>
-    <string name="patient_name">Tên bệnh nhân</string>
-    <string name="patient_age">Tuổi bệnh nhân</string>
-    <string name="patient_comment">Bình luận của bệnh nhân</string>
-    <string name="overall_rating">Đánh giá chung: %.1f - %s lượt đánh giá</string>
-    <string name="effectiveness_rating">Hiệu quả: %.1f</string>
-    <string name="ease_of_use_rating">Dễ dùng %.1f</string>
-    <string name="conditions_s">Bệnh lý: %s</string>
-    <string name="person_s">Tên: %s, Tuổi: %s</string>
     <string name="report_an_issue_via_email">Báo cáo một vấn đề qua email</string>
     <string name="via_facebook">Qua Facebook</string>
     <string name="via_email">Qua email</string>
@@ -150,9 +131,7 @@
     <string name="you_have_been_banned">Bạn không thể sử dụng ứng dụng này được nữa vì bạn đã có những hoạt động không phù hợp. Vui lòng liên hệ chúng tôi nếu bạn nghĩ chúng tôi đã hiểu nhầm!</string>
     <string name="admin">Admin</string>
     <string name="export_csvs">Xuất nhiều file CSV hình ảnh</string>
-    <string name="please_only_add_a_new_herb_if_etc">Vui lòng chỉ thêm tên dược liệu mới nếu bạn (1) có hình ảnh của dược liệu đó và muốn tải chúng lên, và (2) bạn không thể tìm thấy tên dược liệu bằng thanh tìm kiếm hoặc trong danh sách Tất cả dược liệu.</string>
     <string name="all_herbs">Tất cả</string>
-    <string name="please_enter_at_least_of_these_names_for_the_new_herb">Vui lòng điền vào ít nhất 1 trong 3 trường sau đây:</string>
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
     <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
     <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
@@ -162,4 +141,5 @@
     <string name="search_for_a_location">Tìm kiếm địa điểm</string>
     <string name="address">Địa chỉ: </string>
 
+    <string name="not_available_yet">Chưa có thông tin</string>
 </resources>

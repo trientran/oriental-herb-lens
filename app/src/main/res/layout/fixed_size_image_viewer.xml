@@ -27,15 +27,6 @@
             <!--                app:drawableTint="@color/lighter_grey" />-->
 
             <TextView
-                android:id="@+id/deleteBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@color/lighter_grey"
-                android:padding="12dp"
-                android:textColor="@color/white"
-                app:drawableRightCompat="@drawable/ic_baseline_delete_forever_24" />
-
-            <TextView
                 android:id="@+id/uploadByView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

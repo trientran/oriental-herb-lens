@@ -24,8 +24,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:text="@string/side_effects_s"
-                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
+                android:text="@string/side_effects_s" />
 
             <TextView
                 android:id="@+id/sideEffectsView"
@@ -43,8 +42,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:text="@string/interactions_s"
-                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
+                android:text="@string/interactions_s" />
 
             <TextView
                 android:id="@+id/interactionsView"

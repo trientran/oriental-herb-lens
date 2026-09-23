@@ -1,6 +1,5 @@
 package com.uri.lee.dl.herbdetails
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
@@ -11,10 +10,7 @@ import com.uri.lee.dl.FireStoreHerb
 import com.uri.lee.dl.USER_FAVORITE_FIELD_NAME
 import com.uri.lee.dl.USER_HISTORY_FIELD_NAME
 import com.uri.lee.dl.authUI
-import com.uri.lee.dl.deletionCollection
-import com.uri.lee.dl.globalScope
 import com.uri.lee.dl.herbCollection
-import com.uri.lee.dl.herbdetails.images.ImageDeleteReason
 import com.uri.lee.dl.toHistory
 import com.uri.lee.dl.toLikes
 import com.uri.lee.dl.userCollection
@@ -48,33 +44,6 @@ class HerbDetailsViewModel : ViewModel() {
             setState { copy(herb = FireStoreHerb(id = id)) }
             liveHerbUpdate(id)
             liveLikeListUpdate()
-        }
-    }
-
-    fun deleteImage(uri: Uri, uid: String, deleteReason: ImageDeleteReason) {
-        Timber.d("deleteImage")
-        globalScope.launch {
-            try {
-                val deleteReasonString = when (deleteReason) {
-                    ImageDeleteReason.FaultyImage -> "Faulty image"
-                    ImageDeleteReason.DuplicatedImage -> "Duplicated Image"
-                    else -> "Other" // Need to find out why this requires else branch
-                }
-                deletionCollection.add(
-                    ImageDeletionRequest(
-                        url = uri.toString(),
-                        uid = uid,
-                        herbId = state.herb!!.id!!,
-                        reason = deleteReasonString,
-                        requestedBy = authUI.auth.uid!!,
-                    )
-                )
-                    .await()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
         }
     }
 
@@ -170,11 +139,3 @@ data class HerbDetailsState(
 ) {
     data class Error(val exception: Exception)
 }
-
-data class ImageDeletionRequest(
-    val url: String,
-    val uid: String,
-    val herbId: Long,
-    val reason: String,
-    val requestedBy: String,
-)

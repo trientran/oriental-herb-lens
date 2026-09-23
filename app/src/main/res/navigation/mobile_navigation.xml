@@ -6,7 +6,6 @@
     app:startDestination="@+id/navigation_images">
 
     <include app:graph="@navigation/edit_herb_details" />
-    <include app:graph="@navigation/add_review" />
 
     <fragment
         android:id="@+id/navigation_images"
@@ -28,11 +27,6 @@
         android:name="com.uri.lee.dl.herbdetails.dosing.DosingFragment"
         tools:layout="@layout/fragment_dosing" />
 
-    <fragment
-        android:id="@+id/navigation_review"
-        android:name="com.uri.lee.dl.herbdetails.review.ReviewFragment"
-        tools:layout="@layout/fragment_review" />
-
     <action
         android:id="@id/editHerbDetails"
         app:destination="@id/editHerbDetails">
@@ -45,14 +39,6 @@
         <argument
             android:name="oldValue"
             app:argType="string" />
-    </action>
-
-    <action
-        android:id="@id/addReview"
-        app:destination="@id/addReview">
-        <argument
-            android:name="herbId"
-            app:argType="long" />
     </action>
 
 </navigation>

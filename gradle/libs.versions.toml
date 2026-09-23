@@ -27,7 +27,6 @@ guava = "32.0.1-jre"
 mapbox = "11.14.0"
 mlkit-image-labeling = "17.0.9"
 mlkit-image-labeling-custom = "17.0.3"
-mlkit-linkfirebase = "17.0.0"
 mlkit-object-detection = "17.0.2"
 okhttp = "4.12.0"
 places = "4.0.0"
@@ -79,7 +78,6 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 mlkit-image-labeling = { module = "com.google.mlkit:image-labeling", version.ref = "mlkit-image-labeling" }
 mlkit-image-labeling-custom = { module = "com.google.mlkit:image-labeling-custom", version.ref = "mlkit-image-labeling-custom" }
-mlkit-linkfirebase = { module = "com.google.mlkit:linkfirebase", version.ref = "mlkit-linkfirebase" }
 mlkit-objectdetection = { module = "com.google.mlkit:object-detection", version.ref = "mlkit-object-detection" }
 mlkit-objectdetection-custom = { module = "com.google.mlkit:object-detection-custom", version.ref = "mlkit-object-detection" }
 
@@ -90,9 +88,7 @@ firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-config = { module = "com.google.firebase:firebase-config" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
-firebase-functions = { module = "com.google.firebase:firebase-functions" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
-firebase-ml-modeldownloader = { module = "com.google.firebase:firebase-ml-modeldownloader" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebase-ui-auth" }
 
