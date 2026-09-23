@@ -41,7 +41,7 @@ koin = "4.2.2"
 work = "2.11.2"
 
 junit4 = "4.13.2"
-mockwebserver = "5.5.0"
+mockwebserver = "4.12.0"
 turbine = "1.2.1"
 
 [libraries]

@@ -469,7 +469,6 @@ fun Uri.toScaledBitmap(context: Context, width: Int = 224, height: Int = 224): B
 
     return resizedBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 }
-const val DOWNLOADED_MODEL_FILE_PATH: String = "model_file_path"
 const val MODEL_PREFS = "model_prefs"
 
 internal fun Activity.snackBar(message: String, length: Int? = Snackbar.LENGTH_INDEFINITE): Snackbar {

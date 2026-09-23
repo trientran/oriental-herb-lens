@@ -3,6 +3,7 @@ package com.uri.lee.dl.di
 import android.app.Application
 import android.content.Context
 import android.content.res.AssetManager
+import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -24,6 +25,8 @@ class KoinGraphTest {
                 CoroutineScope::class,
                 File::class,
                 AssetManager::class,
+                // Supplied by WorkManager when it creates a worker
+                WorkerParameters::class,
             ),
         )
     }

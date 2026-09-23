@@ -1,5 +1,6 @@
 package com.uri.lee.dl
 
+import com.uri.lee.dl.data.content.LegacyModelCleanup
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
@@ -19,10 +20,9 @@ class PersistedKeysTest {
     }
 
     @Test
-    fun `model SharedPreferences file and keys`() {
+    fun `legacy model download files that the cleanup removes`() {
         assertEquals("model_prefs", MODEL_PREFS)
-        assertEquals("model_file_path", DOWNLOADED_MODEL_FILE_PATH)
-        assertEquals("model_url", MODEL_URL)
+        assertEquals("my_remote_model.tflite", LegacyModelCleanup.LEGACY_MODEL_FILE_NAME)
     }
 
     @Test

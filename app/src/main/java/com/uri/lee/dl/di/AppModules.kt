@@ -1,5 +1,15 @@
 package com.uri.lee.dl.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import com.google.firebase.Firebase
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.remoteConfig
+import com.google.firebase.remoteconfig.remoteConfigSettings
+import com.uri.lee.dl.BuildConfig
+import com.uri.lee.dl.R
 import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.common.text.TextNormalizer
@@ -7,31 +17,42 @@ import com.uri.lee.dl.data.catalog.AndroidCatalogSource
 import com.uri.lee.dl.data.catalog.CatalogSource
 import com.uri.lee.dl.data.catalog.CsvSpeciesRepository
 import com.uri.lee.dl.data.catalog.SpeciesCsvReader
+import com.uri.lee.dl.data.content.ContentDownloader
 import com.uri.lee.dl.data.content.ContentFiles
-import com.uri.lee.dl.data.platform.JvmTextNormalizer
+import com.uri.lee.dl.data.content.ContentSyncWorker
+import com.uri.lee.dl.data.content.DefaultContentRepository
+import com.uri.lee.dl.data.content.InstalledReleaseStore
+import com.uri.lee.dl.data.content.LegacyModelCleanup
+import com.uri.lee.dl.data.content.ReleaseSource
+import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.ml.HerbModelLocator
 import com.uri.lee.dl.data.ml.MlKitHerbClassifier
 import com.uri.lee.dl.data.platform.BitmapLoader
+import com.uri.lee.dl.data.platform.JvmTextNormalizer
 import com.uri.lee.dl.data.settings.DataStoreSettingsRepository
 import com.uri.lee.dl.dataStore
 import com.uri.lee.dl.domain.ml.HerbClassifier
+import com.uri.lee.dl.domain.repository.ContentRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
+import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import com.uri.lee.dl.lenscamera.CameraViewModel
 import com.uri.lee.dl.lenscamera.livecamera.LiveCameraViewModel
 import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraViewModel
 import com.uri.lee.dl.lensimage.ImageViewModel
 import com.uri.lee.dl.lensimages.ImagesViewModel
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.dsl.workerOf
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
@@ -52,10 +73,33 @@ val dataModule = module {
     singleOf(::HerbModelLocator)
     singleOf(::MlKitHerbClassifier) bind HerbClassifier::class
     single { BitmapLoader(androidContext()) }
+
+    single<FirebaseRemoteConfig> {
+        Firebase.remoteConfig.apply {
+            setConfigSettingsAsync(
+                remoteConfigSettings {
+                    // Debug builds see newly published releases immediately
+                    minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3600
+                }
+            )
+            setDefaultsAsync(R.xml.remote_config_defaults)
+        }
+    }
+    single<ReleaseSource> { RemoteConfigReleaseSource(get()) }
+    single(named(CONTENT_DATASTORE)) { androidContext().contentDataStore }
+    single { InstalledReleaseStore(get(named(CONTENT_DATASTORE))) }
+    singleOf(::ContentDownloader)
+    singleOf(::DefaultContentRepository) bind ContentRepository::class
+    single { LegacyModelCleanup(androidContext()) }
+    workerOf(::ContentSyncWorker)
 }
+
+private const val CONTENT_DATASTORE = "content"
+private val Context.contentDataStore: DataStore<Preferences> by preferencesDataStore(name = CONTENT_DATASTORE)
 
 val domainModule = module {
     factoryOf(::RecognizeHerbsUseCase)
+    factoryOf(::SyncContentUseCase)
 }
 
 val viewModelModule = module {
