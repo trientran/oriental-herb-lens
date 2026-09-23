@@ -46,9 +46,8 @@ android {
         targetSdkVersion 37
         versionCode 9
         versionName "1.1"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        multiDexEnabled true
         buildConfigField "String", "MAP_PRODUCTS_API_KEY", "\"${secret('MAP_PRODUCTS_API_KEY')}\""
         buildConfigField "String", "ALGOLIA_APP_ID", "\"${secret('ALGOLIA_APP_ID')}\""
         buildConfigField "String", "ALGOLIA_SEARCH_API_KEY", "\"${secret('ALGOLIA_SEARCH_API_KEY')}\""
@@ -89,16 +88,14 @@ kotlin {
 
 dependencies {
     implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.annotation:annotation:1.8.2"
     implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6"
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation "androidx.datastore:datastore-preferences:1.1.1"
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.6'
 
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
     implementation 'com.google.android.libraries.places:places:4.0.0'
     implementation 'com.mapbox.maps:android-ndk27:11.14.0'
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
@@ -123,7 +120,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.8.2'
     implementation 'androidx.navigation:navigation-ui-ktx:2.8.2'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.gms:play-services-location:21.3.0'
 
     // CameraX core library using the camera2 implementation
@@ -145,10 +141,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.15.1'
     // Replace with your Glide version
     implementation 'com.squareup.okhttp3:okhttp:4.12.0' // OkHttp
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     implementation platform('com.google.firebase:firebase-bom:34.1.0')
-    implementation 'com.google.firebase:firebase-appindexing:20.0.0'
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.firebaseui:firebase-ui-auth:9.0.0'
@@ -158,7 +152,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
     implementation("com.google.firebase:firebase-config")
     implementation("com.google.firebase:firebase-ml-modeldownloader")
-    implementation 'com.google.firebase:firebase-appindexing'
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck-debug:19.0.0'
 }
