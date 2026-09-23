@@ -72,6 +72,10 @@ android {
     sourceSets.getByName("main") {
         assets.setSrcDirs(listOf("assets"))
     }
+    lint {
+        // Issues that predate the migration; new ones still fail the build.
+        baseline = file("lint-baseline.xml")
+    }
     buildFeatures {
         viewBinding = true
         buildConfig = true
