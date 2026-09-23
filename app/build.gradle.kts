@@ -146,4 +146,5 @@ dependencies {
     testImplementation(projects.core.testing)
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.mockwebserver)
 }

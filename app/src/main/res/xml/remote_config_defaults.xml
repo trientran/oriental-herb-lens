@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Empty values mean "nothing published": the app uses its bundled model and catalog. -->
 <defaults>
     <entry>
-        <key>model_url</key>
-        <value>gs://oriental-herb-lens-41d17.appspot.com/model.tflite</value>
+        <key>herb_model_url</key>
+        <value></value>
+    </entry>
+    <entry>
+        <key>herb_model_sha256</key>
+        <value></value>
+    </entry>
+    <entry>
+        <key>herb_catalog_url</key>
+        <value></value>
+    </entry>
+    <entry>
+        <key>herb_catalog_sha256</key>
+        <value></value>
     </entry>
 </defaults>
