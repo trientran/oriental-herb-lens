@@ -1,6 +1,11 @@
-package com.uri.lee.dl
+package com.uri.lee.dl.testing.fixtures
 
-val viList70 = mapOf(
+/**
+ * Real Vietnamese and international names for the 70 labels of the original herb model, keyed by label id.
+ * Used as realistic test data (diacritics, multi-word names) for mapping and search tests.
+ */
+
+val viNames70: Map<String, String> = mapOf(
     "0001" to "Bạc hà",
     "0002" to "Bách bộ",
     "0003" to "Bạch đồng nữ",
@@ -73,7 +78,8 @@ val viList70 = mapOf(
     "0070" to "Ý dĩ"
 )
 
-val latinList = mapOf(
+/** Latin names for most labels, English common names for some (e.g. "Peppermint"), as in the original data. */
+val internationalNames70: Map<String, String> = mapOf(
     "0001" to "Peppermint",
     "0002" to "Stemona tuberosa",
     "0003" to "Clerodendrum canescens",
