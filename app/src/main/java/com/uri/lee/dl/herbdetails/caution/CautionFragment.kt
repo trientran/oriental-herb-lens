@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentCautionBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
@@ -37,30 +36,7 @@ class CautionFragment : Fragment() {
     ): View {
         _binding = FragmentCautionBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        val navController = findNavController()
 
-        binding.sideEffectsEditView.setOnClickListener {
-            herbDetailsViewModel.state.herb?.let {
-                navController.navigate(
-                    CautionFragmentDirections.editHerbDetails(
-                        herbId = it.id!!,
-                        fieldName = if (isSystemLanguageVietnamese) it::viSideEffects.name else it::enSideEffects.name,
-                        oldValue = if (isSystemLanguageVietnamese) it.viSideEffects ?: "" else it.enSideEffects ?: ""
-                    )
-                )
-            }
-        }
-        binding.interactionsEditView.setOnClickListener {
-            herbDetailsViewModel.state.herb?.let {
-                navController.navigate(
-                    CautionFragmentDirections.editHerbDetails(
-                        herbId = it.id!!,
-                        fieldName = if (isSystemLanguageVietnamese) it::viInteractions.name else it::enInteractions.name,
-                        oldValue = if (isSystemLanguageVietnamese) it.viInteractions ?: "" else it.enInteractions ?: ""
-                    )
-                )
-            }
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -69,14 +45,14 @@ class CautionFragment : Fragment() {
                     .distinctUntilChanged()
                     .onEach {
                         binding.sideEffectsView.text = if (isSystemLanguageVietnamese) {
-                            it.viSideEffects.ifBlank { getString(R.string.please_edit_this_field) }
+                            it.viSideEffects.ifBlank { getString(R.string.not_available_yet) }
                         } else {
-                            it.enSideEffects.ifBlank { getString(R.string.please_edit_this_field) }
+                            it.enSideEffects.ifBlank { getString(R.string.not_available_yet) }
                         }
                         binding.interactionsView.text = if (isSystemLanguageVietnamese) {
-                            it.viInteractions.ifBlank { getString(R.string.please_edit_this_field) }
+                            it.viInteractions.ifBlank { getString(R.string.not_available_yet) }
                         } else {
-                            it.enInteractions.ifBlank { getString(R.string.please_edit_this_field) }
+                            it.enInteractions.ifBlank { getString(R.string.not_available_yet) }
                         }
                     }
                     .launchIn(this)

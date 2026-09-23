@@ -127,7 +127,6 @@ dependencies {
     implementation(libs.mlkit.objectdetection.custom)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.mlkit.image.labeling.custom)
-    implementation(libs.mlkit.linkfirebase)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
@@ -135,10 +134,8 @@ dependencies {
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
-    implementation(libs.firebase.functions)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.config)
-    implementation(libs.firebase.ml.modeldownloader)
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
 

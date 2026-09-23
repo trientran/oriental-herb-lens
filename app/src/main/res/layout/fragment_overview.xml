@@ -32,8 +32,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:text="@string/latin_name"
-                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
+                android:text="@string/latin_name" />
 
             <TextView
                 android:id="@+id/latinNameView"
@@ -70,8 +69,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:text="@string/english_name"
-                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
+                android:text="@string/english_name" />
 
             <TextView
                 android:id="@+id/enNameView"
@@ -89,8 +87,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
-                android:text="@string/overview"
-                app:drawableEndCompat="@drawable/ic_baseline_edit_24" />
+                android:text="@string/overview" />
 
             <TextView
                 android:id="@+id/overviewView"

@@ -21,9 +21,4 @@
         android:icon="@drawable/ic_dosing"
         android:title="@string/dosing" />
 
-    <item
-        android:id="@+id/navigation_review"
-        android:icon="@drawable/ic_baseline_rate_review_24"
-        android:title="@string/review" />
-
 </menu>

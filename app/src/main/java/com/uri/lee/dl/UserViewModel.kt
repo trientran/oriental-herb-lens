@@ -98,19 +98,6 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addHerb(newHerb: FireStoreHerb, onNewHerbAdded: (herbId: Long) -> Unit) {
-        Timber.d("addHerb")
-        viewModelScope.launch {
-            try {
-                herbCollection.document(newHerb.id.toString()).set(newHerb).await()
-                newHerb.id?.let(onNewHerbAdded)
-            } catch (e: Exception) {
-                Timber.e(e)
-                setState { copy(error = UserState.Error(e)) }
-            }
-        }
-    }
-
     private fun checkAdminStatus() {
         Timber.d("checkAdminStatus")
         viewModelScope.launch {

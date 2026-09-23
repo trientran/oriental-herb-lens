@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -44,14 +43,7 @@ class ImagesFragment : Fragment() {
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
 
         imageUploadAdapter = ImagesAdapter { (uri, uploaderUid) ->
-            val bottomSheet = FixedSizeImageViewerDialog(uri to uploaderUid) { deletionReason ->
-                herbDetailsViewModel.deleteImage(uri, uploaderUid, deletionReason)
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.deletion_request_sent_to_admin),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            val bottomSheet = FixedSizeImageViewerDialog(uri to uploaderUid)
             bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
         }
 

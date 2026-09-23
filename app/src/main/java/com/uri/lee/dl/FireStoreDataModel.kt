@@ -1,6 +1,5 @@
 package com.uri.lee.dl
 
-import com.uri.lee.dl.herbdetails.review.AddReviewState
 
 // To map with FireStore document, each single property needs a default value, Long cannot be parsed as String
 data class FireStoreHerb(
@@ -17,7 +16,6 @@ data class FireStoreHerb(
     val viOverview: String = "",
     val viSideEffects: String = "",
     val images: Map<String, String>? = null, // url - uid
-    val reviews: Map<String, AddReviewState.Review>? = null, // instant - Review object
 )
 
 data class FireStoreMobile(

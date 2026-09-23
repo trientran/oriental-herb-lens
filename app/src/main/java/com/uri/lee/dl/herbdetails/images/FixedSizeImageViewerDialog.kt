@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mapbox.geojson.Point
@@ -20,7 +19,6 @@ import kotlinx.serialization.json.Json
 
 class FixedSizeImageViewerDialog(
     private val uriPair: Pair<Uri, String>,
-    private val onDeleteImage: (ImageDeleteReason) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private lateinit var binding: FixedSizeImageViewerBinding
@@ -60,23 +58,8 @@ class FixedSizeImageViewerDialog(
             binding.mapView.mapboxMap.setCamera(cameraPosition)
         }
         binding.imageView.setOnClickListener { view.context.openUrlWithDefaultBrowser(uri = uriPair.first) }
-        binding.deleteBtn.setOnClickListener {
-            AlertDialog.Builder(it.context)
-                .setMessage(getString(R.string.please_let_us_know_why_delete_this_image))
-                .setCancelable(true)
-                .setPositiveButton(getString(R.string.faulty_image)) { _, _ -> onDeleteImage.invoke(ImageDeleteReason.FaultyImage) }
-                .setNegativeButton(getString(R.string.duplicate_image)) { _, _ -> onDeleteImage.invoke(ImageDeleteReason.DuplicatedImage) }
-                .setNeutralButton(getString(R.string.cancel)) { _, _ -> dismiss() }
-                .create().show()
-            dismiss()
-        }
         return view
     }
-}
-
-interface ImageDeleteReason {
-    object FaultyImage : ImageDeleteReason
-    object DuplicatedImage : ImageDeleteReason
 }
 
 @Serializable

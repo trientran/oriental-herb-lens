@@ -38,28 +38,6 @@ class OverviewFragment : Fragment() {
         val root = binding.root
         val navController = findNavController()
 
-        binding.latinNameEditView.setOnClickListener {
-            herbDetailsViewModel.state.herb?.let {
-                navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.id!!,
-                        fieldName = it::latinName.name,
-                        oldValue = it.latinName ?: "",
-                    )
-                )
-            }
-        }
-        binding.enNameEditView.setOnClickListener {
-            herbDetailsViewModel.state.herb?.let {
-                navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.id!!,
-                        fieldName = it::enName.name,
-                        oldValue = it.enName,
-                    )
-                )
-            }
-        }
         binding.viNameEditView.setOnClickListener {
             herbDetailsViewModel.state.herb?.let {
                 navController.navigate(
@@ -67,17 +45,6 @@ class OverviewFragment : Fragment() {
                         herbId = it.id!!,
                         fieldName = it::viName.name,
                         oldValue = it.viName,
-                    )
-                )
-            }
-        }
-        binding.overviewEditView.setOnClickListener {
-            herbDetailsViewModel.state.herb?.let {
-                navController.navigate(
-                    OverviewFragmentDirections.editHerbDetails(
-                        herbId = it.id!!,
-                        fieldName = if (isSystemLanguageVietnamese) it::viOverview.name else it::enOverview.name,
-                        oldValue = if (isSystemLanguageVietnamese) it.viOverview else it.enOverview
                     )
                 )
             }
@@ -90,13 +57,13 @@ class OverviewFragment : Fragment() {
                     .onEach { herb ->
                         binding.herbIdView.text = getString(R.string.herb_id_s, herb.id!!)
                         binding.latinNameView.text =
-                            herb.latinName.ifBlank { getString(R.string.please_edit_this_field) }
+                            herb.latinName.ifBlank { getString(R.string.not_available_yet) }
                         binding.viNameView.text = herb.viName.ifBlank { getString(R.string.please_edit_this_field) }
-                        binding.enNameView.text = herb.enName.ifBlank { getString(R.string.please_edit_this_field) }
+                        binding.enNameView.text = herb.enName.ifBlank { getString(R.string.not_available_yet) }
                         binding.overviewView.text = if (isSystemLanguageVietnamese) {
-                            herb.viOverview.ifBlank { getString(R.string.please_edit_this_field) }
+                            herb.viOverview.ifBlank { getString(R.string.not_available_yet) }
                         } else {
-                            herb.enOverview.ifBlank { getString(R.string.please_edit_this_field) }
+                            herb.enOverview.ifBlank { getString(R.string.not_available_yet) }
                         }
                     }
                     .launchIn(this)
