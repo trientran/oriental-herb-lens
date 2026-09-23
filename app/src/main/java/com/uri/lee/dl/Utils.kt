@@ -54,8 +54,6 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
@@ -80,7 +78,6 @@ import com.google.firebase.storage.storage
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
-import com.uri.lee.dl.instantsearch.Herb
 import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -515,10 +512,7 @@ const val REVIEW_PATH_NAME = "reviews"
 const val IMAGE_UPLOAD_PATH_NAME = "images"
 val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
-// data store stuff
-const val SETTINGS = "SETTINGS"
-val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
-val CONFIDENCE_LEVEL = floatPreferencesKey("CONFIDENCE_LEVEL")
+// data store stuff (keys live in SettingsKeys.kt)
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
 
 val authUI = AuthUI.getInstance()
@@ -559,22 +553,6 @@ fun Context.isNetworkAvailable(): Boolean {
 val systemLanguageLowercase = Locale.getDefault().displayLanguage.lowercase()
 val isSystemLanguageVietnamese =
     systemLanguageLowercase == "vietnamese" || systemLanguageLowercase == "vi" || systemLanguageLowercase == "tiếng việt"
-
-fun DocumentSnapshot.toHerb() = Herb(
-    objectID = id,
-    id = id,
-    enDosing = getString("enDosing"),
-    enInteractions = getString("enInteractions"),
-    enName = getString("enName"),
-    enOverview = getString("enOverview"),
-    enSideEffects = getString("enSideEffects"),
-    latinName = getString("latinName"),
-    viDosing = getString("viDosing"),
-    viInteractions = getString("viInteractions"),
-    viName = getString("viName"),
-    viOverview = getString("viOverview"),
-    viSideEffects = getString("viSideEffects"),
-)
 
 fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
 fun DocumentSnapshot.toHistory() = (get(USER_HISTORY_FIELD_NAME) as? List<*>) ?: emptyList<Any>()

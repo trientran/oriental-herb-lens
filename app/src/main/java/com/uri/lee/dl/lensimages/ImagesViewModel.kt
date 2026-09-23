@@ -28,6 +28,8 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.CancellationException
+import com.uri.lee.dl.labeling.toHerbs
+import com.uri.lee.dl.labeling.toRawLabel
 
 class ImagesViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -127,19 +129,10 @@ class ImagesViewModel(application: Application) : AndroidViewModel(application) 
                 if (labels.isEmpty()) {
                     currentRecognitionList.add(Recognition(fileUri = uri, herbs = emptyList()))
                 } else {
-                    val maxResultsDisplayed = labels.size
-                    val herbs = mutableListOf<Herb>()
-                    for (i in 0 until maxResultsDisplayed) {
-                        val id = labels[i].text
-                        herbs.add(
-                            Herb(
-                                id = id,
-                                latinName = state.recognizedLatinHerbs!!.getString(id),
-                                viName = state.recognizedViHerbs!!.getString(id),
-                                confidence = labels[i].confidence
-                            )
-                        )
-                    }
+                    val herbs = labels.map { it.toRawLabel() }.toHerbs(
+                        latinNameOf = { id -> state.recognizedLatinHerbs!!.getString(id) },
+                        viNameOf = { id -> state.recognizedViHerbs!!.getString(id) },
+                    )
                     currentRecognitionList.add(Recognition(fileUri = uri, herbs = herbs))
                 }
                 setState { copy(recognitionList = currentRecognitionList) }

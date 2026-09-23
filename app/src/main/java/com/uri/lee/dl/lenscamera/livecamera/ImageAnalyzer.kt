@@ -11,6 +11,8 @@ import com.google.mlkit.vision.label.ImageLabeling
 import com.uri.lee.dl.getHerbModel
 import com.uri.lee.dl.labeling.Herb
 import timber.log.Timber
+import com.uri.lee.dl.labeling.toHerbs
+import com.uri.lee.dl.labeling.toRawLabel
 
 class ImageAnalyzer(
     private val confidence: Float,
@@ -33,21 +35,13 @@ class ImageAnalyzer(
     private fun processImage(labeler: ImageLabeler, inputImage: InputImage, imageProxy: ImageProxy) {
         labeler.process(inputImage)
             .addOnSuccessListener {
-                val herbList = mutableListOf<Herb>()
-                if (it.isEmpty()) {
-                    herbList.add(Herb())
+                val herbList = if (it.isEmpty()) {
+                    listOf(Herb())
                 } else {
-                    for (i in 0 until maxResultsDisplayed) {
-                        val id = it[i].text
-                        herbList.add(
-                            Herb(
-                                id = id,
-                                latinName = recognizedLatinHerbs!!.getString(id),
-                                viName = recognizedViHerbs!!.getString(id),
-                                confidence = it[i].confidence
-                            )
-                        )
-                    }
+                    it.take(maxResultsDisplayed).map { label -> label.toRawLabel() }.toHerbs(
+                        latinNameOf = { id -> recognizedLatinHerbs!!.getString(id) },
+                        viNameOf = { id -> recognizedViHerbs!!.getString(id) },
+                    )
                 }
                 // Return the result
                 recognitionListener.invoke(herbList)
