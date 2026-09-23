@@ -1,0 +1,12 @@
+package com.uri.lee.dl.domain.repository
+
+import com.uri.lee.dl.domain.model.ScanSettings
+import kotlinx.coroutines.flow.Flow
+
+interface SettingsRepository {
+    val scanSettings: Flow<ScanSettings>
+
+    suspend fun setMinConfidence(value: Float)
+
+    suspend fun setDetectObjectsInSingleImage(enabled: Boolean)
+}

@@ -32,7 +32,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,8 +42,6 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.common.base.Objects
 import com.google.common.collect.ImmutableList
 import com.uri.lee.dl.R
-import com.uri.lee.dl.RECOGNIZED_LATIN_HERBS_KEY
-import com.uri.lee.dl.RECOGNIZED_VI_HERBS_KEY
 import com.uri.lee.dl.databinding.FragmentObjectiveCameraBinding
 import com.uri.lee.dl.labeling.BottomSheetScrimView
 import com.uri.lee.dl.labeling.HerbAdapter
@@ -67,7 +65,7 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
     private var searchButton: ExtendedFloatingActionButton? = null
     private var searchButtonAnimator: AnimatorSet? = null
     private var searchProgressBar: ProgressBar? = null
-    private val objectiveCameraViewModel: ObjectiveCameraViewModel by viewModels()
+    private val objectiveCameraViewModel: ObjectiveCameraViewModel by viewModel()
     private var currentWorkflowState: ObjectiveCameraViewModel.WorkflowState? = null
 
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
@@ -86,13 +84,6 @@ class ObjectiveCameraFragment(private val confidence: Float) : Fragment(), OnCli
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentObjectiveCameraBinding.inflate(inflater, container, false)
-        val intent = requireActivity().intent
-        val latinBundle = intent.getBundleExtra(RECOGNIZED_LATIN_HERBS_KEY)
-        val viBundle = intent.getBundleExtra(RECOGNIZED_VI_HERBS_KEY)
-        objectiveCameraViewModel.setRecognizedHerbs(
-            recognizedLatinHerbs = latinBundle!!,
-            recognizedViHerbs = viBundle!!
-        )
         return binding.root
     }
 
