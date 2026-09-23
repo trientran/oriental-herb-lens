@@ -2,6 +2,7 @@ package com.uri.lee.dl.instantsearch
 
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingConfig
+import com.uri.lee.dl.BuildConfig
 import com.algolia.instantsearch.android.paging3.Paginator
 import com.algolia.instantsearch.android.paging3.searchbox.connectPaginator
 import com.algolia.instantsearch.core.connection.ConnectionHandler
@@ -14,8 +15,8 @@ import com.algolia.search.model.IndexName
 class MyViewModel : ViewModel() {
 
     private val searcher = HitsSearcher(
-        applicationID = ApplicationID("5NJQS1P6W8"),
-        apiKey = APIKey("d9e7dbc620110c895008c72c6809f6e4"),
+        applicationID = ApplicationID(BuildConfig.ALGOLIA_APP_ID),
+        apiKey = APIKey(BuildConfig.ALGOLIA_SEARCH_API_KEY),
         indexName = IndexName("herbs")
     )
 
