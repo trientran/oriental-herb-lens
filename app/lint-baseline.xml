@@ -22,7 +22,7 @@
         errorLine2="                 ~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lensimage/ImageActivity.kt"
-            line="237"
+            line="225"
             column="18"/>
     </issue>
 
@@ -131,30 +131,8 @@
         errorLine1="            repeatOnLifecycle(Lifecycle.State.STARTED) {"
         errorLine2="            ^">
         <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/AddReviewFragment.kt"
-            line="38"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnsafeRepeatOnLifecycleDetector"
-        message="The repeatOnLifecycle API should be used with viewLifecycleOwner"
-        errorLine1="            repeatOnLifecycle(Lifecycle.State.STARTED) {"
-        errorLine2="            ^">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/EditHerbDetailsFragment.kt"
-            line="35"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnsafeRepeatOnLifecycleDetector"
-        message="The repeatOnLifecycle API should be used with viewLifecycleOwner"
-        errorLine1="            repeatOnLifecycle(Lifecycle.State.STARTED) {"
-        errorLine2="            ^">
-        <location
             file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
-            line="66"
+            line="57"
             column="13"/>
     </issue>
 
@@ -226,8 +204,8 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.appcompat:appcompat than 1.7.0 is available: 1.8.0"
-        errorLine1="androidx-appcompat = &quot;1.7.0&quot;"
+        message="A newer version of androidx.appcompat:appcompat than 1.7.1 is available: 1.8.0"
+        errorLine1="androidx-appcompat = &quot;1.7.1&quot;"
         errorLine2="                     ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -281,8 +259,8 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.19.0"
-        errorLine1="androidx-core = &quot;1.13.1&quot;"
+        message="A newer version of androidx.core:core-ktx than 1.16.0 is available: 1.19.0"
+        errorLine1="androidx-core = &quot;1.16.0&quot;"
         errorLine2="                ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -303,9 +281,9 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-livedata-ktx than 2.8.6 is available: 2.11.0"
-        errorLine1="androidx-lifecycle = &quot;2.8.6&quot;"
-        errorLine2="                     ~~~~~~~">
+        message="A newer version of androidx.lifecycle:lifecycle-livedata-ktx than 2.10.0 is available: 2.11.0"
+        errorLine1="androidx-lifecycle = &quot;2.10.0&quot;"
+        errorLine2="                     ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
             line="16"
@@ -314,9 +292,9 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-process than 2.8.6 is available: 2.11.0"
-        errorLine1="androidx-lifecycle = &quot;2.8.6&quot;"
-        errorLine2="                     ~~~~~~~">
+        message="A newer version of androidx.lifecycle:lifecycle-process than 2.10.0 is available: 2.11.0"
+        errorLine1="androidx-lifecycle = &quot;2.10.0&quot;"
+        errorLine2="                     ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
             line="16"
@@ -325,9 +303,9 @@
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-ktx than 2.8.6 is available: 2.11.0"
-        errorLine1="androidx-lifecycle = &quot;2.8.6&quot;"
-        errorLine2="                     ~~~~~~~">
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-ktx than 2.10.0 is available: 2.11.0"
+        errorLine1="androidx-lifecycle = &quot;2.10.0&quot;"
+        errorLine2="                     ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
             line="16"
@@ -374,7 +352,7 @@
         errorLine2="         ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="33"
+            line="32"
             column="10"/>
     </issue>
 
@@ -385,7 +363,7 @@
         errorLine2="                         ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="34"
+            line="33"
             column="26"/>
     </issue>
 
@@ -446,8 +424,8 @@
 
     <issue
         id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.8.1 is available: 1.11.0"
-        errorLine1="coroutines = &quot;1.8.1&quot;"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.9.0 is available: 1.11.0"
+        errorLine1="coroutines = &quot;1.9.0&quot;"
         errorLine2="             ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -457,8 +435,8 @@
 
     <issue
         id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-core than 1.8.1 is available: 1.11.0"
-        errorLine1="coroutines = &quot;1.8.1&quot;"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-core than 1.9.0 is available: 1.11.0"
+        errorLine1="coroutines = &quot;1.9.0&quot;"
         errorLine2="             ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -468,8 +446,8 @@
 
     <issue
         id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-play-services than 1.8.1 is available: 1.11.0"
-        errorLine1="coroutines = &quot;1.8.1&quot;"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-play-services than 1.9.0 is available: 1.11.0"
+        errorLine1="coroutines = &quot;1.9.0&quot;"
         errorLine2="             ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -479,8 +457,8 @@
 
     <issue
         id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.8.1 is available: 1.11.0"
-        errorLine1="coroutines = &quot;1.8.1&quot;"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.9.0 is available: 1.11.0"
+        errorLine1="coroutines = &quot;1.9.0&quot;"
         errorLine2="             ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
@@ -539,7 +517,7 @@
         errorLine2="         ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="32"
+            line="31"
             column="10"/>
     </issue>
 
@@ -550,7 +528,7 @@
         errorLine2="           ~~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="35"
+            line="34"
             column="12"/>
     </issue>
 
@@ -561,151 +539,30 @@
         errorLine2="                          ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="36"
+            line="35"
             column="27"/>
     </issue>
 
     <issue
         id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.6.0 is available: 1.11.0"
-        errorLine1="serialization = &quot;1.6.0&quot;"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.7.3 is available: 1.11.0"
+        errorLine1="serialization = &quot;1.7.3&quot;"
         errorLine2="                ~~~~~~~">
         <location
             file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
-            line="37"
+            line="36"
             column="17"/>
     </issue>
 
     <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        viewModelScope.launch { setState { copy(review = AddReviewState.Review(uid = authUI.auth.uid!!)) } }"
-        errorLine2="                                                                                            ~~~~">
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.okhttp3:mockwebserver than 4.12.0 is available: 5.5.0"
+        errorLine1="mockwebserver = &quot;4.12.0&quot;"
+        errorLine2="                ~~~~~~~~">
         <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/AddReviewViewModel.kt"
-            line="39"
-            column="93"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        viewModelScope.launch { setState { copy(review = AddReviewState.Review(uid = authUI.auth.uid!!)) } }"
-        errorLine2="                                                                                            ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/AddReviewViewModel.kt"
-            line="39"
-            column="93"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="                        requestedBy = authUI.auth.uid!!,"
-        errorLine2="                                             ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="69"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="                        requestedBy = authUI.auth.uid!!,"
-        errorLine2="                                             ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="69"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            authUI.auth.uid!!.let {"
-        errorLine2="                   ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="84"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            authUI.auth.uid!!.let {"
-        errorLine2="                   ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="84"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        userListenerRegistration = userCollection.document(authUI.auth.uid!!).addSnapshotListener { snapshot, e ->"
-        errorLine2="                                                                  ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="118"
-            column="67"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        userListenerRegistration = userCollection.document(authUI.auth.uid!!).addSnapshotListener { snapshot, e ->"
-        errorLine2="                                                                  ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="118"
-            column="67"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="                                userCollection.document(authUI.auth.uid!!).set(data, SetOptions.merge())"
-        errorLine2="                                                               ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="140"
-            column="64"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="                                userCollection.document(authUI.auth.uid!!).set(data, SetOptions.merge())"
-        errorLine2="                                                               ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsViewModel.kt"
-            line="140"
-            column="64"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            val uid = authUI.auth.uid ?: return@launch"
-        errorLine2="                             ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/upload/ImageUploadViewModel.kt"
-            line="85"
-            column="30"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            val uid = authUI.auth.uid ?: return@launch"
-        errorLine2="                             ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/upload/ImageUploadViewModel.kt"
-            line="85"
-            column="30"/>
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="44"
+            column="17"/>
     </issue>
 
     <issue
@@ -717,50 +574,6 @@
             file="src/main/java/com/uri/lee/dl/instantsearch/SearchActivity.kt"
             line="66"
             column="33"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            authUI.auth.uid?.let { uid ->"
-        errorLine2="                   ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/UserViewModel.kt"
-            line="117"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="            authUI.auth.uid?.let { uid ->"
-        errorLine2="                   ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/UserViewModel.kt"
-            line="117"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        authUI.auth.uid?.let { uid ->"
-        errorLine2="               ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/UserViewModel.kt"
-            line="126"
-            column="16"/>
-    </issue>
-
-    <issue
-        id="RestrictedApi"
-        message="AuthUI.getAuth can only be called from within the same library group (referenced groupId=`com.firebaseui` from groupId=`oriental-herb-lens`)"
-        errorLine1="        authUI.auth.uid?.let { uid ->"
-        errorLine2="               ~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/UserViewModel.kt"
-            line="126"
-            column="16"/>
     </issue>
 
     <issue
@@ -792,7 +605,7 @@
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsActivity.kt"
-            line="92"
+            line="82"
             column="33"/>
     </issue>
 
@@ -803,7 +616,7 @@
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsActivity.kt"
-            line="92"
+            line="82"
             column="33"/>
     </issue>
 
@@ -814,7 +627,7 @@
         errorLine2="                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsActivity.kt"
-            line="92"
+            line="82"
             column="88"/>
     </issue>
 
@@ -825,7 +638,7 @@
         errorLine2="                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/HerbDetailsActivity.kt"
-            line="92"
+            line="82"
             column="88"/>
     </issue>
 
@@ -836,27 +649,11 @@
         errorLine2="                                                                                       ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
-            line="73"
+            line="64"
             column="88"/>
         <location
             file="src/main/res/values-vi-rVN/strings.xml"
-            line="119"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #1 in `image_count`: conversion is `s`, received `int` (argument #2 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.imagesCountView.text = getString(R.string.image_count, images.count())"
-        errorLine2="                                                                                       ~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
-            line="73"
-            column="88"/>
-        <location
-            file="src/main/res/values-vi-rVN/strings.xml"
-            line="119"
+            line="112"
             column="5"
             message="Conflicting argument declaration here"/>
     </issue>
@@ -868,11 +665,11 @@
         errorLine2="                                                                                       ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
-            line="73"
+            line="64"
             column="88"/>
         <location
-            file="src/main/res/values/strings.xml"
-            line="141"
+            file="src/main/res/values-vi-rVN/strings.xml"
+            line="112"
             column="5"
             message="Conflicting argument declaration here"/>
     </issue>
@@ -884,171 +681,27 @@
         errorLine2="                                                                                       ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
-            line="73"
+            line="64"
             column="88"/>
         <location
             file="src/main/res/values/strings.xml"
-            line="141"
+            line="134"
             column="5"
             message="Conflicting argument declaration here"/>
     </issue>
 
     <issue
         id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #1 in `herb_id_s`: conversion is `s`, received `long` (argument #2 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.herbIdView.text = getString(R.string.herb_id_s, herb.id!!)"
-        errorLine2="                                                                                ~~~~~~~~~">
+        message="Suspicious argument type for formatting argument #1 in `image_count`: conversion is `s`, received `int` (argument #2 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
+        errorLine1="                        binding.imagesCountView.text = getString(R.string.image_count, images.count())"
+        errorLine2="                                                                                       ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/overview/OverviewFragment.kt"
-            line="91"
-            column="81"/>
+            file="src/main/java/com/uri/lee/dl/herbdetails/images/ImagesFragment.kt"
+            line="64"
+            column="88"/>
         <location
             file="src/main/res/values/strings.xml"
-            line="86"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #1 in `herb_id_s`: conversion is `s`, received `long` (argument #2 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.herbIdView.text = getString(R.string.herb_id_s, herb.id!!)"
-        errorLine2="                                                                                ~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/overview/OverviewFragment.kt"
-            line="91"
-            column="81"/>
-        <location
-            file="src/main/res/values/strings.xml"
-            line="86"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `overall_rating`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.overallView.text = getString(R.string.overall_rating, overallRating, reviews.size)"
-        errorLine2="                                                                                                     ~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewFragment.kt"
-            line="54"
-            column="102"/>
-        <location
-            file="src/main/res/values-vi-rVN/strings.xml"
-            line="138"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `overall_rating`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.overallView.text = getString(R.string.overall_rating, overallRating, reviews.size)"
-        errorLine2="                                                                                                     ~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewFragment.kt"
-            line="54"
-            column="102"/>
-        <location
-            file="src/main/res/values-vi-rVN/strings.xml"
-            line="138"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `overall_rating`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.overallView.text = getString(R.string.overall_rating, overallRating, reviews.size)"
-        errorLine2="                                                                                                     ~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewFragment.kt"
-            line="54"
-            column="102"/>
-        <location
-            file="src/main/res/values/strings.xml"
-            line="160"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `overall_rating`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="                        binding.overallView.text = getString(R.string.overall_rating, overallRating, reviews.size)"
-        errorLine2="                                                                                                     ~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewFragment.kt"
-            line="54"
-            column="102"/>
-        <location
-            file="src/main/res/values/strings.xml"
-            line="160"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `person_s`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="            binding.personTextView.text = itemView.context.getString(R.string.person_s, review.patientName, review.age)"
-        errorLine2="                                                                                                            ~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewsAdapter.kt"
-            line="40"
-            column="109"/>
-        <location
-            file="src/main/res/values-vi-rVN/strings.xml"
-            line="142"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `person_s`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="            binding.personTextView.text = itemView.context.getString(R.string.person_s, review.patientName, review.age)"
-        errorLine2="                                                                                                            ~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewsAdapter.kt"
-            line="40"
-            column="109"/>
-        <location
-            file="src/main/res/values-vi-rVN/strings.xml"
-            line="142"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `person_s`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="            binding.personTextView.text = itemView.context.getString(R.string.person_s, review.patientName, review.age)"
-        errorLine2="                                                                                                            ~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewsAdapter.kt"
-            line="40"
-            column="109"/>
-        <location
-            file="src/main/res/values/strings.xml"
-            line="164"
-            column="5"
-            message="Conflicting argument declaration here"/>
-    </issue>
-
-    <issue
-        id="StringFormatMatches"
-        message="Suspicious argument type for formatting argument #2 in `person_s`: conversion is `s`, received `int` (argument #3 in method call) (Did you mean formatting character `d`, &apos;o&apos; or `x`?)"
-        errorLine1="            binding.personTextView.text = itemView.context.getString(R.string.person_s, review.patientName, review.age)"
-        errorLine2="                                                                                                            ~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/herbdetails/review/ReviewsAdapter.kt"
-            line="40"
-            column="109"/>
-        <location
-            file="src/main/res/values/strings.xml"
-            line="164"
+            line="134"
             column="5"
             message="Conflicting argument declaration here"/>
     </issue>
@@ -1091,17 +744,6 @@
         message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `mipmap-anydpi`.">
         <location
             file="src/main/res/mipmap-anydpi-v26"/>
-    </issue>
-
-    <issue
-        id="StaticFieldLeak"
-        message="Do not place Android context classes in static fields (static reference to `FirebaseFirestore` which has field `context` pointing to `Context`); this is a memory leak"
-        errorLine1="val db = Firebase.firestore"
-        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="522"
-            column="1"/>
     </issue>
 
     <issue
@@ -1635,7 +1277,7 @@
         errorLine2="            ~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="60"
+            line="58"
             column="13"/>
     </issue>
 
@@ -1646,7 +1288,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="61"
+            line="59"
             column="13"/>
     </issue>
 
@@ -1657,7 +1299,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="74"
+            line="72"
             column="13"/>
     </issue>
 
@@ -1668,7 +1310,7 @@
         errorLine2="            ~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="77"
+            line="75"
             column="13"/>
     </issue>
 
@@ -1679,7 +1321,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="89"
+            line="87"
             column="13"/>
     </issue>
 
@@ -1690,7 +1332,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="90"
+            line="88"
             column="13"/>
     </issue>
 
@@ -1701,7 +1343,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="95"
+            line="93"
             column="13"/>
     </issue>
 
@@ -1712,7 +1354,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="98"
+            line="96"
             column="13"/>
     </issue>
 
@@ -1723,7 +1365,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="99"
+            line="97"
             column="13"/>
     </issue>
 
@@ -1734,7 +1376,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="101"
+            line="99"
             column="13"/>
     </issue>
 
@@ -1745,7 +1387,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="113"
+            line="111"
             column="13"/>
     </issue>
 
@@ -1756,7 +1398,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="114"
+            line="112"
             column="13"/>
     </issue>
 
@@ -1767,7 +1409,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="115"
+            line="113"
             column="13"/>
     </issue>
 
@@ -1778,7 +1420,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="122"
+            line="120"
             column="13"/>
     </issue>
 
@@ -1789,7 +1431,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="151"
+            line="142"
             column="13"/>
     </issue>
 
@@ -1800,7 +1442,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="156"
+            line="143"
             column="13"/>
     </issue>
 
@@ -1811,7 +1453,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="166"
+            line="145"
             column="13"/>
     </issue>
 
@@ -1822,7 +1464,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="167"
+            line="146"
             column="13"/>
     </issue>
 
@@ -1833,7 +1475,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="168"
+            line="147"
             column="13"/>
     </issue>
 
@@ -1927,7 +1569,7 @@
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lenscamera/objectivecamera/ObjectiveCameraFragment.kt"
-            line="312"
+            line="303"
             column="33"/>
     </issue>
 
@@ -1949,7 +1591,7 @@
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="183"
+            line="163"
             column="19"/>
     </issue>
 
@@ -1960,7 +1602,7 @@
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="196"
+            line="176"
             column="23"/>
     </issue>
 
@@ -1971,7 +1613,7 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="207"
+            line="187"
             column="24"/>
     </issue>
 
@@ -1982,7 +1624,7 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="207"
+            line="187"
             column="24"/>
     </issue>
 
@@ -1993,7 +1635,7 @@
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="266"
+            line="246"
             column="25"/>
     </issue>
 
@@ -2004,7 +1646,7 @@
         errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="468"
+            line="448"
             column="46"/>
     </issue>
 
@@ -2015,7 +1657,7 @@
         errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="638"
+            line="561"
             column="50"/>
     </issue>
 
@@ -2026,7 +1668,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="643"
+            line="566"
             column="17"/>
     </issue>
 
@@ -2081,7 +1723,7 @@
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/Utils.kt"
-            line="553"
+            line="500"
             column="31"/>
     </issue>
 
@@ -2114,7 +1756,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lensimage/ImageActivity.kt"
-            line="150"
+            line="144"
             column="21"/>
     </issue>
 
@@ -2125,7 +1767,7 @@
         errorLine2="                                                                        ~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lensimage/ImageActivity.kt"
-            line="154"
+            line="148"
             column="73"/>
     </issue>
 
@@ -2136,7 +1778,7 @@
         errorLine2="                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lensimages/ImagesActivity.kt"
-            line="100"
+            line="95"
             column="63"/>
     </issue>
 
@@ -2147,7 +1789,7 @@
         errorLine2="                                                              ~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/uri/lee/dl/lensimages/ImagesActivity.kt"
-            line="105"
+            line="100"
             column="63"/>
     </issue>
 
@@ -2224,7 +1866,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/fixed_size_image_viewer.xml"
-            line="63"
+            line="54"
             column="13"/>
     </issue>
 

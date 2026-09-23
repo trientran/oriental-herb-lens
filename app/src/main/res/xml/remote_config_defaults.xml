@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Empty values mean "nothing published": the app uses its bundled model and catalog. -->
+<!--
+    Content sync keys (herb_model_url, herb_model_sha256, herb_catalog_url, herb_catalog_sha256)
+    have no default: Remote Config rejects empty values here, and an unset key reads as "", which
+    means "nothing published, use the bundled copy". See docs/content-publishing.md.
+-->
 <defaults>
-    <entry>
-        <key>herb_model_url</key>
-        <value></value>
-    </entry>
-    <entry>
-        <key>herb_model_sha256</key>
-        <value></value>
-    </entry>
-    <entry>
-        <key>herb_catalog_url</key>
-        <value></value>
-    </entry>
-    <entry>
-        <key>herb_catalog_sha256</key>
-        <value></value>
-    </entry>
     <!-- Version codes; 0 means no update prompt -->
     <entry>
         <key>min_supported_version_android</key>

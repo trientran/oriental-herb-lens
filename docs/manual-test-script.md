@@ -7,6 +7,11 @@ bottom so a later run can be compared with an earlier one.
 **Setup:** a debug build, a signed-in test account, network on unless a step says otherwise, and
 three herb photos on the device (at least one of Đinh lăng, Lá lốt or Huyết dụ).
 
+Firestore enforces App Check, so each new debug install prints a line in Logcat like
+`Enter this debug secret into the allow list in the Firebase Console`. Add that secret under
+App Check → Apps → Manage debug tokens, or every Firestore read fails with `PERMISSION_DENIED`
+and the herb lists stay empty.
+
 ## 1. Launch and sign-in
 
 1. Fresh install, launch. Expect the sign-in screen; sign in with Google.
@@ -42,7 +47,7 @@ must match or beat.
 ## 4. Herb details
 
 1. Open a herb from each of search, all herbs and favourites.
-2. Visit every bottom tab: overview, dosing, caution, images, review.
+2. Visit every bottom tab: overview, dosing, caution, images.
 3. Like, then unlike. The favourites tab on the main screen updates without a restart.
 4. The herb appears at the top of history.
 5. Images tab: open an image full-screen; the location map shows where it was taken, if known.
@@ -78,10 +83,13 @@ must match or beat.
 2. The progress count reaches 2, then the completion message appears.
 3. The new images show in the images tab.
 
-## 10. Edit details and reviews (removed in Phase 2; test until then)
+## 10. Suggest a Vietnamese name
 
-1. Edit the Vietnamese name of a test herb. The change shows on the details screen.
-2. Add a review. It appears in the review tab.
+1. On a test herb's overview, tap the Vietnamese name and enter a new one.
+2. The update button is disabled until the text differs from the current name.
+3. Submit. The screen closes and the new name shows on the details screen.
+4. Latin name, English name, overview, dosing and caution are read-only; empty ones show
+   "Not available yet".
 
 ## 11. Settings
 
@@ -94,11 +102,14 @@ must match or beat.
 2. Single image and live camera still recognise herbs (on-device model).
 3. Herbs viewed earlier still open (Firestore cache).
 
-## 13. Model update
+## 13. Content update (model and catalog)
 
-1. In Remote Config, point the model URL at a different model, publish.
-2. Relaunch twice (fetch, then use). Recognition uses the new model.
-3. Restore the original URL afterwards.
+Follow docs/content-publishing.md to publish a catalog or model, then:
+
+1. Relaunch a debug build twice (the first launch fetches Remote Config and downloads).
+2. Logcat shows `Installed CATALOG from …` / `Installed MODEL from …`.
+3. Scan results use the new model; names come from the new catalog.
+4. Set Remote Config back to the previous values: the next launch switches back.
 
 ## Results log
 
