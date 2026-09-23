@@ -556,28 +556,6 @@ fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
 fun DocumentSnapshot.toHistory() = (get(USER_HISTORY_FIELD_NAME) as? List<*>) ?: emptyList<Any>()
 
 
-class BaseApplication : Application(), DefaultLifecycleObserver {
-
-    override fun onCreate() {
-        super<Application>.onCreate()
-        // Initialize the SDK
-        Places.initializeWithNewPlacesApiEnabled(applicationContext, BuildConfig.MAP_PRODUCTS_API_KEY)
-
-        Glide.get(this).registry.replace(
-            GlideUrl::class.java, InputStream::class.java,
-            OkHttpUrlLoader.Factory(OkHttpClient())
-        )
-        FirebaseApp.initializeApp(this)
-        val firebaseAppCheck = FirebaseAppCheck.getInstance()
-        if (BuildConfig.DEBUG) {
-            firebaseAppCheck.installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())
-        } else {
-            firebaseAppCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
-        }
-        Timber.plant(Timber.DebugTree())
-    }
-}
-
 fun getLocalizedDateStringUsingDate(timeInMilliseconds: Long): String {
     val format: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
     return format.format(Date.from(Instant.ofEpochMilli(timeInMilliseconds))) // 25/09/2022

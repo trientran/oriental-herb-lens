@@ -8,17 +8,17 @@ navigation = "2.8.2"
 navigation-safeargs = "2.9.8"
 
 androidx-annotation = "1.8.2"
-androidx-appcompat = "1.7.0"
+androidx-appcompat = "1.7.1"
 androidx-camera = "1.4.2"
 androidx-constraintlayout = "2.1.4"
-androidx-core = "1.13.1"
+androidx-core = "1.16.0"
 androidx-datastore = "1.1.1"
-androidx-lifecycle = "2.8.6"
+androidx-lifecycle = "2.10.0"
 androidx-preference = "1.2.1"
 material = "1.12.0"
 
 algolia-instantsearch = "3.3.1"
-coroutines = "1.8.1"
+coroutines = "1.9.0"
 firebase-bom = "34.1.0"
 firebase-appcheck-debug = "19.0.0"
 firebase-ui-auth = "9.0.0"
@@ -33,11 +33,15 @@ places = "4.0.0"
 play-services-location = "21.3.0"
 retrofit = "2.11.0"
 retrofit-converter-gson = "2.9.0"
-serialization = "1.6.0"
+serialization = "1.7.3"
 subsampling-scale-image-view = "3.10.0"
 timber = "5.0.1"
 
+koin = "4.2.2"
+work = "2.11.2"
+
 junit4 = "4.13.2"
+mockwebserver = "5.5.0"
 turbine = "1.2.1"
 
 [libraries]
@@ -92,7 +96,14 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebase-ui-auth" }
 
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+
 junit4 = { module = "junit:junit", version.ref = "junit4" }
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 # Used by build-logic convention plugins

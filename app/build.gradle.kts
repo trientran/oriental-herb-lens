@@ -121,6 +121,10 @@ dependencies {
     implementation(libs.glide.okhttp3.integration)
     implementation(libs.subsampling.scale.image.view)
     implementation(libs.timber)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.workmanager)
+    implementation(libs.androidx.work.runtime.ktx)
     api(libs.guava)
 
     implementation(libs.mlkit.objectdetection)
@@ -140,4 +144,6 @@ dependencies {
     implementation(libs.firebase.appcheck.debug)
 
     testImplementation(projects.core.testing)
+    testImplementation(platform(libs.koin.bom))
+    testImplementation(libs.koin.test.junit4)
 }
