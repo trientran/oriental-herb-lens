@@ -52,6 +52,7 @@ android {
         buildConfigField "String", "MAP_PRODUCTS_API_KEY", "\"${secret('MAP_PRODUCTS_API_KEY')}\""
         buildConfigField "String", "ALGOLIA_APP_ID", "\"${secret('ALGOLIA_APP_ID')}\""
         buildConfigField "String", "ALGOLIA_SEARCH_API_KEY", "\"${secret('ALGOLIA_SEARCH_API_KEY')}\""
+        buildConfigField "String", "IMGE_API_KEY", "\"${secret('IMGE_API_KEY')}\""
         signingConfig signingConfigs.release
     }
     buildTypes {
