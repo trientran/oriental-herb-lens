@@ -1,118 +1,76 @@
 package com.uri.lee.dl.upload
 
-import android.app.Application
-import android.location.Geocoder
 import android.net.Uri
-import android.util.Base64
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.SetOptions
-import com.uri.lee.dl.BaseApplication
 import com.uri.lee.dl.DeviceLocation
-import com.uri.lee.dl.IMAGE_UPLOAD_PATH_NAME
-import com.uri.lee.dl.Utils.compressToJpgByteArray
-import com.uri.lee.dl.authUI
-import com.uri.lee.dl.globalScope
-import com.uri.lee.dl.herbCollection
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import com.uri.lee.dl.HERB_ID
+import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.data.platform.AddressLookup
+import com.uri.lee.dl.data.platform.UriImage
+import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
+import com.uri.lee.dl.domain.usecase.SubmitProgress
+import com.uri.lee.dl.ui.common.MviViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import timber.log.Timber
-import java.util.Locale
-import java.util.concurrent.CancellationException
 
-private const val MAX_IMAGE_DIMENSION = 600
+sealed interface ImageUploadAction {
+    data class ImagesPicked(val uris: List<Uri>) : ImageUploadAction
+    data object ClearAll : ImageUploadAction
 
-class ImageUploadViewModel(application: Application) : AndroidViewModel(application) {
-    private val application = getApplication<BaseApplication>()
-    private val stateFlow = MutableStateFlow(ImageUploadState())
-    private val imageApi = RetrofitHelper.getInstance().create(ImageApi::class.java)
+    /** From the device's location or a place search; already has an address. */
+    data class LocationFound(val location: DeviceLocation) : ImageUploadAction
 
-    fun state(): Flow<ImageUploadState> = stateFlow
+    /** A point picked on the map; its address is looked up. */
+    data class MapPointPicked(val latitude: Double, val longitude: Double) : ImageUploadAction
+    data object Upload : ImageUploadAction
+}
 
-    val state: ImageUploadState get() = stateFlow.value
+class ImageUploadViewModel(
+    savedState: SavedStateHandle,
+    private val submitImages: SubmitImagesUseCase,
+    private val addresses: AddressLookup,
+    private val appScope: ApplicationScope,
+) : MviViewModel<ImageUploadState, ImageUploadAction>(
+    ImageUploadState(herbId = savedState.get<Long>(HERB_ID))
+) {
 
-    init {
-        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
-    }
-
-    fun clearAllData() {
-        Timber.d("clearAllData")
-        viewModelScope.launch {
-            setState { copy(imageUris = emptyList(), error = null) }
-        }
-    }
-
-    fun addImageUris(addedUris: List<Uri>) {
-        Timber.d("addImageUris")
-        if (addedUris.isEmpty()) return
-        viewModelScope.launch {
-            val currentUriList = state.imageUris.toMutableList()
-            currentUriList.addAll(addedUris)
-            setState { copy(imageUris = currentUriList) }
-        }
-    }
-
-    fun setLocation(location: DeviceLocation) {
-        Timber.d("setLocation $location")
-        viewModelScope.launch {
-            setState { copy(location = location.toHerbLocation()) }
-        }
-    }
-
-    fun setLocation(location: ImageUploadState.HerbLocation) {
-        Timber.d("setLocation $location")
-        viewModelScope.launch {
-            val setLocation = if (location.addressLine == null) {
-                val geocoder = Geocoder(application, Locale.getDefault())
-                val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
-                Timber.v("Parsed location addresses: $addresses")
-                addresses?.firstOrNull()?.let {
-                    location.copy(addressLine = it.getAddressLine(0))
-                }
-            } else {
-                location
+    override fun onAction(action: ImageUploadAction) {
+        when (action) {
+            is ImageUploadAction.ImagesPicked -> if (action.uris.isNotEmpty()) {
+                setState { copy(imageUris = imageUris + action.uris) }
             }
-            setState { copy(location = setLocation) }
+            ImageUploadAction.ClearAll -> setState { copy(imageUris = emptyList(), error = null) }
+            is ImageUploadAction.LocationFound -> with(action.location) {
+                setState { copy(location = ImageUploadState.HerbLocation(lat, long, addressLine)) }
+            }
+            is ImageUploadAction.MapPointPicked -> viewModelScope.launch {
+                val address = addresses.addressLine(action.latitude, action.longitude)
+                setState { copy(location = ImageUploadState.HerbLocation(action.latitude, action.longitude, address)) }
+            }
+            ImageUploadAction.Upload -> upload()
         }
     }
 
-    fun uploadSequentially() {
-        Timber.d("uploadSequentially")
-        globalScope.launch {
-            val uid = authUI.auth.uid ?: return@launch
-            state.herbId ?: return@launch
-            val urlMap = mutableMapOf<String, Any>() // url string, uid and lat lng string
-            setState { copy(isUploadComplete = false) }
+    /** Runs in the app scope: an upload keeps going if the user leaves the screen. */
+    private fun upload() {
+        val herbId = currentState.herbId ?: return
+        val images = currentState.imageUris.map(::UriImage)
+        if (images.isEmpty()) return
+        val location = currentState.location?.let { GeoLocation(it.lat, it.long) }
+        setState { copy(isUploadComplete = false, error = null) }
+        appScope.launch {
             try {
-                state.imageUris.onEach { uri ->
-                    val byteArray = application.compressToJpgByteArray(uri, MAX_IMAGE_DIMENSION)
-                    // should use NO_WRAP to make sure there is no break line in the string create a map of data to pass along
-                    val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-                    imageApi.uploadImage(base64String).body()?.let {
-                        // create a json string of uid and lat lng of selected location
-                        val jsonString = """
-    {
-        "uid": "$uid",
-        "lat": ${state.location?.lat},
-        "lng": ${state.location?.long}
-    }
-""".trimIndent()
-
-                        urlMap[it.image.url] = jsonString
-                        setState { copy(uploadedImagesCount = urlMap.size - 1) }
+                submitImages(herbId, images, location).collect { progress ->
+                    when (progress) {
+                        is SubmitProgress.Uploading -> setState { copy(uploadedImagesCount = progress.uploaded) }
+                        is SubmitProgress.Finished -> setState {
+                            copy(uploadedImagesCount = progress.uploaded, failedImagesCount = progress.failed, isUploadComplete = true)
+                        }
                     }
                 }
-                if (urlMap.isNotEmpty()) {
-                    herbCollection
-                        .document(state.herbId.toString())
-                        .set(mapOf(IMAGE_UPLOAD_PATH_NAME to urlMap), SetOptions.merge())
-                        .await()
-                    setState { copy(uploadedImagesCount = urlMap.size) }
-                }
-                setState { copy(isUploadComplete = true) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -121,22 +79,14 @@ class ImageUploadViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
     }
-
-    fun setHerbId(herbId: Long) {
-        viewModelScope.launch { setState { copy(herbId = herbId) } }
-    }
-
-    private inline fun setState(copiedState: ImageUploadState.() -> ImageUploadState) = stateFlow.update(copiedState)
-
 }
 
 data class ImageUploadState(
     val herbId: Long? = null,
     val imageUris: List<Uri> = emptyList(),
     val uploadedImagesCount: Int? = null,
-    val isFinalizingUpload: Boolean = false,
+    val failedImagesCount: Int = 0,
     val isUploadComplete: Boolean = false,
-    val isSubmitting: Boolean = false,
     val error: Error? = null,
     val location: HerbLocation? = null,
 ) {
@@ -148,5 +98,3 @@ data class ImageUploadState(
         val addressLine: String?,
     )
 }
-
-private fun DeviceLocation.toHerbLocation() = ImageUploadState.HerbLocation(lat, long, addressLine)

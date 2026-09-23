@@ -3,7 +3,11 @@ package com.uri.lee.dl.di
 import android.app.Application
 import android.content.Context
 import android.content.res.AssetManager
+import androidx.lifecycle.SavedStateHandle
 import androidx.work.WorkerParameters
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Test
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -17,7 +21,7 @@ class KoinGraphTest {
 
     @Test
     fun `every definition can be constructed`() {
-        module { includes(appModules) }.verify(
+        module { includes(appModules - firebaseModule) }.verify(
             extraTypes = listOf(
                 Context::class,
                 Application::class,
@@ -27,6 +31,15 @@ class KoinGraphTest {
                 AssetManager::class,
                 // Supplied by WorkManager when it creates a worker
                 WorkerParameters::class,
+                // Supplied by Koin to every ViewModel
+                SavedStateHandle::class,
+                // firebaseModule: SDK objects whose internals aren't ours to check
+                FirebaseAuth::class,
+                FirebaseFirestore::class,
+                FirebaseRemoteConfig::class,
+                // Plain values passed inline (version code, sort language)
+                Long::class,
+                Boolean::class,
             ),
         )
     }

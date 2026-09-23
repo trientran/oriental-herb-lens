@@ -1,14 +1,18 @@
 package com.uri.lee.dl.herbdetails.images
 
+import androidx.core.view.isVisible
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import android.content.Intent
 import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -18,17 +22,12 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentImagesBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
 import com.uri.lee.dl.upload.ImageUploadActivity
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 class ImagesFragment : Fragment() {
 
     private var _binding: FragmentImagesBinding? = null
 
-    private val herbDetailsViewModel: HerbDetailsViewModel by activityViewModels()
+    private val herbDetailsViewModel: HerbDetailsViewModel by activityViewModel()
     private lateinit var imageUploadAdapter: ImagesAdapter
 
     // This property is only valid between onCreateView and
@@ -42,8 +41,8 @@ class ImagesFragment : Fragment() {
     ): View {
         _binding = FragmentImagesBinding.inflate(inflater, container, false)
 
-        imageUploadAdapter = ImagesAdapter { (uri, uploaderUid) ->
-            val bottomSheet = FixedSizeImageViewerDialog(uri to uploaderUid)
+        imageUploadAdapter = ImagesAdapter { image ->
+            val bottomSheet = FixedSizeImageViewerDialog(image)
             bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
         }
 
@@ -56,14 +55,14 @@ class ImagesFragment : Fragment() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                herbDetailsViewModel.state()
-                    .mapNotNull { it.herb?.images }
+                herbDetailsViewModel.state
+                    .mapNotNull { it.profile?.images }
                     .distinctUntilChanged()
                     .onEach { images ->
                         binding.pleaseUploadView.isVisible = images.isEmpty()
                         binding.addMorePhotosView.isVisible = images.count() <= 1000
                         binding.imagesCountView.text = getString(R.string.image_count, images.count())
-                        imageUploadAdapter.submitList(images.map { it.key.toUri() to it.value }.toList())
+                        imageUploadAdapter.submitList(images)
                     }
                     .launchIn(this)
             }
@@ -73,7 +72,7 @@ class ImagesFragment : Fragment() {
     }
 
     private fun goToUploadScreen() {
-        herbDetailsViewModel.state.herb?.id?.let {
+        herbDetailsViewModel.state.value.herbId.let {
             val intent = Intent(requireContext(), ImageUploadActivity::class.java)
             intent.putExtra(HERB_ID, it)
             startActivity(intent)

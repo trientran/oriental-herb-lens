@@ -1,141 +1,88 @@
 package com.uri.lee.dl.herbdetails
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.toObject
-import com.uri.lee.dl.FireStoreHerb
-import com.uri.lee.dl.USER_FAVORITE_FIELD_NAME
-import com.uri.lee.dl.USER_HISTORY_FIELD_NAME
-import com.uri.lee.dl.authUI
-import com.uri.lee.dl.herbCollection
-import com.uri.lee.dl.toHistory
-import com.uri.lee.dl.toLikes
-import com.uri.lee.dl.userCollection
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import com.uri.lee.dl.HERB_ID
+import com.uri.lee.dl.domain.model.HerbProfile
+import com.uri.lee.dl.domain.repository.HerbRepository
+import com.uri.lee.dl.domain.repository.UserLibraryRepository
+import com.uri.lee.dl.ui.common.MviViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import timber.log.Timber
-import java.util.concurrent.CancellationException
 
-class HerbDetailsViewModel : ViewModel() {
-
-    private lateinit var herbListenerRegistration: ListenerRegistration
-    private lateinit var userListenerRegistration: ListenerRegistration
-    private lateinit var urisListenerRegistration: ListenerRegistration
-
-    private val stateFlow = MutableStateFlow(HerbDetailsState())
-
-    fun state(): Flow<HerbDetailsState> = stateFlow
-
-    val state: HerbDetailsState get() = stateFlow.value
-
-    init {
-        viewModelScope.launch { stateFlow.collect { Timber.d(it.toString()) } }
-    }
-
-    fun setId(id: Long) {
-        Timber.d("setId")
-        viewModelScope.launch {
-            setState { copy(herb = FireStoreHerb(id = id)) }
-            liveHerbUpdate(id)
-            liveLikeListUpdate()
-        }
-    }
-
-    fun setLike() {
-        Timber.d("setLike")
-        viewModelScope.launch {
-            authUI.auth.uid!!.let {
-                setState { copy(isLiked = !state.isLiked) }
-                if (state.isLiked) {
-                    userCollection
-                        .document(it)
-                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayUnion(state.herb!!.id)).await()
-                    Timber.d("New like successfully written!")
-                } else {
-                    userCollection
-                        .document(it)
-                        .update(USER_FAVORITE_FIELD_NAME, FieldValue.arrayRemove(state.herb!!.id)).await()
-                    Timber.d("Like successfully removed!")
-                }
-            }
-        }
-    }
-
-    private fun liveHerbUpdate(id: Long) {
-        herbCollection.document(id.toString()).apply {
-            herbListenerRegistration = this.addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Timber.e(e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val herb = snapshot.toObject<FireStoreHerb>()
-                    viewModelScope.launch { setState { copy(herb = herb) } }
-                }
-            }
-        }
-    }
-
-    private fun liveLikeListUpdate() {
-        userListenerRegistration = userCollection.document(authUI.auth.uid!!).addSnapshotListener { snapshot, e ->
-            if (e != null) {
-                Timber.e(e)
-                return@addSnapshotListener
-            }
-
-            if (snapshot != null && snapshot.exists()) {
-                try {
-                    snapshot.toLikes()?.apply {
-                        viewModelScope.launch {
-                            val isLiked = snapshot.toLikes()!!.contains(state.herb!!.id)
-                            setState { copy(isLiked = isLiked) }
-                        }
-                    }
-
-                    snapshot.toHistory().apply {
-                        viewModelScope.launch {
-                            val history = this@apply.toMutableList()
-                            if (state.herb!!.id.toString().count() >= 4) { // herb id must be at least 4 characters)
-                                history.remove(state.herb!!.id)
-                                history.add(state.herb!!.id)
-                                val data = hashMapOf(USER_HISTORY_FIELD_NAME to history)
-                                userCollection.document(authUI.auth.uid!!).set(data, SetOptions.merge())
-                                Timber.d("Successfully added to history!")
-                            }
-                        }
-                    }
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    setState { copy(error = HerbDetailsState.Error(e)) }
-                }
-            }
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        if (this::herbListenerRegistration.isInitialized) herbListenerRegistration.remove()
-        if (this::userListenerRegistration.isInitialized) userListenerRegistration.remove()
-        if (this::urisListenerRegistration.isInitialized) urisListenerRegistration.remove()
-    }
-
-    private inline fun setState(copiedState: HerbDetailsState.() -> HerbDetailsState) = stateFlow.update(copiedState)
+sealed interface HerbDetailsAction {
+    data object ToggleFavorite : HerbDetailsAction
 }
 
 data class HerbDetailsState(
-    val herb: FireStoreHerb? = null,
-    val isLiked: Boolean = false,
-    val isLoading: Boolean = false,
+    val herbId: Long,
+    val profile: HerbProfile? = null,
+    val isFavorite: Boolean = false,
     val error: Error? = null,
 ) {
-    data class Error(val exception: Exception)
+    data class Error(val exception: Throwable)
+}
+
+/** Backs the herb details screen and its tabs, which share it through the activity. */
+class HerbDetailsViewModel(
+    savedState: SavedStateHandle,
+    herbs: HerbRepository,
+    private val library: UserLibraryRepository,
+) : MviViewModel<HerbDetailsState, HerbDetailsAction>(
+    HerbDetailsState(herbId = requireNotNull(savedState.get<Long>(HERB_ID)) { "HerbDetailsActivity needs $HERB_ID" })
+) {
+
+    init {
+        val id = currentState.herbId
+        herbs.observeProfile(id)
+            .onEach { profile -> setState { copy(profile = profile) } }
+            .catch { reportError(it) }
+            .launchIn(viewModelScope)
+        library.observeFavorites()
+            .onEach { favorites -> setState { copy(isFavorite = id in favorites) } }
+            .catch { reportError(it) }
+            .launchIn(viewModelScope)
+        // Record the view once the herb is known to exist.
+        viewModelScope.launch {
+            try {
+                state.map { it.profile }.filterNotNull().first()
+                library.recordViewed(id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.w(e, "Couldn't record herb $id in history")
+            }
+        }
+    }
+
+    override fun onAction(action: HerbDetailsAction) {
+        when (action) {
+            HerbDetailsAction.ToggleFavorite -> {
+                val favorite = !currentState.isFavorite
+                setState { copy(isFavorite = favorite) } // shown immediately; the listener confirms it
+                viewModelScope.launch {
+                    try {
+                        library.setFavorite(currentState.herbId, favorite)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        setState { copy(isFavorite = !favorite) }
+                        reportError(e)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun reportError(e: Throwable) {
+        Timber.e(e)
+        setState { copy(error = HerbDetailsState.Error(e)) }
+    }
 }

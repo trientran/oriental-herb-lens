@@ -6,53 +6,24 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.lifecycleScope
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.SetOptions
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 class LoginActivity : AppCompatActivity() {
 
+    private val auth get() = AuthUI.getInstance().auth
+
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-        Timber.d(auth.currentUser.toString())
         if (auth.currentUser != null) {
-            lifecycleScope.launch(mainDispatcher) {
-                try {
-                    auth.currentUser?.let {
-                        userCollection
-                            .document(it.uid)
-                            .set(
-                                mapOf(
-                                    "uid" to it.uid,
-                                    "email" to it.email,
-                                    "name" to it.displayName
-                                ), SetOptions.merge()
-                            )
-                            .await()
-                    }
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e)
-                } finally {
-                    finishAffinity()
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                }
-            }
+            finishAffinity()
+            startActivity(Intent(this, MainActivity::class.java))
         }
     }
 
-    private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {
-        if (it.resultCode == RESULT_OK) AuthUI.getInstance().auth.currentUser?.let {
-
-        }
-    }
+    // A successful sign-in is picked up by authStateListener.
+    private val signInLauncher = registerForActivityResult(FirebaseAuthUIActivityResultContract()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,11 +52,11 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        authUI.auth.addAuthStateListener(authStateListener)
+        auth.addAuthStateListener(authStateListener)
     }
 
     override fun onStop() {
         super.onStop()
-        authUI.auth.removeAuthStateListener(authStateListener)
+        auth.removeAuthStateListener(authStateListener)
     }
 }

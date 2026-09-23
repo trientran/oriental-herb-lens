@@ -1,12 +1,18 @@
 package com.uri.lee.dl.lensimages
 
+import androidx.core.view.isVisible
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import android.os.Bundle
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import android.os.CountDownTimer
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -15,12 +21,6 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityImagesBinding
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 
 class ImagesActivity : AppCompatActivity() {
 

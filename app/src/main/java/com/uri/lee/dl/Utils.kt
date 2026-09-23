@@ -16,9 +16,13 @@
 
 package com.uri.lee.dl
 
+import androidx.core.net.toUri
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import android.Manifest
 import android.app.Activity
-import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Context
@@ -51,7 +55,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -61,38 +64,16 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.bumptech.glide.Glide
-import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
-import com.bumptech.glide.load.model.GlideUrl
-import com.firebase.ui.auth.AuthUI
-import com.google.android.libraries.places.api.Places
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.Firebase
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
-import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.lenscamera.objectivecamera.CameraSizePair
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -100,7 +81,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.text.DateFormat
-import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -486,35 +466,17 @@ internal fun Fragment.snackBar(message: String, length: Int? = Snackbar.LENGTH_I
 val View.layoutInflater: LayoutInflater get() = LayoutInflater.from(context)
 fun View.bounds(): Rect = Rect(0, 0, width, height)
 
-const val INSTANT_HERB = "INSTANT_HERB"
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
 const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
-val defaultDispatcher = Dispatchers.Default
-val mainDispatcher = Dispatchers.Main
 val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
-const val HERD_FIELD = "HERD_FIELD_TO_UPDATE"
-const val IMAGE_UPLOAD_PATH_NAME = "images"
-val globalScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
 // data store stuff (keys live in SettingsKeys.kt)
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
 
-val authUI = AuthUI.getInstance()
 
-val clock: Clock = Clock.systemDefaultZone()
 
-val db = Firebase.firestore
-val herbCollection = db.collection("herbs") // dont change this value
-val userCollection = db.collection("users") // dont change this value
-val configCollection = db.collection("config") // dont change this value
-val uploadCollection = db.collection("uploads") // dont change this value
-const val USER_FAVORITE_FIELD_NAME = "favorite" // dont change this value
-const val USER_HISTORY_FIELD_NAME = "history" // dont change this value
-const val USER_IS_ADMIN_FIELD_NAME = "isAdmin" // dont change this value
-val storage = Firebase.storage
-var herbStorage = storage.reference.child("herbs")
 const val HERB_ID = "HERB_ID"
 
 const val PRIVACY_POLICY_EN = "https://medherblens.ml/pages/privacy-policy"
@@ -539,8 +501,6 @@ val systemLanguageLowercase = Locale.getDefault().displayLanguage.lowercase()
 val isSystemLanguageVietnamese =
     systemLanguageLowercase == "vietnamese" || systemLanguageLowercase == "vi" || systemLanguageLowercase == "tiếng việt"
 
-fun DocumentSnapshot.toLikes() = get(USER_FAVORITE_FIELD_NAME) as? List<*>
-fun DocumentSnapshot.toHistory() = (get(USER_HISTORY_FIELD_NAME) as? List<*>) ?: emptyList<Any>()
 
 
 fun getLocalizedDateStringUsingDate(timeInMilliseconds: Long): String {

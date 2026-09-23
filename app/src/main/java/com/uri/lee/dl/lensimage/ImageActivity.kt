@@ -16,6 +16,14 @@
 
 package com.uri.lee.dl.lensimage
 
+import androidx.core.view.isVisible
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
 import android.content.res.Resources
@@ -32,7 +40,6 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -49,16 +56,8 @@ import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.HerbAdapter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.TreeMap
-import kotlin.collections.set
 
 /** Demonstrates the object detection and visual search workflow using static image.  */
 class ImageActivity : AppCompatActivity() {

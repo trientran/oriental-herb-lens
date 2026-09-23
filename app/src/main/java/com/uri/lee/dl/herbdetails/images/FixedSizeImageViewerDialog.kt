@@ -1,6 +1,5 @@
 package com.uri.lee.dl.herbdetails.images
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +13,11 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.addAnnotationToMap
 import com.uri.lee.dl.databinding.FixedSizeImageViewerBinding
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import com.uri.lee.dl.domain.model.HerbImage
+import androidx.core.net.toUri
 
 class FixedSizeImageViewerDialog(
-    private val uriPair: Pair<Uri, String>,
+    private val image: HerbImage,
 ) : BottomSheetDialogFragment() {
 
     private lateinit var binding: FixedSizeImageViewerBinding
@@ -30,41 +29,25 @@ class FixedSizeImageViewerDialog(
     ): View {
         binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
-        Glide.with(this).load(uriPair.first).into(binding.imageView)
-        try {
-            Json.decodeFromString<ImageDetail>(uriPair.second)
-        } catch (e: Exception) {
-            binding.mapView.visibility = View.GONE
-            binding.uploadByView.text = getString(R.string.uploaded_by, "")
-            null
-        }?.let { imageDetail ->
-            binding.uploadByView.text = getString(R.string.uploaded_by, imageDetail.uid)
-            binding.mapView.visibility = View.VISIBLE
+        Glide.with(this).load(image.url).into(binding.imageView)
+        binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
+        val location = image.location
+        binding.mapView.visibility = if (location == null) View.GONE else View.VISIBLE
+        if (location != null) {
             binding.mapView.mapboxMap.loadStyle(
                 style = Style.MAPBOX_STREETS,
                 onStyleLoaded = {
-                    binding.mapView.addAnnotationToMap(
-                        view.context,
-                        lat = imageDetail.lat,
-                        long = imageDetail.lng,
-                    )
+                    binding.mapView.addAnnotationToMap(view.context, lat = location.latitude, long = location.longitude)
                 }
             )
-            val cameraPosition = CameraOptions.Builder()
-                .zoom(14.0)
-                .center(Point.fromLngLat(imageDetail.lng, imageDetail.lat))
-                .build()
-            // set camera position
-            binding.mapView.mapboxMap.setCamera(cameraPosition)
+            binding.mapView.mapboxMap.setCamera(
+                CameraOptions.Builder()
+                    .zoom(14.0)
+                    .center(Point.fromLngLat(location.longitude, location.latitude))
+                    .build()
+            )
         }
-        binding.imageView.setOnClickListener { view.context.openUrlWithDefaultBrowser(uri = uriPair.first) }
+        binding.imageView.setOnClickListener { view.context.openUrlWithDefaultBrowser(uri = image.url.toUri()) }
         return view
     }
 }
-
-@Serializable
-data class ImageDetail(
-    val uid: String,
-    val lat: Double,
-    val lng: Double
-)

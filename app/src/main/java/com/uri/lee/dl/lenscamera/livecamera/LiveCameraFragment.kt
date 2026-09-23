@@ -1,10 +1,10 @@
 package com.uri.lee.dl.lenscamera.livecamera
 
-import android.os.Bundle
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
+import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.Lifecycle
 import android.util.Size
 import android.view.LayoutInflater
