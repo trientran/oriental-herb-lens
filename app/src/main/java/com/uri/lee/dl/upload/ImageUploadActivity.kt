@@ -1,5 +1,17 @@
 package com.uri.lee.dl.upload
 
+import androidx.core.view.isVisible
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.gestures.gestures
+import com.uri.lee.dl.addAnnotationToMap
+import com.uri.lee.dl.requestLocationEnabled
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import android.Manifest
 import android.app.Activity
 import android.app.NotificationChannel
@@ -13,13 +25,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -30,30 +41,18 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.Style
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.gestures.gestures
 import com.uri.lee.dl.DeviceLocation
-import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.MainActivity
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils
-import com.uri.lee.dl.addAnnotationToMap
 import com.uri.lee.dl.databinding.ActivityImageUploadBinding
 import com.uri.lee.dl.fetchCatchingPermittedLocation
 import com.uri.lee.dl.foreground
 import com.uri.lee.dl.isLocationServiceEnabled
-import com.uri.lee.dl.requestLocationEnabled
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ImageUploadActivity : AppCompatActivity() {
@@ -62,10 +61,10 @@ class ImageUploadActivity : AppCompatActivity() {
 
     private lateinit var imageUploadAdapter: ImageUploadAdapter
 
-    private val viewModel: ImageUploadViewModel by viewModels()
+    private val viewModel: ImageUploadViewModel by viewModel()
 
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { list ->
-        viewModel.addImageUris(list)
+        viewModel.onAction(ImageUploadAction.ImagesPicked(list))
     }
 
     private val startAutocomplete = registerForActivityResult(
@@ -85,7 +84,7 @@ class ImageUploadActivity : AppCompatActivity() {
                 Timber.d("location: ${place.location}")
                 Timber.d("viewport: ${place.viewport}")
                 Timber.d("trien: ${place.formattedAddress}")
-                viewModel.setLocation(place.toHerbLocation())
+                viewModel.onAction(ImageUploadAction.LocationFound(place.toHerbLocation()))
             }
         } else if (result.resultCode == RESULT_CANCELED) {
             // The user canceled the operation.
@@ -101,7 +100,7 @@ class ImageUploadActivity : AppCompatActivity() {
                     fetchCatchingPermittedLocation(
                         onLocationFetched = { location ->
                             Timber.v("Device location: $location")
-                            viewModel.setLocation(location)
+                            viewModel.onAction(ImageUploadAction.LocationFound(location))
                         },
                         onFailure = { it.printStackTrace() }
                     )
@@ -121,7 +120,7 @@ class ImageUploadActivity : AppCompatActivity() {
                         fetchCatchingPermittedLocation(
                             onLocationFetched = { location ->
                                 Timber.v("Device location: $location")
-                                viewModel.setLocation(location)
+                                viewModel.onAction(ImageUploadAction.LocationFound(location))
                             },
                             onFailure = { it.printStackTrace() }
                         )
@@ -150,7 +149,6 @@ class ImageUploadActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        intent.getLongExtra(HERB_ID, 1001).let { viewModel.setHerbId(it) }
         imageUploadAdapter = ImageUploadAdapter {
             val bottomSheet = FullSizeImageViewerDialog(it)
             bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
@@ -169,7 +167,7 @@ class ImageUploadActivity : AppCompatActivity() {
                 )
             )
         }
-        binding.clearBtn.setOnClickListener { viewModel.clearAllData() }
+        binding.clearBtn.setOnClickListener { viewModel.onAction(ImageUploadAction.ClearAll) }
         binding.instructionView.setOnClickListener {
             AlertDialog.Builder(it.context)
                 .setMessage(getString(R.string.how_to_take_photos))
@@ -192,19 +190,13 @@ class ImageUploadActivity : AppCompatActivity() {
 
         // Add a long click listener
         binding.mapView.gestures.addOnMapLongClickListener { point ->
-            viewModel.setLocation(
-                ImageUploadState.HerbLocation(
-                    lat = point.latitude(),
-                    long = point.longitude(),
-                    addressLine = null
-                )
-            )
+            viewModel.onAction(ImageUploadAction.MapPointPicked(latitude = point.latitude(), longitude = point.longitude()))
             true  // Return true to indicate the long-click was handled
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel
-                    .state()
+                    .state
                     .mapNotNull { it.location }
                     .onEach { location ->
                         binding.addressLine.text = location.addressLine
@@ -229,7 +221,7 @@ class ImageUploadActivity : AppCompatActivity() {
                     .launchIn(this)
 
                 viewModel
-                    .state()
+                    .state
                     .map { it.imageUris to it.location }
                     .distinctUntilChanged()
                     .onEach { (list, location) ->
@@ -240,7 +232,7 @@ class ImageUploadActivity : AppCompatActivity() {
                         binding.clearBtn.isVisible = list.isNotEmpty()
                         binding.uploadBtn.setOnClickListener {
                             it.isEnabled = false
-                            viewModel.uploadSequentially()
+                            viewModel.onAction(ImageUploadAction.Upload)
                             Toast.makeText(
                                 this@ImageUploadActivity,
                                 getString(R.string.upload_in_progress_please),
@@ -251,7 +243,7 @@ class ImageUploadActivity : AppCompatActivity() {
                     .launchIn(this)
 
                 viewModel
-                    .state()
+                    .state
                     .mapNotNull { it.uploadedImagesCount }
                     .distinctUntilChanged()
                     .onEach { count ->
@@ -275,7 +267,7 @@ class ImageUploadActivity : AppCompatActivity() {
 
         createNotificationChannel()
         mainScope.launch {
-            combine(viewModel.state().map { it.isUploadComplete }.filter { it },
+            combine(viewModel.state.map { it.isUploadComplete }.filter { it },
                 foreground()
             ) { isUploadComplete, isForeground ->
                 isUploadComplete to isForeground
@@ -314,7 +306,7 @@ class ImageUploadActivity : AppCompatActivity() {
                     }
                 }
                 .launchIn(this)
-            viewModel.state()
+            viewModel.state
                 .map { it.isUploadComplete }
                 .distinctUntilChanged()
                 .onEach {

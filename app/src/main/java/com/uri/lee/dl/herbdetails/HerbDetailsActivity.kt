@@ -1,9 +1,11 @@
 package com.uri.lee.dl.herbdetails
 
+import androidx.navigation.ui.setupWithNavController
+import kotlinx.coroutines.launch
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.viewModels
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -12,27 +14,22 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
 import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 class HerbDetailsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHerbDetailsBinding
     private lateinit var navController: NavController
-    private val viewModel: HerbDetailsViewModel by viewModels()
+    private val viewModel: HerbDetailsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        intent?.getLongExtra(HERB_ID, 1001)?.let { viewModel.setId(it) }
-
         binding = ActivityHerbDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -63,16 +60,11 @@ class HerbDetailsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state()
-                    .mapNotNull { it.herb }
+                viewModel.state
+                    .mapNotNull { it.profile }
                     .onEach { herb ->
-                        title = if (isSystemLanguageVietnamese) {
-                            herb.viName.takeIf { it.isNotBlank() } ?: herb.latinName.takeIf { it.isNotBlank() }
-                            ?: return@onEach
-                        } else {
-                            herb.enName.takeIf { it.isNotBlank() } ?: herb.latinName.takeIf { it.isNotBlank() }
-                            ?: return@onEach
-                        }
+                        val localName = if (isSystemLanguageVietnamese) herb.vietnameseName else herb.englishName
+                        title = localName.ifBlank { herb.latinName }.ifBlank { return@onEach }
                     }
                     .launchIn(this)
             }
@@ -82,8 +74,8 @@ class HerbDetailsActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.herb_details_menu, menu)
         lifecycleScope.launch {
-            viewModel.state()
-                .map { it.isLiked }
+            viewModel.state
+                .map { it.isFavorite }
                 .distinctUntilChanged()
                 .onEach {
                     menu.findItem(R.id.action_like).icon =
@@ -101,7 +93,7 @@ class HerbDetailsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_like -> {
-                viewModel.setLike()
+                viewModel.onAction(HerbDetailsAction.ToggleFavorite)
                 true
             }
             R.id.action_report_facebook -> {
@@ -109,7 +101,7 @@ class HerbDetailsActivity : AppCompatActivity() {
                 true
             }
             R.id.action_report_email -> {
-                sendEmail(subject = "${viewModel.state.herb?.id} - ${viewModel.state.herb?.latinName}")
+                sendEmail(subject = "${viewModel.state.value.herbId} - ${viewModel.state.value.profile?.latinName.orEmpty()}")
                 true
             }
             R.id.close -> {

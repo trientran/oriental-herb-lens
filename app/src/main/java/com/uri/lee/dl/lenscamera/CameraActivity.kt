@@ -1,5 +1,10 @@
 package com.uri.lee.dl.lenscamera
 
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import android.os.Bundle
 import android.widget.SeekBar
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -12,11 +17,6 @@ import com.uri.lee.dl.Utils
 import com.uri.lee.dl.databinding.ActivityCameraBinding
 import com.uri.lee.dl.lenscamera.livecamera.LiveCameraFragment
 import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraFragment
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 class CameraActivity : AppCompatActivity() {
 

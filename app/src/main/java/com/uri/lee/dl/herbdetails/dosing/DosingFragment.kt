@@ -1,23 +1,23 @@
 package com.uri.lee.dl.herbdetails.dosing
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.uri.lee.dl.R
-import com.uri.lee.dl.databinding.FragmentDosingBinding
-import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
-import com.uri.lee.dl.isSystemLanguageVietnamese
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import android.os.Bundle
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.uri.lee.dl.R
+import com.uri.lee.dl.databinding.FragmentDosingBinding
+import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
+import com.uri.lee.dl.isSystemLanguageVietnamese
 
 class DosingFragment : Fragment() {
 
@@ -27,7 +27,7 @@ class DosingFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val herbDetailsViewModel: HerbDetailsViewModel by activityViewModels()
+    private val herbDetailsViewModel: HerbDetailsViewModel by activityViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,15 +39,12 @@ class DosingFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                herbDetailsViewModel.state()
-                    .mapNotNull { it.herb }
+                herbDetailsViewModel.state
+                    .mapNotNull { it.profile }
                     .distinctUntilChanged()
                     .onEach {
-                        binding.dosingView.text = if (isSystemLanguageVietnamese) {
-                            it.viDosing.ifBlank { getString(R.string.not_available_yet) }
-                        } else {
-                            it.enDosing.ifBlank { getString(R.string.not_available_yet) }
-                        }
+                        binding.dosingView.text =
+                            it.dosing.pick(isSystemLanguageVietnamese).ifBlank { getString(R.string.not_available_yet) }
                     }
                     .launchIn(this)
             }

@@ -1,13 +1,9 @@
 package com.uri.lee.dl
 
 import android.annotation.SuppressLint
-import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
-import android.view.Window
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -16,41 +12,32 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.firebase.auth.FirebaseAuth
 import com.uri.lee.dl.Utils.displaySpeechRecognizer
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityMainBinding
-import com.uri.lee.dl.herbdetails.HerbDetailsActivity
+import com.uri.lee.dl.domain.model.AppStatus
+import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
+import com.uri.lee.dl.hometabs.TAB_TITLES
 import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
 import com.uri.lee.dl.instantsearch.SearchActivity
 import com.uri.lee.dl.lenscamera.CameraActivity
 import com.uri.lee.dl.lensimage.ImageActivity
 import com.uri.lee.dl.lensimages.ImagesActivity
+import kotlin.system.exitProcess
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import kotlin.system.exitProcess
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val userViewModel: UserViewModel by viewModels()
-
-    private val configViewModel: ConfigViewModel by viewModels()
-
-    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-        Timber.d(auth.currentUser.toString())
-        if (auth.currentUser == null) {
-            finishAffinity()
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-    }
+    private val mainViewModel: MainViewModel by viewModel()
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(bundle: Bundle?) {
@@ -80,84 +67,77 @@ class MainActivity : AppCompatActivity() {
         binding.searchMultiImagesView.setOnClickListener { startActivity(Intent(this, ImagesActivity::class.java)) }
         binding.searchSingleImageView.setOnClickListener { startActivity(Intent(this, ImageActivity::class.java)) }
 
+        binding.menuView.setOnClickListener { BottomSheetMenu().show(supportFragmentManager, "ModalBottomSheet") }
+        binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminActivity::class.java)) }
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                configViewModel.state()
-                    .mapNotNull { it.mobile }
+                mainViewModel.state
+                    .map { it.isSignedIn }
                     .distinctUntilChanged()
+                    .filter { it == false }
                     .onEach {
-                        binding.menuView.setOnClickListener { _ ->
-                            val bottomSheet = BottomSheetMenu()
-                            bottomSheet.show(supportFragmentManager, "ModalBottomSheet")
-                        }
-                        if (it.stackOverflow) {
-                            AlertDialog.Builder(this@MainActivity)
-                                .setMessage(getString(R.string.stack_overflow))
-                                .setCancelable(false)
-                                .setNeutralButton(getString(android.R.string.ok)) { _, _ ->
-                                    this@MainActivity.finish()
-                                    exitProcess(0)
-                                }
-                                .create()
-                                .show()
-                        }
-                        if (it.mustUpdateAndroid) {
-                            AlertDialog.Builder(this@MainActivity)
-                                .setMessage(getString(R.string.please_update_android))
-                                .setCancelable(false)
-                                .setNeutralButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
-                                .create().show()
-                        }
-                        if (it.shouldUpdateAndroid) {
-                            AlertDialog.Builder(this@MainActivity)
-                                .setMessage(getString(R.string.please_update_android))
-                                .setCancelable(true)
-                                .setPositiveButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
-                                .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> }
-                                .create().show()
-                        }
-                        if (it.bannedUsers.contains(authUI.auth.uid)) {
-                            AlertDialog.Builder(this@MainActivity)
-                                .setMessage(getString(R.string.you_have_been_banned))
-                                .setCancelable(false)
-                                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-                                    this@MainActivity.finish()
-                                    exitProcess(0)
-                                }
-                                .setNegativeButton(getString(R.string.contact_us)) { _, _ ->
-                                    sendEmail(subject = "")
-                                }
-                                .create().show()
-                        }
-
+                        finishAffinity()
+                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                     }
                     .launchIn(this)
 
-                userViewModel.state()
+                mainViewModel.state
                     .map { it.isAdmin }
                     .distinctUntilChanged()
-                    .onEach {
-                        binding.adminButton.isVisible = it
-                        binding.adminButton.setOnClickListener {
-                            startActivity(Intent(this@MainActivity, AdminActivity::class.java))
-                        }
-                    }
+                    .onEach { binding.adminButton.isVisible = it }
+                    .launchIn(this)
+
+                mainViewModel.state
+                    .map { it.status }
+                    .distinctUntilChanged()
+                    .onEach(::showStatusDialogs)
                     .launchIn(this)
             }
         }
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun onStart() {
-        super.onStart()
-        authUI.auth.addAuthStateListener(authStateListener)
-        Utils.requestNotificationPermission(this)
+    private fun showStatusDialogs(status: AppStatus) {
+        if (status.isSuspended) {
+            AlertDialog.Builder(this)
+                .setMessage(getString(R.string.stack_overflow))
+                .setCancelable(false)
+                .setNeutralButton(getString(android.R.string.ok)) { _, _ ->
+                    finish()
+                    exitProcess(0)
+                }
+                .create().show()
+        }
+        when (status.update) {
+            UpdatePolicy.REQUIRED -> AlertDialog.Builder(this)
+                .setMessage(getString(R.string.please_update_android))
+                .setCancelable(false)
+                .setNeutralButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
+                .create().show()
+            UpdatePolicy.RECOMMENDED -> AlertDialog.Builder(this)
+                .setMessage(getString(R.string.please_update_android))
+                .setCancelable(true)
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
+                .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> }
+                .create().show()
+            UpdatePolicy.NONE -> Unit
+        }
+        if (status.isCurrentUserBanned) {
+            AlertDialog.Builder(this)
+                .setMessage(getString(R.string.you_have_been_banned))
+                .setCancelable(false)
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+                    finish()
+                    exitProcess(0)
+                }
+                .setNegativeButton(getString(R.string.contact_us)) { _, _ -> sendEmail(subject = "") }
+                .create().show()
+        }
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun onStop() {
-        super.onStop()
-        authUI.auth.removeAuthStateListener(authStateListener)
+    override fun onStart() {
+        super.onStart()
+        Utils.requestNotificationPermission(this)
     }
 
     @Deprecated("Deprecated in Java")

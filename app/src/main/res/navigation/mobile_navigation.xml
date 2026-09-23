@@ -34,9 +34,6 @@
             android:name="herbId"
             app:argType="long" />
         <argument
-            android:name="fieldName"
-            app:argType="string" />
-        <argument
             android:name="oldValue"
             app:argType="string" />
     </action>
