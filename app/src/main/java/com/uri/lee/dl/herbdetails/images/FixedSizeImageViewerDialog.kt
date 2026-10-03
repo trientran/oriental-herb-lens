@@ -29,7 +29,8 @@ class FixedSizeImageViewerDialog(
     ): View {
         binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
-        Glide.with(this).load(image.url).into(binding.imageView)
+        // Show the grid's smaller copy (already cached) while the full-size original loads.
+        Glide.with(this).load(image.url).thumbnail(Glide.with(this).load(image.thumbnailUrl)).into(binding.imageView)
         val credit = image.credit
         if (credit == null) {
             binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
