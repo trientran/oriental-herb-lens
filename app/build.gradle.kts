@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.sqldelight)
 }
 
 val localProps = Properties().apply {
@@ -82,6 +83,14 @@ android {
     }
 }
 
+sqldelight {
+    databases {
+        create("HerbLensDatabase") {
+            packageName.set("com.uri.lee.dl.data.db")
+        }
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
@@ -125,6 +134,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.workmanager)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.sqldelight.android.driver)
+    implementation(libs.sqldelight.coroutines)
     api(libs.guava)
 
     implementation(libs.mlkit.objectdetection)
@@ -147,4 +158,5 @@ dependencies {
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
     testImplementation(libs.mockwebserver)
+    testImplementation(libs.sqldelight.sqlite.driver)
 }

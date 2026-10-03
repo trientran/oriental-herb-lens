@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -20,8 +21,8 @@ import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.common.text.TextNormalizer
 import com.uri.lee.dl.data.catalog.AndroidCatalogSource
 import com.uri.lee.dl.data.catalog.CatalogSource
-import com.uri.lee.dl.data.catalog.CsvSpeciesRepository
 import com.uri.lee.dl.data.catalog.SpeciesCsvReader
+import com.uri.lee.dl.data.catalog.SqlSpeciesRepository
 import com.uri.lee.dl.data.content.ContentDownloader
 import com.uri.lee.dl.data.content.ContentFiles
 import com.uri.lee.dl.data.content.ContentSyncWorker
@@ -30,6 +31,7 @@ import com.uri.lee.dl.data.content.InstalledReleaseStore
 import com.uri.lee.dl.data.content.LegacyModelCleanup
 import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
+import com.uri.lee.dl.data.db.HerbLensDatabase
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
 import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
 import com.uri.lee.dl.data.firebase.FirestoreContributionRepository
@@ -112,7 +114,8 @@ val dataModule = module {
     single { ContentFiles(androidContext().filesDir) }
     single<CatalogSource> { AndroidCatalogSource(androidContext().assets, get()) }
     singleOf(::SpeciesCsvReader)
-    singleOf(::CsvSpeciesRepository) bind SpeciesRepository::class
+    single { HerbLensDatabase(AndroidSqliteDriver(HerbLensDatabase.Schema, androidContext(), "herblens.db")) }
+    singleOf(::SqlSpeciesRepository) bind SpeciesRepository::class
     single { androidContext().dataStore }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::HerbModelLocator)

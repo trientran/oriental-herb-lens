@@ -3,7 +3,9 @@ package com.uri.lee.dl.data.content
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.data.catalog.CatalogSource
-import com.uri.lee.dl.data.catalog.CsvSpeciesRepository
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.uri.lee.dl.data.catalog.SqlSpeciesRepository
+import com.uri.lee.dl.data.db.HerbLensDatabase
 import com.uri.lee.dl.data.catalog.SpeciesCsvReader
 import com.uri.lee.dl.data.platform.JvmTextNormalizer
 import com.uri.lee.dl.domain.model.ContentKind.CATALOG
@@ -43,7 +45,7 @@ class DefaultContentRepositoryTest {
 
     private lateinit var files: ContentFiles
     private lateinit var installed: InstalledReleaseStore
-    private lateinit var catalog: CsvSpeciesRepository
+    private lateinit var catalog: SqlSpeciesRepository
     private lateinit var repository: DefaultContentRepository
 
     private val header = "speciesKey,authorship,canonicalName,family,genus,vernacularName,vietnameseName"
@@ -62,7 +64,8 @@ class DefaultContentRepositoryTest {
             override fun readBundledText() = bundledCatalog
         }
         val reader = SpeciesCsvReader(JvmTextNormalizer)
-        catalog = CsvSpeciesRepository(source, reader, dispatchers)
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also { HerbLensDatabase.Schema.create(it) }
+        catalog = SqlSpeciesRepository(HerbLensDatabase(driver), source, reader, dispatchers)
         repository = DefaultContentRepository(
             releases = { emptyMap() },
             installedReleases = installed,
