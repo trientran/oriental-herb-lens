@@ -1,9 +1,12 @@
 package com.uri.lee.dl.data.content
 
 import com.uri.lee.dl.core.common.AppDispatchers
+import io.ktor.client.HttpClient
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.isSuccess
+import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
@@ -13,7 +16,7 @@ class ChecksumMismatchException(expected: String, actual: String) :
 
 /** Streams a download to disk and verifies its SHA-256 as it goes. */
 class ContentDownloader(
-    private val client: OkHttpClient,
+    private val client: HttpClient,
     private val dispatchers: AppDispatchers,
 ) {
     /**
@@ -26,18 +29,16 @@ class ContentDownloader(
         target.parentFile?.mkdirs()
         try {
             val digest = MessageDigest.getInstance("SHA-256")
-            client.newCall(Request.Builder().url(url).build()).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("HTTP ${response.code} for $url")
-                val body = response.body ?: throw IOException("Empty body for $url")
-                body.byteStream().use { input ->
-                    target.outputStream().use { output ->
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        while (true) {
-                            val read = input.read(buffer)
-                            if (read < 0) break
-                            digest.update(buffer, 0, read)
-                            output.write(buffer, 0, read)
-                        }
+            client.prepareGet(url).execute { response ->
+                if (!response.status.isSuccess()) throw IOException("HTTP ${response.status.value} for $url")
+                val body = response.bodyAsChannel()
+                target.outputStream().use { output ->
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    while (true) {
+                        val read = body.readAvailable(buffer)
+                        if (read < 0) break
+                        digest.update(buffer, 0, read)
+                        output.write(buffer, 0, read)
                     }
                 }
             }

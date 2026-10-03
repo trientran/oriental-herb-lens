@@ -15,11 +15,10 @@ import com.uri.lee.dl.domain.model.InstallResult
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import okhttp3.OkHttpClient
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import okio.Buffer
-import org.junit.After
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpStatusCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -38,7 +37,15 @@ class DefaultContentRepositoryTest {
     @get:Rule
     val folder = TemporaryFolder()
 
-    private val server = MockWebServer()
+    /** A fake HTTP server: path → (status, body). */
+    private val served = mutableMapOf<String, Pair<HttpStatusCode, ByteArray>>()
+    private var requestCount = 0
+    private val engine = MockEngine { request ->
+        requestCount++
+        val (status, body) = served[request.url.encodedPath] ?: (HttpStatusCode.NotFound to ByteArray(0))
+        respond(body, status)
+    }
+    private fun url(path: String) = "https://content.example$path"
     private val dispatcher = StandardTestDispatcher()
     private val scope = TestScope(dispatcher)
     private val dispatchers = AppDispatchers(io = dispatcher, default = dispatcher, main = dispatcher)
@@ -54,7 +61,6 @@ class DefaultContentRepositoryTest {
 
     @Before
     fun setUp() {
-        server.start()
         files = ContentFiles(folder.newFolder("files"))
         installed = InstalledReleaseStore(
             PreferenceDataStoreFactory.create(scope = scope.backgroundScope) { folder.newFile("content.preferences_pb") }
@@ -70,19 +76,16 @@ class DefaultContentRepositoryTest {
             releases = { emptyMap() },
             installedReleases = installed,
             files = files,
-            downloader = ContentDownloader(OkHttpClient(), dispatchers),
+            downloader = ContentDownloader(HttpClient(engine), dispatchers),
             catalogReader = reader,
             catalog = catalog,
             dispatchers = dispatchers,
         )
     }
 
-    @After
-    fun tearDown() = server.shutdown()
-
     private fun publish(path: String, body: ByteArray): ContentRelease {
-        server.enqueue(MockResponse().setBody(Buffer().write(body)))
-        return ContentRelease(server.url(path).toString(), sha256(body))
+        served[path] = HttpStatusCode.OK to body
+        return ContentRelease(url(path), sha256(body))
     }
 
     @Test
@@ -112,9 +115,9 @@ class DefaultContentRepositoryTest {
 
     @Test
     fun `a server error is a retryable failure`() = scope.runTest {
-        server.enqueue(MockResponse().setResponseCode(503))
+        served["/x.csv"] = HttpStatusCode.ServiceUnavailable to ByteArray(0)
 
-        val result = repository.install(CATALOG, ContentRelease(server.url("/x.csv").toString(), "ab"))
+        val result = repository.install(CATALOG, ContentRelease(url("/x.csv"), "ab"))
 
         assertEquals(true, (result as InstallResult.Failed).retryable)
     }
@@ -138,10 +141,10 @@ class DefaultContentRepositoryTest {
         assertTrue("verified download is kept", files.staging(MODEL).exists())
 
         repository.install(CATALOG, publish("/catalog/herbs-v2.csv", newCatalog.toByteArray()))
-        val requestsBefore = server.requestCount
+        val requestsBefore = requestCount
 
         assertEquals(InstallResult.Installed, repository.install(MODEL, modelRelease))
-        assertEquals(requestsBefore, server.requestCount)
+        assertEquals(requestsBefore, requestCount)
         assertTrue(files.installed(MODEL).readBytes().contentEquals(model))
     }
 

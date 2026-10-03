@@ -132,6 +132,10 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.sqldelight.android.driver)
     implementation(libs.sqldelight.coroutines)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
     api(libs.guava)
 
     implementation(libs.mlkit.objectdetection)
@@ -153,6 +157,6 @@ dependencies {
     testImplementation(projects.core.testing)
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
-    testImplementation(libs.mockwebserver)
     testImplementation(libs.sqldelight.sqlite.driver)
+    testImplementation(libs.ktor.client.mock)
 }

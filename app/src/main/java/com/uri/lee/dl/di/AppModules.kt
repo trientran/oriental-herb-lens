@@ -39,6 +39,7 @@ import com.uri.lee.dl.data.firebase.FirestorePhotoRepository
 import com.uri.lee.dl.data.firebase.FirestoreUserLibraryRepository
 import com.uri.lee.dl.data.ml.HerbModelLocator
 import com.uri.lee.dl.data.ml.MlKitHerbClassifier
+import com.uri.lee.dl.data.network.herbLensHttpClient
 import com.uri.lee.dl.data.platform.AddressLookup
 import com.uri.lee.dl.data.platform.AndroidImageCompressor
 import com.uri.lee.dl.data.platform.BitmapLoader
@@ -73,6 +74,7 @@ import com.uri.lee.dl.search.SearchViewModel
 import com.uri.lee.dl.upload.ImageApi
 import com.uri.lee.dl.upload.ImageUploadViewModel
 import com.uri.lee.dl.upload.RetrofitHelper
+import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
@@ -90,11 +92,12 @@ import org.koin.dsl.module
 val coreModule = module {
     single { AppDispatchers() }
     single { ApplicationScope(CoroutineScope(SupervisorJob() + get<AppDispatchers>().default)) }
-    single { OkHttpClient() }
 }
 
-/** Firebase SDK entry points, kept apart so the graph check can treat them as provided. */
-val firebaseModule = module {
+/** Third-party SDK objects (Firebase, HTTP clients), kept apart so the graph check treats them as provided. */
+val sdkModule = module {
+    single { OkHttpClient() }
+    single { herbLensHttpClient(OkHttp.create()) }
     single<FirebaseRemoteConfig> {
         Firebase.remoteConfig.apply {
             setConfigSettingsAsync(
@@ -166,4 +169,4 @@ val viewModelModule = module {
     viewModelOf(::SearchViewModel)
 }
 
-val appModules = listOf(coreModule, firebaseModule, dataModule, domainModule, viewModelModule)
+val appModules = listOf(coreModule, sdkModule, dataModule, domainModule, viewModelModule)
