@@ -1,11 +1,9 @@
 package com.uri.lee.dl.herbdetails
 
-import androidx.navigation.ui.setupWithNavController
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -14,13 +12,15 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openFacebookPage
 import com.uri.lee.dl.Utils.sendEmail
 import com.uri.lee.dl.databinding.ActivityHerbDetailsBinding
 import com.uri.lee.dl.isSystemLanguageVietnamese
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HerbDetailsActivity : AppCompatActivity() {
 
@@ -42,8 +42,6 @@ class HerbDetailsActivity : AppCompatActivity() {
             setOf(
                 R.id.navigation_images,
                 R.id.navigation_overview,
-                R.id.navigation_caution,
-                R.id.navigation_dosing,
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -61,10 +59,10 @@ class HerbDetailsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state
-                    .mapNotNull { it.profile }
-                    .onEach { herb ->
-                        val localName = if (isSystemLanguageVietnamese) herb.vietnameseName else herb.englishName
-                        title = localName.ifBlank { herb.latinName }.ifBlank { return@onEach }
+                    .mapNotNull { it.species }
+                    .onEach { species ->
+                        val localName = if (isSystemLanguageVietnamese) species.preferredVietnameseName else species.preferredEnglishName
+                        title = localName ?: species.scientificName
                     }
                     .launchIn(this)
             }
@@ -101,7 +99,7 @@ class HerbDetailsActivity : AppCompatActivity() {
                 true
             }
             R.id.action_report_email -> {
-                sendEmail(subject = "${viewModel.state.value.herbId} - ${viewModel.state.value.profile?.latinName.orEmpty()}")
+                sendEmail(subject = "${viewModel.state.value.herbId} - ${viewModel.state.value.species?.scientificName.orEmpty()}")
                 true
             }
             R.id.close -> {

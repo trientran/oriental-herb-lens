@@ -54,7 +54,6 @@
     <string name="title_home">Home</string>
     <string name="images">Images</string>
     <string name="overview">Overview</string>
-    <string name="caution">Caution</string>
     <string name="log_out">Log out</string>
     <string name="delete_account">Delete account</string>
     <string name="contact_us">Contact us</string>
@@ -86,9 +85,6 @@
     <string name="vietnamese_name_s">Vietnamese name: %s</string>
     <string name="english_name_s">English name:</string>
     <string name="overview_s">Overview:</string>
-    <string name="dosing_s">Dosing:</string>
-    <string name="side_effects_s">Side effects:</string>
-    <string name="interactions_s">Interactions:</string>
     <string name="your_selected_image">Your selected image</string>
     <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
     <string name="sign_in_with_google">Sign in with Google</string>
@@ -113,7 +109,6 @@
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="sign_out">Sign out</string>
     <string name="your_herb_list_will_be_loaded_soon">Herb list will be loaded soon once available.</string>
-    <string name="dosing">Dosing</string>
     <string name="like">Like</string>
     <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
     <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
@@ -161,4 +156,7 @@
     <string name="address">Address:</string>
 
     <string name="not_available_yet">Not available yet</string>
+    <string name="classification">Classification</string>
+    <string name="family_s">Family: %s</string>
+    <string name="genus_s">Genus: %s</string>
 </resources>

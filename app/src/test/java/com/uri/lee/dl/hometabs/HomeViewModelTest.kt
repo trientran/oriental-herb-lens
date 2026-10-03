@@ -1,8 +1,8 @@
 package com.uri.lee.dl.hometabs
 
-import com.uri.lee.dl.fakes.FakeHerbRepository
+import com.uri.lee.dl.fakes.FakeSpeciesRepository
 import com.uri.lee.dl.fakes.FakeUserLibraryRepository
-import com.uri.lee.dl.fakes.herbProfile
+import com.uri.lee.dl.fakes.species
 import com.uri.lee.dl.testing.MainDispatcherRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -13,33 +13,22 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcher = MainDispatcherRule()
 
-    private val herbs = FakeHerbRepository((1L..25L).map { herbProfile(it) })
+    private val catalog = FakeSpeciesRepository((1L..70L).map { species(it, "Species %03d".format(it), vi = listOf("Cây %03d".format(it))) })
     private val library = FakeUserLibraryRepository()
 
-    private fun viewModel() = HomeViewModel(herbs, library, sortByVietnameseName = true)
+    private fun viewModel() = HomeViewModel(catalog, library, sortByVietnameseName = true)
 
     @Test
-    fun `loads the first page, then more on request, until the end`() {
+    fun `pages through the whole catalog, then stops`() {
         val viewModel = viewModel()
-        assertEquals((1L..10L).toList(), viewModel.state.value.allHerbs.map { it.id })
+        assertEquals((1L..30L).toList(), viewModel.state.value.allSpecies.map { it.id })
 
         viewModel.onAction(HomeAction.LoadMore)
         viewModel.onAction(HomeAction.LoadMore)
-        assertEquals((1L..25L).toList(), viewModel.state.value.allHerbs.map { it.id })
+        assertEquals((1L..70L).toList(), viewModel.state.value.allSpecies.map { it.id })
 
-        val requests = herbs.pageRequests
         viewModel.onAction(HomeAction.LoadMore)
-        assertEquals("no request past the last page", requests, herbs.pageRequests)
-    }
-
-    @Test
-    fun `refresh starts again from the first page`() {
-        val viewModel = viewModel()
-        viewModel.onAction(HomeAction.LoadMore)
-
-        viewModel.onAction(HomeAction.Refresh)
-
-        assertEquals((1L..10L).toList(), viewModel.state.value.allHerbs.map { it.id })
+        assertEquals(70, viewModel.state.value.allSpecies.size)
     }
 
     @Test
@@ -48,7 +37,7 @@ class HomeViewModelTest {
         val viewModel = viewModel()
         assertEquals(listOf(3L, 1L), viewModel.state.value.favorites.map { it.id })
 
-        library.history.value = listOf(7L, 2L, 999L) // 999 no longer exists
+        library.history.value = listOf(7L, 2L, 999L) // 999 isn't in the catalog
         assertEquals(listOf(7L, 2L), viewModel.state.value.history.map { it.id })
     }
 }

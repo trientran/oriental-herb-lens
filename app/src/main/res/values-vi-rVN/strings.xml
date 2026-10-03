@@ -39,7 +39,6 @@
     <string name="title_home">Trang chủ</string>
     <string name="images">Ảnh</string>
     <string name="overview">Tổng quan</string>
-    <string name="caution">Lưu ý</string>
     <string name="log_out">Đăng xuất</string>
     <string name="delete_account">Xoá tài khoản</string>
     <string name="contact_us">Liên hệ chúng tôi</string>
@@ -70,9 +69,6 @@
     <string name="vietnamese_name_s">Tên tiếng Việt: %s</string>
     <string name="english_name_s">Tên tiếng Anh:</string>
     <string name="overview_s">Tổng quan</string>
-    <string name="dosing_s">Liều dùng:</string>
-    <string name="side_effects_s">Tác dụng phụ:</string>
-    <string name="interactions_s">Tương tác thuốc:</string>
     <string name="your_selected_image">Hình được chọn của bạn</string>
     <string name="ranges_from_0_to_100">Trong khoảng 0–100</string>
     <string name="sign_in_with_google">Đăng nhập với Google</string>
@@ -93,7 +89,6 @@
     <string name="are_you_sure_you_want_to_delete_your_account">Bạn có chắc chắn muốn xoá tài khoản không?</string>
     <string name="sign_out">Đăng xuất</string>
     <string name="your_herb_list_will_be_loaded_soon">Danh sách dược liệu của bạn sẽ được hạ tải khi có dữ liệu</string>
-    <string name="dosing">Liều dùng</string>
     <string name="like">Thích</string>
     <string name="report_an_issue_via_facebook">"Báo cáo một vấn đề qua Facebook "</string>
     <string name="please_upload_images_for_this_herb">Dược liệu này chưa có ảnh. Xin hãy nhấn vào đây để đăng ảnh.</string>
@@ -140,4 +135,7 @@
     <string name="address">Địa chỉ: </string>
 
     <string name="not_available_yet">Chưa có thông tin</string>
+    <string name="classification">Phân loại</string>
+    <string name="family_s">Họ: %s</string>
+    <string name="genus_s">Chi: %s</string>
 </resources>

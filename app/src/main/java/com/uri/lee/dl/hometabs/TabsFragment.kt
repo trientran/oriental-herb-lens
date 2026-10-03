@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentTabsBinding
-import com.uri.lee.dl.domain.model.HerbSummary
+import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.herbdetails.HerbDetailsActivity
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -34,7 +34,7 @@ class TabsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTabsBinding.inflate(inflater, container, false)
-        val adapter = HerbSummaryAdapter { herbId ->
+        val adapter = SpeciesAdapter { herbId ->
             startActivity(Intent(requireContext(), HerbDetailsActivity::class.java).putExtra(HERB_ID, herbId))
         }
         binding.recyclerView.adapter = adapter
@@ -59,10 +59,10 @@ class TabsFragment : Fragment() {
         return binding.root
     }
 
-    private fun HomeState.herbsFor(tab: Int): List<HerbSummary> = when (tab) {
+    private fun HomeState.herbsFor(tab: Int): List<Species> = when (tab) {
         R.string.favorite -> favorites
         R.string.history -> history
-        else -> allHerbs
+        else -> allSpecies
     }
 
     companion object {

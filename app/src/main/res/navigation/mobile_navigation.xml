@@ -17,15 +17,6 @@
         android:name="com.uri.lee.dl.herbdetails.overview.OverviewFragment"
         tools:layout="@layout/fragment_overview" />
 
-    <fragment
-        android:id="@+id/navigation_caution"
-        android:name="com.uri.lee.dl.herbdetails.caution.CautionFragment"
-        tools:layout="@layout/fragment_caution" />
-
-    <fragment
-        android:id="@+id/navigation_dosing"
-        android:name="com.uri.lee.dl.herbdetails.dosing.DosingFragment"
-        tools:layout="@layout/fragment_dosing" />
 
     <action
         android:id="@id/editHerbDetails"

@@ -20,10 +20,10 @@ and the herb lists stay empty.
 
 ## 2. Home tabs
 
-1. All herbs: scroll past the first 10 items. More load (paging) with no duplicates.
-2. Favourites and history show what the test account saved earlier.
-3. Switch the device language between Vietnamese and English, relaunch. The list sort order and
-   names follow the language (Vietnamese name vs Latin name).
+1. All herbs lists every species in the catalog (about 4,800), sorted by Vietnamese name with
+   unnamed species last (by scientific name when the device language isn't Vietnamese). Scroll far
+   down: more load, with no duplicates. Works in airplane mode.
+2. Favourites and history show what the test account saved earlier, most recent first.
 
 ## 3. Text and voice search
 
@@ -41,13 +41,15 @@ Search runs on the device, so check it in airplane mode too.
 2. The matched part of the name is bold; scientific names are italic.
 3. Microphone: say "đinh lăng". The spoken text appears in the search box with results.
 
-## 4. Herb details
+## 4. Species details
 
-1. Open a herb from each of search, all herbs and favourites.
-2. Visit every bottom tab: overview, dosing, caution, images.
-3. Like, then unlike. The favourites tab on the main screen updates without a restart.
-4. The herb appears at the top of history.
-5. Images tab: open an image full-screen; the location map shows where it was taken, if known.
+1. Open a species from search, all herbs and favourites.
+2. Two tabs only: images and overview. No dosing, caution or medicinal text anywhere.
+3. Overview shows the scientific name in italics with its authorship, every Vietnamese and English
+   name, and family and genus.
+4. Like, then unlike. The favourites tab on the main screen updates without a restart.
+5. The species appears at the top of history.
+6. Images tab: user photos load; open one full-screen; the map shows where it was taken, if known.
 
 ## 5. Live camera
 

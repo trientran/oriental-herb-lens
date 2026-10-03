@@ -13,11 +13,11 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.addAnnotationToMap
 import com.uri.lee.dl.databinding.FixedSizeImageViewerBinding
-import com.uri.lee.dl.domain.model.HerbImage
+import com.uri.lee.dl.domain.model.SpeciesPhoto
 import androidx.core.net.toUri
 
 class FixedSizeImageViewerDialog(
-    private val image: HerbImage,
+    private val image: SpeciesPhoto,
 ) : BottomSheetDialogFragment() {
 
     private lateinit var binding: FixedSizeImageViewerBinding

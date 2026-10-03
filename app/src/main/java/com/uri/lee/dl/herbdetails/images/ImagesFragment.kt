@@ -1,17 +1,11 @@
 package com.uri.lee.dl.herbdetails.images
 
-import androidx.core.view.isVisible
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import android.content.Intent
 import android.os.Bundle
-import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +16,12 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.databinding.FragmentImagesBinding
 import com.uri.lee.dl.herbdetails.HerbDetailsViewModel
 import com.uri.lee.dl.upload.ImageUploadActivity
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 class ImagesFragment : Fragment() {
 
@@ -56,7 +56,7 @@ class ImagesFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 herbDetailsViewModel.state
-                    .mapNotNull { it.profile?.images }
+                    .map { it.photos }
                     .distinctUntilChanged()
                     .onEach { images ->
                         binding.pleaseUploadView.isVisible = images.isEmpty()
