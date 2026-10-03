@@ -19,8 +19,8 @@ import com.uri.lee.dl.domain.model.AppStatus
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.hometabs.TAB_TITLES
-import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
-import com.uri.lee.dl.instantsearch.SearchActivity
+import com.uri.lee.dl.search.SPOKEN_TEXT_EXTRA
+import com.uri.lee.dl.search.SearchActivity
 import com.uri.lee.dl.lenscamera.CameraActivity
 import com.uri.lee.dl.lensimage.ImageActivity
 import com.uri.lee.dl.lensimages.ImagesActivity

@@ -1,7 +1,7 @@
 # Manual test script
 
 Run this on a real device before and after each migration phase. It covers the flows unit tests
-can't reach yet: camera, ML Kit, Firestore listeners and Algolia. Record results in the log at the
+can't reach yet: camera, ML Kit and Firestore listeners. Record results in the log at the
 bottom so a later run can be compared with an earlier one.
 
 **Setup:** a debug build, a signed-in test account, network on unless a step says otherwise, and
@@ -25,24 +25,21 @@ and the herb lists stay empty.
 3. Switch the device language between Vietnamese and English, relaunch. The list sort order and
    names follow the language (Vietnamese name vs Latin name).
 
-## 3. Text and voice search (Algolia)
+## 3. Text and voice search
 
-Record the top three results for each query. These are the **baseline** the Phase 2 local search
-must match or beat.
+Search runs on the device, so check it in airplane mode too.
 
-| Query | Top 3 results |
-|---|---|
-| `dinh lang` | |
-| `Đinh lăng` | |
-| `lang dinh` | |
-| `la lot` | |
-| `huyet du` | |
-| `roi ngua` | |
-| `frutic` | |
-| `dinh lanh` (typo) | |
+1. Each query finds the expected species first:
 
-1. Matches are highlighted in the result names.
-2. Microphone: say "đinh lăng". The spoken text opens search with results.
+   | Query | Expected first result |
+   |---|---|
+   | `dinh lang`, `Đinh lăng`, `lang dinh`, `dinh lanh` | Đinh lăng · *Polyscias fruticosa* |
+   | `bach bo` | Bách bộ · *Stemona tuberosa* |
+   | `okra` | *Abelmoschus esculentus* |
+   | `fruticosa` | both *Polyscias* and *Cordyline fruticosa* near the top |
+
+2. The matched part of the name is bold; scientific names are italic.
+3. Microphone: say "đinh lăng". The spoken text appears in the search box with results.
 
 ## 4. Herb details
 

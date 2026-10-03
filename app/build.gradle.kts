@@ -52,8 +52,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "MAP_PRODUCTS_API_KEY", "\"${secret("MAP_PRODUCTS_API_KEY")}\"")
-        buildConfigField("String", "ALGOLIA_APP_ID", "\"${secret("ALGOLIA_APP_ID")}\"")
-        buildConfigField("String", "ALGOLIA_SEARCH_API_KEY", "\"${secret("ALGOLIA_SEARCH_API_KEY")}\"")
         buildConfigField("String", "IMGE_API_KEY", "\"${secret("IMGE_API_KEY")}\"")
         signingConfig = signingConfigs.getByName("release")
     }
@@ -121,8 +119,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.algolia.instantsearch.android)
-    implementation(libs.algolia.instantsearch.android.paging3)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)

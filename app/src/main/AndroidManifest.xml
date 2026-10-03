@@ -50,7 +50,7 @@
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".instantsearch.SearchActivity"
+            android:name=".search.SearchActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

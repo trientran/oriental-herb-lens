@@ -69,6 +69,7 @@ import com.uri.lee.dl.lenscamera.livecamera.LiveCameraViewModel
 import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraViewModel
 import com.uri.lee.dl.lensimage.ImageViewModel
 import com.uri.lee.dl.lensimages.ImagesViewModel
+import com.uri.lee.dl.search.SearchViewModel
 import com.uri.lee.dl.upload.ImageApi
 import com.uri.lee.dl.upload.ImageUploadViewModel
 import com.uri.lee.dl.upload.RetrofitHelper
@@ -162,6 +163,7 @@ val viewModelModule = module {
     viewModelOf(::HerbDetailsViewModel)
     viewModelOf(::SuggestNameViewModel)
     viewModelOf(::ImageUploadViewModel)
+    viewModelOf(::SearchViewModel)
 }
 
 val appModules = listOf(coreModule, firebaseModule, dataModule, domainModule, viewModelModule)
