@@ -138,7 +138,7 @@ val dataModule = module {
     single { LegacyLibraryMigration(get(), get(), get()) }
     singleOf(::FirestoreContributionRepository) bind ContributionRepository::class
     single<AppStatusRepository> {
-        DefaultAppStatusRepository(get(), get(), get(), versionCode = BuildConfig.VERSION_CODE.toLong())
+        DefaultAppStatusRepository(get(), versionCode = BuildConfig.VERSION_CODE.toLong())
     }
     single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = BuildConfig.PHOTO_UPLOAD_URL) }
     single<ImageCompressor> { AndroidImageCompressor(androidContext()) }

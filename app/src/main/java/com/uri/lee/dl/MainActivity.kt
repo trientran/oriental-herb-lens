@@ -122,17 +122,6 @@ class MainActivity : AppCompatActivity() {
                 .create().show()
             UpdatePolicy.NONE -> Unit
         }
-        if (status.isCurrentUserBanned) {
-            AlertDialog.Builder(this)
-                .setMessage(getString(R.string.you_have_been_banned))
-                .setCancelable(false)
-                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-                    finish()
-                    exitProcess(0)
-                }
-                .setNegativeButton(getString(R.string.contact_us)) { _, _ -> sendEmail(subject = "") }
-                .create().show()
-        }
     }
 
     override fun onStart() {
