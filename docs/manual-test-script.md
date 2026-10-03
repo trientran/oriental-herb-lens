@@ -49,7 +49,11 @@ Search runs on the device, so check it in airplane mode too.
    name, and family and genus.
 4. Like, then unlike. The favourites tab on the main screen updates without a restart.
 5. The species appears at the top of history.
-6. Images tab: user photos load; open one full-screen; the map shows where it was taken, if known.
+6. Images tab: user photos first, then GBIF photos (online only). Open a user photo full-screen:
+   the map shows where it was taken, if known.
+7. Open a GBIF photo full-screen: the caption credits creator, licence and publisher "via GBIF";
+   tapping it opens the photo's page on iNaturalist.
+8. Airplane mode: the images tab still shows cached user photos, with no error.
 
 ## 5. Live camera
 

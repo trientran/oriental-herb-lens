@@ -30,7 +30,16 @@ class FixedSizeImageViewerDialog(
         binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
         Glide.with(this).load(image.url).into(binding.imageView)
-        binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
+        val credit = image.credit
+        if (credit == null) {
+            binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
+        } else {
+            // Required attribution for third-party photos; tapping opens the photo's source page.
+            binding.uploadByView.text = getString(R.string.gbif_photo_credit, credit.creator, credit.license, credit.publisher ?: "GBIF")
+            credit.sourceUrl?.let { source ->
+                binding.uploadByView.setOnClickListener { view.context.openUrlWithDefaultBrowser(uri = source.toUri()) }
+            }
+        }
         val location = image.location
         binding.mapView.visibility = if (location == null) View.GONE else View.VISIBLE
         if (location != null) {

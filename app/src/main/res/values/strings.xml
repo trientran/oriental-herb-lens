@@ -159,4 +159,5 @@
     <string name="classification">Classification</string>
     <string name="family_s">Family: %s</string>
     <string name="genus_s">Genus: %s</string>
+    <string name="gbif_photo_credit">© %1$s · %2$s · %3$s, via GBIF. Tap for the source.</string>
 </resources>

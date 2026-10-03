@@ -37,6 +37,7 @@ import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
 import com.uri.lee.dl.data.firebase.FirestoreContributionRepository
 import com.uri.lee.dl.data.firebase.FirestorePhotoRepository
 import com.uri.lee.dl.data.firebase.FirestoreUserLibraryRepository
+import com.uri.lee.dl.data.gbif.GbifPhotoRepository
 import com.uri.lee.dl.data.ml.HerbModelLocator
 import com.uri.lee.dl.data.ml.MlKitHerbClassifier
 import com.uri.lee.dl.data.network.herbLensHttpClient
@@ -55,6 +56,7 @@ import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.ContentRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.PhotoRepository
+import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.repository.UserLibraryRepository
@@ -130,6 +132,7 @@ val dataModule = module {
 
     singleOf(::FirebaseAuthRepository) bind AuthRepository::class
     singleOf(::FirestorePhotoRepository) bind PhotoRepository::class
+    singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
     singleOf(::FirestoreUserLibraryRepository) bind UserLibraryRepository::class
     singleOf(::FirestoreContributionRepository) bind ContributionRepository::class
     single<AppStatusRepository> {

@@ -138,4 +138,5 @@
     <string name="classification">Phân loại</string>
     <string name="family_s">Họ: %s</string>
     <string name="genus_s">Chi: %s</string>
+    <string name="gbif_photo_credit">© %1$s · %2$s · %3$s, qua GBIF. Chạm để xem nguồn.</string>
 </resources>
