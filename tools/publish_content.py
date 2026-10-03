@@ -125,7 +125,9 @@ def upload(bucket, key, data, content_type):
 
 
 def verify_public(url, expected_sha256):
-    with urllib.request.urlopen(url, timeout=120) as response:
+    # Cloudflare rejects urllib's default "Python-urllib" user agent with 403.
+    request = urllib.request.Request(url, headers={"User-Agent": "herb-lens-publisher/1.0"})
+    with urllib.request.urlopen(request, timeout=120) as response:
         actual = sha256_hex(response.read())
     if actual != expected_sha256:
         fail("public URL returned different content (sha256 %s). Is the custom domain set up?" % actual)
