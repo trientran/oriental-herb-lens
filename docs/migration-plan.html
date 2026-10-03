@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Herb Lens Final Migration Plan</title>
+<style>
+:root{
+  --bg:#f6f5f0; --paper:#fffefa; --ink:#1d2320; --muted:#5d6760; --line:#d9dcd3; --soft:#eef0e8;
+  --accent:#2f6b3f; --accent-ink:#ffffff; --accent-soft:#e3efe4; --amber:#9a6200; --amber-soft:#fbefd8;
+  --danger:#a23b2c; --danger-soft:#f8e3df; --node:#ffffff; --edge:#7d877f; --band:#f1f2ec; --code:#f0f1ea;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121614; --paper:#181d1a; --ink:#e7ebe6; --muted:#a3ada5; --line:#2e3631; --soft:#1f2622;
+    --accent:#7cc38c; --accent-ink:#0d1a10; --accent-soft:#1e3325; --amber:#e5b35a; --amber-soft:#3a2d15;
+    --danger:#ef8b7b; --danger-soft:#3b1f1a; --node:#1c221f; --edge:#8a958d; --band:#161b18; --code:#202722;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;padding-inline:16px}
+.wrap{max-width:960px;margin:0 auto;padding-block:40px 80px}
+header.hero{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:36px}
+.kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.15;margin:10px 0 12px;letter-spacing:-.01em}
+.lede{font-size:17px;color:var(--muted);max-width:760px;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:18px;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+section{margin:48px 0}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:-.005em}
+.sec-no{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h3{font-size:17px;margin:26px 0 8px}
+p{margin:10px 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:14px 18px;margin:16px 0}
+.callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+.callout.bad{border-color:var(--danger);background:var(--danger-soft)}
+.callout p:first-child{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tbl{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--soft);font-weight:700}
+tr:last-child td{border-bottom:0}
+code{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);padding:1px 5px;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre code{background:none;padding:0}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill.lock{background:var(--accent-soft);color:var(--accent)}
+.pill.rec{background:var(--amber-soft);color:var(--amber)}
+.pill.gate{background:var(--soft);color:var(--muted);border:1px dashed var(--edge)}
+ul.tight{padding-left:20px;margin:8px 0}ul.tight li{margin:4px 0}
+ol.flow{padding-left:22px}ol.flow li{margin:7px 0}
+.graph{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+.graph svg{display:block;width:100%;min-width:760px;height:auto}
+.n{fill:var(--node);stroke:var(--line);stroke-width:1.2}
+.n-app{fill:var(--soft)}
+.n-dom{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+.n-gated{fill:none;stroke:var(--edge);stroke-dasharray:5 4}
+.band{fill:var(--band)}
+.t1{fill:var(--ink);font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.t0{fill:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.t2{fill:var(--muted);font:10.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.tier{fill:var(--muted);font:700 10.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.e{stroke:var(--edge);stroke-width:1.4;fill:none}
+.e-d{stroke-dasharray:5 4}
+.e-di{stroke:var(--accent);stroke-width:1.4;fill:none;stroke-dasharray:2 3}
+.lbl{fill:var(--muted);font:italic 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.lbl-acc{fill:var(--accent);font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.lbl-bad{fill:var(--danger);font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.arrow{fill:var(--edge)}.arrow-acc{fill:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;color:var(--muted);margin:10px 4px 0}
+.sw{display:inline-block;width:18px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px;border:1px solid var(--line);background:var(--node)}
+.sw.dom{background:var(--accent-soft);border-color:var(--accent)}
+.sw.gated{background:none;border:1px dashed var(--edge)}
+.sw.app{background:var(--soft)}
+.phase{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin:18px 0;overflow:hidden}
+.phase-h{display:flex;gap:16px;align-items:flex-start;padding:16px 20px;border-bottom:1px solid var(--line)}
+.phase-no{flex:0 0 auto;width:40px;height:40px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:18px}
+.phase-no.g{background:var(--soft);color:var(--muted);border:1px dashed var(--edge)}
+.phase-h h3{margin:0 0 2px}
+.phase-h p{margin:0;color:var(--muted);font-size:14px}
+.prog{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap;padding-top:4px}
+.tasks{list-style:none;margin:0;padding:6px 0}
+.tasks li{display:flex;gap:12px;padding:9px 20px;align-items:flex-start}
+.tasks li+li{border-top:1px dashed var(--line)}
+.tasks input{margin-top:4px;width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto}
+.tasks .tt{font-weight:600}
+.tasks .td{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
+.tasks li.done .tt{text-decoration:line-through;color:var(--muted)}
+.ships{padding:12px 20px;background:var(--soft);font-size:14px;border-top:1px solid var(--line)}
+.ships b{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid2 .card{margin:0}
+.decision{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.decision:first-child{border-top:0}
+.dno{font-weight:800;color:var(--amber);font-size:15px}
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media print{body{background:#fff}.graph,.phase,.card,.tbl{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Herb Lens · migration plan · revision 2</div>
+  <h1>From one XML Android app to Android, iOS and web on shared Kotlin</h1>
+  <p class="lede">Revision 2 records Phases 0 and 1 as done and adds the decisions made since: the species CSV is the single source of truth, the medicinal content is removed, Firestore keeps only photo URLs and Vietnamese name suggestions, photos come from R2 and GBIF, and herb identification stays on ML Kit on both platforms.</p>
+  <div class="meta">
+    <span><b>Updated</b> 4 Oct 2026</span>
+    <span><b>Branch</b> <code>develop</code> (Phases 0–1 merged in #3 and #4)</span>
+    <span><b>Targets</b> Android · iOS (iPhone + iPad) · Web (gated)</span>
+    <span><b>Toolchain</b> AGP 9.4 · Kotlin 2.3.21 · compileSdk 37 · minSdk 26</span>
+  </div>
+</header>
+
+<!-- 01 -->
+<section>
+  <div class="sec-no">01</div>
+  <h2>What changed in revision 2</h2>
+  <ul class="tight">
+    <li><b>Phases 0 and 1 are done</b> and merged into <code>develop</code> (#3, #4). See §10 for what each delivered and what was deliberately deferred.</li>
+    <li><b>The species CSV is the single source of truth</b> for everything the app shows about a species: scientific name, authorship, family, genus, Vietnamese and English names. The app is offline-first: browsing, search and identification work without a network.</li>
+    <li><b>Medicinal content is removed.</b> The overview, dosing and caution tabs go, because there are no herbal specialists or traditional physicians to validate that information. Reviews were already removed in Phase 1.</li>
+    <li><b>Firestore keeps only two kinds of data:</b> photo URLs per species (the herb document ID is the GBIF species key) and Vietnamese name suggestions, which only the project admin reads.</li>
+    <li><b>Photos come from two sources:</b> user uploads stored on R2, and research-grade photos from the GBIF occurrence API, shown with their creator and licence.</li>
+    <li><b>Herb identification stays on ML Kit</b> (custom image labelling with the bundled or downloaded <code>.tflite</code>) on Android and iOS. Earlier revisions proposed switching to LiteRT; that's dropped. LiteRT is considered only for the user-trained models feature (Phase 7).</li>
+    <li><b>Phases are renumbered.</b> The data-model changes ship first in the Android app (new Phase 2); extracting KMP modules becomes Phase 3. Everything after shifts by one.</li>
+    <li><b>R2 is live</b> on its <code>r2.dev</code> public URL. A custom domain is recommended before user photos are served at scale (§04).</li>
+  </ul>
+</section>
+
+<!-- 02 -->
+<section>
+  <div class="sec-no">02</div>
+  <h2>Decisions</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Area</th><th>Decision</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Architecture</td><td>Clean Architecture in three layers (UI, domain, data) with one-way data flow: each ViewModel exposes a single <code>StateFlow&lt;UiState&gt;</code> and receives user actions through <code>onAction(Action)</code></td><td><span class="pill lock">done in Phase 1</span></td></tr>
+      <tr><td>DI</td><td>Koin 4, with a unit test that checks the whole graph</td><td><span class="pill lock">done in Phase 1</span></td></tr>
+      <tr><td>Species data</td><td>The CSV catalog (GBIF export plus Vietnamese names) is the only source of species information, stored locally in SQLDelight</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Medicinal content</td><td>Removed: no overview, dosing, side effects, interactions or reviews</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Firestore</td><td><code>herbs/{speciesKey}</code> holds an append-only map of photo URLs; <code>nameSuggestions</code> is create-only and read by the admin only. Nothing else is read or written</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Photos</td><td>User uploads on R2 (through a Cloudflare Worker), plus GBIF occurrence photos with credits</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Favourites and history</td><td>Stored on the device only</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Search</td><td>Local search that ignores Vietnamese diacritics; Algolia removed</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Herb identification</td><td>ML Kit custom image labelling on Android and iOS, using the same <code>.tflite</code> with embedded species-key labels</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Content hosting</td><td>Model and catalog on R2, announced through Remote Config with a SHA-256; installed state in DataStore; same-name replace</td><td><span class="pill lock">done in Phase 1</span></td></tr>
+      <tr><td>Preferences</td><td>DataStore Preferences. The legacy camera settings move when the old Camera1 screen is deleted (Phase 4)</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>UI</td><td>Compose Multiplatform and Material 3, with adaptive layouts and a new design system</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Maps / Places</td><td>Kept: Mapbox and the Places SDK, behind shared interfaces</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Admin screen</td><td>Retired once <code>tools/</code> has a script that lists photo URLs per species from R2 (its only remaining job)</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Web app</td><td>Kotlin/Wasm with Compose or a separate TypeScript app, decided by a spike</td><td><span class="pill gate">gated</span></td></tr>
+      <tr><td>User-trained models</td><td>LiteRT, only for models users train themselves; must work on Android, iOS and web</td><td><span class="pill gate">gated</span></td></tr>
+      <tr><td>macOS app</td><td>Not built</td><td><span class="pill lock">locked</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 03 -->
+<section>
+  <div class="sec-no">03</div>
+  <h2>Module graph</h2>
+  <p>Dependencies only point downward, with one exception: <code>core:data</code> depends upward on <code>core:domain</code> because it implements the domain's repository interfaces. Feature modules never see <code>core:data</code>. Only the app shell connects the two, through Koin.</p>
+
+  <div class="graph">
+  <svg viewBox="0 0 1000 700" role="img" aria-label="Module dependency graph for Herb Lens">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrow"/></marker>
+      <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrow-acc"/></marker>
+    </defs>
+
+    <!-- bands -->
+    <rect class="band" x="0" y="6" width="1000" height="72" rx="8"/>
+    <rect class="band" x="0" y="102" width="1000" height="72" rx="8"/>
+    <rect class="band" x="0" y="198" width="1000" height="72" rx="8"/>
+    <rect class="band" x="0" y="308" width="1000" height="76" rx="8"/>
+    <rect class="band" x="0" y="422" width="1000" height="72" rx="8"/>
+    <rect class="band" x="0" y="520" width="1000" height="76" rx="8"/>
+    <rect class="band" x="0" y="618" width="1000" height="72" rx="8"/>
+
+    <text class="tier" x="16" y="46">App</text>
+    <text class="tier" x="16" y="142">Shell</text>
+    <text class="tier" x="16" y="238">Feature</text>
+    <text class="tier" x="16" y="340">Core UI</text>
+    <text class="tier" x="16" y="356">&amp; Domain</text>
+    <text class="tier" x="16" y="462">Data</text>
+    <text class="tier" x="16" y="562">Sources</text>
+    <text class="tier" x="16" y="658">Support</text>
+
+    <!-- Row A: apps -->
+    <rect class="n n-app" x="200" y="16" width="190" height="52" rx="8"/>
+    <text class="t1" x="295" y="38" text-anchor="middle">:androidApp</text>
+    <text class="t2" x="295" y="56" text-anchor="middle">Application · MainActivity</text>
+    <rect class="n n-app" x="410" y="16" width="190" height="52" rx="8"/>
+    <text class="t1" x="505" y="38" text-anchor="middle">iosApp</text>
+    <text class="t2" x="505" y="56" text-anchor="middle">Xcode · Swift platform impls</text>
+    <rect class="n-gated" x="620" y="16" width="190" height="52" rx="8"/>
+    <text class="t1" x="715" y="38" text-anchor="middle">webApp</text>
+    <text class="t2" x="715" y="56" text-anchor="middle">Phase 5 · gated</text>
+
+    <!-- A -> B -->
+    <path class="e" d="M295,68 V90 H505"/>
+    <path class="e e-d" d="M715,68 V90 H505"/>
+    <path class="e" d="M505,68 V112" marker-end="url(#ah)"/>
+
+    <!-- Row B: shell -->
+    <rect class="n" x="410" y="112" width="190" height="52" rx="8"/>
+    <text class="t1" x="505" y="134" text-anchor="middle">:composeApp</text>
+    <text class="t2" x="505" y="152" text-anchor="middle">App() · NavHost · Koin graph</text>
+
+    <!-- B -> C bus -->
+    <path class="e" d="M505,164 V186"/>
+    <path class="e" d="M197,186 H911"/>
+    <path class="e" d="M197,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M299,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M401,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M503,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M605,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M707,186 V208" marker-end="url(#ah)"/>
+    <path class="e" d="M809,186 V208" marker-end="url(#ah)"/>
+    <path class="e e-d" d="M911,186 V208" marker-end="url(#ah)"/>
+
+    <!-- Row C: features -->
+    <g>
+      <rect class="n" x="150" y="208" width="94" height="52" rx="8"/><text class="t0" x="197" y="228" text-anchor="middle">feature:</text><text class="t1" x="197" y="246" text-anchor="middle">home</text>
+      <rect class="n" x="252" y="208" width="94" height="52" rx="8"/><text class="t0" x="299" y="228" text-anchor="middle">feature:</text><text class="t1" x="299" y="246" text-anchor="middle">search</text>
+      <rect class="n" x="354" y="208" width="94" height="52" rx="8"/><text class="t0" x="401" y="228" text-anchor="middle">feature:</text><text class="t1" x="401" y="246" text-anchor="middle">herbdetails</text>
+      <rect class="n" x="456" y="208" width="94" height="52" rx="8"/><text class="t0" x="503" y="228" text-anchor="middle">feature:</text><text class="t1" x="503" y="246" text-anchor="middle">scan</text>
+      <rect class="n" x="558" y="208" width="94" height="52" rx="8"/><text class="t0" x="605" y="228" text-anchor="middle">feature:</text><text class="t1" x="605" y="246" text-anchor="middle">contribute</text>
+      <rect class="n" x="660" y="208" width="94" height="52" rx="8"/><text class="t0" x="707" y="228" text-anchor="middle">feature:</text><text class="t1" x="707" y="246" text-anchor="middle">settings</text>
+      <rect class="n" x="762" y="208" width="94" height="52" rx="8"/><text class="t0" x="809" y="228" text-anchor="middle">feature:</text><text class="t1" x="809" y="246" text-anchor="middle">auth</text>
+      <rect class="n-gated" x="864" y="208" width="94" height="52" rx="8"/><text class="t0" x="911" y="228" text-anchor="middle">feature:</text><text class="t1" x="911" y="246" text-anchor="middle">training</text>
+    </g>
+
+    <!-- C -> D bus -->
+    <path class="e" d="M197,260 V292 M299,260 V292 M401,260 V292 M503,260 V292 M605,260 V292 M707,260 V292 M809,260 V292"/>
+    <path class="e e-d" d="M911,260 V292"/>
+    <path class="e" d="M197,292 H911"/>
+    <path class="e" d="M235,292 V318" marker-end="url(#ah)"/>
+    <path class="e" d="M401,292 V318" marker-end="url(#ah)"/>
+    <path class="e" d="M710,292 V318" marker-end="url(#ah)"/>
+
+    <!-- Row D -->
+    <rect class="n" x="150" y="318" width="170" height="56" rx="8"/>
+    <text class="t1" x="235" y="341" text-anchor="middle">:core:designsystem</text>
+    <text class="t2" x="235" y="360" text-anchor="middle">theme · components · strings</text>
+    <rect class="n" x="336" y="318" width="130" height="56" rx="8"/>
+    <text class="t1" x="401" y="341" text-anchor="middle">:core:maps</text>
+    <text class="t2" x="401" y="360" text-anchor="middle">Mapbox expect/actual</text>
+    <rect class="n n-dom" x="560" y="318" width="300" height="56" rx="8"/>
+    <text class="t1" x="710" y="341" text-anchor="middle">:core:domain</text>
+    <text class="t2" x="710" y="360" text-anchor="middle">entities · use cases · repo interfaces</text>
+
+    <!-- E -> D (implements) -->
+    <path class="e" d="M710,432 V374" marker-end="url(#ah)"/>
+    <text class="lbl" x="720" y="408">implements interfaces</text>
+    <text class="lbl-bad" x="150" y="462">✕ feature:* → core:data is not allowed</text>
+
+    <!-- DI wiring: shell -> data -->
+    <path class="e-di" d="M600,138 H980 V458 H860" marker-end="url(#ahA)"/>
+    <text class="lbl-acc" x="872" y="450">Koin wiring</text>
+
+    <!-- Row E -->
+    <rect class="n" x="560" y="432" width="300" height="52" rx="8"/>
+    <text class="t1" x="710" y="454" text-anchor="middle">:core:data</text>
+    <text class="t2" x="710" y="472" text-anchor="middle">repo impls · content sync · mappers · Koin module</text>
+
+    <!-- E -> F bus -->
+    <path class="e" d="M710,484 V508"/>
+    <path class="e" d="M214,508 H904"/>
+    <path class="e" d="M214,508 V530" marker-end="url(#ah)"/>
+    <path class="e" d="M352,508 V530" marker-end="url(#ah)"/>
+    <path class="e" d="M490,508 V530" marker-end="url(#ah)"/>
+    <path class="e" d="M628,508 V530" marker-end="url(#ah)"/>
+    <path class="e" d="M766,508 V530" marker-end="url(#ah)"/>
+    <path class="e" d="M904,508 V530" marker-end="url(#ah)"/>
+
+    <!-- Row F: sources -->
+    <rect class="n" x="150" y="530" width="128" height="56" rx="8"/><text class="t1" x="214" y="553" text-anchor="middle">:core:database</text><text class="t2" x="214" y="572" text-anchor="middle">SQLDelight · catalog</text>
+    <rect class="n" x="288" y="530" width="128" height="56" rx="8"/><text class="t1" x="352" y="553" text-anchor="middle">:core:datastore</text><text class="t2" x="352" y="572" text-anchor="middle">DataStore · prefs</text>
+    <rect class="n" x="426" y="530" width="128" height="56" rx="8"/><text class="t1" x="490" y="553" text-anchor="middle">:core:network</text><text class="t2" x="490" y="572" text-anchor="middle">Ktor · R2 · GBIF</text>
+    <rect class="n" x="564" y="530" width="128" height="56" rx="8"/><text class="t1" x="628" y="553" text-anchor="middle">:core:firebase</text><text class="t2" x="628" y="572" text-anchor="middle">GitLive · Auth · RC</text>
+    <rect class="n" x="702" y="530" width="128" height="56" rx="8"/><text class="t1" x="766" y="553" text-anchor="middle">:core:ml</text><text class="t2" x="766" y="572" text-anchor="middle">ML Kit expect/actual</text>
+    <rect class="n" x="840" y="530" width="128" height="56" rx="8"/><text class="t1" x="904" y="553" text-anchor="middle">:core:location</text><text class="t2" x="904" y="572" text-anchor="middle">GPS · Places</text>
+
+    <!-- Row G: support -->
+    <rect class="n" x="150" y="628" width="520" height="52" rx="8"/>
+    <text class="t1" x="410" y="650" text-anchor="middle">:core:common</text>
+    <text class="t2" x="410" y="668" text-anchor="middle">Result · dispatchers · logging · VietnameseText · used everywhere</text>
+    <rect class="n-gated" x="690" y="628" width="268" height="52" rx="8"/>
+    <text class="t1" x="824" y="650" text-anchor="middle">:core:testing</text>
+    <text class="t2" x="824" y="668" text-anchor="middle">fakes · fixtures · commonTest only</text>
+  </svg>
+  </div>
+  <div class="legend">
+    <span><i class="sw app"></i>platform entry point</span>
+    <span><i class="sw"></i>shared module (commonMain + platform code where noted)</span>
+    <span><i class="sw dom"></i>pure Kotlin, no framework</span>
+    <span><i class="sw gated"></i>later / gated / test-only</span>
+  </div>
+
+  <h3>Rules enforced in CI</h3>
+  <ul class="tight">
+    <li><code>core:domain</code> depends only on <code>core:common</code> and kotlinx-coroutines. It must not reference Android, Firebase, Compose, Ktor or SQLDelight.</li>
+    <li><code>feature:*</code> depends on <code>core:domain</code>, <code>core:designsystem</code>, <code>core:maps</code> and <code>core:common</code>. It never depends on <code>core:data</code> or any source module.</li>
+    <li>Classes in <code>core:data</code> and the source modules are <code>internal</code>. Each module exposes only a Koin <code>module { }</code>.</li>
+    <li><code>core:common</code> and <code>core:domain</code> also compile for <code>wasmJs</code> and <code>js</code> from Phase 3 onward. That keeps both web options in §09 open at no cost.</li>
+    <li><code>core:testing</code> is added only through <code>commonTest</code>, so it never ships in a production build.</li>
+  </ul>
+
+  <h3>Platform targets</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Module</th><th>Android</th><th>iOS</th><th>Web</th><th>Where platform code lives</th></tr></thead>
+    <tbody>
+      <tr><td>core:common, core:domain</td><td>✓</td><td>✓</td><td>✓</td><td>none</td></tr>
+      <tr><td>core:ml</td><td>✓</td><td>✓</td><td>—</td><td>ML Kit custom labelling: Android actual in Kotlin, iOS in Swift. Web, if built, uses a JavaScript runtime</td></tr>
+      <tr><td>core:database</td><td>✓</td><td>✓</td><td>decided in Phase 6</td><td>SQLDelight driver per platform</td></tr>
+      <tr><td>core:datastore, network, firebase, location</td><td>✓</td><td>✓</td><td>—</td><td>file paths, GitLive wrappers, location/Places SDKs</td></tr>
+      <tr><td>core:designsystem, core:maps, feature:*</td><td>✓</td><td>✓</td><td>if Option A</td><td>camera preview, map view, photo picker</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Presentation pattern</h3>
+<pre><code>abstract class MviViewModel&lt;S, A&gt;(initial: S) : ViewModel() {
+    private val _state = MutableStateFlow(initial)
+    val state: StateFlow&lt;S&gt; = _state.asStateFlow()          // the only thing the UI observes
+    abstract fun onAction(action: A)                          // the only way the UI talks back
+    protected fun setState(reduce: S.() -&gt; S) = _state.update(reduce)
+}
+
+@Composable fun HerbDetailsRoute(vm: HerbDetailsViewModel = koinViewModel()) {
+    val state by vm.state.collectAsStateWithLifecycle()
+    HerbDetailsScreen(state, vm::onAction)                    // stateless, previewable, testable
+}</code></pre>
+  <p>One-off UI messages (a snackbar, for example) are stored in state as <code>userMessage</code> and cleared with a <code>MessageShown</code> action. Navigation calls are passed down to the Route as lambdas. So there's exactly one stream per screen. Use cases exist only where there's real logic, such as <code>RecognizeHerb</code>, <code>SyncContent</code>, <code>SearchHerbs</code>, <code>SubmitImages</code> and <code>SuggestVietnameseName</code>. A use case that just forwards one call to a repository is skipped.</p>
+</section>
+
+<!-- 04 -->
+<section>
+  <div class="sec-no">04</div>
+  <h2>Content delivery: R2, Remote Config and DataStore</h2>
+  <p>This replaces the current <code>MainActivity.downloadModel()</code> code. That code downloads from Firebase Storage into <code>cacheDir</code>, which the OS is allowed to clear, while SharedPreferences keeps pointing at the deleted file. The same pipeline delivers both the model and the CSV catalog.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">Remote Config keys</h3>
+      <ul class="tight">
+        <li><code>herb_model_url</code>, <code>herb_model_sha256</code></li>
+        <li><code>herb_catalog_url</code>, <code>herb_catalog_sha256</code></li>
+        <li><code>min_supported_version_android</code> / <code>_ios</code></li>
+        <li><code>recommended_version_android</code> / <code>_ios</code></li>
+        <li><code>catalog_source</code>, <code>search_source</code> (migration flags; removed afterwards)</li>
+      </ul>
+      <p style="font-size:13.5px;color:var(--muted)">The version keys replace <code>mustUpdateAndroid</code> and <code>shouldUpdateAndroid</code>, which are read from Firestore today.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">R2 setup (live)</h3>
+      <ul class="tight">
+        <li>Bucket <code>herb-lens-content</code>, served today from its <code>r2.dev</code> public URL. That URL is rate-limited and uncached: fine for model and catalog downloads, which happen only when a version is published, but <b>switch to a custom domain before user photos are served</b>, since every photo view hits it.</li>
+        <li>Versioned file names that are never overwritten, e.g. <code>models/herb_model-20261001-ab12cd34.tflite</code> and <code>catalog/herbs-20261001-5d62fb66.csv</code>, with <code>Cache-Control: public, max-age=31536000, immutable</code></li>
+        <li><code>tools/publish_content.py</code> validates, uploads, re-downloads to verify, and prints the Remote Config values. Setup and rollback: <code>docs/content-publishing.md</code>.</li>
+        <li>R2 charges nothing for egress (download bandwidth).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Sync algorithm (<code>SyncContentUseCase</code>, built in Phase 1)</h3>
+  <ol class="flow">
+    <li>On launch and whenever the app returns to the foreground, fetch and activate Remote Config. The existing 1-hour minimum fetch interval still applies.</li>
+    <li>For each file (model, catalog): if the Remote Config URL equals the installed URL stored in DataStore, stop.</li>
+    <li>Otherwise download to <code>content/&lt;name&gt;.download</code> in app storage: <code>filesDir</code> on Android, Application Support on iOS (excluded from iCloud backup). Android runs this as a unique WorkManager job that needs a network connection; iOS uses a background <code>URLSession</code>.</li>
+    <li>Check the file. The SHA-256 must match. The model must load in a throwaway interpreter. The CSV must parse and match the expected schema.</li>
+    <li><b>Activation check:</b> every label the model outputs must exist in the catalog that will be active. If the new model arrives before its matching catalog, keep it waiting until the catalog arrives.</li>
+    <li>Swap in the new file. The model is renamed over <code>herb_model.tflite</code> (same name, as you decided). The catalog is imported into staging tables and swapped in within one database transaction.</li>
+    <li>Save the installed URL and checksum to DataStore, then emit a new <code>ContentVersion</code>. The classifier switches to the new model between frames, never during one.</li>
+    <li>If any step fails, keep the current files and retry with backoff. The working copy is never deleted. If a downloaded model fails to load at startup, fall back to the bundled model and clear the stored URL.</li>
+  </ol>
+  <div class="callout">
+    <p><b>Where labels come from.</b> The model's label list (GBIF species keys) travels inside the <code>.tflite</code> file as TFLite metadata. A model with metadata is also a valid zip file with <code>labels.txt</code> inside, so the model and its labels always change together. Phase 1 reads it with <code>java.util.zip</code> for the activation check; iOS will do the same in Swift. ML Kit reads the same metadata for inference on both platforms.</p>
+  </div>
+  <p><b>Publishing a new version:</b> a small script run from your machine computes the SHA-256, uploads the file to R2, and then updates the two Remote Config keys. Always upload first and update Remote Config second, so no client is ever sent a URL that doesn't exist yet.</p>
+</section>
+
+<!-- 05 -->
+<section>
+  <div class="sec-no">05</div>
+  <h2>Herb catalog and Vietnamese search</h2>
+  <p>Algolia currently handles diacritics, typos and highlighting for you. The replacement is shared Kotlin that works the same on Android, iOS and the web, and it gets a fixed set of test cases so it can't get worse than Algolia without a test failing.</p>
+
+  <h3>CSV contract</h3>
+  <ul class="tight">
+    <li>The file is a GBIF species export plus a <code>vietnameseName</code> column: 4,799 species today, covering every one of the model's 2,721 labels. The app reads <code>speciesKey</code> (the ID everywhere), <code>canonicalName</code>, <code>authorship</code>, <code>family</code>, <code>genus</code>, <code>vernacularName</code> (English) and <code>vietnameseName</code>, and ignores the other columns.</li>
+    <li>Name columns hold several names separated by <code>;</code> or <code>,</code>; the first is the preferred one. Separators inside parentheses don't split a name.</li>
+    <li>UTF-8 with RFC 4180 quoting. The publish script normalises text to Unicode NFC; the app normalises again on import, because the original label data was mostly decomposed (NFD).</li>
+    <li>A copy is bundled in the app and used until a newer one is installed through §04.</li>
+  </ul>
+
+  <h3>Folding: one character in, one character out</h3>
+  <p><code>VietnameseText.fold()</code> lowercases, maps each Vietnamese vowel with any tone or vowel mark (all 134 precomposed forms) to its base letter, maps <b>đ/Đ → d</b>, and turns punctuation into spaces. Unicode normalisation doesn't remove the stroke on đ, which is why it needs its own rule. Kotlin's shared standard library has no <code>Normalizer</code>, so this is a lookup table, about 150 lines with tests. Because every character maps to exactly one character, a match position in the folded text is the same position in the original. That's how we keep Algolia-style highlighting. Queries can also arrive decomposed (combining marks U+0300–U+036F), so those marks are simply dropped from queries.</p>
+
+  <h3>Storage and ranking</h3>
+  <ul class="tight">
+    <li>SQLDelight table <code>herb_search(id, vi_folded, latin_folded, aliases_folded, en_folded)</code>, filled in during import.</li>
+    <li>A query first narrows the rows with <code>LIKE '%' || :token || '%'</code> on the folded columns. <code>HerbSearchRanker</code> in <code>core:domain</code> then scores the results. Order: exact name, then the name starts with the query, then every query word matches the start of a word (in any order; Vietnamese before Latin before English), then a match anywhere in the text, then a match allowing one typo (Damerau-Levenshtein distance 1, only for words of 4 or more characters). Ties go to the shorter name, then alphabetical order.</li>
+    <li><b>Why not SQLite FTS5:</b> the system SQLite on Android devices down to minSdk 26 doesn't guarantee FTS5. Its <code>remove_diacritics</code> tokenizer doesn't fold đ. And a catalog of this size doesn't need a full-text index. Measure on a large test catalog, and switch to FTS4 over the same folded columns only if it's too slow.</li>
+  </ul>
+
+  <h3>Test cases (in <code>core:testing</code>, run on every platform)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Query</th><th>Must return first</th><th>What it checks</th></tr></thead>
+    <tbody>
+      <tr><td><code>dinh lang</code></td><td>Đinh lăng · <i>Polyscias fruticosa</i></td><td>diacritics removed, đ → d</td></tr>
+      <tr><td><code>ĐINH LĂNG</code></td><td>Đinh lăng</td><td>uppercase and precomposed input</td></tr>
+      <tr><td><code>lang dinh</code></td><td>Đinh lăng</td><td>words in any order</td></tr>
+      <tr><td><code>la lot</code></td><td>Lá lốt · <i>Piper sarmentosum</i></td><td>stacked marks (ố)</td></tr>
+      <tr><td><code>huyet du</code></td><td>Huyết dụ · <i>Cordyline fruticosa</i></td><td>dot below (ụ)</td></tr>
+      <tr><td><code>roi ngua</code></td><td>Cỏ roi ngựa · <i>Stachytarpheta jamaicensis</i></td><td>match in the middle of a name; horn (ự)</td></tr>
+      <tr><td><code>frutic</code></td><td>both <i>fruticosa</i> species</td><td>start of a Latin word</td></tr>
+      <tr><td><code>dinh lanh</code></td><td>Đinh lăng</td><td>one-typo tolerance</td></tr>
+      <tr><td>query typed in NFD</td><td>same as NFC</td><td>combining marks dropped</td></tr>
+      <tr><td><code>lăng</code> → highlight</td><td>highlight covers “lăng” in “Đinh lăng”</td><td>positions map back to the original text</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 06 -->
+<section>
+  <div class="sec-no">06</div>
+  <h2>What stays in Firestore</h2>
+  <p>Species information lives in the CSV. Firestore keeps only what users contribute: photos and Vietnamese name suggestions. The herb document ID is the GBIF species key (confirmed).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Data</th><th>Where</th><th>Who reads it</th></tr></thead>
+    <tbody>
+      <tr><td>Photo URLs per species, each with uploader ID and optional location</td><td><code>herbs/{speciesKey}.images</code> map (URL → details), append-only</td><td>The app: one document read when a species' photos are shown</td></tr>
+      <tr><td>Vietnamese name suggestions</td><td><code>nameSuggestions/{autoId}</code>, create-only</td><td>Only the admin, in the console. Accepted names go into the CSV; the admin then deletes the suggestions</td></tr>
+      <tr><td>Everything else on <code>herbs</code> (names, overview, dosing, side effects, interactions, reviews)</td><td>No longer read or written by the app</td><td>Old app versions until they're forced to update; delete afterwards</td></tr>
+      <tr><td>Favourites, history, user profile (<code>users/{uid}</code>)</td><td>Copied to the device once, then no longer used</td><td>Delete after the migration release</td></tr>
+      <tr><td><code>config/mobile</code> (bans, suspension, update flags, label maps)</td><td>Replaced by security rules and Remote Config</td><td>Old app versions only</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Security rules (sketch)</h3>
+<pre><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function writer() {
+      return request.auth != null
+        &amp;&amp; !exists(/databases/$(db)/documents/bannedUsers/$(request.auth.uid));
+    }
+    match /herbs/{speciesKey} {
+      allow read: if true;
+      // Only the images map may change, and existing photos can't be removed or altered.
+      allow create, update: if writer()
+        &amp;&amp; request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys().hasOnly(['images'])
+        &amp;&amp; (resource == null || request.resource.data.images.keys().hasAll(resource.data.images.keys()))
+        &amp;&amp; request.resource.data.images.size() &lt;= 1000;
+    }
+    match /nameSuggestions/{id} {
+      allow create: if writer()
+        &amp;&amp; request.resource.data.keys().hasOnly(['speciesKey','viName','uid','createdAt'])
+        &amp;&amp; request.resource.data.uid == request.auth.uid
+        &amp;&amp; request.resource.data.viName is string
+        &amp;&amp; request.resource.data.viName.size() &gt; 0 &amp;&amp; request.resource.data.viName.size() &lt;= 100
+        &amp;&amp; request.resource.data.createdAt == request.time;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}</code></pre>
+  <p>Bans are enforced by the rules (a <code>bannedUsers/{uid}</code> document), not by a client-side check. App Check stays enforced: each debug device's token must be registered once (it survives relaunches and updates, not uninstalls).</p>
+  <div class="callout warn">
+    <p><b>Rollout order matters.</b> Installed versions still write names, reviews and favourites, and still read <code>config/mobile</code>. Ship the new version first, then set <code>mustUpdateAndroid = true</code> in <code>config/mobile</code> so old installs are forced to update, and only then deploy these rules.</p>
+  </div>
+
+  <h3>Photos</h3>
+  <ul class="tight">
+    <li><b>User uploads</b> go to R2 through a Cloudflare Worker: the app sends the compressed JPEG with the user's Firebase ID token; the Worker verifies the token, stores the file as <code>photos/{speciesKey}/{uuid}.jpg</code> and returns its URL; the app then adds the URL to <code>herbs/{speciesKey}.images</code>. No R2 credentials ship in the app.</li>
+    <li><b>GBIF photos</b> come from <code>api.gbif.org/v1/occurrence/search?mediaType=StillImage&amp;taxon_key={speciesKey}</code>, keeping media whose URL ends in <code>original.jpg</code> or <code>original.jpeg</code> (in a sample, all were iNaturalist photos). Lists load the <code>medium.jpg</code> variant; full screen loads the original.</li>
+    <li><b>Credits are required:</b> most GBIF photos are CC BY-NC, the rest CC BY. The full-screen viewer shows creator, licence and source, linking to the occurrence record. CC BY-NC also rules out commercial use of those photos.</li>
+  </ul>
+</section>
+
+<!-- 07 -->
+<section>
+  <div class="sec-no">07</div>
+  <h2>UI redesign</h2>
+  <p>The redesign happens screen by screen during Phase 3, not as a separate project. The design system comes first, so every Compose screen is built in the new style from the start.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">Visual language</h3>
+      <ul class="tight">
+        <li>Material 3 with a custom botanical colour scheme: deep leaf-green primary, sage secondary, turmeric-amber tertiary (for highlights such as confidence chips), and warm off-white surfaces. There's a matching dark theme. Android's dynamic colour is off by default, so herb photos always sit on the brand colours.</li>
+        <li><b>Be Vietnam Pro</b> font, open-licensed and designed so stacked Vietnamese marks like ặ and ổ render cleanly. Latin names are always italic, following botanical convention.</li>
+        <li>Shared spacing, shape and elevation values, and a shared component set: <code>HerbCard</code>, <code>ConfidenceChip</code>, <code>SectionCard</code>, <code>EmptyState</code>, <code>ErrorState</code>, and remote images loaded with Coil 3.</li>
+        <li>Shared-element transition from a list item to its herb details screen.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Structure</h3>
+      <ul class="tight">
+        <li>Four destinations: <b>Identify</b>, <b>Browse</b> (with the search bar at the top), <b>Saved</b> (favourites and history), <b>Profile</b> (contributions and settings).</li>
+        <li>Species details: a photo carousel (user and GBIF photos, each credited), the Vietnamese name, the scientific name in italics with its authorship, family and genus, all Vietnamese and English names, a link to the species on GBIF, a map of where user photos were taken, and "Suggest a Vietnamese name". No medicinal content.</li>
+        <li>Identify: camera preview filling the whole screen. Results appear in a bottom sheet on phones and a side panel on tablets and desktops. Results below the confidence threshold are never shown.</li>
+        <li>Browsing and searching work without signing in; sign-in is needed only to contribute (D6). The app follows the system language (Vietnamese or English), and Android 13+ lets users choose a different language for this app only.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Window width</th><th>Navigation</th><th>Layout</th></tr></thead>
+    <tbody>
+      <tr><td>Compact &lt; 600dp (phones)</td><td>Bottom navigation bar</td><td>One pane; results in a bottom sheet</td></tr>
+      <tr><td>Medium 600–839dp (foldables, iPad split view)</td><td>Navigation rail</td><td>One pane, wider content up to a maximum width</td></tr>
+      <tr><td>Expanded ≥ 840dp (tablets, browser)</td><td>Navigation rail</td><td>List and details side by side; scan results in a side panel</td></tr>
+    </tbody>
+  </table></div>
+  <p>Built with Compose Multiplatform's <code>material3-adaptive</code> (<code>NavigationSuiteScaffold</code>, <code>ListDetailPaneScaffold</code>). Accessibility requirements: touch targets of at least 48dp, WCAG AA contrast, text that scales with the system font size, and content descriptions on every icon-only button.</p>
+</section>
+
+<!-- 08 -->
+<section>
+  <div class="sec-no">08</div>
+  <h2>User-trained models (Phase 7)</h2>
+  <div class="callout">
+    <p><b>Two separate features.</b> Herb identification keeps ML Kit and your published model. User-trained models are a general tool: people train their own image classifier, in any field, on their own photos. Only that feature uses LiteRT, and it must work on Android, iOS and the web.</p>
+  </div>
+  <p><b>Why embeddings matter.</b> A model's labels (the species keys in yours) are its final output. An <i>embedding</i> is the model's internal summary of an image, about 1,280 numbers taken just before the final layer. Training on a device is practical only if you keep a pretrained "backbone" fixed and train a small new final layer on those embeddings: seconds on a phone instead of hours. ML Kit returns labels only, which is why this feature needs LiteRT.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Platform</th><th>Backbone (embeddings)</th><th>Training the final layer</th></tr></thead>
+    <tbody>
+      <tr><td>Android</td><td>LiteRT</td><td>Shared Kotlin (softmax classifier with Adam, L2 regularisation, early stopping)</td></tr>
+      <tr><td>iOS</td><td>LiteRT through Swift</td><td>The same Kotlin code, compiled with Kotlin/Native</td></tr>
+      <tr><td>Web</td><td>LiteRT.js or TensorFlow.js (WebGPU, WebAssembly fallback)</td><td>Kotlin/Wasm or the TF.js layers API, depending on the §09 decision</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="tight">
+    <li><b>Backbone:</b> a general-purpose image model with an embedding output (e.g. an EfficientNet or MobileNet feature extractor), published through the same R2 / Remote Config pipeline as the herb model.</li>
+    <li><b>What gets saved:</b> a small "model pack": the backbone's checksum, the class names, the trained weights and accuracy figures. It works on every platform and can be exported and shared.</li>
+    <li><b>To confirm in a spike</b> before any feature work: embedding speed and training time on a low-end Android phone, an older iPhone and a laptop browser, and how LiteRT is called from Kotlin on iOS and web.</li>
+  </ul>
+</section>
+
+<!-- 09 -->
+<section>
+  <div class="sec-no">09</div>
+  <h2>Web app: decision gate</h2>
+  <p>This is decided in Phase 6 after a short, time-boxed spike, not now. Until then, the module rules in §03 keep all the pure-Kotlin logic compiling for the web.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Capability</th><th>A: Compose Multiplatform on Wasm</th><th>B: separate TypeScript app</th></tr></thead>
+    <tbody>
+      <tr><td>Firebase Auth + the two writes</td><td>As far as I know, GitLive has no <code>wasmJs</code> target, so we'd write our own wrappers around the Firebase JS SDK</td><td>Firebase JS SDK directly</td></tr>
+      <tr><td>Catalog store</td><td>SQLDelight web driver (check Wasm support) or an in-memory index (the catalog is small)</td><td>IndexedDB or in memory</td></tr>
+      <tr><td>Settings</td><td>DataStore has no web target, so multiplatform-settings (localStorage)</td><td>localStorage</td></tr>
+      <tr><td>Camera</td><td><code>getUserMedia</code> through JavaScript interop</td><td>Directly</td></tr>
+      <tr><td>Herb identification</td><td>ML Kit has no web SDK, so the herb <code>.tflite</code> runs in LiteRT.js or TF.js through JavaScript interop</td><td>LiteRT.js or TF.js directly</td></tr>
+      <tr><td>User-trained models (§08)</td><td>Backbone through interop; final-layer training in shared Kotlin</td><td>Directly; training code from a Kotlin/JS <code>@JsExport</code> package or ported</td></tr>
+      <tr><td>Folding, ranking, CSV parsing</td><td>Shared directly</td><td>Kotlin/JS export or a port that must pass the same test cases</td></tr>
+      <tr><td>UI</td><td>The same screens and adaptive layouts</td><td>Written again</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>What the spike must do:</b> sign in, upload a photo through the Worker and add it to <code>herbs/{speciesKey}</code>; download the CSV from R2 and run the §05 test cases; take a camera frame through <code>getUserMedia</code> and run <code>herb_model.tflite</code> on it. <b>How to decide:</b> if Option A needs more than two sizeable interop wrappers, or the Compose web build fails basic checks for bundle size, first load time or text input with Vietnamese Telex keyboards, choose B. Otherwise choose A.</p>
+</section>
+
+<!-- 10 -->
+<section>
+  <div class="sec-no">10</div>
+  <h2>Action plan</h2>
+  <p>Every phase ends with an app you can ship. Ticks are saved in this browser; the done phases come pre-ticked.</p>
+
+  <div class="phase" data-phase="0">
+    <div class="phase-h"><div class="phase-no">0</div><div><h3>Safety net and cleanup <span class="pill lock">done</span></h3><p>Merged in #3.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p0-1" checked><label for="p0-1"><span class="tt">Remove the trust-all TLS client used by Glide</span></label></li>
+      <li><input type="checkbox" id="p0-2" checked><label for="p0-2"><span class="tt">Move the im.ge key out of source; revoke the old one</span><span class="td">Revoked; uploads move to R2 in Phase 2.</span></label></li>
+      <li><input type="checkbox" id="p0-3" checked><label for="p0-3"><span class="tt">Algolia keys in <code>local.properties</code></span></label></li>
+      <li><input type="checkbox" id="p0-4" checked><label for="p0-4"><span class="tt">Delete dead code and outdated dependencies</span></label></li>
+      <li><input type="checkbox" id="p0-5" checked><label for="p0-5"><span class="tt">Kotlin DSL, version catalog, <code>build-logic</code></span><span class="td">Resolved runtime dependencies unchanged.</span></label></li>
+      <li><input type="checkbox" id="p0-6" checked><label for="p0-6"><span class="tt"><code>:core:testing</code> module</span></label></li>
+      <li><input type="checkbox" id="p0-7" checked><label for="p0-7"><span class="tt">Tests that pin current behaviour</span></label></li>
+      <li><input type="checkbox" id="p0-8" checked><label for="p0-8"><span class="tt">Manual test script in <code>docs/</code></span></label></li>
+      <li><input type="checkbox" id="p0-9" checked><label for="p0-9"><span class="tt">GitHub Actions: unit tests and lint</span><span class="td">Single job; secrets <code>GOOGLE_SERVICES_JSON</code> and <code>MAPBOX_DOWNLOADS_TOKEN</code>.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the same app, without the known security holes, with tests and CI.</div>
+  </div>
+
+  <div class="phase" data-phase="1">
+    <div class="phase-h"><div class="phase-no">1</div><div><h3>Separate the layers and move content to R2 <span class="pill lock">done</span></h3><p>Merged in #4. Still Android-only with XML.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p1-1" checked><label for="p1-1"><span class="tt">Koin, started in <code>BaseApplication</code></span><span class="td">With a unit test that checks the whole graph.</span></label></li>
+      <li><input type="checkbox" id="p1-2" checked><label for="p1-2"><span class="tt">Remove global Firestore/Auth/Storage objects and dispatchers from <code>Utils.kt</code></span><span class="td">The remaining Android UI helpers go when their screens move to Compose.</span></label></li>
+      <li><input type="checkbox" id="p1-3" checked><label for="p1-3"><span class="tt">Domain interfaces with no Android types</span></label></li>
+      <li><input type="checkbox" id="p1-4" checked><label for="p1-4"><span class="tt">Firebase implementations with Flow listeners</span></label></li>
+      <li><input type="checkbox" id="p1-5" checked><label for="p1-5"><span class="tt">Every screen on an MVI ViewModel created by Koin</span><span class="td">Except the Algolia search screen and the admin screen, both replaced in Phase 2.</span></label></li>
+      <li><input type="checkbox" id="p1-6" checked><label for="p1-6"><span class="tt">Scan settings on DataStore; old model preferences removed</span><span class="td">Legacy camera settings stay in SharedPreferences until the Camera1 screen is deleted in Phase 4.</span></label></li>
+      <li><input type="checkbox" id="p1-7" checked><label for="p1-7"><span class="tt">R2 bucket, publishing script and guide</span><span class="td">Bucket live on its <code>r2.dev</code> URL.</span></label></li>
+      <li><input type="checkbox" id="p1-8" checked><label for="p1-8"><span class="tt">Content sync for model and catalog</span></label></li>
+      <li><input type="checkbox" id="p1-9" checked><label for="p1-9"><span class="tt">ML behind <code>HerbClassifier</code>, one labeler per model</span><span class="td">Stays on ML Kit by decision; no LiteRT switch.</span></label></li>
+      <li><input type="checkbox" id="p1-10" checked><label for="p1-10"><span class="tt">Scan names from the bundled catalog; update prompts from Remote Config</span><span class="td">Bans and the suspension switch still come from <code>config/mobile</code> until Phase 2.</span></label></li>
+      <li><input type="checkbox" id="p1-11" checked><label for="p1-11"><span class="tt">Use cases with real logic, with tests</span><span class="td">72 unit tests in total.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> a layered, testable Android app whose model and catalog come from R2.</div>
+  </div>
+
+  <div class="phase" data-phase="2">
+    <div class="phase-h"><div class="phase-no">2</div><div><h3>Offline catalog and the new data model</h3><p>Android-only, still XML, but already using libraries that work in shared code (SQLDelight, Ktor), so Phase 3 only moves files.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p2-1"><label for="p2-1"><span class="tt">Store the catalog in SQLDelight</span><span class="td">The CSV is imported into staging tables and swapped in one transaction; content sync triggers the import.</span></label></li>
+      <li><input type="checkbox" id="p2-2"><label for="p2-2"><span class="tt">Vietnamese folding and ranking, with the §05 test cases</span><span class="td">Shared Kotlin, no platform APIs.</span></label></li>
+      <li><input type="checkbox" id="p2-3"><label for="p2-3"><span class="tt">Search on the local catalog; remove Algolia</span><span class="td">Compare against the Algolia baseline in the manual test script before deleting it.</span></label></li>
+      <li><input type="checkbox" id="p2-4"><label for="p2-4"><span class="tt">Browse all species from the catalog</span><span class="td">Replaces the Firestore-paged list; works offline.</span></label></li>
+      <li><input type="checkbox" id="p2-5"><label for="p2-5"><span class="tt">Species details from the catalog</span><span class="td">Taxonomy and names only; remove the overview, dosing and caution tabs and the Firestore profile read.</span></label></li>
+      <li><input type="checkbox" id="p2-6"><label for="p2-6"><span class="tt">GBIF photos with credits</span><span class="td">Ktor client for the occurrence API; <code>medium.jpg</code> in lists, <code>original.jpg</code> full screen; creator, licence and source in the viewer.</span></label></li>
+      <li><input type="checkbox" id="p2-7"><label for="p2-7"><span class="tt">Photo uploads to R2 through a Cloudflare Worker</span><span class="td">Worker in <code>workers/photo-upload/</code> verifies the Firebase ID token and stores <code>photos/{speciesKey}/{uuid}.jpg</code>; the app appends the URL to <code>herbs/{speciesKey}.images</code>. Removes im.ge and Retrofit.</span></label></li>
+      <li><input type="checkbox" id="p2-8"><label for="p2-8"><span class="tt">Favourites and history on the device</span><span class="td">SQLDelight tables, with a one-time copy from <code>users/{uid}</code>.</span></label></li>
+      <li><input type="checkbox" id="p2-9"><label for="p2-9"><span class="tt">Name suggestions to <code>nameSuggestions</code></span><span class="td">The app shows only the CSV name; suggestions are for the admin.</span></label></li>
+      <li><input type="checkbox" id="p2-10"><label for="p2-10"><span class="tt">Replace <code>config/mobile</code></span><span class="td">Suspension switch in Remote Config; bans in security rules.</span></label></li>
+      <li><input type="checkbox" id="p2-11"><label for="p2-11"><span class="tt">Retire the admin screen</span><span class="td">After <code>tools/</code> can list photo URLs per species from R2.</span></label></li>
+      <li><input type="checkbox" id="p2-12"><label for="p2-12"><span class="tt">Security rules and rollout (§06)</span><span class="td">Ship, force old versions to update, then deploy the rules. Move R2 to a custom domain before photos are served at scale.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> an offline-first Android app with no Algolia and almost no Firestore reads.</div>
+  </div>
+
+  <div class="phase" data-phase="3">
+    <div class="phase-h"><div class="phase-no">3</div><div><h3>Shared KMP modules</h3><p>Only Android ships, but CI compiles iOS from the first day, and the web target for the pure modules.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p3-1"><label for="p3-1"><span class="tt">Move <code>app</code> to <code>:androidApp</code>; create the <code>:composeApp</code> shell</span><span class="td">AGP 9 doesn't allow the application plugin and KMP in one module.</span></label></li>
+      <li><input type="checkbox" id="p3-2"><label for="p3-2"><span class="tt">Extract <code>core:common</code> and <code>core:domain</code></span><span class="td">Targets: android, iosArm64, iosSimulatorArm64, wasmJs, js. CI checks the dependency rules.</span></label></li>
+      <li><input type="checkbox" id="p3-3"><label for="p3-3"><span class="tt">Extract <code>core:database</code>, <code>core:datastore</code>, <code>core:network</code></span><span class="td">Already on SQLDelight, DataStore and Ktor, so this is a move.</span></label></li>
+      <li><input type="checkbox" id="p3-4"><label for="p3-4"><span class="tt"><code>core:firebase</code> on GitLive</span><span class="td">Auth, Remote Config, the two Firestore writes, Crashlytics.</span></label></li>
+      <li><input type="checkbox" id="p3-5"><label for="p3-5"><span class="tt"><code>core:ml</code> and <code>core:location</code></span><span class="td">Shared interfaces; ML Kit on Android now, ML Kit iOS in Phase 5.</span></label></li>
+      <li><input type="checkbox" id="p3-6"><label for="p3-6"><span class="tt"><code>core:testing</code> becomes KMP; fakes move there</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the Android app running on shared modules.</div>
+  </div>
+
+  <div class="phase" data-phase="4">
+    <div class="phase-h"><div class="phase-no">4</div><div><h3>Compose Multiplatform and the redesign</h3><p>Android first. XML and Compose screens coexist until the last screen moves.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p4-1"><label for="p4-1"><span class="tt"><code>core:designsystem</code></span><span class="td">Light and dark colour schemes, Be Vietnam Pro, components from §07, Coil 3.</span></label></li>
+      <li><input type="checkbox" id="p4-2"><label for="p4-2"><span class="tt">Strings into Compose Multiplatform resources</span></label></li>
+      <li><input type="checkbox" id="p4-3"><label for="p4-3"><span class="tt">Adaptive navigation and type-safe routes</span></label></li>
+      <li><input type="checkbox" id="p4-4"><label for="p4-4"><span class="tt">Screens: settings → species details → browse → search → contribute</span></label></li>
+      <li><input type="checkbox" id="p4-5"><label for="p4-5"><span class="tt">Own sign-in screen replacing FirebaseUI</span><span class="td">Sign-in only when contributing.</span></label></li>
+      <li><input type="checkbox" id="p4-6"><label for="p4-6"><span class="tt"><code>core:maps</code>: Mapbox behind a shared composable</span></label></li>
+      <li><input type="checkbox" id="p4-7"><label for="p4-7"><span class="tt">Scan screens last: CameraX viewfinder, Canvas overlays</span><span class="td">Delete the Camera1 code and its legacy settings.</span></label></li>
+      <li><input type="checkbox" id="p4-8"><label for="p4-8"><span class="tt">Screenshot tests</span></label></li>
+      <li><input type="checkbox" id="p4-9"><label for="p4-9"><span class="tt">Delete XML layouts, Fragments, Safe Args, view binding and Glide</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the redesigned Android app with adaptive layouts.</div>
+  </div>
+
+  <div class="phase" data-phase="5">
+    <div class="phase-h"><div class="phase-no">5</div><div><h3>iOS</h3><p>iPhone and iPad.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p5-1"><label for="p5-1"><span class="tt"><code>iosApp</code>: SwiftUI host with <code>ComposeUIViewController</code></span></label></li>
+      <li><input type="checkbox" id="p5-2"><label for="p5-2"><span class="tt">Firebase iOS SDK (SPM), App Attest, APNs + FCM</span></label></li>
+      <li><input type="checkbox" id="p5-3"><label for="p5-3"><span class="tt">Bundle the model and catalog; downloads to Application Support</span></label></li>
+      <li><input type="checkbox" id="p5-4"><label for="p5-4"><span class="tt">ML Kit iOS custom labelling behind <code>HerbClassifier</code></span><span class="td">Same <code>.tflite</code>; results compared with Android on a fixed image set.</span></label></li>
+      <li><input type="checkbox" id="p5-5"><label for="p5-5"><span class="tt">AVFoundation camera; object detection with ML Kit iOS</span></label></li>
+      <li><input type="checkbox" id="p5-6"><label for="p5-6"><span class="tt">Google Sign-In plus Sign in with Apple</span><span class="td">Required by App Store guideline 4.8.</span></label></li>
+      <li><input type="checkbox" id="p5-7"><label for="p5-7"><span class="tt">Mapbox, Places, location and photo picker on iOS</span></label></li>
+      <li><input type="checkbox" id="p5-8"><label for="p5-8"><span class="tt">iPad layouts; TestFlight</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the app on iPhone and iPad.</div>
+  </div>
+
+  <div class="phase" data-phase="6">
+    <div class="phase-h"><div class="phase-no g">6</div><div><h3>Web app</h3><p>Starts only after the spike in §09.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p6-1"><label for="p6-1"><span class="tt">Time-boxed spike</span></label></li>
+      <li><input type="checkbox" id="p6-2"><label for="p6-2"><span class="tt">Choose Option A or B and record it</span></label></li>
+      <li><input type="checkbox" id="p6-3"><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">Set R2 CORS for the web origin.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> Herb Lens in the browser on Mac, Windows and Linux.</div>
+  </div>
+
+  <div class="phase" data-phase="7">
+    <div class="phase-h"><div class="phase-no g">7</div><div><h3>User-trained models</h3><p>Starts only after its spike (§08).</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p7-1"><label for="p7-1"><span class="tt">Spike: LiteRT backbone on Android, iOS and web; training speed</span></label></li>
+      <li><input type="checkbox" id="p7-2"><label for="p7-2"><span class="tt">Publish a backbone with an embedding output</span></label></li>
+      <li><input type="checkbox" id="p7-3"><label for="p7-3"><span class="tt">Final-layer trainer in shared Kotlin, tested on every platform</span></label></li>
+      <li><input type="checkbox" id="p7-4"><label for="p7-4"><span class="tt"><code>feature:training</code>: collect, train, evaluate, save, share</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> users train their own image classifiers on Android, iOS and the web.</div>
+  </div>
+
+</section>
+
+<!-- 11 -->
+<section>
+  <div class="sec-no">11</div>
+  <h2>Decisions on record</h2>
+  <div class="card">
+    <div class="decision"><div class="dno">D1</div><div><b>Favourites and history on the device only.</b> Yes.</div></div>
+    <div class="decision"><div class="dno">D2</div><div><b>Image deletion and report requests dropped.</b> Yes; problems are reported by email or Facebook from the menu.</div></div>
+    <div class="decision"><div class="dno">D3</div><div><b>Firestore write shape.</b> Revised: photos as an append-only map on <code>herbs/{speciesKey}</code> (one read shows all of a species' photos); name suggestions in their own create-only collection.</div></div>
+    <div class="decision"><div class="dno">D4</div><div><b>User photos on R2</b> through a Cloudflare Worker. Yes; the im.ge key is revoked.</div></div>
+    <div class="decision"><div class="dno">D5</div><div><b>Admin screen retired.</b> Yes, once a script lists photo URLs per species from R2.</div></div>
+    <div class="decision"><div class="dno">D6</div><div><b>Browse without signing in; sign in to contribute.</b> Yes.</div></div>
+    <div class="decision"><div class="dno">D7</div><div><b>CSV as the single source of truth; medicinal content removed.</b> Yes (4 Oct).</div></div>
+    <div class="decision"><div class="dno">D8</div><div><b>ML Kit for herb identification on both platforms; LiteRT only for user-trained models.</b> Yes (4 Oct).</div></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section>
+  <div class="sec-no">12</div>
+  <h2>Risks</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>A new model's labels don't match the catalog</td><td>The activation check in §04: a model is never switched on without a catalog that covers its labels</td></tr>
+      <tr><td>Local search is worse than Algolia</td><td>The §05 test cases and the Algolia baseline in the manual test script, checked before Algolia is removed</td></tr>
+      <tr><td>Tightening the Firestore rules breaks installed apps</td><td>The rollout order in §06</td></tr>
+      <tr><td>The <code>r2.dev</code> URL is rate-limited</td><td>Fine for model and catalog downloads; move to a custom domain before user photos are served at scale</td></tr>
+      <tr><td>Abuse of the photo-upload Worker</td><td>It accepts only a valid Firebase ID token from a non-banned user, JPEG only, with a size cap; Cloudflare rate limiting on the route</td></tr>
+      <tr><td>GBIF photo licensing or availability</td><td>Credits shown for every GBIF photo; CC BY-NC means no commercial use; responses cached per species, and the app works without them</td></tr>
+      <tr><td>GitLive falls behind the official Firebase SDKs</td><td>Used only inside <code>core:firebase</code>; any call can fall back to the native SDK per platform</td></tr>
+      <tr><td>Herb identification differs between Android and iOS</td><td>Same model, same ML Kit runtime family, and the same test images on both platforms</td></tr>
+      <tr><td>Kotlin/Wasm isn't mature enough</td><td>The Phase 6 decision gate; pure modules already compile for both web options</td></tr>
+      <tr><td>On-device training too slow on low-end phones</td><td>Final layer only; the Phase 7 spike measures it before feature work</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  Herb Lens · migration plan, revision 2 · 4 Oct 2026 · supersedes the 23 Sep version · lives in <code>docs/migration-plan.html</code>
+</footer>
+</div>
+
+<script>
+(function(){
+  var KEY = 'herblens-plan-r2';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+  function persist(){ try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} }
+  function refresh(phase){
+    var boxes = phase.querySelectorAll('input[type=checkbox]');
+    var done = 0;
+    boxes.forEach(function(b){ if (b.checked) done++; b.closest('li').classList.toggle('done', b.checked); });
+    phase.querySelector('.prog').textContent = done + ' / ' + boxes.length;
+  }
+  document.querySelectorAll('.phase').forEach(function(phase){
+    phase.querySelectorAll('input[type=checkbox]').forEach(function(b){
+      if (b.id in saved) b.checked = !!saved[b.id];
+      b.addEventListener('change', function(){ saved[b.id] = b.checked; persist(); refresh(phase); });
+    });
+    refresh(phase);
+  });
+})();
+</script>
+</body>
+</html>
