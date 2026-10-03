@@ -23,10 +23,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".AdminActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".upload.ImageUploadActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -74,16 +70,6 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.uri.lee.dl.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/filepaths" />
-        </provider>
 
         <!-- WorkManager is initialised by Koin (workManagerFactory) so workers get injected dependencies -->
         <provider

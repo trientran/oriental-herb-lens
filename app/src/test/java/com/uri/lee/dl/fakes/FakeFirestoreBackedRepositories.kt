@@ -11,11 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-class FakeAuthRepository(uid: String? = "user-1", var admin: Boolean = false) : AuthRepository {
+class FakeAuthRepository(uid: String? = "user-1") : AuthRepository {
     val userId = MutableStateFlow(uid)
     override val currentUserId: String? get() = userId.value
     override fun observeUserId(): Flow<String?> = userId
-    override suspend fun isAdmin() = admin
     override suspend fun idToken(): String? = userId.value?.let { "token-for-$it" }
 }
 

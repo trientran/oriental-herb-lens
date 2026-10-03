@@ -121,12 +121,8 @@
         Tại đây bạn có thể thêm dược liệu mới vào cuối danh sách. Chúng tôi sẽ cập nhật dữ liệu lên máy chủ sau đó. Xin cảm ơn!</string>
     <string name="stack_overflow">Máy chủ gặp sự cố. Vui lòng quay lại sau!</string>
     <string name="please_update_android">Thành thật xin lỗi vì sự bất tiện này! Xin hãy cập nhật ứng dụng lên phiên bản mới nhất để tiếp tục sử dụng!</string>
-    <string name="admin">Admin</string>
-    <string name="export_csvs">Xuất nhiều file CSV hình ảnh</string>
     <string name="all_herbs">Tất cả</string>
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
-    <string name="sync_recognized_herbs">Đồng bộ dược liệu có thể nhận dạng</string>
-    <string name="sync_to_be_recognized_herbs">Đồng bộ dược liệu sẽ được nhận dạng</string>
     <string name="view_plant_list">Xem danh sách cây thuốc</string>
     <string name="location_permission_is_required">Bạn cần cho phép truy cập định vị di động để có thể xác định vị trí của bạn.</string>
     <string name="current_location">Sử dụng định vị</string>

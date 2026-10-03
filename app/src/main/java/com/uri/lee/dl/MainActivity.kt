@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         binding.searchSingleImageView.setOnClickListener { startActivity(Intent(this, ImageActivity::class.java)) }
 
         binding.menuView.setOnClickListener { BottomSheetMenu().show(supportFragmentManager, "ModalBottomSheet") }
-        binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminActivity::class.java)) }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -80,12 +79,6 @@ class MainActivity : AppCompatActivity() {
                         finishAffinity()
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                     }
-                    .launchIn(this)
-
-                mainViewModel.state
-                    .map { it.isAdmin }
-                    .distinctUntilChanged()
-                    .onEach { binding.adminButton.isVisible = it }
                     .launchIn(this)
 
                 mainViewModel.state

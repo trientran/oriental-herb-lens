@@ -8,7 +8,6 @@ internal object FirestorePaths {
 
     const val USER_FAVORITES = "favorite"
     const val USER_HISTORY = "history"
-    const val USER_IS_ADMIN = "isAdmin"
 
     const val HERB_IMAGES = "images"
 }

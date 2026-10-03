@@ -1,7 +1,6 @@
 package com.uri.lee.dl.data.firebase
 
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.uri.lee.dl.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -9,10 +8,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.tasks.await
 
-class FirebaseAuthRepository(
-    private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore,
-) : AuthRepository {
+class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
 
     override val currentUserId: String? get() = auth.currentUser?.uid
 
@@ -23,10 +19,4 @@ class FirebaseAuthRepository(
     }.distinctUntilChanged()
 
     override suspend fun idToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
-
-    override suspend fun isAdmin(): Boolean {
-        val uid = currentUserId ?: return false
-        return db.collection(FirestorePaths.USERS).document(uid).get().await()
-            .getBoolean(FirestorePaths.USER_IS_ADMIN) == true
-    }
 }
