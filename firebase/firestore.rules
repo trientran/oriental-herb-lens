@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Herb Lens. Species data lives in the app's CSV catalog; Firestore keeps only what users
+// contribute: photo URLs per species and Vietnamese name suggestions for the admin.
+// Deploy only after old app versions have been forced to update (docs/firestore-rollout.md).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Bans are documents bannedUsers/{uid}, created by the admin in the console.
+    function notBanned() {
+      return !exists(/databases/$(database)/documents/bannedUsers/$(request.auth.uid));
+    }
+
+    function contributor() {
+      return signedIn() && notBanned();
+    }
+
+    // Photos may only be added: none removed or changed, at most 20 per write.
+    function onlyAddsPhotos(after, before) {
+      let change = after.diff(before);
+      return after is map
+        && change.removedKeys().size() == 0
+        && change.changedKeys().size() == 0
+        && change.addedKeys().size() > 0
+        && change.addedKeys().size() <= 20
+        && after.size() <= 2000;
+    }
+
+    // herbs/{speciesKey}: an `images` map of photo URL -> uploader details (JSON string).
+    match /herbs/{speciesKey} {
+      allow get: if true;
+      allow create: if contributor()
+        && speciesKey.matches('^[0-9]{1,12}$')
+        && request.resource.data.keys().hasOnly(['images'])
+        && onlyAddsPhotos(request.resource.data.images, {});
+      allow update: if contributor()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['images'])
+        && onlyAddsPhotos(request.resource.data.images, resource.data.get('images', {}));
+    }
+
+    // Read in the console by the admin only.
+    match /nameSuggestions/{id} {
+      allow create: if contributor()
+        && request.resource.data.keys().hasOnly(['speciesKey', 'viName', 'uid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.speciesKey is int
+        && request.resource.data.viName is string
+        && request.resource.data.viName.size() > 0
+        && request.resource.data.viName.size() <= 100
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // Users read their own document once, to copy old favourites and history to the device
+    // (and the admin flag, until the admin screen is retired).
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Older app versions read this to learn they must update.
+    match /config/mobile {
+      allow get: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
