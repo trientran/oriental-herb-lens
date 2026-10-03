@@ -30,8 +30,6 @@ mlkit-object-detection = "17.0.2"
 okhttp = "5.5.0"
 places = "4.0.0"
 play-services-location = "21.3.0"
-retrofit = "2.11.0"
-retrofit-converter-gson = "2.9.0"
 serialization = "1.11.0"
 subsampling-scale-image-view = "3.10.0"
 timber = "5.0.1"
@@ -73,8 +71,6 @@ mapbox-maps = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox"
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit-converter-gson" }
 subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version.ref = "subsampling-scale-image-view" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 

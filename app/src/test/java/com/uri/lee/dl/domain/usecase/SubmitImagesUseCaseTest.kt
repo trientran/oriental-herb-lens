@@ -23,10 +23,10 @@ class SubmitImagesUseCaseTest {
     private fun useCase(unreadable: Set<String> = emptySet(), hostFailsFor: Set<String> = emptySet()) =
         SubmitImagesUseCase(
             compressor = { image -> (image as Picked).name.takeUnless { it in unreadable }?.toByteArray() },
-            host = { jpeg ->
+            host = { speciesId, jpeg ->
                 val name = String(jpeg)
                 if (name in hostFailsFor) throw IOException("upload failed")
-                "https://img/$name.jpg"
+                "https://img/$speciesId/$name.jpg"
             },
             contributions = contributions,
             auth = auth,
@@ -44,7 +44,7 @@ class SubmitImagesUseCaseTest {
             progress,
         )
         assertEquals(
-            listOf(42L to listOf(UploadedImage("https://img/a.jpg", "uid-1", hereLocation), UploadedImage("https://img/b.jpg", "uid-1", hereLocation))),
+            listOf(42L to listOf(UploadedImage("https://img/42/a.jpg", "uid-1", hereLocation), UploadedImage("https://img/42/b.jpg", "uid-1", hereLocation))),
             contributions.images,
         )
     }
@@ -56,7 +56,7 @@ class SubmitImagesUseCaseTest {
         ).toList()
 
         assertEquals(SubmitProgress.Finished(uploaded = 1, failed = 2), progress.last())
-        assertEquals(listOf("https://img/c.jpg"), contributions.images.single().second.map { it.url })
+        assertEquals(listOf("https://img/42/c.jpg"), contributions.images.single().second.map { it.url })
     }
 
     @Test

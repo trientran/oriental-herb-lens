@@ -9,7 +9,7 @@ fun interface ImageCompressor {
     suspend fun compress(image: LocalImage): ByteArray?
 }
 
-/** Stores image bytes and returns their public URL. */
+/** Stores a photo of a species and returns its public URL. */
 fun interface ImageHost {
-    suspend fun upload(jpeg: ByteArray): String
+    suspend fun upload(speciesId: Long, jpeg: ByteArray): String
 }

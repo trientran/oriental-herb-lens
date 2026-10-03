@@ -46,3 +46,16 @@ jobs:
             **/build/reports/
             **/build/test-results/
           retention-days: 14
+
+  photo-upload-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: workers/photo-upload
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm test

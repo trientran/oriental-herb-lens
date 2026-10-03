@@ -46,7 +46,7 @@ import com.uri.lee.dl.data.platform.AndroidImageCompressor
 import com.uri.lee.dl.data.platform.BitmapLoader
 import com.uri.lee.dl.data.platform.JvmTextNormalizer
 import com.uri.lee.dl.data.settings.DataStoreSettingsRepository
-import com.uri.lee.dl.data.upload.ImGeImageHost
+import com.uri.lee.dl.data.upload.R2PhotoHost
 import com.uri.lee.dl.dataStore
 import com.uri.lee.dl.domain.media.ImageCompressor
 import com.uri.lee.dl.domain.media.ImageHost
@@ -73,9 +73,7 @@ import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraViewModel
 import com.uri.lee.dl.lensimage.ImageViewModel
 import com.uri.lee.dl.lensimages.ImagesViewModel
 import com.uri.lee.dl.search.SearchViewModel
-import com.uri.lee.dl.upload.ImageApi
 import com.uri.lee.dl.upload.ImageUploadViewModel
-import com.uri.lee.dl.upload.RetrofitHelper
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -138,7 +136,7 @@ val dataModule = module {
     single<AppStatusRepository> {
         DefaultAppStatusRepository(get(), get(), get(), versionCode = BuildConfig.VERSION_CODE.toLong())
     }
-    single<ImageHost> { ImGeImageHost(RetrofitHelper.getInstance().create(ImageApi::class.java)) }
+    single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = BuildConfig.PHOTO_UPLOAD_URL) }
     single<ImageCompressor> { AndroidImageCompressor(androidContext()) }
     single { AddressLookup(androidContext(), get()) }
     single(named(CONTENT_DATASTORE)) { androidContext().contentDataStore }

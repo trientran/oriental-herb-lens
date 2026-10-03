@@ -44,6 +44,7 @@ class KoinGraphTest {
                 // Plain values passed inline (version code, sort language)
                 Long::class,
                 Boolean::class,
+                String::class,
             ),
         )
     }

@@ -22,6 +22,8 @@ class FirebaseAuthRepository(
         awaitClose { auth.removeAuthStateListener(listener) }
     }.distinctUntilChanged()
 
+    override suspend fun idToken(): String? = auth.currentUser?.getIdToken(false)?.await()?.token
+
     override suspend fun isAdmin(): Boolean {
         val uid = currentUserId ?: return false
         return db.collection(FirestorePaths.USERS).document(uid).get().await()

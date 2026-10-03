@@ -52,7 +52,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "MAP_PRODUCTS_API_KEY", "\"${secret("MAP_PRODUCTS_API_KEY")}\"")
-        buildConfigField("String", "IMGE_API_KEY", "\"${secret("IMGE_API_KEY")}\"")
+        // workers/photo-upload, e.g. https://herb-lens-photo-upload.<account>.workers.dev
+        buildConfigField("String", "PHOTO_UPLOAD_URL", "\"${secret("PHOTO_UPLOAD_URL")}\"")
         signingConfig = signingConfigs.getByName("release")
     }
     buildTypes {
@@ -119,8 +120,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.glide)
     implementation(libs.glide.okhttp3.integration)

@@ -41,7 +41,7 @@ class SubmitImagesUseCase(
                 if (jpeg == null) {
                     failed++
                 } else {
-                    uploaded += UploadedImage(host.upload(jpeg), uploaderId, location)
+                    uploaded += UploadedImage(host.upload(herbId, jpeg), uploaderId, location)
                     emit(SubmitProgress.Uploading(uploaded.size, images.size))
                 }
             } catch (e: CancellationException) {
