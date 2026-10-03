@@ -23,3 +23,8 @@ SELECT species_id FROM history ORDER BY viewed_at DESC LIMIT :limit;
 
 recordView:
 INSERT OR REPLACE INTO history(species_id, viewed_at) VALUES (?, ?);
+
+trimHistory:
+DELETE FROM history WHERE species_id NOT IN (
+    SELECT species_id FROM history ORDER BY viewed_at DESC LIMIT :keep
+);

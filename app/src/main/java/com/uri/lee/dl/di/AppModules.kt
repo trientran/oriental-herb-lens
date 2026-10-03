@@ -18,6 +18,7 @@ import com.uri.lee.dl.MainViewModel
 import com.uri.lee.dl.R
 import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.core.common.Clock
 import com.uri.lee.dl.core.common.text.TextNormalizer
 import com.uri.lee.dl.data.catalog.AndroidCatalogSource
 import com.uri.lee.dl.data.catalog.CatalogSource
@@ -36,8 +37,9 @@ import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
 import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
 import com.uri.lee.dl.data.firebase.FirestoreContributionRepository
 import com.uri.lee.dl.data.firebase.FirestorePhotoRepository
-import com.uri.lee.dl.data.firebase.FirestoreUserLibraryRepository
 import com.uri.lee.dl.data.gbif.GbifPhotoRepository
+import com.uri.lee.dl.data.library.LegacyLibraryMigration
+import com.uri.lee.dl.data.library.LocalUserLibraryRepository
 import com.uri.lee.dl.data.ml.HerbModelLocator
 import com.uri.lee.dl.data.ml.MlKitHerbClassifier
 import com.uri.lee.dl.data.network.herbLensHttpClient
@@ -131,7 +133,9 @@ val dataModule = module {
     singleOf(::FirebaseAuthRepository) bind AuthRepository::class
     singleOf(::FirestorePhotoRepository) bind PhotoRepository::class
     singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
-    singleOf(::FirestoreUserLibraryRepository) bind UserLibraryRepository::class
+    single { Clock.System }
+    singleOf(::LocalUserLibraryRepository) bind UserLibraryRepository::class
+    single { LegacyLibraryMigration(get(), get(), get()) }
     singleOf(::FirestoreContributionRepository) bind ContributionRepository::class
     single<AppStatusRepository> {
         DefaultAppStatusRepository(get(), get(), get(), versionCode = BuildConfig.VERSION_CODE.toLong())
