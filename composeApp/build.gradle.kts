@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.herblens.kmp.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.roborazzi)
 }
 
 // The shared app: App() with navigation, and the Koin graph for Android and iOS.
@@ -40,5 +41,30 @@ kotlin {
             implementation(projects.core.testing)
             implementation(libs.koin.test)
         }
+        // Screenshot tests: Robolectric renders each screen on the JVM, Roborazzi compares it
+        // with the PNGs in src/androidHostTest/screenshots. Record new ones with
+        // ./gradlew :composeApp:testAndroidHostTest -Proborazzi.test.record=true
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit4)
+            implementation(libs.robolectric)
+            implementation(libs.roborazzi)
+            implementation(libs.roborazzi.compose)
+            implementation(libs.roborazzi.junit.rule)
+            implementation(libs.androidx.compose.ui.test.junit4)
+            implementation(libs.androidx.compose.ui.test.manifest)
+        }
     }
+}
+
+roborazzi {
+    outputDir.set(file("src/androidHostTest/screenshots"))
+}
+
+// Robolectric reaches into JDK internals that recent JDKs keep closed by default
+tasks.withType<Test>().configureEach {
+    jvmArgs(
+        "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+    )
 }

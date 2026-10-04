@@ -35,8 +35,9 @@ jobs:
 
       # API keys are not needed for unit tests or lint; the build warns and uses empty values.
       # Shared modules run their tests on the JVM here, and in Node.js for the web targets.
-      - name: Module rules, unit tests and lint
-        run: ./gradlew checkModuleRules testDebugUnitTest testAndroidHostTest jsNodeTest wasmJsNodeTest lintDebug --console=plain
+      # Screenshot tests compare each Compose screen with composeApp/src/androidHostTest/screenshots.
+      - name: Module rules, unit and screenshot tests, lint
+        run: ./gradlew checkModuleRules testDebugUnitTest testAndroidHostTest jsNodeTest wasmJsNodeTest lintDebug -Proborazzi.test.verify=true --console=plain
 
       - name: Upload reports
         if: always()
@@ -46,6 +47,7 @@ jobs:
           path: |
             **/build/reports/
             **/build/test-results/
+            **/build/outputs/roborazzi/
           retention-days: 14
 
   # Every shared module must keep compiling for iOS; the pure ones also run their tests there.
