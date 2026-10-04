@@ -33,7 +33,14 @@ import com.uri.lee.dl.feature.contribute.UploadPhase
 import com.uri.lee.dl.feature.browse.BrowseState
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsScreen
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
-import com.uri.lee.dl.feature.identify.IdentifyScreen
+import com.uri.lee.dl.domain.ml.Region
+import com.uri.lee.dl.domain.model.RecognizedHerb
+import com.uri.lee.dl.feature.scan.BatchItem
+import com.uri.lee.dl.feature.scan.ScanMode
+import com.uri.lee.dl.feature.scan.ScanScreen
+import com.uri.lee.dl.feature.scan.ScanSource
+import com.uri.lee.dl.feature.scan.ScanState
+import com.uri.lee.dl.feature.scan.ShownObject
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileScreen
 import com.uri.lee.dl.feature.profile.ProfileState
@@ -90,7 +97,41 @@ class ScreenshotTest {
         ProfileScreen(ProfileState(isSignedIn = false, scanSettings = ScanSettings(), versionName = "1.1"), {}, ProfileActions(onSignIn = {}, onShareApp = {}, onOpenLanguageSettings = {}))
     }
 
-    @Test fun identify() = both("identify") { IdentifyScreen(onStart = {}) }
+    @Test fun scanCamera() = both("scan_camera") {
+        ScanScreen(
+            ScanState(results = listOf(RecognizedHerb("3035652", 0.92f, Samples.dinhLang), RecognizedHerb("2766278", 0.74f, Samples.catalog[3]))),
+            onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
+        )
+    }
+
+    @Test fun scanPickPlant() = light("scan_pick_plant") {
+        ScanScreen(
+            ScanState(
+                mode = ScanMode.PICK_PLANT,
+                source = ScanSource.Photo("https://example.org/photo.jpg", aspect = 0.75f),
+                objects = listOf(ShownObject(0, Region(0.1f, 0.2f, 0.6f, 0.6f)), ShownObject(1, Region(0.5f, 0.55f, 0.9f, 0.9f))),
+                selectedId = 0,
+                results = listOf(RecognizedHerb("3035652", 0.88f, Samples.dinhLang)),
+            ),
+            onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
+        )
+    }
+
+    @Test fun scanPhotos() = light("scan_photos") {
+        ScanScreen(
+            ScanState(
+                source = ScanSource.Photos(
+                    listOf(
+                        BatchItem("https://example.org/1.jpg", herbs = listOf(RecognizedHerb("3035652", 0.94f, Samples.dinhLang))),
+                        BatchItem("https://example.org/2.jpg", herbs = emptyList()),
+                        BatchItem("https://example.org/3.jpg"),
+                        BatchItem("https://example.org/4.jpg", failed = true),
+                    ),
+                ),
+            ),
+            onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
+        )
+    }
 
     @Test fun signIn() = both("sign_in") { SignInScreen(SignInState(), onGoogle = {}, onClose = {}) }
 

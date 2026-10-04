@@ -69,13 +69,24 @@
     <string name="suggest_name_sign_in">Đăng nhập để đề xuất tên.</string>
 
     <!-- Identify -->
-    <string name="identify_title">Nhận dạng cây thuốc</string>
-    <string name="identify_camera">Camera</string>
-    <string name="identify_camera_body">Hướng camera vào cây</string>
-    <string name="identify_single">Một ảnh</string>
-    <string name="identify_single_body">Chọn một ảnh và chọn cây trong ảnh</string>
-    <string name="identify_multiple">Nhiều ảnh</string>
-    <string name="identify_multiple_body">Nhận dạng nhiều ảnh cùng lúc</string>
+    <string name="scan_whole_view">Toàn cảnh</string>
+    <string name="scan_pick_plant">Chọn cây</string>
+    <string name="scan_point">Hướng camera vào một cây.</string>
+    <string name="scan_looking">Đang tìm cây…</string>
+    <string name="scan_tap_plant">Chạm vào khung khác để nhận dạng cây đó.</string>
+    <string name="scan_not_recognised">Không nhận ra. Hãy lại gần hơn hoặc thử phần khác của cây.</string>
+    <string name="scan_photo_none">Không nhận ra cây thuốc nào trong ảnh này.</string>
+    <string name="scan_photo_none_pick">Không nhận ra cây thuốc nào trong các cây ở ảnh này. Hãy thử Toàn cảnh.</string>
+    <string name="scan_photo_failed">Không đọc được ảnh này.</string>
+    <string name="scan_photos">Ảnh</string>
+    <string name="scan_back_to_camera">Camera</string>
+    <string name="scan_working">Đang nhận dạng…</string>
+    <string name="scan_unknown_species">Loài %1$s</string>
+    <string name="scan_camera_needed">Cho phép dùng camera để nhận dạng cây khi bạn hướng camera vào. Bạn cũng có thể chọn ảnh.</string>
+    <string name="scan_allow_camera">Cho phép camera</string>
+    <string name="scan_open_settings">Mở cài đặt</string>
+    <string name="scan_camera_unavailable">Camera sẽ sớm có trên ứng dụng iOS. Trong lúc chờ, hãy chọn ảnh.</string>
+    <string name="cd_plant">Cây %1$d</string>
 
     <!-- Profile -->
     <string name="profile_sign_in">Đăng nhập</string>
@@ -85,9 +96,6 @@
     <string name="profile_identification">Nhận dạng</string>
     <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%</string>
     <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>
-    <string name="profile_objects_mode">Tìm cây trong ảnh</string>
-    <string name="profile_objects_mode_body">Ảnh đơn được tách thành từng cây trước khi nhận dạng.</string>
-    <string name="profile_camera_settings">Cài đặt camera</string>
     <string name="profile_app">Ứng dụng</string>
     <string name="profile_language">Ngôn ngữ</string>
     <string name="profile_full_list">Danh sách dược liệu đầy đủ</string>

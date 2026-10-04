@@ -4,35 +4,19 @@ kotlin = "2.4.20"
 google-services = "4.5.0"
 firebase-crashlytics-plugin = "3.0.8"
 firebase-appdistribution-plugin = "5.3.0"
-navigation = "2.8.2"
-navigation-safeargs = "2.9.8"
 
-androidx-annotation = "1.8.2"
-androidx-appcompat = "1.7.1"
-androidx-camera = "1.4.2"
-androidx-constraintlayout = "2.1.4"
+androidx-camera = "1.6.2"
 androidx-core = "1.16.0"
 androidx-datastore = "1.2.1"
-androidx-lifecycle = "2.10.0"
-androidx-preference = "1.2.1"
-material = "1.12.0"
 
 coroutines = "1.11.0"
 firebase-bom = "34.18.0"
 firebase-appcheck-debug = "19.0.0"
-firebase-ui-auth = "9.0.0"
-glide = "4.15.1"
-guava = "32.0.1-jre"
 mapbox = "11.14.0"
-mlkit-image-labeling = "17.0.9"
 mlkit-image-labeling-custom = "17.0.3"
 mlkit-object-detection = "17.0.2"
-okhttp = "5.5.0"
-places = "4.0.0"
 play-services-location = "21.3.0"
 serialization = "1.11.0"
-subsampling-scale-image-view = "3.10.0"
-timber = "5.0.1"
 
 koin = "4.2.2"
 gitlive-firebase = "2.7.0"
@@ -57,53 +41,29 @@ junit4 = "4.13.2"
 turbine = "1.2.1"
 
 [libraries]
-androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidx-camera" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidx-camera" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
-androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidx-datastore" }
-androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
-androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
-androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
-androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
-androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
-androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
 
-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
-glide-okhttp3-integration = { module = "com.github.bumptech.glide:okhttp3-integration", version.ref = "glide" }
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 mapbox-maps = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox" }
-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
-places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version.ref = "subsampling-scale-image-view" }
-timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
-mlkit-image-labeling = { module = "com.google.mlkit:image-labeling", version.ref = "mlkit-image-labeling" }
 mlkit-image-labeling-custom = { module = "com.google.mlkit:image-labeling-custom", version.ref = "mlkit-image-labeling-custom" }
 mlkit-objectdetection = { module = "com.google.mlkit:object-detection", version.ref = "mlkit-object-detection" }
-mlkit-objectdetection-custom = { module = "com.google.mlkit:object-detection-custom", version.ref = "mlkit-object-detection" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-appcheck-debug = { module = "com.google.firebase:firebase-appcheck-debug", version.ref = "firebase-appcheck-debug" }
 firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
-firebase-auth = { module = "com.google.firebase:firebase-auth" }
-firebase-config = { module = "com.google.firebase:firebase-config" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
-firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
-firebase-storage = { module = "com.google.firebase:firebase-storage" }
-firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebase-ui-auth" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }
@@ -125,7 +85,6 @@ androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version
 
 gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
 gitlive-firebase-config = { module = "dev.gitlive:firebase-config", version.ref = "gitlive-firebase" }
-gitlive-firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive-firebase" }
 gitlive-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive-firebase" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
@@ -143,14 +102,13 @@ compose-material3 = { module = "org.jetbrains.compose.material3:material3", vers
 compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "compose-material3" }
 compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "compose-adaptive" }
 compose-material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "compose-adaptive" }
-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "compose-material-icons" }
 compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icons" }
-compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
 androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version = "1.1.1" }
 jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation" }
 jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-lifecycle" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrains-lifecycle" }
 jetbrains-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "jetbrains-lifecycle" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.2" }
 androidx-credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
 androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.1" }
@@ -182,12 +140,10 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-m
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
 firebase-appdistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-plugin" }
-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation-safeargs" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 
 # Convention plugins from build-logic

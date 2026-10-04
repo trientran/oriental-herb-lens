@@ -61,30 +61,39 @@ Search runs on the device, so check it in airplane mode too.
    the photo's page.
 8. Airplane mode: cached user photos still show, with no error.
 
-## 5. Live camera
+## 5. Identify with the camera
 
-1. Identify → Camera. Grant the camera permission.
-2. Point at a known herb. The recognised name and confidence appear and update live.
-3. Point at a blank wall. No confident result is shown.
-4. Change the confidence level in the camera screen, leave and come back. The value is kept.
+Test photos: `tools/fetch_test_images.py --push` puts photos of species the model knows on an
+emulator. On a phone, use real plants or photos of them on another screen.
 
-## 6. Object camera (multi-object mode)
+1. Identify opens the camera straight away (allow the camera the first time). Denying shows an
+   explanation with Allow camera; after a second denial, Open settings.
+2. Whole view: point at a herb. The most likely herbs appear in the panel at the bottom with their
+   confidence and update as you move. Nothing below the minimum confidence (Profile) is shown.
+3. Pick a plant: boxes appear around the plants in view; the biggest is chosen and identified.
+   Tap another box: its results replace the first.
+4. The mode is kept after leaving and reopening the app.
+5. Tap a result: the species opens full screen; back returns to the camera.
+6. Rotate to landscape or use a tablet: results show in a panel beside the camera.
 
-1. In the camera screen, switch to object mode.
-2. Hold on a herb. The reticle confirms the object, then results appear in the bottom sheet.
-3. Camera settings → turn auto labeling off. Detection now waits for a manual tap.
+## 6. Identify one photo
 
-## 7. Single image
+1. Photos → pick one photo. It replaces the camera; Camera returns to it.
+2. Whole view: one list of results for the whole photo.
+3. Pick a plant: each recognised plant gets a box; the most confident is selected. A photo with
+   several plants or a busy background usually scores higher here than in Whole view.
+4. A photo with no herb says so and, in Pick a plant, suggests Whole view.
 
-1. Identify → One photo, pick a photo.
-2. With objects mode on: dots appear on detected objects; tapping one shows its results.
-3. With objects mode off: one result list for the whole image.
-4. Leave and return. Both the objects-mode switch and the confidence level are kept.
+## 7. Identify several photos
 
-## 8. Multiple images
+1. Photos → pick three or more. Each photo gets its own row, filled in as it's identified.
+2. A photo with no herb says so; an unreadable one says it couldn't be read.
+3. Tap a result to open the species; back returns to the list.
 
-1. Identify → Several photos, pick three photos.
-2. Each photo gets its own result row; a photo with no match shows an empty result.
+## 8. Camera permission and devices without a camera
+
+1. Revoke the camera permission in system settings, then open Identify: the explanation shows,
+   and Photos still works.
 
 ## 9. Contribute photos
 
@@ -114,9 +123,7 @@ Upload photos you took yourself.
 ## 11. Profile and settings
 
 1. Profile shows sign in (signed out) or sign out (signed in); sign out, then sign in again.
-2. Move the minimum confidence slider and turn "Find plants in a photo" off. Kill and relaunch:
-   both are kept, and the scan screens use them.
-3. Camera settings opens the camera preferences (preview size, confirmation times); changes are kept.
+2. Move the minimum confidence slider. Kill and relaunch: it's kept, and Identify uses it.
 4. Full herb list, Share, Contact, About and Privacy policy open the right page or app.
 
 ## 12. Offline

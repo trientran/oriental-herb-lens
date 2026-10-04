@@ -26,6 +26,8 @@ class ModuleRulesPlugin : Plugin<Project> {
         path == ":core:maps" -> emptySet()
         path in sources -> setOf(":core:common")
         path == ":core:data" -> setOf(":core:common", ":core:domain", ":core:ml") + sources
+        // The camera hands frames straight to ML Kit, so scanning may use core:ml on Android
+        path == ":feature:scan" -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps", ":core:ml")
         path.startsWith(":feature:") -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps")
         else -> null
     }

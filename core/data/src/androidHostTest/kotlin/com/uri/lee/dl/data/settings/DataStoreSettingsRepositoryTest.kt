@@ -36,7 +36,7 @@ class DataStoreSettingsRepositoryTest {
 
     @Test
     fun `defaults when nothing is stored`() = scope.runTest {
-        assertEquals(ScanSettings(minConfidence = 0.7f, detectObjectsInSingleImage = true), repository.scanSettings.first())
+        assertEquals(ScanSettings(minConfidence = 0.7f, detectObjectsInSingleImage = false), repository.scanSettings.first())
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.uri.lee.dl.core.ml.mlModule
 import com.uri.lee.dl.core.network.networkModule
 import com.uri.lee.dl.data.StartupTasks
 import com.uri.lee.dl.data.dataModule
+import com.uri.lee.dl.domain.usecase.IdentifyPlantsUseCase
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
 import com.uri.lee.dl.domain.usecase.SyncContentUseCase
@@ -29,6 +30,7 @@ import com.uri.lee.dl.feature.contribute.contributeModule
 import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
 import com.uri.lee.dl.feature.profile.profileModule
 import com.uri.lee.dl.feature.saved.savedModule
+import com.uri.lee.dl.feature.scan.scanModule
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -44,6 +46,7 @@ private val domainModule = module {
     factoryOf(::RecognizeHerbsUseCase)
     factoryOf(::SyncContentUseCase)
     factoryOf(::SubmitImagesUseCase)
+    factoryOf(::IdentifyPlantsUseCase)
 }
 
 /**
@@ -68,6 +71,7 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     profileModule,
     authModule,
     contributeModule,
+    scanModule,
     module { single { AddressLine { get<AddressLookup>().addressLine(it.latitude, it.longitude) } } },
 )
 

@@ -31,13 +31,4 @@ class ProfileViewModelTest : MainDispatcherTest() {
 
         assertEquals(ProfileViewModel.MAX_CONFIDENCE, viewModel.state.value.scanSettings.minConfidence)
     }
-
-    @Test
-    fun `object detection can be turned off`() {
-        val viewModel = viewModel()
-
-        viewModel.onAction(ProfileAction.SetDetectObjects(false))
-
-        assertEquals(false, viewModel.state.value.scanSettings.detectObjectsInSingleImage)
-    }
 }
