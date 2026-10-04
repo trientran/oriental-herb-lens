@@ -1,0 +1,34 @@
+Hello, and thank you for reviewing Med Herb Lens. Please find the information requested below. The screen recording is attached.
+
+1. SCREEN RECORDING
+Attached, recorded on an iPhone running the latest iOS. It begins at launch and shows: identifying a plant with the camera and from a photo; browsing and searching species; signing in with Apple; sharing a photo; reporting a shared photo and hiding (blocking) a contributor; training a model; and deleting the account (Profile > Delete account). The app has no paid content or in-app purchases.
+
+2. PURPOSE AND AUDIENCE
+Med Herb Lens identifies herbal plants, with a focus on herbs used in Vietnam, and lets people browse 4,799 species with their Vietnamese, English and scientific names. Identification runs on the device, so it works offline. Users can also train their own image classifier on the device. The app is free, with no ads. It is part of a PhD research project at the University of New England, Australia. It is for people aged 13 and over (under 18 with a parent or guardian's permission, as our terms state): herbalists, students, researchers, gardeners and anyone interested in plants. It gives no medical advice and states that results are often wrong and must be checked with an expert.
+
+3. HOW TO USE IT
+No demo account is needed. Everything except contributing works without an account.
+- Identify tab: point the camera at a plant, or pick a photo. Sample photos of herbs the app knows, with instructions, are at https://med-herb-lens.pages.dev/sample-photos.html (point the camera at one on another screen, or save one to Photos and pick it).
+- Browse tab: search by name (e.g. "Mentha") and open a species for photos, a map and details.
+- Train tab: follow the steps to collect photos and train a model on the device.
+- To contribute: Profile > Sign in > Continue with Apple (your own Apple ID). On a species page, tap Add photos to share one. On any shared photo, tap Report photo, or Hide this contributor's photos (this also hides their models; on the Train tab, Hide this person's models does the same).
+- To delete the account: Profile > Delete account.
+Moderation: photos are uploaded only if the device finds a plant; model names are checked; reports are acted on within 24 hours, removing the content and banning its uploader.
+
+4. EXTERNAL SERVICES
+- Identification: our own model, run on the device with Google ML Kit and TensorFlow Lite. ML Kit's on-device models also find plants in photos. Training uses a MediaPipe base model. No image is sent to any AI service.
+- Sign in with Apple and Google Sign-In: accounts.
+- Google Firebase (Authentication, Firestore, Remote Config, App Check, Analytics): accounts, shared photo lists, settings, anonymous usage statistics (can be turned off in Profile).
+- Cloudflare (R2 storage, Workers): storing shared photos and models; delivering the species catalog and model.
+- GBIF and iNaturalist: species data and reference photos, shown with author and licence.
+- Apple Maps: maps of where photos were taken.
+- Hugging Face: publishing models users choose to share.
+- Qualtrics: an optional, anonymous research survey (Profile > Research survey).
+
+5. REGIONS
+The app works the same in all regions. Only the order of names differs: on devices set to Vietnamese or to the Vietnam region, Vietnamese names are shown first.
+
+6. REGULATED INDUSTRY / THIRD-PARTY MATERIAL
+The app is not in a regulated industry and does not provide medical or health services. Species data comes from GBIF (open licences) and reference photos from GBIF and iNaturalist contributors under Creative Commons licences, each shown with its author, licence and source.
+
+Contact: Trien Tran, tptrien@gmail.com, aunhi55@gmail.com
