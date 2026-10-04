@@ -16,6 +16,11 @@ class FakeAuthRepository(uid: String? = "user-1") : AuthRepository {
     override val currentUserId: String? get() = userId.value
     override fun observeUserId(): Flow<String?> = userId
     override suspend fun idToken(): String? = userId.value?.let { "token-for-$it" }
+    var failSignIn = false
+    override suspend fun signInWithGoogle(idToken: String) {
+        if (failSignIn) error("sign-in failed")
+        userId.value = "google-$idToken"
+    }
     override suspend fun signOut() { userId.value = null }
 }
 

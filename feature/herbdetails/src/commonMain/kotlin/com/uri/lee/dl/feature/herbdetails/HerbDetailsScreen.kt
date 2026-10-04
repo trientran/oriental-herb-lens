@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
@@ -65,6 +67,7 @@ import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
 import com.uri.lee.dl.core.designsystem.resources.details_genus
 import com.uri.lee.dl.core.designsystem.resources.details_names
+import com.uri.lee.dl.core.designsystem.resources.details_photo_map
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
 import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
@@ -74,6 +77,8 @@ import com.uri.lee.dl.core.designsystem.resources.generic_error
 import com.uri.lee.dl.core.designsystem.resources.photo_counter
 import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import com.uri.lee.dl.core.maps.HerbMap
+import com.uri.lee.dl.core.maps.LatLng
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import org.jetbrains.compose.resources.stringResource
@@ -234,6 +239,14 @@ private fun DetailsContent(
                 SectionCard(stringResource(Res.string.details_names)) {
                     NameList(stringResource(Res.string.details_vietnamese_names), species.vietnameseNames)
                     NameList(stringResource(Res.string.details_english_names), species.englishNames)
+                }
+            }
+        }
+        val photoPlaces = photos.mapNotNull { photo -> photo.location?.let { LatLng(it.latitude, it.longitude) } }.distinct()
+        if (photoPlaces.isNotEmpty()) {
+            item("map") {
+                SectionCard(stringResource(Res.string.details_photo_map)) {
+                    HerbMap(photoPlaces, Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium))
                 }
             }
         }

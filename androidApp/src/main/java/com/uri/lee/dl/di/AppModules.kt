@@ -13,7 +13,6 @@ import com.uri.lee.dl.lenscamera.objectivecamera.ObjectiveCameraViewModel
 import com.uri.lee.dl.lensimage.ImageViewModel
 import com.uri.lee.dl.lensimages.ImagesViewModel
 import com.uri.lee.dl.shared.sharedModules
-import com.uri.lee.dl.upload.ImageUploadViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -45,7 +44,6 @@ val viewModelModule = module {
     viewModelOf(::ImageViewModel)
     viewModelOf(::ImagesViewModel)
     viewModel { ObjectiveCameraViewModel(androidApplication(), get()) }
-    viewModelOf(::ImageUploadViewModel)
 }
 
 val appModules = sharedModules(appInfo) + listOf(androidModule, viewModelModule)

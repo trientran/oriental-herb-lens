@@ -38,3 +38,4 @@ google-services.json
 .wrangler/
 .DS_Store
 .kotlin/
+test-images/

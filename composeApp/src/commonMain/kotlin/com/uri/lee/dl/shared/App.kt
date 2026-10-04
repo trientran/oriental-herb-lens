@@ -43,7 +43,9 @@ import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.model.UpdatePolicy
+import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
+import com.uri.lee.dl.feature.contribute.ContributeRoute
 import com.uri.lee.dl.feature.identify.IdentifyScreen
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileRoute
@@ -58,6 +60,8 @@ import kotlin.reflect.KClass
 @Serializable data class BrowseDestination(val openHerbId: Long? = null)
 @Serializable data object SavedDestination
 @Serializable data object ProfileDestination
+@Serializable data object SignInDestination
+@Serializable data class ContributeDestination(val herbId: Long)
 
 private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon: ImageVector, val label: StringResource) {
     IDENTIFY(IdentifyDestination, IdentifyDestination::class, Icons.Filled.CameraAlt, Res.string.nav_identify),
@@ -80,10 +84,18 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
             if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
         }
         val current = navController.currentBackStackEntryAsState().value?.destination
-        // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below that
+        // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
+        // that; none on full-screen flows (sign-in, contributing)
         val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+        val fullScreen = current?.hasRoute(SignInDestination::class) == true || current?.hasRoute(ContributeDestination::class) == true
+        val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
+        val addPhotos = { herbId: Long -> navController.navigate(ContributeDestination(herbId)) }
         NavigationSuiteScaffold(
-            layoutType = if (wide) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar,
+            layoutType = when {
+                fullScreen -> NavigationSuiteType.None
+                wide -> NavigationSuiteType.NavigationRail
+                else -> NavigationSuiteType.NavigationBar
+            },
             navigationSuiteItems = {
                 TopLevel.entries.forEach { item ->
                     item(
@@ -100,24 +112,35 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                     IdentifyScreen(onStart = actions.onIdentify, modifier = Modifier.statusBarsPadding())
                 }
                 composable<BrowseDestination> { entry ->
-                    SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, actions) { selected, open ->
+                    SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
                         BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, modifier = Modifier.statusBarsPadding())
                     }
                 }
                 composable<SavedDestination> {
-                    SpeciesListDetail(null, actions) { selected, open ->
+                    SpeciesListDetail(null, addPhotos, signIn) { selected, open ->
                         SavedRoute(onOpenSpecies = open, selectedId = selected, modifier = Modifier.statusBarsPadding())
                     }
                 }
                 composable<ProfileDestination> {
                     ProfileRoute(
                         ProfileActions(
-                            onSignIn = actions.onSignIn,
+                            onSignIn = signIn,
                             onShareApp = actions.onShareApp,
                             onOpenLanguageSettings = actions.onOpenLanguageSettings,
                             onOpenCameraSettings = actions.onOpenCameraSettings,
                         ),
                         modifier = Modifier.statusBarsPadding(),
+                    )
+                }
+                composable<SignInDestination> {
+                    SignInRoute(actions.requestGoogleIdToken, onDone = { navController.popBackStack() })
+                }
+                composable<ContributeDestination> { entry ->
+                    ContributeRoute(
+                        herbId = entry.toRoute<ContributeDestination>().herbId,
+                        platform = actions.contribute,
+                        onSignIn = signIn,
+                        onDone = { navController.popBackStack() },
                     )
                 }
             }

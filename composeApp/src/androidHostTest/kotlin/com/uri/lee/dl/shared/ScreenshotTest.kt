@@ -19,7 +19,15 @@ import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.search.NameKind
 import com.uri.lee.dl.domain.search.SpeciesMatch
+import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.feature.auth.SignInScreen
+import com.uri.lee.dl.feature.auth.SignInState
 import com.uri.lee.dl.feature.browse.BrowseScreen
+import com.uri.lee.dl.feature.contribute.ContributePlatform
+import com.uri.lee.dl.feature.contribute.ContributeScreen
+import com.uri.lee.dl.feature.contribute.ContributeState
+import com.uri.lee.dl.feature.contribute.PickedLocation
+import com.uri.lee.dl.feature.contribute.UploadPhase
 import com.uri.lee.dl.feature.browse.BrowseState
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsScreen
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
@@ -81,6 +89,23 @@ class ScreenshotTest {
     }
 
     @Test fun identify() = both("identify") { IdentifyScreen(onStart = {}) }
+
+    @Test fun signIn() = both("sign_in") { SignInScreen(SignInState(), onGoogle = {}, onClose = {}) }
+
+    @Test fun contribute() = both("contribute") {
+        ContributeScreen(
+            ContributeState(herbId = 3035652, speciesName = "Đinh lăng", location = PickedLocation(GeoLocation(21.03, 105.85), "Hoàn Kiếm, Hà Nội")),
+            onAction = {}, platform = ContributePlatform(pickPhotos = {}, currentLocation = {}), onSignIn = {}, onDone = {},
+        )
+    }
+
+    @Test fun contributeSignedOut() = light("contribute_signed_out") {
+        ContributeScreen(ContributeState(herbId = 3035652, speciesName = "Đinh lăng", isSignedIn = false), {}, ContributePlatform(pickPhotos = {}), {}, {})
+    }
+
+    @Test fun contributeUploading() = light("contribute_uploading") {
+        ContributeScreen(ContributeState(herbId = 3035652, speciesName = "Đinh lăng", phase = UploadPhase.Uploading(2, 5)), {}, ContributePlatform(pickPhotos = {}), {}, {})
+    }
 
     @Config(qualifiers = "+vi")
     @Test fun browseVietnamese() = light("browse_vi") { BrowseScreen(BrowseState(species = Samples.catalog, isLoading = false), {}, {}, selectedId = null) }

@@ -21,7 +21,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.koin.core.Koin
 import org.koin.core.module.Module
+import com.uri.lee.dl.core.location.AddressLookup
+import com.uri.lee.dl.feature.auth.authModule
 import com.uri.lee.dl.feature.browse.browseModule
+import com.uri.lee.dl.feature.contribute.AddressLine
+import com.uri.lee.dl.feature.contribute.contributeModule
 import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
 import com.uri.lee.dl.feature.profile.profileModule
 import com.uri.lee.dl.feature.saved.savedModule
@@ -62,6 +66,9 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     savedModule,
     herbDetailsModule,
     profileModule,
+    authModule,
+    contributeModule,
+    module { single { AddressLine { get<AddressLookup>().addressLine(it.latitude, it.longitude) } } },
 )
 
 /** Launch-time background work; call once after Koin starts. */

@@ -4,7 +4,6 @@ import android.app.Application
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.model.GlideUrl
-import com.google.android.libraries.places.api.Places
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
@@ -49,8 +48,6 @@ class BaseApplication : Application() {
         get<LegacyModelCleanup>().run()
         koin.runStartupTasks()
         ContentSyncWorker.enqueue(WorkManager.getInstance(this))
-
-        Places.initializeWithNewPlacesApiEnabled(applicationContext, BuildConfig.MAP_PRODUCTS_API_KEY)
         Glide.get(this).registry.replace(
             GlideUrl::class.java, InputStream::class.java,
             OkHttpUrlLoader.Factory(get<OkHttpClient>())
