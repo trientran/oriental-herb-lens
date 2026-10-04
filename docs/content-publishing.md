@@ -1,7 +1,7 @@
 # Publishing the herb model and catalog
 
-The app ships with a copy of the model (`app/assets/herb_model.tflite`) and the species catalog
-(`app/assets/herb_catalog.csv`), so it works offline from its first launch. Newer versions are
+The app ships with a copy of the model (`androidApp/assets/herb_model.tflite`) and the species catalog
+(`androidApp/assets/herb_catalog.csv`), so it works offline from its first launch. Newer versions are
 hosted on Cloudflare R2 and announced through Firebase Remote Config. On every launch the app
 compares the announced URL with the one it has installed and, if they differ, downloads the new
 file, checks it, and replaces the old one under the same name.
@@ -64,11 +64,11 @@ Always publish the catalog first when a new model adds species. The app won't ac
 whose labels aren't all in its catalog; it keeps the verified download and waits.
 
 ```bash
-tools/publish_content.py catalog app/assets/herb_catalog.csv
+tools/publish_content.py catalog androidApp/assets/herb_catalog.csv
 ```
 
 ```bash
-tools/publish_content.py model app/assets/herb_model.tflite --catalog app/assets/herb_catalog.csv
+tools/publish_content.py model androidApp/assets/herb_model.tflite --catalog androidApp/assets/herb_catalog.csv
 ```
 
 The script:

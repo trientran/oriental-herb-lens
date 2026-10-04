@@ -7,7 +7,7 @@ service account, which the rules don't apply to.
 
     pip install google-cloud-firestore
     export GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
-    tools/export_photo_urls.py --catalog app/assets/herb_catalog.csv
+    tools/export_photo_urls.py --catalog androidApp/assets/herb_catalog.csv
 
 Writes herbs_<timestamp>.zip containing, like the admin export:
   <speciesKey>.csv   one photo URL per line

@@ -1,7 +1,8 @@
 // Top-level build file. Plugins are declared here once so every module shares one classloader.
 plugins {
     alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.android.kmp.library) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.google.services) apply false
@@ -9,4 +10,5 @@ plugins {
     alias(libs.plugins.firebase.appdistribution) apply false
     alias(libs.plugins.navigation.safeargs) apply false
     alias(libs.plugins.sqldelight) apply false
+    alias(libs.plugins.herblens.module.rules)
 }
