@@ -3,16 +3,16 @@ package com.uri.lee.dl.herbdetails
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.HERB_ID
-import com.uri.lee.dl.domain.model.HerbProfile
-import com.uri.lee.dl.domain.repository.HerbRepository
+import com.uri.lee.dl.domain.model.Species
+import com.uri.lee.dl.domain.model.SpeciesPhoto
+import com.uri.lee.dl.domain.repository.PhotoRepository
+import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
+import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.repository.UserLibraryRepository
 import com.uri.lee.dl.ui.common.MviViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -23,17 +23,27 @@ sealed interface HerbDetailsAction {
 
 data class HerbDetailsState(
     val herbId: Long,
-    val profile: HerbProfile? = null,
+    /** Null until loaded, or when the catalog has no such species ([notFound]). */
+    val species: Species? = null,
+    val notFound: Boolean = false,
+    val userPhotos: List<SpeciesPhoto> = emptyList(),
+    /** GBIF photos; empty while loading or offline. */
+    val referencePhotos: List<SpeciesPhoto> = emptyList(),
     val isFavorite: Boolean = false,
     val error: Error? = null,
 ) {
+    /** User contributions first, then GBIF photos. */
+    val photos: List<SpeciesPhoto> get() = userPhotos + referencePhotos
+
     data class Error(val exception: Throwable)
 }
 
-/** Backs the herb details screen and its tabs, which share it through the activity. */
+/** Backs the species details screen and its tabs, which share it through the activity. */
 class HerbDetailsViewModel(
     savedState: SavedStateHandle,
-    herbs: HerbRepository,
+    private val catalog: SpeciesRepository,
+    photos: PhotoRepository,
+    private val referencePhotos: ReferencePhotoRepository,
     private val library: UserLibraryRepository,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(
     HerbDetailsState(herbId = requireNotNull(savedState.get<Long>(HERB_ID)) { "HerbDetailsActivity needs $HERB_ID" })
@@ -41,32 +51,35 @@ class HerbDetailsViewModel(
 
     init {
         val id = currentState.herbId
-        herbs.observeProfile(id)
-            .onEach { profile -> setState { copy(profile = profile) } }
-            .catch { reportError(it) }
+        viewModelScope.launch {
+            try {
+                val species = catalog.get(id)
+                setState { copy(species = species, notFound = species == null) }
+                if (species != null) {
+                    library.recordViewed(id)
+                    loadReferencePhotos(id)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                reportError(e)
+            }
+        }
+        photos.observeUserPhotos(id)
+            .onEach { setState { copy(userPhotos = it) } }
+            .catch { Timber.w(it, "User photos unavailable") }
             .launchIn(viewModelScope)
         library.observeFavorites()
             .onEach { favorites -> setState { copy(isFavorite = id in favorites) } }
             .catch { reportError(it) }
             .launchIn(viewModelScope)
-        // Record the view once the herb is known to exist.
-        viewModelScope.launch {
-            try {
-                state.map { it.profile }.filterNotNull().first()
-                library.recordViewed(id)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.w(e, "Couldn't record herb $id in history")
-            }
-        }
     }
 
     override fun onAction(action: HerbDetailsAction) {
         when (action) {
             HerbDetailsAction.ToggleFavorite -> {
                 val favorite = !currentState.isFavorite
-                setState { copy(isFavorite = favorite) } // shown immediately; the listener confirms it
+                setState { copy(isFavorite = favorite) } // shown immediately; the library confirms it
                 viewModelScope.launch {
                     try {
                         library.setFavorite(currentState.herbId, favorite)
@@ -78,6 +91,17 @@ class HerbDetailsViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun loadReferencePhotos(id: Long) = viewModelScope.launch {
+        try {
+            val gbif = referencePhotos.photos(id)
+            setState { copy(referencePhotos = gbif) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.w(e, "GBIF photos unavailable") // offline is normal; user photos still show
         }
     }
 

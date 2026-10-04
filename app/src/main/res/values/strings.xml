@@ -54,7 +54,6 @@
     <string name="title_home">Home</string>
     <string name="images">Images</string>
     <string name="overview">Overview</string>
-    <string name="caution">Caution</string>
     <string name="log_out">Log out</string>
     <string name="delete_account">Delete account</string>
     <string name="contact_us">Contact us</string>
@@ -86,9 +85,6 @@
     <string name="vietnamese_name_s">Vietnamese name: %s</string>
     <string name="english_name_s">English name:</string>
     <string name="overview_s">Overview:</string>
-    <string name="dosing_s">Dosing:</string>
-    <string name="side_effects_s">Side effects:</string>
-    <string name="interactions_s">Interactions:</string>
     <string name="your_selected_image">Your selected image</string>
     <string name="ranges_from_0_to_100">Ranges from 0 to 100</string>
     <string name="sign_in_with_google">Sign in with Google</string>
@@ -113,7 +109,6 @@
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
     <string name="sign_out">Sign out</string>
     <string name="your_herb_list_will_be_loaded_soon">Herb list will be loaded soon once available.</string>
-    <string name="dosing">Dosing</string>
     <string name="like">Like</string>
     <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
     <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
@@ -147,13 +142,8 @@
     <string name="please_hit_ok_to_open_our_google_sheet">Please hit OK to open our Google Sheet database where you can add a new herb at the end of the herb list. We will then add it to our database. Thank you!</string>
     <string name="stack_overflow">We are experiencing server downtime. Please come back later!</string>
     <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
-    <string name="you_have_been_banned">You have been banned from using our service due to your inappropriate activities. If you believe this is a mistake, please contact us!</string>
-    <string name="admin">Admin</string>
-    <string name="export_csvs">Export multiple CSV files</string>
     <string name="all_herbs">All herbs</string>
     <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
-    <string name="sync_recognized_herbs">Sync recognized herbs</string>
-    <string name="sync_to_be_recognized_herbs">Sync to-be-recognized herbs</string>
     <string name="view_plant_list">View plant list</string>
     <string name="location_permission_is_required">Location permission is required to fetch your current location.</string>
     <string name="current_location">Current location</string>
@@ -161,4 +151,8 @@
     <string name="address">Address:</string>
 
     <string name="not_available_yet">Not available yet</string>
+    <string name="classification">Classification</string>
+    <string name="family_s">Family: %s</string>
+    <string name="genus_s">Genus: %s</string>
+    <string name="gbif_photo_credit">© %1$s · %2$s · %3$s, via GBIF. Tap for the source.</string>
 </resources>

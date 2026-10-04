@@ -35,4 +35,5 @@ google-services.json
 *.hprof
 
 # Wrangler
-/.wrangler/cache/wrangler-account.json
+.wrangler/
+.DS_Store

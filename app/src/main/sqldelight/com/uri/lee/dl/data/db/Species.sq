@@ -1,0 +1,45 @@
+-- The species catalog, imported from the CSV. Name lists are stored one name per line.
+CREATE TABLE species (
+    id INTEGER NOT NULL PRIMARY KEY,
+    scientific_name TEXT NOT NULL,
+    authorship TEXT NOT NULL,
+    family TEXT NOT NULL,
+    genus TEXT NOT NULL,
+    vietnamese_names TEXT NOT NULL,
+    english_names TEXT NOT NULL,
+    -- Folded preferred names, for diacritic-insensitive sorting
+    sort_vietnamese TEXT NOT NULL,
+    sort_scientific TEXT NOT NULL
+);
+
+CREATE INDEX species_sort_vietnamese ON species(sort_vietnamese);
+CREATE INDEX species_sort_scientific ON species(sort_scientific);
+
+insert:
+INSERT INTO species VALUES ?;
+
+deleteAll:
+DELETE FROM species;
+
+byId:
+SELECT * FROM species WHERE id = ?;
+
+byIds:
+SELECT * FROM species WHERE id IN ?;
+
+all:
+SELECT * FROM species;
+
+count:
+SELECT count(*) FROM species;
+
+-- Species without a Vietnamese name go last.
+pageByVietnamese:
+SELECT * FROM species
+ORDER BY sort_vietnamese = '', sort_vietnamese, sort_scientific
+LIMIT :limit OFFSET :offset;
+
+pageByScientific:
+SELECT * FROM species
+ORDER BY sort_scientific
+LIMIT :limit OFFSET :offset;

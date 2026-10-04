@@ -1,0 +1,30 @@
+-- Favourites and viewing history, kept on the device only (decision D1).
+CREATE TABLE favorite (
+    species_id INTEGER NOT NULL PRIMARY KEY,
+    added_at INTEGER NOT NULL
+);
+
+CREATE TABLE history (
+    species_id INTEGER NOT NULL PRIMARY KEY,
+    viewed_at INTEGER NOT NULL
+);
+
+favoriteIds:
+SELECT species_id FROM favorite ORDER BY added_at DESC;
+
+addFavorite:
+INSERT OR REPLACE INTO favorite(species_id, added_at) VALUES (?, ?);
+
+removeFavorite:
+DELETE FROM favorite WHERE species_id = ?;
+
+historyIds:
+SELECT species_id FROM history ORDER BY viewed_at DESC LIMIT :limit;
+
+recordView:
+INSERT OR REPLACE INTO history(species_id, viewed_at) VALUES (?, ?);
+
+trimHistory:
+DELETE FROM history WHERE species_id NOT IN (
+    SELECT species_id FROM history ORDER BY viewed_at DESC LIMIT :keep
+);

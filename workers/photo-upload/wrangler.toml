@@ -1,0 +1,12 @@
+name = "herb-lens-photo-upload"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "herb-lens-content"
+
+[vars]
+FIREBASE_PROJECT_ID = "oriental-herb-lens-41d17"
+# Public base URL of the bucket: the r2.dev URL today, a custom domain later.
+PUBLIC_BASE_URL = "https://pub-394936ea0f444a64a542ff743b102f1f.r2.dev"

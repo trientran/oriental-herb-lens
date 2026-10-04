@@ -11,14 +11,5 @@
         android:icon="@drawable/ic_overview"
         android:title="@string/overview" />
 
-    <item
-        android:id="@+id/navigation_caution"
-        android:icon="@drawable/ic_baseline_caution"
-        android:title="@string/caution" />
-
-    <item
-        android:id="@+id/navigation_dosing"
-        android:icon="@drawable/ic_dosing"
-        android:title="@string/dosing" />
 
 </menu>

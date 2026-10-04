@@ -19,8 +19,8 @@ import com.uri.lee.dl.domain.model.AppStatus
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.hometabs.SectionsPagerAdapter
 import com.uri.lee.dl.hometabs.TAB_TITLES
-import com.uri.lee.dl.instantsearch.SPOKEN_TEXT_EXTRA
-import com.uri.lee.dl.instantsearch.SearchActivity
+import com.uri.lee.dl.search.SPOKEN_TEXT_EXTRA
+import com.uri.lee.dl.search.SearchActivity
 import com.uri.lee.dl.lenscamera.CameraActivity
 import com.uri.lee.dl.lensimage.ImageActivity
 import com.uri.lee.dl.lensimages.ImagesActivity
@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         binding.searchSingleImageView.setOnClickListener { startActivity(Intent(this, ImageActivity::class.java)) }
 
         binding.menuView.setOnClickListener { BottomSheetMenu().show(supportFragmentManager, "ModalBottomSheet") }
-        binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminActivity::class.java)) }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -80,12 +79,6 @@ class MainActivity : AppCompatActivity() {
                         finishAffinity()
                         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                     }
-                    .launchIn(this)
-
-                mainViewModel.state
-                    .map { it.isAdmin }
-                    .distinctUntilChanged()
-                    .onEach { binding.adminButton.isVisible = it }
                     .launchIn(this)
 
                 mainViewModel.state
@@ -121,17 +114,6 @@ class MainActivity : AppCompatActivity() {
                 .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> }
                 .create().show()
             UpdatePolicy.NONE -> Unit
-        }
-        if (status.isCurrentUserBanned) {
-            AlertDialog.Builder(this)
-                .setMessage(getString(R.string.you_have_been_banned))
-                .setCancelable(false)
-                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-                    finish()
-                    exitProcess(0)
-                }
-                .setNegativeButton(getString(R.string.contact_us)) { _, _ -> sendEmail(subject = "") }
-                .create().show()
         }
     }
 

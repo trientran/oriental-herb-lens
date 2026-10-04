@@ -12,7 +12,12 @@ import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderF
 import androidx.work.WorkManager
 import com.uri.lee.dl.data.content.ContentSyncWorker
 import com.uri.lee.dl.data.content.LegacyModelCleanup
+import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.data.library.LegacyLibraryMigration
 import com.uri.lee.dl.di.appModules
+import com.uri.lee.dl.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.get
@@ -42,6 +47,10 @@ class BaseApplication : Application() {
             modules(appModules)
         }
         get<LegacyModelCleanup>().run()
+        // One-time copy of each signed-in user's Firestore favourites and history to the device
+        get<ApplicationScope>().launch {
+            get<AuthRepository>().observeUserId().filterNotNull().collect { get<LegacyLibraryMigration>().migrateIfNeeded(it) }
+        }
         ContentSyncWorker.enqueue(WorkManager.getInstance(this))
 
         Places.initializeWithNewPlacesApiEnabled(applicationContext, BuildConfig.MAP_PRODUCTS_API_KEY)

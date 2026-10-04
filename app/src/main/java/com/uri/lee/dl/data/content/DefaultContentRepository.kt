@@ -2,7 +2,7 @@ package com.uri.lee.dl.data.content
 
 import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.data.catalog.CatalogFormatException
-import com.uri.lee.dl.data.catalog.CsvSpeciesRepository
+import com.uri.lee.dl.data.catalog.SqlSpeciesRepository
 import com.uri.lee.dl.data.catalog.SpeciesCsvReader
 import com.uri.lee.dl.domain.model.ContentKind
 import com.uri.lee.dl.domain.model.ContentRelease
@@ -21,7 +21,7 @@ class DefaultContentRepository(
     private val files: ContentFiles,
     private val downloader: ContentDownloader,
     private val catalogReader: SpeciesCsvReader,
-    private val catalog: CsvSpeciesRepository,
+    private val catalog: SqlSpeciesRepository,
     private val dispatchers: AppDispatchers,
 ) : ContentRepository {
 

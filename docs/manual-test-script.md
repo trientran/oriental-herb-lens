@@ -1,7 +1,7 @@
 # Manual test script
 
 Run this on a real device before and after each migration phase. It covers the flows unit tests
-can't reach yet: camera, ML Kit, Firestore listeners and Algolia. Record results in the log at the
+can't reach yet: camera, ML Kit and Firestore listeners. Record results in the log at the
 bottom so a later run can be compared with an earlier one.
 
 **Setup:** a debug build, a signed-in test account, network on unless a step says otherwise, and
@@ -20,37 +20,40 @@ and the herb lists stay empty.
 
 ## 2. Home tabs
 
-1. All herbs: scroll past the first 10 items. More load (paging) with no duplicates.
-2. Favourites and history show what the test account saved earlier.
-3. Switch the device language between Vietnamese and English, relaunch. The list sort order and
-   names follow the language (Vietnamese name vs Latin name).
+1. All herbs lists every species in the catalog (about 4,800), sorted by Vietnamese name with
+   unnamed species last (by scientific name when the device language isn't Vietnamese). Scroll far
+   down: more load, with no duplicates. Works in airplane mode.
+2. Favourites and history show what the test account saved earlier, most recent first.
 
-## 3. Text and voice search (Algolia)
+## 3. Text and voice search
 
-Record the top three results for each query. These are the **baseline** the Phase 2 local search
-must match or beat.
+Search runs on the device, so check it in airplane mode too.
 
-| Query | Top 3 results |
-|---|---|
-| `dinh lang` | |
-| `Đinh lăng` | |
-| `lang dinh` | |
-| `la lot` | |
-| `huyet du` | |
-| `roi ngua` | |
-| `frutic` | |
-| `dinh lanh` (typo) | |
+1. Each query finds the expected species first:
 
-1. Matches are highlighted in the result names.
-2. Microphone: say "đinh lăng". The spoken text opens search with results.
+   | Query | Expected first result |
+   |---|---|
+   | `dinh lang`, `Đinh lăng`, `lang dinh`, `dinh lanh` | Đinh lăng · *Polyscias fruticosa* |
+   | `bach bo` | Bách bộ · *Stemona tuberosa* |
+   | `okra` | *Abelmoschus esculentus* |
+   | `fruticosa` | both *Polyscias* and *Cordyline fruticosa* near the top |
 
-## 4. Herb details
+2. The matched part of the name is bold; scientific names are italic.
+3. Microphone: say "đinh lăng". The spoken text appears in the search box with results.
 
-1. Open a herb from each of search, all herbs and favourites.
-2. Visit every bottom tab: overview, dosing, caution, images.
-3. Like, then unlike. The favourites tab on the main screen updates without a restart.
-4. The herb appears at the top of history.
-5. Images tab: open an image full-screen; the location map shows where it was taken, if known.
+## 4. Species details
+
+1. Open a species from search, all herbs and favourites.
+2. Two tabs only: images and overview. No dosing, caution or medicinal text anywhere.
+3. Overview shows the scientific name in italics with its authorship, every Vietnamese and English
+   name, and family and genus.
+4. Like, then unlike. The favourites tab on the main screen updates without a restart.
+5. The species appears at the top of history.
+6. Images tab: user photos first, then GBIF photos (online only). Open a user photo full-screen:
+   the map shows where it was taken, if known.
+7. Open a GBIF photo full-screen: the caption credits creator, licence and publisher "via GBIF";
+   tapping it opens the photo's page on iNaturalist.
+8. Airplane mode: the images tab still shows cached user photos, with no error.
 
 ## 5. Live camera
 

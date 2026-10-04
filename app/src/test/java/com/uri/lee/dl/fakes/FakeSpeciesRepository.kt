@@ -2,6 +2,8 @@ package com.uri.lee.dl.fakes
 
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.repository.SpeciesRepository
+import com.uri.lee.dl.domain.search.SpeciesMatch
+import com.uri.lee.dl.domain.search.SpeciesSearchIndex
 
 class FakeSpeciesRepository(species: List<Species> = emptyList()) : SpeciesRepository {
     private val byId = species.associateBy { it.id }
@@ -16,6 +18,13 @@ class FakeSpeciesRepository(species: List<Species> = emptyList()) : SpeciesRepos
     }
 
     override suspend fun all(): List<Species> = byId.values.toList()
+
+    override suspend fun page(offset: Int, limit: Int, sortByVietnameseName: Boolean): List<Species> =
+        byId.values.sortedBy { if (sortByVietnameseName) it.preferredVietnameseName ?: "\uFFFF" else it.scientificName }
+            .drop(offset).take(limit)
+
+    override suspend fun search(query: String, limit: Int): List<SpeciesMatch> =
+        SpeciesSearchIndex(byId.values.toList()).search(query, limit)
 }
 
 fun species(id: Long, scientificName: String, vi: List<String> = emptyList(), en: List<String> = emptyList()) =

@@ -1,0 +1,11 @@
+-- Which catalog file the species table was imported from.
+CREATE TABLE catalog_meta (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+valueOf:
+SELECT value FROM catalog_meta WHERE key = ?;
+
+put:
+INSERT OR REPLACE INTO catalog_meta(key, value) VALUES (?, ?);

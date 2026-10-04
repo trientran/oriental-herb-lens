@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.sqldelight)
 }
 
 val localProps = Properties().apply {
@@ -51,9 +52,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "MAP_PRODUCTS_API_KEY", "\"${secret("MAP_PRODUCTS_API_KEY")}\"")
-        buildConfigField("String", "ALGOLIA_APP_ID", "\"${secret("ALGOLIA_APP_ID")}\"")
-        buildConfigField("String", "ALGOLIA_SEARCH_API_KEY", "\"${secret("ALGOLIA_SEARCH_API_KEY")}\"")
-        buildConfigField("String", "IMGE_API_KEY", "\"${secret("IMGE_API_KEY")}\"")
+        // workers/photo-upload, e.g. https://herb-lens-photo-upload.<account>.workers.dev
+        buildConfigField("String", "PHOTO_UPLOAD_URL", "\"${secret("PHOTO_UPLOAD_URL")}\"")
         signingConfig = signingConfigs.getByName("release")
     }
     buildTypes {
@@ -79,6 +79,14 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+    }
+}
+
+sqldelight {
+    databases {
+        create("HerbLensDatabase") {
+            packageName.set("com.uri.lee.dl.data.db")
+        }
     }
 }
 
@@ -112,10 +120,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.algolia.instantsearch.android)
-    implementation(libs.algolia.instantsearch.android.paging3)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.glide)
     implementation(libs.glide.okhttp3.integration)
@@ -125,6 +129,12 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.workmanager)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.sqldelight.android.driver)
+    implementation(libs.sqldelight.coroutines)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
     api(libs.guava)
 
     implementation(libs.mlkit.objectdetection)
@@ -146,5 +156,6 @@ dependencies {
     testImplementation(projects.core.testing)
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
-    testImplementation(libs.mockwebserver)
+    testImplementation(libs.sqldelight.sqlite.driver)
+    testImplementation(libs.ktor.client.mock)
 }

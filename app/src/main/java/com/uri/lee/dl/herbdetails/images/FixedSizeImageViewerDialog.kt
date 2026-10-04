@@ -13,11 +13,11 @@ import com.uri.lee.dl.R
 import com.uri.lee.dl.Utils.openUrlWithDefaultBrowser
 import com.uri.lee.dl.addAnnotationToMap
 import com.uri.lee.dl.databinding.FixedSizeImageViewerBinding
-import com.uri.lee.dl.domain.model.HerbImage
+import com.uri.lee.dl.domain.model.SpeciesPhoto
 import androidx.core.net.toUri
 
 class FixedSizeImageViewerDialog(
-    private val image: HerbImage,
+    private val image: SpeciesPhoto,
 ) : BottomSheetDialogFragment() {
 
     private lateinit var binding: FixedSizeImageViewerBinding
@@ -29,8 +29,18 @@ class FixedSizeImageViewerDialog(
     ): View {
         binding = FixedSizeImageViewerBinding.inflate(layoutInflater)
         val view = binding.root
-        Glide.with(this).load(image.url).into(binding.imageView)
-        binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
+        // Show the grid's smaller copy (already cached) while the full-size original loads.
+        Glide.with(this).load(image.url).thumbnail(Glide.with(this).load(image.thumbnailUrl)).into(binding.imageView)
+        val credit = image.credit
+        if (credit == null) {
+            binding.uploadByView.text = getString(R.string.uploaded_by, image.uploaderId.orEmpty())
+        } else {
+            // Required attribution for third-party photos; tapping opens the photo's source page.
+            binding.uploadByView.text = getString(R.string.gbif_photo_credit, credit.creator, credit.license, credit.publisher ?: "GBIF")
+            credit.sourceUrl?.let { source ->
+                binding.uploadByView.setOnClickListener { view.context.openUrlWithDefaultBrowser(uri = source.toUri()) }
+            }
+        }
         val location = image.location
         binding.mapView.visibility = if (location == null) View.GONE else View.VISIBLE
         if (location != null) {
