@@ -24,10 +24,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".upload.ImageUploadActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
@@ -46,10 +42,6 @@
         <activity
             android:name=".lensimages.ImagesActivity"
             android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".LoginActivity"
-            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".lensimage.ImageActivity"

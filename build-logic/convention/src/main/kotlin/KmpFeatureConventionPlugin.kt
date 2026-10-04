@@ -21,6 +21,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                 implementation(project(":core:common"))
                 implementation(project(":core:domain"))
                 implementation(project(":core:designsystem"))
+                implementation(project(":core:maps"))
                 implementation(lib("jetbrains-lifecycle-viewmodel-compose"))
                 implementation(lib("jetbrains-lifecycle-runtime-compose"))
                 implementation(lib("jetbrains-navigation-compose"))

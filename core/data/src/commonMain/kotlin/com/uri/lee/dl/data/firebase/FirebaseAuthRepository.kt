@@ -12,5 +12,7 @@ internal class FirebaseAuthRepository(private val auth: AuthClient) : AuthReposi
 
     override suspend fun idToken(): String? = auth.idToken()
 
+    override suspend fun signInWithGoogle(idToken: String) = auth.signInWithGoogle(idToken)
+
     override suspend fun signOut() = auth.signOut()
 }

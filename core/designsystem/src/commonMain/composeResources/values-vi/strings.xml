@@ -95,4 +95,38 @@
     <string name="profile_contact">Liên hệ chúng tôi</string>
     <string name="profile_about">Giới thiệu</string>
     <string name="profile_version">Phiên bản %1$s</string>
+
+    <!-- Sign in -->
+    <string name="sign_in_title">Đăng nhập để đóng góp</string>
+    <string name="sign_in_body">Không cần tài khoản để tra cứu và nhận dạng cây thuốc. Đăng nhập để chia sẻ ảnh và đề xuất tên.</string>
+    <string name="sign_in_google">Tiếp tục với Google</string>
+    <string name="sign_in_error">Không đăng nhập được. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="terms_of_service">Điều khoản dịch vụ</string>
+
+    <!-- Contribute photos -->
+    <string name="contribute_title">Ảnh %1$s</string>
+    <string name="contribute_upload">Tải lên</string>
+    <plurals name="contribute_upload_photos">
+        <item quantity="other">Tải lên %1$d ảnh</item>
+    </plurals>
+    <string name="cd_remove_photo">Bỏ ảnh</string>
+    <string name="contribute_add_photos">Thêm ảnh</string>
+    <string name="contribute_photos">Ảnh của bạn</string>
+    <string name="contribute_photos_tip">Ảnh rõ nét của một cây là tốt nhất: lá, hoa hoặc cả cây. Camera điện thoại nào cũng được.</string>
+    <string name="contribute_location">Chụp ở đâu?</string>
+    <string name="contribute_location_body">Không bắt buộc. Chỉ cần khu vực gần đúng.</string>
+    <string name="contribute_use_my_location">Dùng vị trí của tôi</string>
+    <string name="contribute_choose_on_map">Chọn trên bản đồ</string>
+    <string name="contribute_map_hint">Di chuyển bản đồ để ghim chỉ vào nơi cây mọc</string>
+    <string name="contribute_use_this_place">Chọn nơi này</string>
+    <string name="contribute_remove_location">Bỏ vị trí</string>
+    <string name="contribute_location_unavailable">Không lấy được vị trí. Hãy bật định vị, hoặc chọn trên bản đồ.</string>
+    <string name="contribute_sign_in">Đăng nhập để chia sẻ ảnh. Ảnh sẽ hiện trên trang của cây cho mọi người.</string>
+    <string name="contribute_failed">Tải lên không thành công. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="contribute_uploading">Đã tải %1$d / %2$d</string>
+    <string name="contribute_finished">Cảm ơn bạn! Ảnh đã có trên trang của cây.</string>
+    <string name="contribute_finished_partly">Đã tải %1$d / %2$d ảnh. Không đọc được các ảnh còn lại.</string>
+    <string name="contribute_done">Xong</string>
+    <string name="details_photo_map">Nơi chụp ảnh</string>
 </resources>

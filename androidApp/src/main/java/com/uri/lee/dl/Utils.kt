@@ -260,7 +260,7 @@ object Utils {
     }
 
     internal suspend fun Context.loadBitmapFromUri(imageUri: Uri, maxImageDimension: Int): Bitmap? = runInterruptible(
-        ioDispatcher
+        Dispatchers.IO
     ) {
         var inputStreamForSize: InputStream? = null
         var inputStreamForImage: InputStream? = null
@@ -285,7 +285,7 @@ object Utils {
         uri: Uri,
         maxImageDimension: Int = 600,
         compressingPercentage: Int = 70,
-    ): ByteArray? = withContext(ioDispatcher) {
+    ): ByteArray? = withContext(Dispatchers.IO) {
         var bitmap: Bitmap? = null
         try {
             bitmap = loadBitmapFromUri(imageUri = uri, maxImageDimension = maxImageDimension)
@@ -310,7 +310,7 @@ object Utils {
         desiredPrefix: String,
         maxImageDimension: Int = 600,
         compressingPercentage: Int = 70,
-    ): Uri? = withContext(ioDispatcher) {
+    ): Uri? = withContext(Dispatchers.IO) {
         var compressedFile: File? = null
         var bitmap: Bitmap? = null
         try {
@@ -442,88 +442,10 @@ fun View.bounds(): Rect = Rect(0, 0, width, height)
 
 const val CAMERA_PERMISSION = Manifest.permission.CAMERA
 const val READ_EXTERNAL_STORAGE_PERMISSION = Manifest.permission.READ_EXTERNAL_STORAGE
-val ioDispatcher = Dispatchers.IO
 const val MAX_IMAGE_DIMENSION_FOR_OBJECT_DETECTION = 1024
 const val MAX_IMAGE_DIMENSION_FOR_LABELING = 600
 
 const val HERB_ID = "HERB_ID"
-
-const val PRIVACY_POLICY_EN = "https://medherblens.ml/pages/privacy-policy"
-const val PRIVACY_POLICY_VI = "https://caythuoc.ml/pages/privacy-policy"
-const val TERMS_OF_SERVICE_EN = "https://medherblens.ml/pages/terms-of-service"
-const val TERMS_OF_SERVICE_VI = "https://caythuoc.ml/pages/terms-of-service"
-
-fun Context.isNetworkAvailable(): Boolean {
-    val connectivityManager =
-        getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkCapabilities = connectivityManager.activeNetwork ?: return false
-    val actNw = connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
-    return when {
-        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-        else -> false
-    }
-}
-
-val systemLanguageLowercase = Locale.getDefault().displayLanguage.lowercase()
-val isSystemLanguageVietnamese =
-    systemLanguageLowercase == "vietnamese" || systemLanguageLowercase == "vi" || systemLanguageLowercase == "tiếng việt"
-
-
-
-fun getLocalizedDateStringUsingDate(timeInMilliseconds: Long): String {
-    val format: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
-    return format.format(Date.from(Instant.ofEpochMilli(timeInMilliseconds))) // 25/09/2022
-}
-
-fun getLocalizedDateStringUsingInstant(timeInMilliseconds: Long): String {
-    val localDate = Instant.ofEpochMilli(timeInMilliseconds).atZone(ZoneId.systemDefault()).toLocalDate()
-    val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    return localDate.format(formatter) // 25 Sep, 2022 (Viet or En...)
-}
-
-fun Instant.getLocalizedDateString(): String {
-    val localDate = atZone(ZoneId.systemDefault()).toLocalDate()
-    val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    return localDate.format(formatter) // 25 Sep, 2022 (Viet or En...)
-}
-
-private val foreground = ProcessLifecycleOwner.get().lifecycle.state()
-    .map { it.isAtLeast(Lifecycle.State.STARTED) }
-    .distinctUntilChanged()
-
-fun foreground(): Flow<Boolean> = foreground
-
-private fun Lifecycle.state(): Flow<Lifecycle.State> = callbackFlow {
-    val observer = object : DefaultLifecycleObserver {
-        override fun onCreate(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-
-        override fun onStart(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-
-        override fun onResume(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-
-        override fun onPause(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-
-        override fun onStop(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-
-        override fun onDestroy(owner: LifecycleOwner) {
-            trySend(currentState)
-        }
-    }
-    addObserver(observer)
-    awaitClose { removeObserver(observer) }
-}.flowOn(Dispatchers.Main.immediate).conflate()
 
 fun Context.goToPlayStore() {
     try {

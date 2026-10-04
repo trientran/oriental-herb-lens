@@ -95,4 +95,39 @@
     <string name="profile_contact">Contact us</string>
     <string name="profile_about">About</string>
     <string name="profile_version">Version %1$s</string>
+
+    <!-- Sign in -->
+    <string name="sign_in_title">Sign in to contribute</string>
+    <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="terms_of_service">Terms of service</string>
+
+    <!-- Contribute photos -->
+    <string name="contribute_title">Photos of %1$s</string>
+    <string name="contribute_upload">Upload</string>
+    <plurals name="contribute_upload_photos">
+        <item quantity="one">Upload %1$d photo</item>
+        <item quantity="other">Upload %1$d photos</item>
+    </plurals>
+    <string name="cd_remove_photo">Remove photo</string>
+    <string name="contribute_add_photos">Add photos</string>
+    <string name="contribute_photos">Your photos</string>
+    <string name="contribute_photos_tip">Clear photos of one plant work best: its leaves, flowers or the whole plant. Any phone camera is fine.</string>
+    <string name="contribute_location">Where was it?</string>
+    <string name="contribute_location_body">Optional. A rough area is enough.</string>
+    <string name="contribute_use_my_location">Use my location</string>
+    <string name="contribute_choose_on_map">Choose on map</string>
+    <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>
+    <string name="contribute_use_this_place">Use this place</string>
+    <string name="contribute_remove_location">Remove location</string>
+    <string name="contribute_location_unavailable">Your location isn’t available. Check that location is on, or choose on the map.</string>
+    <string name="contribute_sign_in">Sign in to share photos. They appear on the species page for everyone.</string>
+    <string name="contribute_failed">The upload failed. Check your connection and try again.</string>
+    <string name="contribute_uploading">Uploaded %1$d of %2$d</string>
+    <string name="contribute_finished">Thank you! Your photos are on the species page.</string>
+    <string name="contribute_finished_partly">%1$d of %2$d photos uploaded. The others couldn’t be read.</string>
+    <string name="contribute_done">Done</string>
+    <string name="details_photo_map">Where photos were taken</string>
 </resources>

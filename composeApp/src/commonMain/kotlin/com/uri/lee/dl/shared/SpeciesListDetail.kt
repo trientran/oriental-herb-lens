@@ -34,7 +34,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun SpeciesListDetail(
     initialSelection: Long?,
-    actions: PlatformActions,
+    onAddPhotos: (Long) -> Unit,
+    onSignIn: () -> Unit,
     list: @Composable (selectedId: Long?, open: (Long) -> Unit) -> Unit,
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<Long>()
@@ -68,8 +69,8 @@ internal fun SpeciesListDetail(
                     HerbDetailsRoute(
                         herbId = selected,
                         onBack = if (singlePane) ({ scope.launch { navigator.navigateBack() } }) else null,
-                        onAddPhotos = actions.onAddPhotos,
-                        onSignIn = actions.onSignIn,
+                        onAddPhotos = onAddPhotos,
+                        onSignIn = onSignIn,
                     )
                 }
             }

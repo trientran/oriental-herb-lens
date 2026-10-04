@@ -1,7 +1,10 @@
 package com.uri.lee.dl.domain.media
 
 /** A photo picked on the device. Created and read by the platform layer only. */
-interface LocalImage
+interface LocalImage {
+    /** Where the platform can read it, and what an image loader shows: content:// on Android. */
+    val uri: String
+}
 
 /** Shrinks a picked photo to an upload-sized JPEG. */
 fun interface ImageCompressor {

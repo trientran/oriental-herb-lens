@@ -14,7 +14,9 @@ import kotlinx.coroutines.test.runTest
 
 class SubmitImagesUseCaseTest {
 
-    private data class Picked(val name: String) : LocalImage
+    private data class Picked(val name: String) : LocalImage {
+        override val uri = "test://$name"
+    }
 
     private val contributions = FakeContributionRepository()
     private val auth = FakeAuthRepository(uid = "uid-1")

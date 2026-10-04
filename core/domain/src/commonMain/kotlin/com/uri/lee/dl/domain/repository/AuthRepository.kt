@@ -11,5 +11,8 @@ interface AuthRepository {
     /** A current ID token proving who the user is to our own services, or null when signed out. */
     suspend fun idToken(): String?
 
+    /** Signs in with a Google ID token the platform obtained (Credential Manager on Android). */
+    suspend fun signInWithGoogle(idToken: String)
+
     suspend fun signOut()
 }

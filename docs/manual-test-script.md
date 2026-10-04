@@ -15,6 +15,7 @@ and the herb lists stay empty.
 ## 1. Launch and navigation
 
 1. Fresh install, launch. The app opens on Browse with no sign-in prompt; the keyboard stays down.
+   Sign in later from Profile → Sign in (our own screen, Google only).
 2. Bottom bar: Identify, Browse, Saved, Profile. Switching tabs keeps each tab's scroll position.
 3. Rotate to landscape (or use a tablet): a navigation rail replaces the bottom bar, and Browse
    shows the list and the selected species side by side.
@@ -85,12 +86,23 @@ Search runs on the device, so check it in airplane mode too.
 1. Identify → Several photos, pick three photos.
 2. Each photo gets its own result row; a photo with no match shows an empty result.
 
-## 9. Upload images
+## 9. Contribute photos
 
-1. Signed out: on a species, Add photos asks you to sign in first.
-2. Signed in: Add photos, pick two photos and a location, upload.
-3. The progress count reaches 2, then the completion message appears.
-4. The new photos show on the species screen.
+Test photos: `tools/fetch_test_images.py --push` copies GBIF photos of species the model knows to
+the emulator's Pictures/HerbLens folder. Don't upload those: they belong to their photographers.
+Upload photos you took yourself.
+
+1. Signed out: on a species, Add photos opens the contribute screen with a sign-in card; Sign in
+   opens our sign-in screen; Continue with Google shows the account chooser; after choosing, you
+   return to the contribute screen, signed in. Backing out of the chooser shows no error.
+2. Add photos opens the system photo picker; pick two. Both appear; the × removes one.
+3. Use my location: allow location; the address appears and the map shows the point.
+4. Choose on map: a full-screen map opens with a pin in the middle. Drag and pinch the map until
+   the pin is on the place, then Use this place: the address and a small map appear. The page
+   scrolls normally over that small map. Remove location clears it.
+5. Upload: the progress reaches the total, then the thank-you screen; Done returns to the species,
+   where the photos now appear first, and "Where photos were taken" shows the place on a map.
+6. Airplane mode, then Upload: an error appears and Upload can be tried again.
 
 ## 10. Suggest a Vietnamese name
 
@@ -105,7 +117,7 @@ Search runs on the device, so check it in airplane mode too.
 2. Move the minimum confidence slider and turn "Find plants in a photo" off. Kill and relaunch:
    both are kept, and the scan screens use them.
 3. Camera settings opens the camera preferences (preview size, confirmation times); changes are kept.
-4. Full herb list, Share, Contact and About open the right page or app.
+4. Full herb list, Share, Contact, About and Privacy policy open the right page or app.
 
 ## 12. Offline
 

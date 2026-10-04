@@ -50,7 +50,6 @@ android {
         versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        buildConfigField("String", "MAP_PRODUCTS_API_KEY", "\"${secret("MAP_PRODUCTS_API_KEY")}\"")
         // workers/photo-upload, e.g. https://herb-lens-photo-upload.<account>.workers.dev
         buildConfigField("String", "PHOTO_UPLOAD_URL", "\"${secret("PHOTO_UPLOAD_URL")}\"")
         signingConfig = signingConfigs.getByName("release")
@@ -107,9 +106,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    implementation(libs.places)
-    implementation(libs.mapbox.maps)
-    implementation(libs.play.services.location)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
@@ -131,7 +127,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.auth)
-    implementation(libs.firebase.ui.auth)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
