@@ -3,14 +3,19 @@ plugins {
 }
 
 dependencies {
+    compileOnly(libs.android.gradle.plugin)
     compileOnly(libs.kotlin.gradle.plugin)
 }
 
 gradlePlugin {
     plugins {
-        register("jvmLibrary") {
-            id = libs.plugins.herblens.jvm.library.get().pluginId
-            implementationClass = "JvmLibraryConventionPlugin"
+        register("kmpLibrary") {
+            id = libs.plugins.herblens.kmp.library.get().pluginId
+            implementationClass = "KmpLibraryConventionPlugin"
+        }
+        register("moduleRules") {
+            id = libs.plugins.herblens.module.rules.get().pluginId
+            implementationClass = "ModuleRulesPlugin"
         }
     }
 }
