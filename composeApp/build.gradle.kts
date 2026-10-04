@@ -6,6 +6,16 @@ plugins {
 
 // The shared app: App() with navigation, and the Koin graph for Android and iOS.
 kotlin {
+    // The iOS app links this as a static framework; Swift sees the exported modules' types
+    // (the ML Kit bridge interfaces in core:ml) under their own names.
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+        binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+            export(projects.core.ml)
+            export(projects.core.domain)
+        }
+    }
     sourceSets {
         commonMain.dependencies {
             api(projects.core.common)

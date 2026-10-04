@@ -1,0 +1,9 @@
+// Shared settings. Values that come from your Firebase project live in Secrets.xcconfig
+// (git-ignored); create it with: tools/ios_secrets.py
+MARKETING_VERSION = 1.1
+CURRENT_PROJECT_VERSION = 9
+PRODUCT_BUNDLE_IDENTIFIER = com.uri.lee.dl
+// Set once the app is listed: the number in its App Store URL
+APP_STORE_ID =
+
+#include? "Secrets.xcconfig"

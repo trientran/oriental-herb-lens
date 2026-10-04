@@ -22,6 +22,15 @@ class SignInViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `an Apple credential signs the user in`() {
+        val viewModel = SignInViewModel(auth)
+
+        viewModel.onAction(SignInAction.AppleFinished(AppleCredential("token", "nonce")))
+
+        assertTrue(viewModel.state.value.isSignedIn)
+    }
+
+    @Test
     fun `backing out of the picker is not an error`() {
         val viewModel = SignInViewModel(auth)
 

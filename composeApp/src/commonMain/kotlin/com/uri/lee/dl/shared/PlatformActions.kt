@@ -2,6 +2,7 @@ package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.feature.auth.AppleSignInRequest
 import com.uri.lee.dl.feature.auth.GoogleIdTokenRequest
 
 /** What each platform does itself: pickers, sign-in UI, sharing, store links. A null entry hides the feature. */
@@ -9,6 +10,8 @@ data class PlatformActions(
     /** Opens the system photo picker and reports the photos chosen (none if cancelled). */
     val pickPhotos: ((List<LocalImage>) -> Unit) -> Unit,
     val requestGoogleIdToken: GoogleIdTokenRequest,
+    /** Sign in with Apple (iOS). */
+    val requestAppleSignIn: AppleSignInRequest? = null,
     val onOpenStore: () -> Unit,
     /** Closes the app (shown when the service is suspended). */
     val onExit: () -> Unit,

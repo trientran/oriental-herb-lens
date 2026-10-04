@@ -14,5 +14,8 @@ interface AuthRepository {
     /** Signs in with a Google ID token the platform obtained (Credential Manager on Android). */
     suspend fun signInWithGoogle(idToken: String)
 
+    /** Signs in with an Apple identity token and the unhashed nonce its request was made with. */
+    suspend fun signInWithApple(idToken: String, rawNonce: String)
+
     suspend fun signOut()
 }
