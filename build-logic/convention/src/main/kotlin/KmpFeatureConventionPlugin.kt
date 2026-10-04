@@ -27,6 +27,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                 implementation(project.dependencies.platform(lib("koin-bom")))
                 implementation(lib("koin-compose-viewmodel"))
                 implementation(lib("kotlinx-serialization-json"))
+                implementation(lib("kermit"))
             }
             sourceSets.getByName("commonTest").dependencies {
                 implementation(project(":core:testing"))

@@ -11,7 +11,7 @@ import com.uri.lee.dl.data.platform.UriImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
 import com.uri.lee.dl.domain.usecase.SubmitProgress
-import com.uri.lee.dl.ui.common.MviViewModel
+import com.uri.lee.dl.core.ui.MviViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber

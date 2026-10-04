@@ -21,6 +21,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 
 /**
@@ -35,13 +36,18 @@ fun HerbCard(
     modifier: Modifier = Modifier,
     supporting: String? = null,
     imageUrl: String? = null,
+    /** Marks the species currently shown in the detail pane. */
+    selected: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val spacing = HerbLensTheme.spacing
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
     ) {
         Row(
             modifier = Modifier.heightIn(min = 72.dp).padding(spacing.md),

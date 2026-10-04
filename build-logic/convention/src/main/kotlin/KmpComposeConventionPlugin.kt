@@ -18,6 +18,11 @@ class KmpComposeConventionPlugin : Plugin<Project> {
         fun lib(alias: String) = libs.findLibrary(alias).get()
 
         extensions.configure<KotlinMultiplatformExtension> {
+            // Compose resources (strings, fonts) reach the APK as Android assets
+            (this as org.gradle.api.plugins.ExtensionAware).extensions
+                .configure<com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget>("android") {
+                    androidResources { enable = true }
+                }
             sourceSets.getByName("commonMain").dependencies {
                 implementation(lib("compose-runtime"))
                 implementation(lib("compose-foundation"))

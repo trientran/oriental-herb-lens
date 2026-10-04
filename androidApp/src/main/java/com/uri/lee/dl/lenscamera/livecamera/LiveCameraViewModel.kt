@@ -4,7 +4,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.labeling.Herb
-import com.uri.lee.dl.ui.common.MviViewModel
+import com.uri.lee.dl.core.ui.MviViewModel
 
 data class LiveCameraState(val herbs: List<Herb> = emptyList())
 

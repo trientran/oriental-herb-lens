@@ -21,7 +21,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.koin.core.Koin
 import org.koin.core.module.Module
+import com.uri.lee.dl.feature.browse.browseModule
+import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
+import com.uri.lee.dl.feature.profile.profileModule
+import com.uri.lee.dl.feature.saved.savedModule
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 private val coreModule = module {
@@ -38,7 +43,7 @@ private val domainModule = module {
 }
 
 /**
- * Everything below the UI, the same on every platform. Each app adds its own modules (screens,
+ * Everything the shared app needs, the same on every platform. Each app adds its own modules (screens,
  * platform services) and starts Koin with `sharedModules(appInfo) + its modules`.
  */
 fun sharedModules(app: AppInfo): List<Module> = listOf(
@@ -52,6 +57,11 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     locationModule,
     dataModule,
     domainModule,
+    module { viewModelOf(::AppViewModel) },
+    browseModule,
+    savedModule,
+    herbDetailsModule,
+    profileModule,
 )
 
 /** Launch-time background work; call once after Koin starts. */

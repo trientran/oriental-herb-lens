@@ -16,10 +16,7 @@ class LoginActivity : AppCompatActivity() {
     private val auth get() = AuthUI.getInstance().auth
 
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-        if (auth.currentUser != null) {
-            finishAffinity()
-            startActivity(Intent(this, MainActivity::class.java))
-        }
+        if (auth.currentUser != null) finish() // back to where sign-in was asked for
     }
 
     // A successful sign-in is picked up by authStateListener.

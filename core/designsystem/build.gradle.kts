@@ -10,7 +10,7 @@ kotlin {
             api(libs.jetbrains.lifecycle.viewmodel)
             api(libs.compose.material3)
             api(libs.compose.components.resources)
-            api(libs.compose.material.icons.core)
+            api(libs.compose.material.icons.extended)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
         }

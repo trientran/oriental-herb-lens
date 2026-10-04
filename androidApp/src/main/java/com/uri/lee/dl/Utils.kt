@@ -97,8 +97,6 @@ object Utils {
     const val ASPECT_RATIO_TOLERANCE = 0.01f
 
     internal const val REQUEST_CODE_PHOTO_LIBRARY = 1
-    internal const val SPEECH_REQUEST_CODE = 0
-
     private const val TAG = "Utils"
 
     internal fun requestRuntimePermissions(activity: Activity) {
@@ -177,20 +175,6 @@ object Utils {
         }
     }
 
-    fun Context.sendEmail(subject: String, body: String = "") {
-        try {
-            val mails: Array<String> = arrayOf("tptrien@gmail.com")
-            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:")
-                putExtra(Intent.EXTRA_EMAIL, mails)
-                putExtra(Intent.EXTRA_SUBJECT, subject)
-                putExtra(Intent.EXTRA_TEXT, body)
-            }
-            startActivity(emailIntent)
-        } catch (e: Exception) {
-            Timber.d("Failed to launch email intent")
-        }
-    }
 
     fun isPortraitMode(context: Context): Boolean =
         context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -361,13 +345,6 @@ object Utils {
         return options.outHeight to options.outWidth
     }
 
-    internal fun displaySpeechRecognizer(activity: Activity) {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        }
-        // This starts the activity and populates the intent with the speech text.
-        startActivityForResult(activity, intent, SPEECH_REQUEST_CODE, null)
-    }
 
     private fun maybeTransformBitmap(resolver: ContentResolver, uri: Uri, bitmap: Bitmap?): Bitmap? {
         val matrix: Matrix? = when (getExifOrientationTag(resolver, uri)) {

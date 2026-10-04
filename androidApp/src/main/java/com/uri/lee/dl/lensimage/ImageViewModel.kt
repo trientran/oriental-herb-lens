@@ -18,7 +18,7 @@ import com.uri.lee.dl.labeling.BitmapInputInfo
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.toHerbs
 import com.uri.lee.dl.lensimage.SingleImageState.Event
-import com.uri.lee.dl.ui.common.MviViewModel
+import com.uri.lee.dl.core.ui.MviViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first

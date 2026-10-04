@@ -83,7 +83,7 @@
     <string name="profile_signed_in">Đã đăng nhập</string>
     <string name="profile_sign_out">Đăng xuất</string>
     <string name="profile_identification">Nhận dạng</string>
-    <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%%</string>
+    <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%</string>
     <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>
     <string name="profile_objects_mode">Tìm cây trong ảnh</string>
     <string name="profile_objects_mode_body">Ảnh đơn được tách thành từng cây trước khi nhận dạng.</string>

@@ -83,7 +83,7 @@
     <string name="profile_signed_in">Signed in</string>
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_identification">Identification</string>
-    <string name="profile_min_confidence">Minimum confidence: %1$d%%</string>
+    <string name="profile_min_confidence">Minimum confidence: %1$d%</string>
     <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
     <string name="profile_objects_mode">Find plants in a photo</string>
     <string name="profile_objects_mode_body">Single photos are split into the plants they contain before identifying.</string>
