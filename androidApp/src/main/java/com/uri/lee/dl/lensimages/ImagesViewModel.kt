@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage
 import com.uri.lee.dl.MAX_IMAGE_DIMENSION_FOR_LABELING
-import com.uri.lee.dl.data.ml.MlKitClassifierImage
+import com.uri.lee.dl.core.ml.MlKitClassifierImage
 import com.uri.lee.dl.data.platform.BitmapLoader
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase

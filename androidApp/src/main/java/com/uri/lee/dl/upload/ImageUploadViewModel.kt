@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.DeviceLocation
 import com.uri.lee.dl.HERB_ID
 import com.uri.lee.dl.core.common.ApplicationScope
-import com.uri.lee.dl.data.platform.AddressLookup
+import com.uri.lee.dl.core.location.AddressLookup
 import com.uri.lee.dl.data.platform.UriImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase

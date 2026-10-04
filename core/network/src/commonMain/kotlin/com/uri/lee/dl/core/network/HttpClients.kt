@@ -1,0 +1,38 @@
+package com.uri.lee.dl.core.network
+
+import com.uri.lee.dl.core.common.AppInfo
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import org.koin.core.module.Module
+import org.koin.dsl.module
+
+/**
+ * The app's one HTTP client. It identifies itself as Herb Lens: Cloudflare rejects some generic
+ * client user agents with 403, and GBIF asks API users to identify their app.
+ */
+fun herbLensHttpClient(engine: HttpClientEngine, app: AppInfo): HttpClient = HttpClient(engine) {
+    install(UserAgent) { agent = "HerbLens/${app.versionName} (${userAgentPlatform(app.platform)})" }
+    install(HttpTimeout) {
+        connectTimeoutMillis = 15_000
+        socketTimeoutMillis = 60_000
+    }
+    install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+}
+
+private fun userAgentPlatform(platform: String) = when (platform) {
+    "ios" -> "iOS"
+    "android" -> "Android"
+    else -> platform
+}
+
+/** Provides the [HttpClient]; needs an [AppInfo] in the graph. */
+val networkModule: Module = module {
+    single { herbLensHttpClient(platformEngine(), get()) }
+}
+
+internal expect fun platformEngine(): HttpClientEngine

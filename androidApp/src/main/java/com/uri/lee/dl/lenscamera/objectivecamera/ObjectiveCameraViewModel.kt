@@ -22,7 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage
-import com.uri.lee.dl.data.ml.MlKitClassifierImage
+import com.uri.lee.dl.core.ml.MlKitClassifierImage
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.labeling.DetectedBitmapObject
 import com.uri.lee.dl.labeling.Herb

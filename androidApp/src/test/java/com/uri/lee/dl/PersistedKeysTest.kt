@@ -7,17 +7,10 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
- * Pins every key the app persists today. The Phase 1 move to a single DataStore must migrate
- * exactly these keys, otherwise existing users silently lose their settings.
+ * Pins Android-only persisted names. DataStore files and keys are pinned in core:data
+ * (DataStoreSettingsRepositoryTest).
  */
 class PersistedKeysTest {
-
-    @Test
-    fun `DataStore file and keys`() {
-        assertEquals("SETTINGS", SETTINGS)
-        assertEquals("IS_OBJECTS_MODE", IS_OBJECTS_MODE_SINGLE_IMAGE.name)
-        assertEquals("CONFIDENCE_LEVEL", CONFIDENCE_LEVEL.name)
-    }
 
     @Test
     fun `legacy model download files that the cleanup removes`() {

@@ -12,12 +12,10 @@ import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderF
 import androidx.work.WorkManager
 import com.uri.lee.dl.data.content.ContentSyncWorker
 import com.uri.lee.dl.data.content.LegacyModelCleanup
-import com.uri.lee.dl.core.common.ApplicationScope
-import com.uri.lee.dl.data.library.LegacyLibraryMigration
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.uri.lee.dl.di.appModules
-import com.uri.lee.dl.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
+import com.uri.lee.dl.shared.runStartupTasks
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.get
@@ -33,6 +31,8 @@ class BaseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        // Shared modules log through Kermit, which writes to Logcat
+        Logger.setMinSeverity(if (BuildConfig.DEBUG) Severity.Verbose else Severity.Warn)
 
         FirebaseApp.initializeApp(this)
         FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
@@ -40,17 +40,14 @@ class BaseApplication : Application() {
             else PlayIntegrityAppCheckProviderFactory.getInstance()
         )
 
-        startKoin {
+        val koin = startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.ERROR)
             androidContext(this@BaseApplication)
             workManagerFactory()
             modules(appModules)
-        }
+        }.koin
         get<LegacyModelCleanup>().run()
-        // One-time copy of each signed-in user's Firestore favourites and history to the device
-        get<ApplicationScope>().launch {
-            get<AuthRepository>().observeUserId().filterNotNull().collect { get<LegacyLibraryMigration>().migrateIfNeeded(it) }
-        }
+        koin.runStartupTasks()
         ContentSyncWorker.enqueue(WorkManager.getInstance(this))
 
         Places.initializeWithNewPlacesApiEnabled(applicationContext, BuildConfig.MAP_PRODUCTS_API_KEY)

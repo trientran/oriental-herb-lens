@@ -5,7 +5,7 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
-import com.uri.lee.dl.data.ml.MlKitClassifierImage
+import com.uri.lee.dl.core.ml.MlKitClassifierImage
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
 import com.uri.lee.dl.labeling.Herb
 import com.uri.lee.dl.labeling.toHerbs

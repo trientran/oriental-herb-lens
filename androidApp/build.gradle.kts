@@ -3,13 +3,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
     alias(libs.plugins.navigation.safeargs)
-    alias(libs.plugins.sqldelight)
 }
 
 val localProps = Properties().apply {
@@ -70,7 +68,7 @@ android {
         noCompress += "tflite"
     }
     sourceSets.getByName("main") {
-        assets.setSrcDirs(listOf("assets"))
+        assets.directories.apply { clear(); add("assets") }
     }
     lint {
         // Issues that predate the migration; new ones still fail the build.
@@ -82,14 +80,6 @@ android {
     }
 }
 
-sqldelight {
-    databases {
-        create("HerbLensDatabase") {
-            packageName.set("com.uri.lee.dl.data.db")
-        }
-    }
-}
-
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
@@ -97,8 +87,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(projects.core.common)
-    implementation(projects.core.domain)
+    implementation(projects.composeApp)
+    implementation(libs.kermit)
     implementation(libs.material)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)
@@ -106,7 +96,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.preference.ktx)
-    implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
@@ -118,7 +107,6 @@ dependencies {
     implementation(libs.places)
     implementation(libs.mapbox.maps)
     implementation(libs.play.services.location)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
@@ -131,33 +119,23 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.workmanager)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.sqldelight.android.driver)
-    implementation(libs.sqldelight.coroutines)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
     api(libs.guava)
 
     implementation(libs.mlkit.objectdetection)
     implementation(libs.mlkit.objectdetection.custom)
     implementation(libs.mlkit.image.labeling)
-    implementation(libs.mlkit.image.labeling.custom)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.ui.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
-    implementation(libs.firebase.config)
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
 
     testImplementation(projects.core.testing)
+    testImplementation(projects.core.firebase)
+    testImplementation(libs.ktor.client.core)
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
-    testImplementation(libs.sqldelight.sqlite.driver)
-    testImplementation(libs.ktor.client.mock)
 }
