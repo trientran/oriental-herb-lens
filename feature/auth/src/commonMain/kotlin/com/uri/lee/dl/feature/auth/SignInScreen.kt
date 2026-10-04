@@ -3,6 +3,7 @@ package com.uri.lee.dl.feature.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,7 +37,9 @@ import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.sign_in_body
 import com.uri.lee.dl.core.designsystem.resources.sign_in_error
 import com.uri.lee.dl.core.designsystem.resources.sign_in_google
-import com.uri.lee.dl.core.designsystem.resources.sign_in_privacy
+import com.uri.lee.dl.core.designsystem.resources.privacy_policy
+import com.uri.lee.dl.core.designsystem.resources.terms_of_service
+import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.resources.sign_in_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import kotlinx.coroutines.CancellationException
@@ -114,13 +117,15 @@ fun SignInScreen(state: SignInState, onGoogle: () -> Unit, onClose: () -> Unit, 
                 if (state.hasError) {
                     Text(stringResource(Res.string.sign_in_error), color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                 }
-                TextButton(onClick = { uriHandler.openUri(PRIVACY_URL) }) {
-                    Text(stringResource(Res.string.sign_in_privacy), style = MaterialTheme.typography.bodySmall)
+                Row {
+                    TextButton(onClick = { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }) {
+                        Text(stringResource(Res.string.privacy_policy), style = MaterialTheme.typography.bodySmall)
+                    }
+                    TextButton(onClick = { uriHandler.openUri(LegalLinks.TERMS_OF_SERVICE) }) {
+                        Text(stringResource(Res.string.terms_of_service), style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         }
     }
 }
-
-/** The project site; the old privacy policy pages (.ml domains) no longer resolve. */
-private const val PRIVACY_URL = "https://med-herb-lens.web.app/"

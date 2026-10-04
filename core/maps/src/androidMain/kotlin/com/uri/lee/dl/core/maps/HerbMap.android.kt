@@ -1,11 +1,14 @@
 package com.uri.lee.dl.core.maps
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -15,30 +18,41 @@ import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
-import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.maps.plugin.gestures.gestures
 
 @Composable
-actual fun HerbMap(points: List<LatLng>, modifier: Modifier, onTap: ((LatLng) -> Unit)?) {
+actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolean, onCenterChanged: ((LatLng) -> Unit)?, showMarkers: Boolean) {
+    if (LocalInspectionMode.current) {
+        // Previews and screenshot tests: Mapbox needs a real device
+        Box(modifier.background(MaterialTheme.colorScheme.surfaceVariant))
+        return
+    }
     val markerColor = MaterialTheme.colorScheme.primary.toArgb()
-    val currentOnTap by rememberUpdatedState(onTap)
+    val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
     AndroidView(
         modifier = modifier,
         factory = { context ->
             MapView(context).apply {
-                mapboxMap.addOnMapClickListener { point ->
-                    val tapped = LatLng(point.latitude(), point.longitude())
-                    (tag as? MapState)?.lastTap = tapped
-                    currentOnTap?.invoke(tapped)
-                    currentOnTap != null
+                gestures.updateSettings {
+                    scrollEnabled = interactive
+                    pinchToZoomEnabled = interactive
+                    doubleTapToZoomInEnabled = interactive
+                    doubleTouchToZoomOutEnabled = interactive
+                    quickZoomEnabled = interactive
+                    rotateEnabled = false
+                    pitchEnabled = false
+                }
+                mapboxMap.subscribeMapIdle {
+                    val center = mapboxMap.cameraState.center
+                    currentOnCenterChanged?.invoke(LatLng(center.latitude(), center.longitude()))
                 }
             }
         },
         update = { map ->
             // One marker layer per map, kept on the view with the points it last framed
-            val holder = map.tag as? MapState ?: MapState(map.annotations.createCircleAnnotationManager()).also { map.tag = it }
-            val markers = holder.markers
-            markers.deleteAll()
-            markers.create(
+            val state = map.tag as? MapState ?: MapState(map.annotations.createCircleAnnotationManager()).also { map.tag = it }
+            state.markers.deleteAll()
+            if (showMarkers) state.markers.create(
                 points.map {
                     CircleAnnotationOptions()
                         .withPoint(Point.fromLngLat(it.longitude, it.latitude))
@@ -48,11 +62,10 @@ actual fun HerbMap(points: List<LatLng>, modifier: Modifier, onTap: ((LatLng) ->
                         .withCircleStrokeColor(android.graphics.Color.WHITE)
                 },
             )
-            // A point the user just tapped stays where it is; points from elsewhere (their
-            // location, new photos) are brought into view
-            val frame = !holder.framed || (holder.framedPoints != points && points != listOfNotNull(holder.lastTap))
-            holder.framed = true
-            holder.framedPoints = points
+            // A map the user moves is framed once; a preview follows its points
+            val frame = !state.framed || (!interactive && state.framedPoints != points)
+            state.framed = true
+            state.framedPoints = points
             if (!frame) return@AndroidView
             val geo = points.map { Point.fromLngLat(it.longitude, it.latitude) }
             val camera = when (geo.size) {
@@ -68,5 +81,4 @@ actual fun HerbMap(points: List<LatLng>, modifier: Modifier, onTap: ((LatLng) ->
 private class MapState(val markers: CircleAnnotationManager) {
     var framed = false
     var framedPoints: List<LatLng> = emptyList()
-    var lastTap: LatLng? = null
 }

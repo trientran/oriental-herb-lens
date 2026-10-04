@@ -7,13 +7,19 @@ data class LatLng(val latitude: Double, val longitude: Double)
 
 /**
  * A map showing [points] as markers, framed to fit them (or the whole region when empty).
- * With [onTap], tapping the map reports that point, e.g. to choose where a photo was taken.
+ *
+ * Not [interactive] by default: inside a scrolling screen a draggable map would fight the page
+ * for every touch. An interactive map can be dragged and zoomed, frames [points] once, and reports
+ * its centre through [onCenterChanged] whenever it comes to rest, e.g. under a fixed pin.
  */
 @Composable
 expect fun HerbMap(
     points: List<LatLng>,
     modifier: Modifier = Modifier,
-    onTap: ((LatLng) -> Unit)? = null,
+    interactive: Boolean = false,
+    onCenterChanged: ((LatLng) -> Unit)? = null,
+    /** False frames [points] without drawing them, e.g. to start a place picker where it was. */
+    showMarkers: Boolean = true,
 )
 
 /** Shown when there are no points: Vietnam. */

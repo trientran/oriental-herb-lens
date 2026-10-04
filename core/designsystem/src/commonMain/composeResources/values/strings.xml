@@ -101,7 +101,8 @@
     <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
-    <string name="sign_in_privacy">About Med Herb Lens and your data</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="terms_of_service">Terms of service</string>
 
     <!-- Contribute photos -->
     <string name="contribute_title">Photos of %1$s</string>
@@ -118,7 +119,8 @@
     <string name="contribute_location_body">Optional. A rough area is enough.</string>
     <string name="contribute_use_my_location">Use my location</string>
     <string name="contribute_choose_on_map">Choose on map</string>
-    <string name="contribute_map_hint">Tap the map where the plant grows.</string>
+    <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>
+    <string name="contribute_use_this_place">Use this place</string>
     <string name="contribute_remove_location">Remove location</string>
     <string name="contribute_location_unavailable">Your location isn’t available. Check that location is on, or choose on the map.</string>
     <string name="contribute_sign_in">Sign in to share photos. They appear on the species page for everyone.</string>

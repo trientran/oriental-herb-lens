@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -126,8 +128,11 @@ class ScreenshotTest {
 
     private fun show(dark: () -> Boolean, content: @Composable () -> Unit) {
         compose.setContent {
-            HerbLensTheme(darkTheme = dark()) {
-                Surface(color = MaterialTheme.colorScheme.background) { Box(Modifier) { content() } }
+            // Inspection mode: maps and network images draw placeholders, as in IDE previews
+            CompositionLocalProvider(LocalInspectionMode provides true) {
+                HerbLensTheme(darkTheme = dark()) {
+                    Surface(color = MaterialTheme.colorScheme.background) { Box(Modifier) { content() } }
+                }
             }
         }
     }

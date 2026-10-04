@@ -68,7 +68,6 @@ import com.uri.lee.dl.core.designsystem.resources.contribute_finished_partly
 import com.uri.lee.dl.core.designsystem.resources.contribute_location
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_body
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_unavailable
-import com.uri.lee.dl.core.designsystem.resources.contribute_map_hint
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos_tip
 import com.uri.lee.dl.core.designsystem.resources.contribute_remove_location
@@ -270,7 +269,7 @@ private fun LocationSection(
                     Text(stringResource(Res.string.contribute_use_my_location), Modifier.padding(start = spacing.sm))
                 }
             }
-            OutlinedButton(onClick = { showMap = !showMap }) {
+            OutlinedButton(onClick = { showMap = true }) {
                 Icon(Icons.Filled.Map, contentDescription = null)
                 Text(stringResource(Res.string.contribute_choose_on_map), Modifier.padding(start = spacing.sm))
             }
@@ -278,14 +277,22 @@ private fun LocationSection(
                 TextButton(onClick = { onAction(ContributeAction.ClearLocation) }) { Text(stringResource(Res.string.contribute_remove_location)) }
             }
         }
-        if (showMap) {
-            Text(stringResource(Res.string.contribute_map_hint), style = MaterialTheme.typography.bodySmall)
+        if (picked != null) {
             HerbMap(
-                points = listOfNotNull(picked?.location?.let { LatLng(it.latitude, it.longitude) }),
-                modifier = Modifier.fillMaxWidth().height(280.dp).clip(MaterialTheme.shapes.medium),
-                onTap = { onAction(ContributeAction.LocationPicked(GeoLocation(it.latitude, it.longitude))) },
+                points = listOf(LatLng(picked.location.latitude, picked.location.longitude)),
+                modifier = Modifier.fillMaxWidth().height(180.dp).clip(MaterialTheme.shapes.medium),
             )
         }
+    }
+    if (showMap) {
+        PlacePicker(
+            start = picked?.location,
+            onPicked = {
+                showMap = false
+                onAction(ContributeAction.LocationPicked(it))
+            },
+            onDismiss = { showMap = false },
+        )
     }
 }
 

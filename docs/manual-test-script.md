@@ -97,8 +97,9 @@ Upload photos you took yourself.
    return to the contribute screen, signed in. Backing out of the chooser shows no error.
 2. Add photos opens the system photo picker; pick two. Both appear; the × removes one.
 3. Use my location: allow location; the address appears and the map shows the point.
-4. Choose on map: tap the map; the marker moves there without the map jumping, and the address
-   updates. Remove location clears it.
+4. Choose on map: a full-screen map opens with a pin in the middle. Drag and pinch the map until
+   the pin is on the place, then Use this place: the address and a small map appear. The page
+   scrolls normally over that small map. Remove location clears it.
 5. Upload: the progress reaches the total, then the thank-you screen; Done returns to the species,
    where the photos now appear first, and "Where photos were taken" shows the place on a map.
 6. Airplane mode, then Upload: an error appears and Upload can be tried again.
@@ -116,7 +117,7 @@ Upload photos you took yourself.
 2. Move the minimum confidence slider and turn "Find plants in a photo" off. Kill and relaunch:
    both are kept, and the scan screens use them.
 3. Camera settings opens the camera preferences (preview size, confirmation times); changes are kept.
-4. Full herb list, Share, Contact and About open the right page or app.
+4. Full herb list, Share, Contact, About and Privacy policy open the right page or app.
 
 ## 12. Offline
 

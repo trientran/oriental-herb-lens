@@ -9,16 +9,23 @@ import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointAnnotation
 
-/** MapKit. Choosing a point by tapping comes with the iOS app (Phase 5); [onTap] is ignored for now. */
+/** MapKit. Reporting the centre for the place picker comes with the iOS app (Phase 5). */
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun HerbMap(points: List<LatLng>, modifier: Modifier, onTap: ((LatLng) -> Unit)?) {
+actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolean, onCenterChanged: ((LatLng) -> Unit)?, showMarkers: Boolean) {
     UIKitView(
-        factory = { MKMapView() },
+        factory = {
+            MKMapView().apply {
+                setScrollEnabled(interactive)
+                setZoomEnabled(interactive)
+                setRotateEnabled(false)
+                setPitchEnabled(false)
+            }
+        },
         modifier = modifier,
         update = { map ->
             map.removeAnnotations(map.annotations)
-            points.forEach { point ->
+            if (showMarkers) points.forEach { point ->
                 map.addAnnotation(MKPointAnnotation().apply { setCoordinate(CLLocationCoordinate2DMake(point.latitude, point.longitude)) })
             }
             val center = points.firstOrNull() ?: DefaultCenter

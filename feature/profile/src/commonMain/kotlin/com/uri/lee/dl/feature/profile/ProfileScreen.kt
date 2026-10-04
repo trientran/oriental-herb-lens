@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -44,6 +45,8 @@ import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
+import com.uri.lee.dl.core.designsystem.LegalLinks
+import com.uri.lee.dl.core.designsystem.resources.privacy_policy
 import com.uri.lee.dl.core.designsystem.resources.profile_about
 import com.uri.lee.dl.core.designsystem.resources.profile_app
 import com.uri.lee.dl.core.designsystem.resources.profile_camera_settings
@@ -115,6 +118,7 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), it) }
                 LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact)) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(ABOUT_URL) }
+                LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
             }
 
             Text(
