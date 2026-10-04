@@ -24,7 +24,8 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 namespace = "com.uri.lee.dl" + path.replace(':', '.').replace('-', '_')
                 compileSdk = 37
                 minSdk = 26
-                withHostTest { }
+                // Android resources in host tests: Robolectric screenshots, Compose resources
+                withHostTest { isIncludeAndroidResources = true }
                 compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
             }
             iosArm64()

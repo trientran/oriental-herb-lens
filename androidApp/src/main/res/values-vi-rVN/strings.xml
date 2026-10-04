@@ -5,9 +5,6 @@
         <item quantity="other">%d kết quả</item>
     </plurals>
     <string name="app_name">Med Herb Lens</string>
-    <string name="single_image">Một hình</string>
-    <string name="multiple_images">Nhiều hình</string>
-    <string name="camera">Camera</string>
     <string name="settings_title">Cài đặt ống kính</string>
     <string name="cd_settings_button">Cài đặt</string>
     <string name="cd_close_button">Quay lại</string>
@@ -32,18 +29,9 @@
     <string name="pref_summary_confirmation_time_in_manual_search">Trong khoảng 100–1000 mili giây</string>
     <string name="pref_title_confirmation_time_in_auto_search">Thời gian chờ xác nhận ở chế độ gắn nhãn tự động</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Trong khoảng 500–2000 mili giây</string>
-    <string name="plant_name">Tên cây thuốc</string>
-    <string name="favorite">Yêu thích</string>
-    <string name="history">Lịch sử</string>
     <string name="random">Đại trà</string>
-    <string name="title_home">Trang chủ</string>
-    <string name="images">Ảnh</string>
-    <string name="overview">Tổng quan</string>
     <string name="log_out">Đăng xuất</string>
     <string name="delete_account">Xoá tài khoản</string>
-    <string name="contact_us">Liên hệ chúng tôi</string>
-    <string name="share_this_app">Chia sẻ ứng dụng này</string>
-    <string name="about_us_and_this_app">Về chúng tôi và ứng dụng này</string>
     <string name="pick_an_image">Chọn một ảnh</string>
     <string name="pick_photos">Chọn nhiều ảnh</string>
     <string name="please_use_your_current_location_or">Chúng tôi muốn biết nơi bạn chụp ảnh. Vui lòng sử dụng định vị của bạn hoặc tìm kiếm một địa điểm:</string>
@@ -87,11 +75,6 @@
     <string name="_70_herbs_list">danh sách 7 dược liệu</string>
     <string name="full_herb_list">Danh sách dược liệu đầy đủ</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Bạn có chắc chắn muốn xoá tài khoản không?</string>
-    <string name="sign_out">Đăng xuất</string>
-    <string name="your_herb_list_will_be_loaded_soon">Danh sách dược liệu của bạn sẽ được hạ tải khi có dữ liệu</string>
-    <string name="like">Thích</string>
-    <string name="report_an_issue_via_facebook">"Báo cáo một vấn đề qua Facebook "</string>
-    <string name="please_upload_images_for_this_herb">Dược liệu này chưa có ảnh. Xin hãy nhấn vào đây để đăng ảnh.</string>
     <string name="add_more">Thêm nữa</string>
     <string name="upload">Tải lên</string>
     <string name="add_images">Thêm nhiều ảnh</string>
@@ -103,35 +86,16 @@
     \n\nNguyên tắc vàng là, nếu bạn chụp hình 1 loại dược liệu mà bạn biết tên nhưng lại không thể nhận ra nó trong ảnh chụp thì mô hình AI của chúng tôi cũng không có khả năng đó ^_^.</string>
     <string name="upload_completed">Tất cả hình của bạn đã được tải lên thành công</string>
     <string name="upload_in_progress_please">Đang tải ảnh lên máy chủ. Bạn sẽ được thông báo sau khi quá trình này hoàn tất.</string>
-    <string name="uploaded_by">Đăng bởi: %s. Bạn có thể nhấp lên ảnh để mở nó bằng trình duyệt web và lưu ảnh về máy nếu muốn.</string>
-    <string name="image_count">Bộ đếm hình: %s</string>
-    <string name="editing_s">Bạn đang biên tập: %s</string>
-    <string name="update">Cập nhật</string>
-    <string name="add_more_images">Thêm nhiều hình</string>
-    <string name="please_edit_this_field">Vui lòng biên tập!</string>
-    <string name="vietnamese_name">Tên tiếng Việt</string>
-    <string name="english_name">Tên tiếng Anh</string>
-    <string name="latin_name">Tên Latin</string>
     <string name="rate_this_herb">Đánh giá dược liệu này</string>
     <string name="your_comment">Bình luận của bạn</string>
-    <string name="report_an_issue_via_email">Báo cáo một vấn đề qua email</string>
     <string name="via_facebook">Qua Facebook</string>
     <string name="via_email">Qua email</string>
     <string name="please_hit_ok_to_open_our_google_sheet">Vui lòng nhấn OK để mở trang Google Sheet của chúng tôi.
         Tại đây bạn có thể thêm dược liệu mới vào cuối danh sách. Chúng tôi sẽ cập nhật dữ liệu lên máy chủ sau đó. Xin cảm ơn!</string>
-    <string name="stack_overflow">Máy chủ gặp sự cố. Vui lòng quay lại sau!</string>
-    <string name="please_update_android">Thành thật xin lỗi vì sự bất tiện này! Xin hãy cập nhật ứng dụng lên phiên bản mới nhất để tiếp tục sử dụng!</string>
-    <string name="all_herbs">Tất cả</string>
     <string name="n_images_have_been_uploaded_etc">%s ảnh đã được tải lên</string>
-    <string name="view_plant_list">Xem danh sách cây thuốc</string>
     <string name="location_permission_is_required">Bạn cần cho phép truy cập định vị di động để có thể xác định vị trí của bạn.</string>
     <string name="current_location">Sử dụng định vị</string>
     <string name="search_for_a_location">Tìm kiếm địa điểm</string>
     <string name="address">Địa chỉ: </string>
 
-    <string name="not_available_yet">Chưa có thông tin</string>
-    <string name="classification">Phân loại</string>
-    <string name="family_s">Họ: %s</string>
-    <string name="genus_s">Chi: %s</string>
-    <string name="gbif_photo_credit">© %1$s · %2$s · %3$s, qua GBIF. Chạm để xem nguồn.</string>
 </resources>

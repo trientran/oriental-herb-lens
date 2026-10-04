@@ -22,6 +22,7 @@ class ModuleRulesPlugin : Plugin<Project> {
         path == ":core:domain" -> setOf(":core:common")
         path == ":core:testing" -> setOf(":core:common", ":core:domain")
         path == ":core:ml" -> setOf(":core:common", ":core:domain")
+        path == ":core:designsystem" -> setOf(":core:common")
         path in sources -> setOf(":core:common")
         path == ":core:data" -> setOf(":core:common", ":core:domain", ":core:ml") + sources
         path.startsWith(":feature:") -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps")

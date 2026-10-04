@@ -10,4 +10,6 @@ interface AuthRepository {
 
     /** A current ID token proving who the user is to our own services, or null when signed out. */
     suspend fun idToken(): String?
+
+    suspend fun signOut()
 }

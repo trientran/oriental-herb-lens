@@ -19,6 +19,7 @@
         android:name=".BaseApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
@@ -29,6 +30,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,15 +47,6 @@
             android:name=".lensimages.ImagesActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".search.SearchActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".herbdetails.HerbDetailsActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"

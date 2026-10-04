@@ -7,10 +7,7 @@
 
     <!-- Strings for home screen -->
     <string name="app_name">Med Herb Lens</string>
-    <string name="single_image">Single Image</string>
-    <string name="multiple_images">Multiple Images</string>
 
-    <string name="camera">Camera</string>
     <string name="settings_title">Lens Settings</string>
     <string name="cd_settings_button">Settings</string>
     <string name="cd_close_button">Back</string>
@@ -47,18 +44,9 @@
     <string name="pref_key_confirmation_time_in_auto_search" translatable="false">ctias</string>
     <string name="pref_title_confirmation_time_in_auto_search">Confirmation time in auto labeling</string>
     <string name="pref_summary_confirmation_time_in_auto_search">Ranges from 500ms to 2000ms</string>
-    <string name="plant_name">Plant name</string>
-    <string name="favorite">Favorite</string>
-    <string name="history">History</string>
     <string name="random">Random</string>
-    <string name="title_home">Home</string>
-    <string name="images">Images</string>
-    <string name="overview">Overview</string>
     <string name="log_out">Log out</string>
     <string name="delete_account">Delete account</string>
-    <string name="contact_us">Contact us</string>
-    <string name="share_this_app">Share this app</string>
-    <string name="about_us_and_this_app">About us and this app</string>
     <string name="pick_an_image">Pick an image</string>
     <string name="pick_photos">Pick photos</string>
     <string name="please_use_your_current_location_or">We\'d like to know the general area where this plant grows. You don\'t need to provide an exact location. You can either use your current location or search for one.</string>
@@ -107,11 +95,6 @@
     <string name="_70_herbs_list">70 herbs list</string>
     <string name="full_herb_list">Full herbal list</string>
     <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?</string>
-    <string name="sign_out">Sign out</string>
-    <string name="your_herb_list_will_be_loaded_soon">Herb list will be loaded soon once available.</string>
-    <string name="like">Like</string>
-    <string name="report_an_issue_via_facebook">Report an issue via Facebook</string>
-    <string name="please_upload_images_for_this_herb">There are no photos for this herb yet. Please click here to upload them now.</string>
     <string name="add_more">Add more</string>
     <string name="upload">Upload</string>
     <string name="add_images">Add images</string>
@@ -125,34 +108,15 @@
     <string name="upload_completed">All your images have been uploaded successfully.</string>
     <string name="upload_in_progress_please">Upload in progress. We will notify you once completed.</string>
 
-    <string name="uploaded_by">Uploaded by: %s. \nYou may open this image in a web browser and download it by clicking on it.</string>
-    <string name="image_count">Image count: %s</string>
-    <string name="editing_s">Editing: %s</string>
-    <string name="update">Update</string>
-    <string name="add_more_images">Add more images</string>
-    <string name="please_edit_this_field">Please edit this field!</string>
-    <string name="vietnamese_name">Vietnamese name</string>
-    <string name="english_name">English name</string>
-    <string name="latin_name">Latin name</string>
     <string name="rate_this_herb">Rate this herb</string>
     <string name="your_comment">Your comment</string>
-    <string name="report_an_issue_via_email">Report an issue via email</string>
     <string name="via_facebook">Via Facebook</string>
     <string name="via_email">Via email</string>
     <string name="please_hit_ok_to_open_our_google_sheet">Please hit OK to open our Google Sheet database where you can add a new herb at the end of the herb list. We will then add it to our database. Thank you!</string>
-    <string name="stack_overflow">We are experiencing server downtime. Please come back later!</string>
-    <string name="please_update_android">We are sincerely sorry for this inconvenience but may you please update this app to the latest version?</string>
-    <string name="all_herbs">All herbs</string>
     <string name="n_images_have_been_uploaded_etc">%s images uploaded</string>
-    <string name="view_plant_list">View plant list</string>
     <string name="location_permission_is_required">Location permission is required to fetch your current location.</string>
     <string name="current_location">Current location</string>
     <string name="search_for_a_location">Search for a location</string>
     <string name="address">Address:</string>
 
-    <string name="not_available_yet">Not available yet</string>
-    <string name="classification">Classification</string>
-    <string name="family_s">Family: %s</string>
-    <string name="genus_s">Genus: %s</string>
-    <string name="gbif_photo_credit">© %1$s · %2$s · %3$s, via GBIF. Tap for the source.</string>
 </resources>

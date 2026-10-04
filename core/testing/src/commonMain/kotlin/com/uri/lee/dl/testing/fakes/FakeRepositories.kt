@@ -16,6 +16,7 @@ class FakeAuthRepository(uid: String? = "user-1") : AuthRepository {
     override val currentUserId: String? get() = userId.value
     override fun observeUserId(): Flow<String?> = userId
     override suspend fun idToken(): String? = userId.value?.let { "token-for-$it" }
+    override suspend fun signOut() { userId.value = null }
 }
 
 class FakePhotoRepository : PhotoRepository {

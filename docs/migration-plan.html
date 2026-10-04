@@ -634,16 +634,16 @@ service cloud.firestore {
   </div>
 
   <div class="phase" data-phase="4">
-    <div class="phase-h"><div class="phase-no">4</div><div><h3>Compose Multiplatform and the redesign</h3><p>Android first. XML and Compose screens coexist until the last screen moves.</p></div><span class="prog"></span></div>
+    <div class="phase-h"><div class="phase-no">4</div><div><h3>Compose Multiplatform and the redesign</h3><p>Android first. XML and Compose screens coexist until the last screen moves. Shipped in three parts: 4a foundation and the browsing screens, 4b contributing (photos, sign-in, map), 4c scanning and the XML clean-up.</p></div><span class="prog"></span></div>
     <ul class="tasks">
-      <li><input type="checkbox" id="p4-1"><label for="p4-1"><span class="tt"><code>core:designsystem</code></span><span class="td">Light and dark colour schemes, Be Vietnam Pro, components from §07, Coil 3.</span></label></li>
-      <li><input type="checkbox" id="p4-2"><label for="p4-2"><span class="tt">Strings into Compose Multiplatform resources</span></label></li>
-      <li><input type="checkbox" id="p4-3"><label for="p4-3"><span class="tt">Adaptive navigation and type-safe routes</span></label></li>
-      <li><input type="checkbox" id="p4-4"><label for="p4-4"><span class="tt">Screens: settings → species details → browse → search → contribute</span></label></li>
+      <li><input type="checkbox" id="p4-1" checked><label for="p4-1"><span class="tt"><code>core:designsystem</code></span><span class="td">Light and dark colour schemes, Be Vietnam Pro, HerbCard, SectionCard, ConfidenceChip, empty, error and loading states, Coil 3. Kotlin moved to 2.4.20, which current Coil needs.</span></label></li>
+      <li><input type="checkbox" id="p4-2" checked><label for="p4-2"><span class="tt">Strings into Compose Multiplatform resources</span><span class="td">Strings for the Compose screens, English and Vietnamese, in <code>core:designsystem</code>; Android 13+ per-app language. The remaining XML strings go with the last XML screens.</span></label></li>
+      <li><input type="checkbox" id="p4-3" checked><label for="p4-3"><span class="tt">Adaptive navigation and type-safe routes</span><span class="td"><code>NavigationSuiteScaffold</code> (bottom bar, rail from 600dp) with <code>@Serializable</code> routes; Browse and Saved show list and details side by side on wide windows.</span></label></li>
+      <li><input type="checkbox" id="p4-4"><label for="p4-4"><span class="tt">Screens: settings → species details → browse → search → contribute</span><span class="td">Done in 4a: browse with search, saved, species details (photos with credits, zoomable viewer, name suggestions), profile with scan settings. Contribute is in 4b. Feature modules: <code>browse</code>, <code>saved</code>, <code>herbdetails</code>, <code>profile</code>, <code>identify</code>.</span></label></li>
       <li><input type="checkbox" id="p4-5"><label for="p4-5"><span class="tt">Own sign-in screen replacing FirebaseUI</span><span class="td">Sign-in only when contributing.</span></label></li>
       <li><input type="checkbox" id="p4-6"><label for="p4-6"><span class="tt"><code>core:maps</code>: Mapbox behind a shared composable</span></label></li>
       <li><input type="checkbox" id="p4-7"><label for="p4-7"><span class="tt">Scan screens last: CameraX viewfinder, Canvas overlays</span><span class="td">Delete the Camera1 code and its legacy settings.</span></label></li>
-      <li><input type="checkbox" id="p4-8"><label for="p4-8"><span class="tt">Screenshot tests</span></label></li>
+      <li><input type="checkbox" id="p4-8" checked><label for="p4-8"><span class="tt">Screenshot tests</span><span class="td">Roborazzi on Robolectric: every Compose screen in light and dark, plus Vietnamese; CI compares against <code>composeApp/src/androidHostTest/screenshots</code>.</span></label></li>
       <li><input type="checkbox" id="p4-9"><label for="p4-9"><span class="tt">Delete XML layouts, Fragments, Safe Args, view binding and Glide</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> the redesigned Android app with adaptive layouts.</div>

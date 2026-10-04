@@ -2,7 +2,7 @@ package com.uri.lee.dl.lenscamera
 
 import androidx.lifecycle.viewModelScope
 import com.uri.lee.dl.domain.repository.SettingsRepository
-import com.uri.lee.dl.ui.common.MviViewModel
+import com.uri.lee.dl.core.ui.MviViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

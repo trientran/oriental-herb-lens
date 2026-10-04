@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.compose.compiler)
 }
 
 val localProps = Properties().apply {
@@ -89,6 +90,8 @@ kotlin {
 dependencies {
     implementation(projects.composeApp)
     implementation(libs.kermit)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.ui)
     implementation(libs.material)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)

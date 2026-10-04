@@ -18,6 +18,7 @@ kotlin {
         }
         androidMain.dependencies {
             api(libs.junit4)
+            api(libs.kotlin.test.junit)
         }
     }
 }

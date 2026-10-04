@@ -1,120 +1,52 @@
 package com.uri.lee.dl
 
-import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.speech.RecognizerIntent
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
-import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.tabs.TabLayoutMediator
-import com.uri.lee.dl.Utils.displaySpeechRecognizer
-import com.uri.lee.dl.Utils.sendEmail
-import com.uri.lee.dl.databinding.ActivityMainBinding
-import com.uri.lee.dl.domain.model.AppStatus
-import com.uri.lee.dl.domain.model.UpdatePolicy
-import com.uri.lee.dl.hometabs.SectionsPagerAdapter
-import com.uri.lee.dl.hometabs.TAB_TITLES
-import com.uri.lee.dl.search.SPOKEN_TEXT_EXTRA
-import com.uri.lee.dl.search.SearchActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.mutableStateOf
+import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.feature.identify.IdentifyMode
 import com.uri.lee.dl.lenscamera.CameraActivity
 import com.uri.lee.dl.lensimage.ImageActivity
 import com.uri.lee.dl.lensimages.ImagesActivity
+import com.uri.lee.dl.settings.SettingsActivity
+import com.uri.lee.dl.shared.App
+import com.uri.lee.dl.shared.PlatformActions
+import com.uri.lee.dl.upload.ImageUploadActivity
+import org.koin.android.ext.android.inject
 import kotlin.system.exitProcess
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : AppCompatActivity() {
+/**
+ * Hosts the Compose app. Screens still built with Android views (scanning, uploading, sign-in)
+ * are separate activities, opened through [PlatformActions]. Start it with [HERB_ID] to show a species.
+ */
+class MainActivity : ComponentActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+    private val auth: AuthRepository by inject()
+    private val openHerbId = mutableStateOf<Long?>(null)
+    private var onSpeech: ((String) -> Unit)? = null
 
-    private val mainViewModel: MainViewModel by viewModel()
-
-    @SuppressLint("RestrictedApi")
-    override fun onCreate(bundle: Bundle?) {
-        super.onCreate(bundle)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-        setContentView(view)
-
-        // Setup tabbed views
-        binding.viewPager.adapter = SectionsPagerAdapter(this)
-        TabLayoutMediator(binding.tabs, binding.viewPager) { tab, position ->
-            tab.text = getString(TAB_TITLES[position])
-        }
-            .attach()
-
-        setSupportActionBar(binding.toolBar)
-        supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-
-        binding.searchView.setOnClickListener {
-            startActivity(Intent(this, SearchActivity::class.java))
-        }
-
-        binding.microphoneView.setOnClickListener { displaySpeechRecognizer(this) }
-        binding.searchCameraView.setOnClickListener { startActivity(Intent(this, CameraActivity::class.java)) }
-        binding.searchMultiImagesView.setOnClickListener { startActivity(Intent(this, ImagesActivity::class.java)) }
-        binding.searchSingleImageView.setOnClickListener { startActivity(Intent(this, ImageActivity::class.java)) }
-
-        binding.menuView.setOnClickListener { BottomSheetMenu().show(supportFragmentManager, "ModalBottomSheet") }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.state
-                    .map { it.isSignedIn }
-                    .distinctUntilChanged()
-                    .filter { it == false }
-                    .onEach {
-                        finishAffinity()
-                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
-                    }
-                    .launchIn(this)
-
-                mainViewModel.state
-                    .map { it.status }
-                    .distinctUntilChanged()
-                    .onEach(::showStatusDialogs)
-                    .launchIn(this)
-            }
-        }
+    private val speechLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { onSpeech?.invoke(it) }
     }
 
-    private fun showStatusDialogs(status: AppStatus) {
-        if (status.isSuspended) {
-            AlertDialog.Builder(this)
-                .setMessage(getString(R.string.stack_overflow))
-                .setCancelable(false)
-                .setNeutralButton(getString(android.R.string.ok)) { _, _ ->
-                    finish()
-                    exitProcess(0)
-                }
-                .create().show()
-        }
-        when (status.update) {
-            UpdatePolicy.REQUIRED -> AlertDialog.Builder(this)
-                .setMessage(getString(R.string.please_update_android))
-                .setCancelable(false)
-                .setNeutralButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
-                .create().show()
-            UpdatePolicy.RECOMMENDED -> AlertDialog.Builder(this)
-                .setMessage(getString(R.string.please_update_android))
-                .setCancelable(true)
-                .setPositiveButton(getString(android.R.string.ok)) { _, _ -> goToPlayStore() }
-                .setNeutralButton(getString(android.R.string.cancel)) { _, _ -> }
-                .create().show()
-            UpdatePolicy.NONE -> Unit
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) handle(intent)
+        setContent { App(actions = platformActions(), openHerbId = openHerbId.value) }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handle(intent)
     }
 
     override fun onStart() {
@@ -122,19 +54,50 @@ class MainActivity : AppCompatActivity() {
         Utils.requestNotificationPermission(this)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == RESULT_OK && data != null) {
-            when (requestCode) {
-                Utils.SPEECH_REQUEST_CODE -> {
-                    val spokenText: String = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)!![0]
-                    val intent = Intent(this, SearchActivity::class.java)
-                    intent.putExtra(SPOKEN_TEXT_EXTRA, spokenText)
-                    startActivity(intent)
-                }
+    private fun handle(intent: Intent) {
+        intent.getLongExtra(HERB_ID, -1).takeIf { it >= 0 }?.let { openHerbId.value = it }
+    }
+
+    private fun platformActions() = PlatformActions(
+        onIdentify = { mode ->
+            val screen = when (mode) {
+                IdentifyMode.CAMERA -> CameraActivity::class.java
+                IdentifyMode.SINGLE_IMAGE -> ImageActivity::class.java
+                IdentifyMode.MULTIPLE_IMAGES -> ImagesActivity::class.java
             }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
+            startActivity(Intent(this, screen))
+        },
+        onSignIn = { startActivity(Intent(this, LoginActivity::class.java)) },
+        onOpenStore = { goToPlayStore() },
+        onExit = {
+            finishAffinity()
+            exitProcess(0)
+        },
+        onAddPhotos = { herbId ->
+            // Contributing needs an account; browsing doesn't
+            if (auth.currentUserId == null) startActivity(Intent(this, LoginActivity::class.java))
+            else startActivity(Intent(this, ImageUploadActivity::class.java).putExtra(HERB_ID, herbId))
+        },
+        onShareApp = {
+            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, PLAY_STORE_URL)
+            startActivity(Intent.createChooser(send, null))
+        },
+        onOpenLanguageSettings = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            { startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", packageName, null))) }
+        } else {
+            null
+        },
+        onOpenCameraSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
+        onVoiceSearch = { onResult ->
+            onSpeech = onResult
+            speechLauncher.launch(
+                Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                    .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM),
+            )
+        },
+    )
+
+    private companion object {
+        const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.uri.lee.dl"
     }
 }
-
