@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Med Herb Lens</string>
+
+    <!-- Navigation -->
+    <string name="nav_identify">Nhận dạng</string>
+    <string name="nav_browse">Tra cứu</string>
+    <string name="nav_saved">Đã lưu</string>
+    <string name="nav_profile">Cá nhân</string>
+    <string name="cd_back">Quay lại</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="retry">Thử lại</string>
+    <string name="generic_error">Có lỗi xảy ra. Vui lòng thử lại.</string>
+    <string name="status_suspended">Dịch vụ tạm thời gián đoạn. Vui lòng quay lại sau.</string>
+    <string name="status_update_required">Phiên bản này không còn được hỗ trợ. Vui lòng cập nhật ứng dụng để tiếp tục.</string>
+    <string name="status_update_recommended">Đã có phiên bản mới của ứng dụng.</string>
+    <string name="status_update">Cập nhật</string>
+    <string name="status_later">Để sau</string>
+
+    <!-- Browse and search -->
+    <string name="search_hint">Tìm cây thuốc</string>
+    <string name="search_placeholder">Tên tiếng Việt, tên khoa học hoặc tiếng Anh</string>
+    <string name="cd_clear_search">Xóa nội dung tìm</string>
+    <string name="cd_voice_search">Tìm bằng giọng nói</string>
+    <string name="search_no_results">Không tìm thấy “%1$s”</string>
+    <string name="search_no_results_body">Hãy kiểm tra chính tả hoặc thử tên khoa học.</string>
+    <string name="browse_header">Tất cả cây thuốc</string>
+
+    <!-- Saved -->
+    <string name="saved_favorites">Yêu thích</string>
+    <string name="saved_history">Lịch sử</string>
+    <string name="favorites_empty_title">Chưa có cây yêu thích</string>
+    <string name="favorites_empty_body">Chạm vào hình trái tim ở một cây để lưu tại đây.</string>
+    <string name="history_empty_title">Chưa xem cây nào</string>
+    <string name="history_empty_body">Những cây bạn đã mở sẽ hiện ở đây, mới nhất ở trên.</string>
+
+    <!-- Species details -->
+    <string name="cd_add_favorite">Thêm vào yêu thích</string>
+    <string name="cd_remove_favorite">Bỏ khỏi yêu thích</string>
+    <string name="details_not_found">Cây này không có trong danh mục.</string>
+    <string name="details_photos">Hình ảnh</string>
+    <string name="details_no_photos">Chưa có ảnh. Hãy là người đầu tiên đóng góp.</string>
+    <string name="details_add_photos">Thêm ảnh</string>
+    <string name="details_names">Tên gọi</string>
+    <string name="details_vietnamese_names">Tiếng Việt</string>
+    <string name="details_english_names">Tiếng Anh</string>
+    <string name="details_classification">Phân loại</string>
+    <string name="details_family">Họ</string>
+    <string name="details_genus">Chi</string>
+    <string name="details_view_on_gbif">Xem trên GBIF</string>
+    <string name="details_suggest_name">Đề xuất tên tiếng Việt</string>
+    <string name="photo_counter">%1$d / %2$d</string>
+    <string name="photo_credit">© %1$s · %2$s</string>
+    <string name="photo_credit_publisher">qua %1$s và GBIF</string>
+    <string name="photo_source">Nguồn</string>
+    <string name="photo_by_user">Do người dùng Med Herb Lens chia sẻ</string>
+    <string name="cd_photo">Ảnh %1$s</string>
+    <string name="cd_close">Đóng</string>
+
+    <!-- Suggest a name -->
+    <string name="suggest_name_title">Đề xuất tên tiếng Việt</string>
+    <string name="suggest_name_label">Tên tiếng Việt</string>
+    <string name="suggest_name_body">Chúng tôi sẽ xem xét đề xuất trước khi cập nhật danh mục.</string>
+    <string name="suggest_name_submit">Gửi</string>
+    <string name="suggest_name_sent">Cảm ơn bạn! Đề xuất đã được gửi.</string>
+    <string name="suggest_name_sign_in">Đăng nhập để đề xuất tên.</string>
+
+    <!-- Identify -->
+    <string name="identify_title">Nhận dạng cây thuốc</string>
+    <string name="identify_camera">Camera</string>
+    <string name="identify_camera_body">Hướng camera vào cây</string>
+    <string name="identify_single">Một ảnh</string>
+    <string name="identify_single_body">Chọn một ảnh và chọn cây trong ảnh</string>
+    <string name="identify_multiple">Nhiều ảnh</string>
+    <string name="identify_multiple_body">Nhận dạng nhiều ảnh cùng lúc</string>
+
+    <!-- Profile -->
+    <string name="profile_sign_in">Đăng nhập</string>
+    <string name="profile_sign_in_body">Đăng nhập để thêm ảnh và đề xuất tên. Không cần tài khoản để tra cứu.</string>
+    <string name="profile_signed_in">Đã đăng nhập</string>
+    <string name="profile_sign_out">Đăng xuất</string>
+    <string name="profile_identification">Nhận dạng</string>
+    <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%%</string>
+    <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>
+    <string name="profile_objects_mode">Tìm cây trong ảnh</string>
+    <string name="profile_objects_mode_body">Ảnh đơn được tách thành từng cây trước khi nhận dạng.</string>
+    <string name="profile_camera_settings">Cài đặt camera</string>
+    <string name="profile_app">Ứng dụng</string>
+    <string name="profile_language">Ngôn ngữ</string>
+    <string name="profile_full_list">Danh sách dược liệu đầy đủ</string>
+    <string name="profile_share">Chia sẻ ứng dụng này</string>
+    <string name="profile_contact">Liên hệ chúng tôi</string>
+    <string name="profile_about">Giới thiệu</string>
+    <string name="profile_version">Phiên bản %1$s</string>
+</resources>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Med Herb Lens</string>
+
+    <!-- Navigation -->
+    <string name="nav_identify">Identify</string>
+    <string name="nav_browse">Browse</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_profile">Profile</string>
+    <string name="cd_back">Back</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Try again</string>
+    <string name="generic_error">Something went wrong. Please try again.</string>
+    <string name="status_suspended">The service is temporarily unavailable. Please come back later.</string>
+    <string name="status_update_required">This version is no longer supported. Please update the app to continue.</string>
+    <string name="status_update_recommended">A new version of the app is available.</string>
+    <string name="status_update">Update</string>
+    <string name="status_later">Later</string>
+
+    <!-- Browse and search -->
+    <string name="search_hint">Search herbs</string>
+    <string name="search_placeholder">Vietnamese, scientific or English name</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_voice_search">Search by voice</string>
+    <string name="search_no_results">No herbs match “%1$s”</string>
+    <string name="search_no_results_body">Check the spelling, or try the scientific name.</string>
+    <string name="browse_header">All herbs</string>
+
+    <!-- Saved -->
+    <string name="saved_favorites">Favourites</string>
+    <string name="saved_history">History</string>
+    <string name="favorites_empty_title">No favourites yet</string>
+    <string name="favorites_empty_body">Tap the heart on a herb to keep it here.</string>
+    <string name="history_empty_title">Nothing viewed yet</string>
+    <string name="history_empty_body">Herbs you open appear here, newest first.</string>
+
+    <!-- Species details -->
+    <string name="cd_add_favorite">Add to favourites</string>
+    <string name="cd_remove_favorite">Remove from favourites</string>
+    <string name="details_not_found">This herb isn’t in the catalog.</string>
+    <string name="details_photos">Photos</string>
+    <string name="details_no_photos">No photos yet. Be the first to add one.</string>
+    <string name="details_add_photos">Add photos</string>
+    <string name="details_names">Names</string>
+    <string name="details_vietnamese_names">Vietnamese</string>
+    <string name="details_english_names">English</string>
+    <string name="details_classification">Classification</string>
+    <string name="details_family">Family</string>
+    <string name="details_genus">Genus</string>
+    <string name="details_view_on_gbif">View on GBIF</string>
+    <string name="details_suggest_name">Suggest a Vietnamese name</string>
+    <string name="photo_counter">%1$d of %2$d</string>
+    <string name="photo_credit">© %1$s · %2$s</string>
+    <string name="photo_credit_publisher">via %1$s and GBIF</string>
+    <string name="photo_source">Source</string>
+    <string name="photo_by_user">Shared by a Med Herb Lens user</string>
+    <string name="cd_photo">Photo of %1$s</string>
+    <string name="cd_close">Close</string>
+
+    <!-- Suggest a name -->
+    <string name="suggest_name_title">Suggest a Vietnamese name</string>
+    <string name="suggest_name_label">Vietnamese name</string>
+    <string name="suggest_name_body">We review suggestions before updating the catalog.</string>
+    <string name="suggest_name_submit">Send</string>
+    <string name="suggest_name_sent">Thank you! Your suggestion has been sent.</string>
+    <string name="suggest_name_sign_in">Sign in to suggest a name.</string>
+
+    <!-- Identify -->
+    <string name="identify_title">Identify a herb</string>
+    <string name="identify_camera">Camera</string>
+    <string name="identify_camera_body">Point your camera at a plant</string>
+    <string name="identify_single">One photo</string>
+    <string name="identify_single_body">Pick a photo and choose the plant in it</string>
+    <string name="identify_multiple">Several photos</string>
+    <string name="identify_multiple_body">Identify a batch of photos at once</string>
+
+    <!-- Profile -->
+    <string name="profile_sign_in">Sign in</string>
+    <string name="profile_sign_in_body">Sign in to add photos and suggest names. Browsing works without an account.</string>
+    <string name="profile_signed_in">Signed in</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_identification">Identification</string>
+    <string name="profile_min_confidence">Minimum confidence: %1$d%%</string>
+    <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
+    <string name="profile_objects_mode">Find plants in a photo</string>
+    <string name="profile_objects_mode_body">Single photos are split into the plants they contain before identifying.</string>
+    <string name="profile_camera_settings">Camera settings</string>
+    <string name="profile_app">App</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_full_list">Full herb list</string>
+    <string name="profile_share">Share this app</string>
+    <string name="profile_contact">Contact us</string>
+    <string name="profile_about">About</string>
+    <string name="profile_version">Version %1$s</string>
+</resources>
