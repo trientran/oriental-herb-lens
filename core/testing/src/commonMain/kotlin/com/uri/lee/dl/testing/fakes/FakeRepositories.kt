@@ -21,6 +21,10 @@ class FakeAuthRepository(uid: String? = "user-1") : AuthRepository {
         if (failSignIn) error("sign-in failed")
         userId.value = "google-$idToken"
     }
+    override suspend fun signInWithApple(idToken: String, rawNonce: String) {
+        if (failSignIn) error("sign-in failed")
+        userId.value = "apple-$idToken"
+    }
     override suspend fun signOut() { userId.value = null }
 }
 

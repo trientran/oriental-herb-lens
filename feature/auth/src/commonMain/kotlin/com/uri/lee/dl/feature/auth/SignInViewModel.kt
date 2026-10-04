@@ -18,7 +18,13 @@ sealed interface SignInAction {
 
     /** The picker itself failed (no Google account, no Play services, offline). */
     data object GoogleFailed : SignInAction
+
+    /** Apple's sheet closed: with a credential, or null when the user backed out. */
+    data class AppleFinished(val credential: AppleCredential?) : SignInAction
 }
+
+/** What Sign in with Apple returns: the identity token, and the unhashed nonce its request was made with. */
+data class AppleCredential(val idToken: String, val rawNonce: String)
 
 data class SignInState(
     val isSignedIn: Boolean = false,
@@ -38,17 +44,25 @@ class SignInViewModel(private val auth: AuthRepository) : MviViewModel<SignInSta
             SignInAction.GoogleFailed -> setState { copy(isWorking = false, hasError = true) }
             is SignInAction.GoogleFinished -> {
                 val token = action.idToken ?: return setState { copy(isWorking = false) }
-                viewModelScope.launch {
-                    try {
-                        auth.signInWithGoogle(token)
-                        setState { copy(isWorking = false) }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        log.e(e) { "Firebase sign-in failed" }
-                        setState { copy(isWorking = false, hasError = true) }
-                    }
-                }
+                signIn { auth.signInWithGoogle(token) }
+            }
+            is SignInAction.AppleFinished -> {
+                val credential = action.credential ?: return setState { copy(isWorking = false) }
+                signIn { auth.signInWithApple(credential.idToken, credential.rawNonce) }
+            }
+        }
+    }
+
+    private fun signIn(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            try {
+                block()
+                setState { copy(isWorking = false) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.e(e) { "Firebase sign-in failed" }
+                setState { copy(isWorking = false, hasError = true) }
             }
         }
     }

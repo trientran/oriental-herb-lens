@@ -108,6 +108,7 @@
     <string name="sign_in_title">Sign in to contribute</string>
     <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
     <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_in_apple">Continue with Apple</string>
     <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="terms_of_service">Terms of service</string>

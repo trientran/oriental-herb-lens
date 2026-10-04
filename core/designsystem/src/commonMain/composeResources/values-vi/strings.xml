@@ -108,6 +108,7 @@
     <string name="sign_in_title">Đăng nhập để đóng góp</string>
     <string name="sign_in_body">Không cần tài khoản để tra cứu và nhận dạng cây thuốc. Đăng nhập để chia sẻ ảnh và đề xuất tên.</string>
     <string name="sign_in_google">Tiếp tục với Google</string>
+    <string name="sign_in_apple">Tiếp tục với Apple</string>
     <string name="sign_in_error">Không đăng nhập được. Hãy kiểm tra kết nối và thử lại.</string>
     <string name="privacy_policy">Chính sách quyền riêng tư</string>
     <string name="terms_of_service">Điều khoản dịch vụ</string>

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,12 +29,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_close
+import com.uri.lee.dl.core.designsystem.resources.sign_in_apple
 import com.uri.lee.dl.core.designsystem.resources.sign_in_body
 import com.uri.lee.dl.core.designsystem.resources.sign_in_error
 import com.uri.lee.dl.core.designsystem.resources.sign_in_google
@@ -53,9 +57,18 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 typealias GoogleIdTokenRequest = suspend () -> String?
 
+/** Asks the platform for a Sign in with Apple credential (iOS); null means the user backed out. */
+typealias AppleSignInRequest = suspend () -> AppleCredential?
+
 /** Sign-in, needed only to contribute (photos, names). Closes itself once signed in. */
 @Composable
-fun SignInRoute(requestGoogleIdToken: GoogleIdTokenRequest, onDone: () -> Unit, modifier: Modifier = Modifier) {
+fun SignInRoute(
+    requestGoogleIdToken: GoogleIdTokenRequest,
+    onDone: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** Offered on iOS, where the App Store requires it next to Google sign-in. */
+    requestAppleSignIn: AppleSignInRequest? = null,
+) {
     val viewModel = koinViewModel<SignInViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -77,12 +90,33 @@ fun SignInRoute(requestGoogleIdToken: GoogleIdTokenRequest, onDone: () -> Unit, 
         },
         onClose = onDone,
         modifier = modifier,
+        onApple = requestAppleSignIn?.let { request ->
+            {
+                viewModel.onAction(SignInAction.GoogleStarted)
+                scope.launch {
+                    val action = try {
+                        SignInAction.AppleFinished(request())
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        SignInAction.GoogleFailed
+                    }
+                    viewModel.onAction(action)
+                }
+            }
+        },
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignInScreen(state: SignInState, onGoogle: () -> Unit, onClose: () -> Unit, modifier: Modifier = Modifier) {
+fun SignInScreen(
+    state: SignInState,
+    onGoogle: () -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    onApple: (() -> Unit)? = null,
+) {
     val spacing = HerbLensTheme.spacing
     val uriHandler = LocalUriHandler.current
     Scaffold(
@@ -113,6 +147,18 @@ fun SignInScreen(state: SignInState, onGoogle: () -> Unit, onClose: () -> Unit, 
                 Button(onClick = onGoogle, enabled = !state.isWorking, modifier = Modifier.fillMaxWidth()) {
                     if (state.isWorking) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                     else Text(stringResource(Res.string.sign_in_google))
+                }
+                if (onApple != null) {
+                    // Apple's guidelines: black, with the Apple logo, as prominent as other options
+                    Button(
+                        onClick = onApple,
+                        enabled = !state.isWorking,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
+                    ) {
+                        Text("\uF8FF ", fontFamily = FontFamily.Default)
+                        Text(stringResource(Res.string.sign_in_apple))
+                    }
                 }
                 if (state.hasError) {
                     Text(stringResource(Res.string.sign_in_error), color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)

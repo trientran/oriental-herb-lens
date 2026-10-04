@@ -39,3 +39,11 @@ google-services.json
 .DS_Store
 .kotlin/
 test-images/
+# iOS: CocoaPods output, per-developer Xcode state, Firebase config and local secrets
+iosApp/Pods/
+iosApp/iosApp.xcworkspace/xcuserdata/
+iosApp/iosApp.xcodeproj/xcuserdata/
+iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
+iosApp/iosApp/GoogleService-Info.plist
+iosApp/Configuration/Secrets.xcconfig
+iosApp/build/
