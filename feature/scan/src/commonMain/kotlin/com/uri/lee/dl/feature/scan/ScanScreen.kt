@@ -1,5 +1,9 @@
 package com.uri.lee.dl.feature.scan
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,11 +28,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -36,7 +43,9 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +53,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -63,14 +73,18 @@ import com.uri.lee.dl.core.designsystem.component.HerbCard
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
 import com.uri.lee.dl.core.designsystem.component.ScientificName
 import com.uri.lee.dl.core.designsystem.resources.Res
+import com.uri.lee.dl.core.designsystem.resources.cd_close
+import com.uri.lee.dl.core.designsystem.resources.cd_picked_plant
 import com.uri.lee.dl.core.designsystem.resources.cd_plant
+import com.uri.lee.dl.core.designsystem.resources.scan_again
 import com.uri.lee.dl.core.designsystem.resources.scan_back_to_camera
+import com.uri.lee.dl.core.designsystem.resources.scan_hold_steady
 import com.uri.lee.dl.core.designsystem.resources.scan_looking
-import com.uri.lee.dl.core.designsystem.resources.scan_not_recognised
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
 import com.uri.lee.dl.core.designsystem.resources.scan_photos
+import com.uri.lee.dl.core.designsystem.resources.scan_plant_unknown
 import com.uri.lee.dl.core.designsystem.resources.scan_preparing
 import com.uri.lee.dl.core.designsystem.resources.scan_pick_plant
 import com.uri.lee.dl.core.designsystem.resources.scan_point
@@ -146,7 +160,13 @@ private fun Single(
 ) {
     val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
     Row(Modifier.fillMaxSize()) {
-        Box(Modifier.weight(1f).fillMaxHeight().background(Color.Black)) {
+        Box(
+            Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(Color.Black)
+                .onSizeChanged { if (it.height > 0) onAction(ScanAction.ViewAspect(it.width.toFloat() / it.height)) },
+        ) {
             when (source) {
                 ScanSource.Camera -> camera()
                 is ScanSource.Photo -> RemoteImage(source.uri, null, Modifier.fillMaxSize(), ContentScale.Fit, showBackground = false)
@@ -156,12 +176,12 @@ private fun Single(
             ModeSwitch(state.mode, { onAction(ScanAction.SetMode(it)) }, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 12.dp))
             Actions(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, Modifier.align(if (wide) Alignment.BottomCenter else Alignment.TopEnd))
             if (!wide) {
-                ResultsPanel(state, onOpenSpecies, Modifier.align(Alignment.BottomCenter).padding(12.dp).widthIn(max = 560.dp).fillMaxWidth())
+                ResultsPanel(state, onAction, onOpenSpecies, Modifier.align(Alignment.BottomCenter).padding(12.dp).widthIn(max = 560.dp).fillMaxWidth())
             }
         }
         if (wide) {
             Surface(Modifier.width(380.dp).fillMaxHeight(), color = MaterialTheme.colorScheme.surface) {
-                ResultsPanel(state, onOpenSpecies, Modifier.statusBarsPadding().padding(16.dp))
+                ResultsPanel(state, onAction, onOpenSpecies, Modifier.statusBarsPadding().padding(16.dp))
             }
         }
     }
@@ -232,7 +252,8 @@ private fun Preparing(count: Int) {
 
 /**
  * A dot on each plant found; tapping one identifies that plant. Dots stay readable on any
- * background and don't pretend to outline the plant exactly, which the detector can't do.
+ * background and don't pretend to outline the plant exactly, which the detector can't do. The
+ * plant the camera is held on gets a ring that fills until it's identified; the picked one is green.
  */
 @Composable
 private fun Objects(state: ScanState, onAction: (ScanAction) -> Unit) {
@@ -248,7 +269,7 @@ private fun Objects(state: ScanState, onAction: (ScanAction) -> Unit) {
         val target = 48.dp
         state.objects.forEachIndexed { index, shown ->
             val center = shown.region.placeIn(view, aspect, fill).center
-            val selected = shown.id == state.selectedId
+            val picked = shown.id == state.picked?.id
             val label = stringResource(Res.string.cd_plant, index + 1)
             with(density) {
                 Box(
@@ -257,15 +278,16 @@ private fun Objects(state: ScanState, onAction: (ScanAction) -> Unit) {
                         .size(target)
                         .clip(CircleShape)
                         .clickable { onAction(ScanAction.SelectObject(shown.id)) }
-                        .semantics { contentDescription = label; role = Role.Button; this.selected = selected },
+                        .semantics { contentDescription = label; role = Role.Button; selected = picked },
                     contentAlignment = Alignment.Center,
                 ) {
+                    if (shown.id == state.steadyId) SteadyRing()
                     Box(
                         Modifier
-                            .size(if (selected) 28.dp else 20.dp)
+                            .size(if (picked) 28.dp else 20.dp)
                             .shadow(4.dp, CircleShape)
-                            .background(if (selected) MaterialTheme.colorScheme.primary else Color.White, CircleShape)
-                            .border(if (selected) 4.dp else 2.dp, if (selected) Color.White else Color.Black.copy(alpha = 0.25f), CircleShape),
+                            .background(if (picked) MaterialTheme.colorScheme.primary else Color.White, CircleShape)
+                            .border(if (picked) 4.dp else 2.dp, if (picked) Color.White else Color.Black.copy(alpha = 0.25f), CircleShape),
                     )
                 }
             }
@@ -273,39 +295,95 @@ private fun Objects(state: ScanState, onAction: (ScanAction) -> Unit) {
     }
 }
 
+/** Fills over [ScanViewModel.STEADY] while the camera stays on a plant. */
 @Composable
-private fun ResultsPanel(state: ScanState, onOpenSpecies: (Long) -> Unit, modifier: Modifier = Modifier) {
+private fun SteadyRing() {
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { progress.animateTo(1f, tween(ScanViewModel.STEADY.inWholeMilliseconds.toInt(), easing = LinearEasing)) }
+    CircularProgressIndicator(
+        progress = { progress.value },
+        modifier = Modifier.size(40.dp),
+        color = Color.White,
+        trackColor = Color.Black.copy(alpha = 0.3f),
+        strokeWidth = 4.dp,
+    )
+}
+
+@Composable
+private fun ResultsPanel(state: ScanState, onAction: (ScanAction) -> Unit, onOpenSpecies: (Long) -> Unit, modifier: Modifier = Modifier) {
     Surface(modifier, shape = MaterialTheme.shapes.large, tonalElevation = 3.dp, shadowElevation = 6.dp) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            val hint = hintFor(state)
-            if (state.isWorking) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val picked = state.picked
+            when {
+                state.isWorking -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                     Text(stringResource(Res.string.scan_working))
                 }
-            } else if (state.results.isEmpty()) {
-                Text(hint ?: "", style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(8.dp))
+                state.mode == ScanMode.PICK_PLANT && picked != null -> Picked(picked, state.source == ScanSource.Camera, onAction, onOpenSpecies)
+                state.mode == ScanMode.WHOLE_VIEW && state.results.isNotEmpty() -> state.results.forEach { ResultRow(it, onOpenSpecies) }
+                else -> Text(
+                    hintFor(state),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                )
+            }
+        }
+    }
+}
+
+/** The plant that was picked, as the model saw it, and what it may be. */
+@Composable
+private fun Picked(picked: PickedPlant, fromCamera: Boolean, onAction: (ScanAction) -> Unit, onOpenSpecies: (Long) -> Unit) {
+    val crop = remember(picked) { picked.image.toImageBitmap() }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        if (crop != null) {
+            Image(
+                crop,
+                contentDescription = stringResource(Res.string.cd_picked_plant),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(88.dp).clip(MaterialTheme.shapes.medium),
+            )
+        }
+        Column(Modifier.weight(1f).heightIn(min = 88.dp), verticalArrangement = Arrangement.Center) {
+            if (picked.herbs.isEmpty()) {
+                Text(stringResource(Res.string.scan_plant_unknown), style = MaterialTheme.typography.bodyMedium)
             } else {
-                state.results.forEach { ResultRow(it, onOpenSpecies) }
-                if (state.mode == ScanMode.PICK_PLANT && state.objects.size > 1) {
-                    Text(
-                        stringResource(Res.string.scan_tap_plant),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                picked.herbs.forEachIndexed { i, herb ->
+                    if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    CompactResult(herb, onOpenSpecies)
                 }
+            }
+        }
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            if (fromCamera) "" else stringResource(Res.string.scan_tap_plant),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        if (fromCamera) {
+            FilledTonalButton(onClick = { onAction(ScanAction.ClosePicked) }) {
+                Icon(Icons.Filled.CameraAlt, null, Modifier.size(18.dp))
+                Text(stringResource(Res.string.scan_again), Modifier.padding(start = 8.dp))
+            }
+        } else {
+            IconButton(onClick = { onAction(ScanAction.ClosePicked) }) {
+                Icon(Icons.Filled.Close, stringResource(Res.string.cd_close))
             }
         }
     }
 }
 
 @Composable
-private fun hintFor(state: ScanState): String? = when {
+private fun hintFor(state: ScanState): String = when {
     state.hasError -> stringResource(Res.string.scan_photo_failed)
-    state.source is ScanSource.Photo && state.mode == ScanMode.PICK_PLANT -> stringResource(Res.string.scan_photo_none_pick)
+    state.source is ScanSource.Photo && state.mode == ScanMode.PICK_PLANT ->
+        stringResource(if (state.objects.isEmpty()) Res.string.scan_photo_none_pick else Res.string.scan_tap_plant)
     state.source is ScanSource.Photo -> stringResource(Res.string.scan_photo_none)
     state.mode == ScanMode.PICK_PLANT && state.objects.isEmpty() -> stringResource(Res.string.scan_looking)
-    state.mode == ScanMode.PICK_PLANT -> stringResource(Res.string.scan_not_recognised)
+    state.mode == ScanMode.PICK_PLANT -> stringResource(Res.string.scan_hold_steady)
     else -> stringResource(Res.string.scan_point)
 }
 

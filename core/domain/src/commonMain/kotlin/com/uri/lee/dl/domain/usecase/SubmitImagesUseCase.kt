@@ -30,7 +30,7 @@ class SubmitImagesUseCase(
     private val contributions: ContributionRepository,
     private val auth: AuthRepository,
 ) {
-    operator fun invoke(herbId: Long, images: List<LocalImage>, location: GeoLocation?): Flow<SubmitProgress> = flow {
+    operator fun invoke(herbId: Long, images: List<LocalImage>, location: GeoLocation): Flow<SubmitProgress> = flow {
         val uploaderId = auth.currentUserId ?: throw NotSignedInException()
         val uploaded = mutableListOf<UploadedImage>()
         var failed = 0

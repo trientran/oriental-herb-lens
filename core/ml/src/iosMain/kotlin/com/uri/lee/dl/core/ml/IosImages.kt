@@ -3,8 +3,10 @@ package com.uri.lee.dl.core.ml
 import com.uri.lee.dl.domain.media.ImageCompressor
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.ml.ImageCropper
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.ml.ReadPhoto
+import com.uri.lee.dl.domain.ml.Region
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
@@ -34,6 +36,19 @@ internal class IosPhotoReader : PhotoReader {
         val image = load(photo)?.uprightScaled(maxDimension = 1024.0) ?: return@withContext null
         val (width, height) = image.pixelSize()
         ReadPhoto(IosClassifierImage(image), width, height)
+    }
+}
+
+/** Cuts a region out of an upright image. */
+internal class IosImageCropper : ImageCropper {
+    override suspend fun crop(image: ClassifierImage, region: Region): ClassifierImage? {
+        val upright = (image as IosClassifierImage).image
+        val (width, height) = upright.pixelSize()
+        val left = (region.left * width).toDouble().coerceIn(0.0, width - 1.0)
+        val top = (region.top * height).toDouble().coerceIn(0.0, height - 1.0)
+        val right = (region.right * width).toDouble().coerceIn(left + 1, width.toDouble())
+        val bottom = (region.bottom * height).toDouble().coerceIn(top + 1, height.toDouble())
+        return upright.cropped(left, top, right - left, bottom - top)?.let(::IosClassifierImage)
     }
 }
 

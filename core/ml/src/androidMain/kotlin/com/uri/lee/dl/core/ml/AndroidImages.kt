@@ -9,8 +9,11 @@ import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.uri.lee.dl.domain.media.ImageCompressor
 import com.uri.lee.dl.domain.media.LocalImage
+import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.ml.ImageCropper
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.ml.ReadPhoto
+import com.uri.lee.dl.domain.ml.Region
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import java.io.ByteArrayOutputStream
@@ -30,6 +33,18 @@ internal class AndroidImageCompressor(private val context: Context) : ImageCompr
             bitmap.recycle()
             out.toByteArray()
         }
+    }
+}
+
+/** Cuts a region out of an image that still has its bitmap (camera frames and read photos do). */
+internal class AndroidImageCropper : ImageCropper {
+    override suspend fun crop(image: ClassifierImage, region: Region): ClassifierImage? {
+        val bitmap = (image as MlKitClassifierImage).bitmap ?: return null
+        val left = (region.left * bitmap.width).toInt().coerceIn(0, bitmap.width - 1)
+        val top = (region.top * bitmap.height).toInt().coerceIn(0, bitmap.height - 1)
+        val right = (region.right * bitmap.width).toInt().coerceIn(left + 1, bitmap.width)
+        val bottom = (region.bottom * bitmap.height).toInt().coerceIn(top + 1, bitmap.height)
+        return MlKitClassifierImage(Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top))
     }
 }
 

@@ -42,11 +42,13 @@ data class ContributeState(
     val isSignedIn: Boolean = true,
     val phase: UploadPhase = UploadPhase.Editing,
 ) {
-    val canUpload: Boolean get() = isSignedIn && photos.isNotEmpty() && (phase == UploadPhase.Editing || phase == UploadPhase.Failed)
+    /** Every upload is geotagged: the photos are research records, so a place is required. */
+    val canUpload: Boolean
+        get() = isSignedIn && photos.isNotEmpty() && location != null && (phase == UploadPhase.Editing || phase == UploadPhase.Failed)
 }
 
 /**
- * Photos of a species, with an optional place, uploaded to R2 and listed on the species. The
+ * Photos of a species, with the place they were taken, uploaded to R2 and listed on the species. The
  * upload runs in the app scope, so it finishes even if the user leaves the screen.
  */
 class ContributeViewModel(
@@ -87,10 +89,11 @@ class ContributeViewModel(
     private fun upload() {
         if (!currentState.canUpload) return
         val state = currentState
+        val location = state.location?.location ?: return
         setState { copy(phase = UploadPhase.Uploading(0, photos.size)) }
         appScope.launch {
             try {
-                submitImages(state.herbId, state.photos, state.location?.location).collect { progress ->
+                submitImages(state.herbId, state.photos, location).collect { progress ->
                     setState {
                         copy(
                             phase = when (progress) {

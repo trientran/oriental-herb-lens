@@ -5,6 +5,8 @@ import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.ml.FoundObject
+import com.uri.lee.dl.domain.ml.ImageCropper
 import com.uri.lee.dl.domain.ml.ObjectFinder
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.ml.ReadPhoto
@@ -20,6 +22,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.hypot
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -40,12 +45,23 @@ sealed interface ScanSource {
 /** [herbs] is null while the photo is being identified; [failed] when it couldn't be read. */
 data class BatchItem(val uri: String, val herbs: List<RecognizedHerb>? = null, val failed: Boolean = false)
 
-/** A plant shown on the camera view or the photo, which the user can pick. */
+/** A plant shown on the camera view or the photo as a dot, which the user can pick. */
 data class ShownObject(val id: Int, val region: Region)
+
+/** The plant the user picked (or held the camera on), cut out as [image], and what it may be. */
+class PickedPlant(val id: Int, val image: ClassifierImage, val herbs: List<RecognizedHerb>)
 
 sealed interface ScanAction {
     data class SetMode(val mode: ScanMode) : ScanAction
+
+    /** A tap on a plant's dot. */
     data class SelectObject(val id: Int) : ScanAction
+
+    /** Closes the picked plant; on the camera, looking for a plant starts again. */
+    data object ClosePicked : ScanAction
+
+    /** The camera view's width / height, so Whole view identifies what the user can see. */
+    data class ViewAspect(val aspect: Float) : ScanAction
 
     /** The user confirmed [count] photos in the picker; they arrive shortly as [PhotosPicked]. */
     data class PhotosPreparing(val count: Int) : ScanAction
@@ -56,9 +72,13 @@ sealed interface ScanAction {
 data class ScanState(
     val mode: ScanMode = ScanMode.WHOLE_VIEW,
     val source: ScanSource = ScanSource.Camera,
+    /** Pick a plant: a dot on each plant found. */
     val objects: List<ShownObject> = emptyList(),
-    val selectedId: Int? = null,
-    /** For the whole view, or the selected plant; never below [minConfidence]. */
+    /** Pick a plant on the camera: the plant being held steady on, until it's picked. */
+    val steadyId: Int? = null,
+    /** Pick a plant: the plant shown with what it may be. The camera pauses while there is one. */
+    val picked: PickedPlant? = null,
+    /** Whole view: what the camera or photo may show; never below [minConfidence]. */
     val results: List<RecognizedHerb> = emptyList(),
     /** Width / height of the latest camera frame, to place [objects] over the preview. */
     val frameAspect: Float? = null,
@@ -73,19 +93,33 @@ data class ScanState(
 /**
  * The Identify screen. Camera frames arrive through [analyzeFrame], one at a time; picked photos
  * through [ScanAction.PhotosPicked]. Everything is classified on the device.
+ *
+ * Pick a plant on the camera only looks for plants in each frame, which is quick. Once the camera
+ * has stayed on one plant for [STEADY] (or the user taps its dot), that plant is cut out and
+ * identified, and the camera pauses on it until the user closes it.
  */
 class ScanViewModel(
     private val recognizeHerbs: RecognizeHerbsUseCase,
     private val identifyPlants: IdentifyPlantsUseCase,
     private val objectFinder: ObjectFinder,
+    private val cropper: ImageCropper,
     private val photoReader: PhotoReader,
     private val settings: SettingsRepository,
+    private val time: TimeSource = TimeSource.Monotonic,
 ) : MviViewModel<ScanState, ScanAction>(ScanState()) {
 
     private var photo: ReadPhoto? = null
-    private var photoResults: Map<Int, List<RecognizedHerb>> = emptyMap()
+    private var photoPlants: Map<Int, PickedPlant> = emptyMap()
     private var photoJob: Job? = null
+    private var viewAspect: Float? = null
+
+    /** The plant the camera is on, and since when it hasn't moved. */
+    private var steady: Steady? = null
+    private var tappedId: Int? = null
+    private var lastFrame: List<Pair<ShownObject, FoundObject>> = emptyList()
     private var lastFrameLog: TimeMark? = null
+
+    private class Steady(val id: Int, val region: Region, val since: TimeMark)
 
     init {
         settings.scanSettings
@@ -101,20 +135,47 @@ class ScanViewModel(
         when (action) {
             is ScanAction.SetMode -> {
                 if (action.mode == currentState.mode) return
-                setState { copy(mode = action.mode, objects = emptyList(), selectedId = null, results = emptyList()) }
+                resetCamera()
+                setState { copy(mode = action.mode, objects = emptyList(), steadyId = null, picked = null, results = emptyList()) }
                 viewModelScope.launch { runCatching { settings.setDetectObjectsInSingleImage(action.mode == ScanMode.PICK_PLANT) } }
                 if (currentState.source is ScanSource.Photo) identifyPhoto()
             }
-            is ScanAction.SelectObject -> setState {
-                copy(selectedId = action.id, results = if (source is ScanSource.Photo) photoResults[action.id].orEmpty() else results)
+            is ScanAction.SelectObject -> selectObject(action.id)
+            ScanAction.ClosePicked -> {
+                resetCamera()
+                setState { copy(picked = null, steadyId = null) }
             }
+            is ScanAction.ViewAspect -> viewAspect = action.aspect
             is ScanAction.PhotosPreparing -> setState { copy(preparingPhotos = action.count) }
             is ScanAction.PhotosPicked -> photosPicked(action.photos)
             ScanAction.BackToCamera -> {
                 photoJob?.cancel()
                 photo = null
-                setState { copy(source = ScanSource.Camera, objects = emptyList(), selectedId = null, results = emptyList(), isWorking = false, hasError = false) }
+                resetCamera()
+                setState {
+                    copy(
+                        source = ScanSource.Camera, objects = emptyList(), steadyId = null, picked = null,
+                        results = emptyList(), isWorking = false, hasError = false,
+                    )
+                }
             }
+        }
+    }
+
+    private fun selectObject(id: Int) {
+        val state = currentState
+        when (state.source) {
+            is ScanSource.Photo -> setState { copy(picked = photoPlants[id] ?: picked) }
+            ScanSource.Camera -> {
+                val paused = lastFrame.firstOrNull { it.first.id == id }
+                if (state.picked != null && paused != null) {
+                    // The camera is paused on a plant: identify another one from the same frame
+                    viewModelScope.launch { pick(paused.first.id, paused.second.image) }
+                } else {
+                    tappedId = id // picked from the next frame
+                }
+            }
+            is ScanSource.Photos -> Unit
         }
     }
 
@@ -125,30 +186,16 @@ class ScanViewModel(
     suspend fun analyzeFrame(frame: ClassifierImage, aspect: Float) {
         val state = currentState
         if (state.source != ScanSource.Camera) return
+        val started = time.markNow()
         try {
             when (state.mode) {
                 ScanMode.WHOLE_VIEW -> {
-                    val results = recognizeHerbs(frame, state.minConfidence, MAX_RESULTS)
-                    logFrame { "whole view: ${results.describe()}" }
+                    val visible = viewAspect?.let { cropper.crop(frame, visibleSquare(aspect, it)) } ?: frame
+                    val results = recognizeHerbs(visible, state.minConfidence, MAX_RESULTS)
+                    logFrame { "whole view in ${started.elapsedNow().inWholeMilliseconds} ms: ${results.describe()}" }
                     setState { if (mode == ScanMode.WHOLE_VIEW && source == ScanSource.Camera) copy(results = results, frameAspect = aspect) else this }
                 }
-                ScanMode.PICK_PLANT -> {
-                    val found = objectFinder.find(frame, fromCamera = true)
-                    val shown = found.mapIndexed { i, it -> ShownObject(it.trackingId ?: -(i + 1), it.region) }
-                    // Keep the user's choice while it's in view; otherwise the biggest plant
-                    val selected = state.selectedId?.takeIf { id -> shown.any { it.id == id } } ?: shown.maxByOrNull { it.region.area }?.id
-                    val results = found.getOrNull(shown.indexOfFirst { it.id == selected })
-                        ?.let { recognizeHerbs(it.image, state.minConfidence, MAX_RESULTS) }
-                        .orEmpty()
-                    logFrame { "pick: ${shown.size} objects ${shown.map { it.region }}, selected $selected: ${results.describe()}" }
-                    setState {
-                        if (mode == ScanMode.PICK_PLANT && source == ScanSource.Camera) {
-                            copy(objects = shown, selectedId = selected, results = results, frameAspect = aspect)
-                        } else {
-                            this
-                        }
-                    }
-                }
+                ScanMode.PICK_PLANT -> if (state.picked == null) findPlants(frame, aspect, started)
             }
         } catch (e: CancellationException) {
             throw e
@@ -157,10 +204,55 @@ class ScanViewModel(
         }
     }
 
+    private suspend fun findPlants(frame: ClassifierImage, aspect: Float, started: TimeMark) {
+        val found = objectFinder.find(frame, fromCamera = true)
+        val shown = found.mapIndexed { i, it -> ShownObject(it.trackingId ?: -(i + 1), it.region) }
+        lastFrame = shown.zip(found)
+        val tapped = tappedId?.let { id -> lastFrame.firstOrNull { it.first.id == id } }
+        // Stay with the plant already being held on while it's in view; otherwise the biggest
+        val target = tapped
+            ?: lastFrame.firstOrNull { it.first.id == steady?.id }
+            ?: lastFrame.maxByOrNull { it.first.region.area }
+        val current = steady
+        val now = when {
+            target == null -> null
+            current == null || current.id != target.first.id || current.region.movedFrom(target.first.region) ->
+                Steady(target.first.id, target.first.region, time.markNow())
+            else -> current
+        }
+        steady = now
+        val ready = target != null && now != null && (tapped != null || now.since.elapsedNow() >= STEADY)
+        logFrame { "pick in ${started.elapsedNow().inWholeMilliseconds} ms: ${shown.size} plants, on ${target?.first?.id}" }
+        setState {
+            if (mode == ScanMode.PICK_PLANT && source == ScanSource.Camera) {
+                copy(objects = shown, steadyId = if (ready) null else target?.first?.id, frameAspect = aspect)
+            } else {
+                this
+            }
+        }
+        if (ready && target != null) pick(target.first.id, target.second.image)
+    }
+
+    /** Identifies one plant from the camera and pauses on it. */
+    private suspend fun pick(id: Int, image: ClassifierImage) {
+        tappedId = null
+        steady = null
+        val started = time.markNow()
+        val herbs = recognizeHerbs(image, currentState.minConfidence, MAX_RESULTS)
+        log.d { "picked $id in ${started.elapsedNow().inWholeMilliseconds} ms: ${herbs.describe()}" }
+        setState { if (mode == ScanMode.PICK_PLANT && source == ScanSource.Camera) copy(picked = PickedPlant(id, image, herbs), steadyId = null) else this }
+    }
+
+    private fun resetCamera() {
+        steady = null
+        tappedId = null
+        lastFrame = emptyList()
+    }
+
     /** At most once a second, so the log shows what the camera sees without a line per frame. */
     private fun logFrame(message: () -> String) {
         if (lastFrameLog?.let { it.elapsedNow() < 1.seconds } == true) return
-        lastFrameLog = TimeSource.Monotonic.markNow()
+        lastFrameLog = time.markNow()
         log.d(message = message)
     }
 
@@ -173,13 +265,13 @@ class ScanViewModel(
         photoJob?.cancel()
         photo = null
         if (photos.size == 1) {
-            setState { copy(source = ScanSource.Photo(photos.single().uri), objects = emptyList(), selectedId = null, results = emptyList()) }
+            setState { copy(source = ScanSource.Photo(photos.single().uri), objects = emptyList(), picked = null, results = emptyList()) }
             photoJob = viewModelScope.launch {
                 photo = photoReader.read(photos.single())
                 if (photo == null) setState { copy(hasError = true) } else identifyPhoto()
             }
         } else {
-            setState { copy(source = ScanSource.Photos(photos.map { BatchItem(it.uri) }), results = emptyList(), objects = emptyList()) }
+            setState { copy(source = ScanSource.Photos(photos.map { BatchItem(it.uri) }), results = emptyList(), objects = emptyList(), picked = null) }
             photoJob = viewModelScope.launch { identifyBatch(photos) }
         }
     }
@@ -192,7 +284,7 @@ class ScanViewModel(
             setState {
                 copy(
                     source = (source as? ScanSource.Photo)?.copy(aspect = read.width.toFloat() / read.height) ?: source,
-                    isWorking = true, hasError = false, objects = emptyList(), selectedId = null, results = emptyList(),
+                    isWorking = true, hasError = false, objects = emptyList(), picked = null, results = emptyList(),
                 )
             }
             try {
@@ -203,12 +295,12 @@ class ScanViewModel(
                     }
                     ScanMode.PICK_PLANT -> {
                         val plants = identifyPlants(read.image, minConfidence, MAX_RESULTS)
-                        photoResults = plants.withIndex().associate { (i, plant) -> i to plant.herbs }
+                        photoPlants = plants.withIndex().associate { (i, plant) -> i to PickedPlant(i, plant.image, plant.herbs) }
                         setState {
                             copy(
                                 objects = plants.mapIndexed { i, plant -> ShownObject(i, plant.region) },
-                                selectedId = if (plants.isEmpty()) null else 0,
-                                results = photoResults[0].orEmpty(),
+                                // The most likely herb is shown straight away; the other dots can be tapped
+                                picked = photoPlants[0]?.takeIf { it.herbs.isNotEmpty() },
                                 isWorking = false,
                             )
                         }
@@ -245,6 +337,34 @@ class ScanViewModel(
 
     companion object {
         const val MAX_RESULTS = 3
+
+        /** How long the camera stays on a plant before it's identified. */
+        val STEADY: Duration = 2.seconds
         private val log = Logger.withTag("Scan")
     }
+}
+
+/**
+ * Whether the camera moved off this plant: its centre shifted by more than 8 % of the frame, or
+ * its size changed by more than a third (moving closer or away). Small jitter is ignored.
+ */
+internal fun Region.movedFrom(now: Region): Boolean {
+    val shift = hypot((centerX - now.centerX).toDouble(), (centerY - now.centerY).toDouble())
+    val resized = if (area > 0f) abs(now.area - area) / area else 1f
+    return shift > 0.08 || resized > 0.33f
+}
+
+/**
+ * The largest centred square of a camera frame ([frameAspect] = width / height) that is visible
+ * in a view of [viewAspect] filled by the frame. The herb model takes a square image, so this is
+ * what the user sees, without stretching it.
+ */
+internal fun visibleSquare(frameAspect: Float, viewAspect: Float): Region {
+    // Visible part of the frame, as fractions of its width and height
+    val visibleWidth = if (frameAspect > viewAspect) viewAspect / frameAspect else 1f
+    val visibleHeight = if (frameAspect > viewAspect) 1f else frameAspect / viewAspect
+    // The square's side in frame-height units, then as fractions of width and height
+    val side = minOf(visibleWidth * frameAspect, visibleHeight)
+    val width = side / frameAspect
+    return Region((1 - width) / 2, (1 - side) / 2, (1 + width) / 2, (1 + side) / 2)
 }

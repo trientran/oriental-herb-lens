@@ -54,7 +54,7 @@ class SubmitImagesUseCaseTest {
     @Test
     fun `a failing image is skipped and the rest are still saved`() = runTest {
         val progress = useCase(unreadable = setOf("a"), hostFailsFor = setOf("b"))(
-            42, listOf(Picked("a"), Picked("b"), Picked("c")), null,
+            42, listOf(Picked("a"), Picked("b"), Picked("c")), hereLocation,
         ).toList()
 
         assertEquals(SubmitProgress.Finished(uploaded = 1, failed = 2), progress.last())
@@ -63,7 +63,7 @@ class SubmitImagesUseCaseTest {
 
     @Test
     fun `nothing is written when every image fails`() = runTest {
-        useCase(unreadable = setOf("a"))(42, listOf(Picked("a")), null).toList()
+        useCase(unreadable = setOf("a"))(42, listOf(Picked("a")), hereLocation).toList()
 
         assertTrue(contributions.images.isEmpty())
     }
@@ -71,6 +71,6 @@ class SubmitImagesUseCaseTest {
     @Test
     fun `signed-out users can't contribute`() = runTest {
         auth.userId.value = null
-        assertFailsWith<NotSignedInException> { useCase()(42, listOf(Picked("a")), null).toList() }
+        assertFailsWith<NotSignedInException> { useCase()(42, listOf(Picked("a")), hereLocation).toList() }
     }
 }

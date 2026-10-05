@@ -73,10 +73,14 @@
     <string name="scan_pick_plant">Chọn cây</string>
     <string name="scan_point">Hướng camera vào một cây.</string>
     <string name="scan_looking">Đang tìm cây…</string>
-    <string name="scan_tap_plant">Chạm vào chấm khác để nhận dạng cây đó.</string>
+    <string name="scan_tap_plant">Chạm vào một chấm để nhận dạng cây đó.</string>
+    <string name="scan_hold_steady">Giữ camera trên một cây, hoặc chạm vào chấm của cây đó.</string>
+    <string name="scan_again">Quét lại</string>
+    <string name="scan_plant_unknown">Không nhận ra. Có thể ứng dụng chưa biết loài này; hãy thử phần khác của cây.</string>
+    <string name="cd_picked_plant">Cây được nhận dạng</string>
     <string name="scan_not_recognised">Không nhận ra. Hãy lại gần hơn hoặc thử phần khác của cây.</string>
     <string name="scan_photo_none">Không nhận ra cây thuốc nào trong ảnh này.</string>
-    <string name="scan_photo_none_pick">Không nhận ra cây thuốc nào trong các cây ở ảnh này. Hãy thử Toàn cảnh.</string>
+    <string name="scan_photo_none_pick">Không tìm thấy cây riêng lẻ nào trong ảnh này. Hãy thử Toàn cảnh.</string>
     <string name="scan_photo_failed">Không đọc được ảnh này.</string>
     <string name="scan_photos">Ảnh</string>
     <string name="scan_back_to_camera">Camera</string>
@@ -127,7 +131,8 @@
     <string name="contribute_photos">Ảnh của bạn</string>
     <string name="contribute_photos_tip">Ảnh rõ nét của một cây là tốt nhất: lá, hoa hoặc cả cây. Camera điện thoại nào cũng được.</string>
     <string name="contribute_location">Chụp ở đâu?</string>
-    <string name="contribute_location_body">Không bắt buộc. Chỉ cần khu vực gần đúng.</string>
+    <string name="contribute_location_body">Bắt buộc. Nơi bạn chụp cây: dùng vị trí của bạn, hoặc chọn điểm trên bản đồ.</string>
+    <string name="contribute_location_needed">Thêm nơi chụp để tải lên</string>
     <string name="contribute_use_my_location">Dùng vị trí của tôi</string>
     <string name="contribute_choose_on_map">Chọn trên bản đồ</string>
     <string name="contribute_map_hint">Di chuyển bản đồ để ghim chỉ vào nơi cây mọc</string>

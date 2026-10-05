@@ -36,11 +36,13 @@ import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
 import com.uri.lee.dl.domain.ml.Region
 import com.uri.lee.dl.domain.model.RecognizedHerb
 import com.uri.lee.dl.feature.scan.BatchItem
+import com.uri.lee.dl.feature.scan.PickedPlant
 import com.uri.lee.dl.feature.scan.ScanMode
 import com.uri.lee.dl.feature.scan.ScanScreen
 import com.uri.lee.dl.feature.scan.ScanSource
 import com.uri.lee.dl.feature.scan.ScanState
 import com.uri.lee.dl.feature.scan.ShownObject
+import com.uri.lee.dl.testing.fakes.FakeImage
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileScreen
 import com.uri.lee.dl.feature.profile.ProfileState
@@ -110,8 +112,19 @@ class ScreenshotTest {
                 mode = ScanMode.PICK_PLANT,
                 source = ScanSource.Photo("https://example.org/photo.jpg", aspect = 0.75f),
                 objects = listOf(ShownObject(0, Region(0.1f, 0.2f, 0.6f, 0.6f)), ShownObject(1, Region(0.5f, 0.55f, 0.9f, 0.9f))),
-                selectedId = 0,
-                results = listOf(RecognizedHerb("3035652", 0.88f, Samples.dinhLang)),
+                picked = PickedPlant(0, FakeImage, listOf(RecognizedHerb("3035652", 0.88f, Samples.dinhLang), RecognizedHerb("2766278", 0.41f, Samples.catalog[3]))),
+            ),
+            onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
+        )
+    }
+
+    @Test fun scanHoldSteady() = light("scan_hold_steady") {
+        ScanScreen(
+            ScanState(
+                mode = ScanMode.PICK_PLANT,
+                objects = listOf(ShownObject(7, Region(0.15f, 0.1f, 0.65f, 0.7f)), ShownObject(8, Region(0.4f, 0.65f, 0.6f, 0.85f))),
+                steadyId = 7,
+                frameAspect = 0.75f,
             ),
             onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
         )
