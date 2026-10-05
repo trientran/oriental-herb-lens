@@ -152,7 +152,7 @@ class ScanViewModelTest : MainDispatcherTest() {
     }
 
     @Test
-    fun `one photo in pick a plant mode shows each plant, the most likely herb first`() = runTest {
+    fun `one photo in pick a plant mode shows each plant with the most likely herb first`() = runTest {
         val viewModel = viewModel()
         viewModel.onAction(ScanAction.SetMode(ScanMode.PICK_PLANT))
 

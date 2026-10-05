@@ -652,13 +652,13 @@ service cloud.firestore {
   <div class="phase" data-phase="5">
     <div class="phase-h"><div class="phase-no">5</div><div><h3>iOS</h3><p>iPhone and iPad.</p></div><span class="prog"></span></div>
     <ul class="tasks">
-      <li><input type="checkbox" id="p5-1"><label for="p5-1"><span class="tt"><code>iosApp</code>: SwiftUI host with <code>ComposeUIViewController</code></span></label></li>
-      <li><input type="checkbox" id="p5-2"><label for="p5-2"><span class="tt">Firebase iOS SDK (SPM), App Attest, APNs + FCM</span></label></li>
-      <li><input type="checkbox" id="p5-3"><label for="p5-3"><span class="tt">Bundle the model and catalog; downloads to Application Support</span></label></li>
-      <li><input type="checkbox" id="p5-4"><label for="p5-4"><span class="tt">ML Kit iOS custom labelling behind <code>HerbClassifier</code></span><span class="td">Same <code>.tflite</code>; results compared with Android on a fixed image set.</span></label></li>
-      <li><input type="checkbox" id="p5-5"><label for="p5-5"><span class="tt">AVFoundation camera; object detection with ML Kit iOS</span></label></li>
-      <li><input type="checkbox" id="p5-6"><label for="p5-6"><span class="tt">Google Sign-In plus Sign in with Apple</span><span class="td">Required by App Store guideline 4.8.</span></label></li>
-      <li><input type="checkbox" id="p5-7"><label for="p5-7"><span class="tt">Mapbox, Places, location and photo picker on iOS</span></label></li>
+      <li><input type="checkbox" id="p5-1" checked><label for="p5-1"><span class="tt"><code>iosApp</code>: SwiftUI host with <code>ComposeUIViewController</code></span></label></li>
+      <li><input type="checkbox" id="p5-2"><label for="p5-2"><span class="tt">Firebase iOS SDK, App Attest, APNs + FCM</span><span class="td">Firebase, Google Sign-In and ML Kit through CocoaPods (ML Kit has no SPM package; Firebase can move to SPM before its pods stop in October 2026). App Check: debug provider in debug builds, App Attest in release. APNs + FCM still to do.</span></label></li>
+      <li><input type="checkbox" id="p5-3" checked><label for="p5-3"><span class="tt">Bundle the model and catalog; downloads to Application Support</span></label></li>
+      <li><input type="checkbox" id="p5-4"><label for="p5-4"><span class="tt">ML Kit iOS custom labelling behind <code>HerbClassifier</code></span><span class="td">Same <code>.tflite</code> (224 × 224 input), through a Swift bridge. Device only: ML Kit has no Apple-silicon simulator build, so the simulator gets stubs. Still to do: compare results with Android on a fixed image set.</span></label></li>
+      <li><input type="checkbox" id="p5-5" checked><label for="p5-5"><span class="tt">AVFoundation camera; object detection with ML Kit iOS</span><span class="td">BGRA frames copied out of the camera's buffers at once (holding them stalled the camera). Pick a plant: dots, hold for 2 s or tap, then the crop and its results (both platforms).</span></label></li>
+      <li><input type="checkbox" id="p5-6"><label for="p5-6"><span class="tt">Google Sign-In plus Sign in with Apple</span><span class="td">Required by App Store guideline 4.8. Google works on a device; Apple needs the Apple provider enabled in Firebase and a test.</span></label></li>
+      <li><input type="checkbox" id="p5-7" checked><label for="p5-7"><span class="tt">Maps, location and photo picker on iOS</span><span class="td">MapKit instead of Mapbox; Places dropped (pin picker). PHPicker hands over JPEG copies. Uploads need a place.</span></label></li>
       <li><input type="checkbox" id="p5-8"><label for="p5-8"><span class="tt">iPad layouts; TestFlight</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> the app on iPhone and iPad.</div>
