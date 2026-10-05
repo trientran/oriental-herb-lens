@@ -81,6 +81,17 @@ jobs:
       - name: Compile for iOS and run iOS simulator tests
         run: ./gradlew compileKotlinIosArm64 iosSimulatorArm64Test --console=plain
 
+      # The whole Xcode app (Swift bridges, CocoaPods, the Kotlin framework) for devices, where
+      # ML Kit is linked. Unsigned, and without GoogleService-Info.plist or Secrets.xcconfig,
+      # which only a runnable build needs.
+      - name: Build the iOS app
+        working-directory: iosApp
+        run: |
+          pod install
+          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Debug \
+            -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 40  # the default shell fails the step if xcodebuild does
+
       - name: Upload reports
         if: failure()
         uses: actions/upload-artifact@v4
