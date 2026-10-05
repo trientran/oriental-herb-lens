@@ -13,6 +13,7 @@ import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
 import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
+import com.uri.lee.dl.data.firebase.UserProfileSync
 import com.uri.lee.dl.data.firebase.FirestoreContributionRepository
 import com.uri.lee.dl.data.firebase.FirestorePhotoRepository
 import com.uri.lee.dl.data.gbif.GbifPhotoRepository
@@ -57,6 +58,7 @@ val dataModule: Module = module {
     single<SettingsRepository> { DataStoreSettingsRepository(get(named(PreferenceStore.SETTINGS))) }
     singleOf(::LocalUserLibraryRepository) bind UserLibraryRepository::class
     single { LegacyLibraryMigration(get(), get(), get(named(PreferenceStore.SETTINGS))) }
+    single { UserProfileSync(get(), get(), get(named(PreferenceStore.SETTINGS))) }
 
     singleOf(::FirebaseAuthRepository) bind AuthRepository::class
     singleOf(::FirestorePhotoRepository) bind PhotoRepository::class
