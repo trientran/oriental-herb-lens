@@ -190,6 +190,14 @@ class ScreenshotTest {
         ContributeScreen(ContributeState(herbId = 3035652, speciesName = "Đinh lăng", phase = UploadPhase.Uploading(2, 5)), {}, ContributePlatform(pickPhotos = {}), {}, {})
     }
 
+    @Config(qualifiers = "w1032dp-h1376dp-xhdpi")
+    @Test fun scanTablet() = light("scan_tablet") {
+        ScanScreen(
+            ScanState(results = listOf(RecognizedHerb("3035652", 0.92f, Samples.dinhLang), RecognizedHerb("2766278", 0.74f, Samples.catalog[3]))),
+            onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
+        )
+    }
+
     @Config(qualifiers = "+vi")
     @Test fun browseVietnamese() = light("browse_vi") { BrowseScreen(BrowseState(species = Samples.catalog, isLoading = false), {}, {}, selectedId = null) }
 
