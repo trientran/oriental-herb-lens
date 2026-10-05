@@ -1271,6 +1271,9 @@ PODS:
   - GoogleDataTransport (10.1.1):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
+  - GoogleMLKit/ImageLabeling (8.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitImageLabeling (~> 7.0.0)
   - GoogleMLKit/ImageLabelingCustom (8.0.0):
     - GoogleMLKit/MLKitCore
     - MLKitImageLabelingCustom (~> 7.0.0)
@@ -1418,6 +1421,11 @@ PODS:
     - GoogleUtilities/Logger (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+  - MLKitImageLabeling (7.0.0):
+    - MLKitCommon (~> 13.0)
+    - MLKitImageLabelingCommon (~> 9.0)
+    - MLKitVision (~> 9.0)
+    - MLKitVisionKit (~> 10.0)
   - MLKitImageLabelingCommon (9.0.0):
     - MLKitCommon (~> 13.0)
     - MLKitVision (~> 9.0)
@@ -1461,6 +1469,7 @@ DEPENDENCIES:
   - FirebaseCore
   - FirebaseFirestore
   - FirebaseRemoteConfig
+  - GoogleMLKit/ImageLabeling (= 8.0.0)
   - GoogleMLKit/ImageLabelingCustom (= 8.0.0)
   - GoogleMLKit/ObjectDetection (= 8.0.0)
   - GoogleSignIn
@@ -1497,6 +1506,7 @@ SPEC REPOS:
     - leveldb-library
     - MLImage
     - MLKitCommon
+    - MLKitImageLabeling
     - MLKitImageLabelingCommon
     - MLKitImageLabelingCustom
     - MLKitObjectDetection
@@ -1539,6 +1549,7 @@ SPEC CHECKSUMS:
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   MLImage: 2ab9c968e75f57911c16f4c9d9e8a8e9604a86a1
   MLKitCommon: 26b779f072a182c1603d4c88a101c350cac837b1
+  MLKitImageLabeling: b486a127450efab9ed86e633f9a12fe7d9dbc493
   MLKitImageLabelingCommon: 30fb7c613cd8dfd281f0456cb1c58758743cccb6
   MLKitImageLabelingCustom: bc39457a0f5d9806a42e17ba9b23e47aef5e95ac
   MLKitObjectDetection: dd631b8a5e24d521d25cff0f52475e2711f1ed01
@@ -1550,6 +1561,6 @@ SPEC CHECKSUMS:
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
 
-PODFILE CHECKSUM: f4c728944db72b68261a73d6cbab7aa31ed32901
+PODFILE CHECKSUM: e7f00002e750c271cb316a8ea355b18350289048
 
 COCOAPODS: 1.17.0

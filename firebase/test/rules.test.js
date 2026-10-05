@@ -111,6 +111,18 @@ test('users delete only their own document, with their account', async () => {
   await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
 });
 
+test('anyone can report a photo; only well-formed reports, never read back', async () => {
+  const report = (reporterUid) => ({
+    speciesKey: 3035652, url: photo('a'), uploaderId: 'bob', reason: 'SEXUAL_OR_VIOLENT', reporterUid, createdAt: serverTimestamp(),
+  });
+  await assertSucceeds(addDoc(collection(as(null), 'photoReports'), report(null)));
+  const created = await assertSucceeds(addDoc(collection(as('carol'), 'photoReports'), report('carol')));
+  await assertFails(getDoc(created));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), report('dave')));
+  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), reason: 'BORED' }));
+  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), extra: 1 }));
+});
+
 test('old app versions can still read config/mobile, nobody can write it', async () => {
   await assertSucceeds(getDoc(doc(as(null), 'config/mobile')));
   await assertFails(setDoc(doc(as('bob'), 'config/mobile'), { mustUpdateAndroid: false }));

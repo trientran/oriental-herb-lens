@@ -164,4 +164,23 @@
     </plurals>
     <string name="notify_upload_failed_title">Upload failed</string>
     <string name="notify_upload_failed">Your photos of %1$s couldn’t be uploaded. Open the app to try again.</string>
+    <string name="cd_more">More options</string>
+    <string name="report_photo">Report photo</string>
+    <string name="report_title">Report this photo?</string>
+    <string name="report_body">We’ll review it within 24 hours. It’s hidden for you straight away.</string>
+    <string name="report_reason_not_plant">Not a plant</string>
+    <string name="report_reason_sexual_violent">Sexual or violent</string>
+    <string name="report_reason_person">Shows a person</string>
+    <string name="report_reason_wrong_species">Wrong species</string>
+    <string name="report_reason_other">Something else</string>
+    <string name="report_send">Report</string>
+    <string name="hide_contributor">Hide this contributor’s photos</string>
+    <string name="hide_contributor_title">Hide this contributor’s photos?</string>
+    <string name="hide_contributor_body">You won’t see any photo they shared, on any species. This stays on this device.</string>
+    <string name="hide">Hide</string>
+    <string name="notice_reported">Thanks. The photo is hidden and we’ll review it.</string>
+    <string name="notice_contributor_hidden">You won’t see this contributor’s photos any more.</string>
+    <string name="notice_failed">That didn’t work. Check your connection and try again.</string>
+    <string name="contribute_no_plant">No plant found</string>
+    <string name="contribute_no_plant_hint">Photos where no plant was found won’t be uploaded. Share clear photos of the plant itself.</string>
 </resources>

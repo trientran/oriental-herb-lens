@@ -58,6 +58,8 @@ play-services-location = { module = "com.google.android.gms:play-services-locati
 
 mlkit-image-labeling-custom = { module = "com.google.mlkit:image-labeling-custom", version.ref = "mlkit-image-labeling-custom" }
 mlkit-objectdetection = { module = "com.google.mlkit:object-detection", version.ref = "mlkit-object-detection" }
+# The general labeller through Google Play services: its model is downloaded by Play, not in the APK
+mlkit-image-labeling-play = { module = "com.google.android.gms:play-services-mlkit-image-labeling", version = "16.0.8" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-appcheck-debug = { module = "com.google.firebase:firebase-appcheck-debug", version.ref = "firebase-appcheck-debug" }

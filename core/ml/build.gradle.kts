@@ -14,6 +14,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.mlkit.image.labeling.custom)
             implementation(libs.mlkit.objectdetection)
+            implementation(libs.mlkit.image.labeling.play)
+            implementation(libs.kermit)
             implementation(libs.androidx.exifinterface)
             implementation(libs.kotlinx.coroutines.play.services)
             implementation(libs.koin.android)

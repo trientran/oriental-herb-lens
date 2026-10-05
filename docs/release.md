@@ -71,11 +71,29 @@ GitHub). Download the `.p8` file; Apple lets you download it only once.
 Signing is automatic: Xcode uses the key to sign with a cloud-managed distribution certificate for
 team `LY5X89S79S`. Nothing else is needed on the Apple side.
 
+### Moderation
+
+| Secret | Value |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | The JSON key of a Google Cloud service account with the **Cloud Datastore User** role, pasted as is |
+
+`.github/workflows/moderation.yml` runs every hour and opens a GitHub issue (label `moderation`)
+for each photo reported in the app, so GitHub emails you. Act on it within 24 hours with
+`tools/moderate.py` (remove the photo, ban the uploader, or dismiss), then close the issue.
+Create the key in Google Cloud console → IAM & Admin → Service accounts (project
+`oriental-herb-lens-41d17`) → Create → role Cloud Datastore User → Keys → Add key → JSON. Keep a
+copy for running `tools/moderate.py` locally (`GOOGLE_APPLICATION_CREDENTIALS`).
+
+Like the release workflow, it appears in the Actions tab once it's on the default branch.
+
 ## Before the first store release
 
 - Privacy policy and terms (`website/pages/`) published at the URLs the app links to
   (`LegalLinks` in core:designsystem) and entered in Play Console and App Store Connect.
-- App Store Connect: App Privacy answers, screenshots, description, age rating, and the
-  account deletion note (Profile → Delete account) for review.
+- App Store Connect: App Privacy answers, screenshots, description, age rating (18+), and
+  notes for review: account deletion (Profile → Delete account), and the content safeguards
+  of guideline 1.2: photos are checked for a plant on the device before upload, any shared
+  photo can be reported or its contributor hidden (photo viewer → ⋮), reports reach the
+  admin within the hour, and offenders are banned.
 - Firestore: after the Android release is live, set `mustUpdateAndroid` in `config/mobile` so old
   versions update (the new rules are already deployed; see `docs/firestore-rollout.md`).

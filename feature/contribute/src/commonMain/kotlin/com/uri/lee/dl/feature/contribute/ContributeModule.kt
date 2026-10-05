@@ -4,5 +4,5 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val contributeModule = module {
-    viewModel { (herbId: Long) -> ContributeViewModel(herbId, get(), get(), get(), get(), get(), get()) }
+    viewModel { (herbId: Long) -> ContributeViewModel(herbId, get(), get(), get(), get(), get(), get(), get()) }
 }

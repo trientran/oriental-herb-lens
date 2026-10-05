@@ -3,6 +3,7 @@ package com.uri.lee.dl.core.firebase
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERBS
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERB_IMAGES
 import com.uri.lee.dl.core.firebase.FirestorePaths.NAME_SUGGESTIONS
+import com.uri.lee.dl.core.firebase.FirestorePaths.PHOTO_REPORTS
 import com.uri.lee.dl.core.firebase.FirestorePaths.USERS
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_EMAIL
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_FAVORITES
@@ -57,10 +58,28 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(USERS).document(uid).set(profile, merge = true)
     }
 
+    /**
+     * A report of a shared photo, for the administrator (`photoReports`, create-only). The
+     * reporter is recorded when signed in; anyone may report.
+     */
+    suspend fun addPhotoReport(speciesKey: Long, url: String, uploaderId: String?, reason: String, reporterUid: String?) {
+        db.collection(PHOTO_REPORTS).add(PhotoReport(speciesKey, url, uploaderId, reason, reporterUid))
+    }
+
     /** Removes `users/{uid}`, where old app versions kept the user's name and email. */
     suspend fun deleteUserDocument(uid: String) {
         db.collection(USERS).document(uid).delete()
     }
+
+    @Serializable
+    private data class PhotoReport(
+        val speciesKey: Long,
+        val url: String,
+        val uploaderId: String?,
+        val reason: String,
+        val reporterUid: String?,
+        val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
+    )
 
     @Serializable
     private data class NameSuggestion(

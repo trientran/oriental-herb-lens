@@ -6,6 +6,7 @@ import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.moderation.PlantCheck
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
@@ -35,17 +36,26 @@ sealed interface UploadPhase {
 
 data class PickedLocation(val location: GeoLocation, val address: String?)
 
+/** What the on-device check found in a picked photo; only [PLANT] photos are uploaded. */
+enum class PhotoCheck { CHECKING, PLANT, NOT_PLANT }
+
 data class ContributeState(
     val herbId: Long,
     val speciesName: String? = null,
     val photos: List<LocalImage> = emptyList(),
+    /** By photo URI; a photo without an entry hasn't been checked yet. */
+    val checks: Map<String, PhotoCheck> = emptyMap(),
     val location: PickedLocation? = null,
     val isSignedIn: Boolean = true,
     val phase: UploadPhase = UploadPhase.Editing,
 ) {
     /** Every upload is geotagged: the photos are research records, so a place is required. */
     val canUpload: Boolean
-        get() = isSignedIn && photos.isNotEmpty() && location != null && (phase == UploadPhase.Editing || phase == UploadPhase.Failed)
+        get() = isSignedIn && plantPhotos.isNotEmpty() && photos.none { checks[it.uri] == PhotoCheck.CHECKING } &&
+            location != null && (phase == UploadPhase.Editing || phase == UploadPhase.Failed)
+
+    /** The photos that will be uploaded: those the check found a plant in. */
+    val plantPhotos: List<LocalImage> get() = photos.filter { checks[it.uri] == PhotoCheck.PLANT }
 }
 
 /**
@@ -60,6 +70,7 @@ class ContributeViewModel(
     private val addresses: AddressLine,
     private val appScope: ApplicationScope,
     private val notifier: UploadNotifier,
+    private val plantCheck: PlantCheck,
 ) : MviViewModel<ContributeState, ContributeAction>(ContributeState(herbId)) {
 
     init {
@@ -72,10 +83,19 @@ class ContributeViewModel(
 
     override fun onAction(action: ContributeAction) {
         when (action) {
-            is ContributeAction.PhotosPicked -> setState {
-                copy(photos = (photos + action.photos).distinctBy { it.uri }.take(MAX_PHOTOS))
+            is ContributeAction.PhotosPicked -> {
+                val added = action.photos.filter { picked -> currentState.photos.none { it.uri == picked.uri } }
+                setState {
+                    copy(
+                        photos = (photos + added).take(MAX_PHOTOS),
+                        checks = checks + added.associate { it.uri to PhotoCheck.CHECKING },
+                    )
+                }
+                check(added)
             }
-            is ContributeAction.RemovePhoto -> setState { copy(photos = photos.filterNot { it.uri == action.photo.uri }) }
+            is ContributeAction.RemovePhoto -> setState {
+                copy(photos = photos.filterNot { it.uri == action.photo.uri }, checks = checks - action.photo.uri)
+            }
             is ContributeAction.LocationPicked -> {
                 setState { copy(location = PickedLocation(action.location, address = null)) }
                 viewModelScope.launch {
@@ -88,15 +108,33 @@ class ContributeViewModel(
         }
     }
 
+    /**
+     * Looks for a plant in each new photo, on the device, so photos of anything else (people,
+     * explicit images) are never uploaded. Unreadable photos count as having no plant.
+     */
+    private fun check(photos: List<LocalImage>) = viewModelScope.launch {
+        for (photo in photos) {
+            val result = try {
+                if (plantCheck.showsPlant(photo) == true) PhotoCheck.PLANT else PhotoCheck.NOT_PLANT
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.w(e) { "Plant check failed" }
+                PhotoCheck.NOT_PLANT
+            }
+            setState { if (photo.uri in checks) copy(checks = checks + (photo.uri to result)) else this }
+        }
+    }
+
     private fun upload() {
         if (!currentState.canUpload) return
         val state = currentState
         val location = state.location?.location ?: return
-        setState { copy(phase = UploadPhase.Uploading(0, photos.size)) }
+        setState { copy(phase = UploadPhase.Uploading(0, plantPhotos.size)) }
         notifier.uploadStarted()
         appScope.launch {
             try {
-                submitImages(state.herbId, state.photos, location).collect { progress ->
+                submitImages(state.herbId, state.plantPhotos, location).collect { progress ->
                     if (progress is SubmitProgress.Finished) {
                         notifier.uploadFinished(state.herbId, state.speciesName, progress.uploaded, progress.failed)
                     }
@@ -113,7 +151,7 @@ class ContributeViewModel(
                 throw e
             } catch (e: Exception) {
                 log.e(e) { "Upload failed" }
-                notifier.uploadFinished(state.herbId, state.speciesName, uploaded = 0, failed = state.photos.size)
+                notifier.uploadFinished(state.herbId, state.speciesName, uploaded = 0, failed = state.plantPhotos.size)
                 setState { copy(phase = UploadPhase.Failed) }
             }
         }

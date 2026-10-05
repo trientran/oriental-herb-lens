@@ -20,6 +20,11 @@ interface NativeHerbLabeler {
 
 class NativeLabel(val text: String, val confidence: Float)
 
+interface NativeGeneralLabeler {
+    /** ML Kit's general image labeller (hundreds of everyday labels), for the upload plant check. */
+    fun labels(image: UIImage, minConfidence: Float, completion: (List<String>?, String?) -> Unit)
+}
+
 interface NativeObjectDetector {
     /** ML Kit's built-in object detector: stream mode with tracking for camera frames, single-image mode otherwise. */
     fun detect(image: UIImage, fromCamera: Boolean, completion: (List<NativeObject>?, String?) -> Unit)

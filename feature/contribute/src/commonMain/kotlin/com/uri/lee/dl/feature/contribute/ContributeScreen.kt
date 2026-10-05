@@ -1,5 +1,6 @@
 package com.uri.lee.dl.feature.contribute
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -49,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -69,6 +72,8 @@ import com.uri.lee.dl.core.designsystem.resources.contribute_location
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_body
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_needed
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_unavailable
+import com.uri.lee.dl.core.designsystem.resources.contribute_no_plant
+import com.uri.lee.dl.core.designsystem.resources.contribute_no_plant_hint
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos_tip
 import com.uri.lee.dl.core.designsystem.resources.contribute_remove_location
@@ -150,7 +155,8 @@ fun ContributeScreen(
                             when {
                                 state.photos.isEmpty() -> stringResource(Res.string.contribute_upload)
                                 state.location == null -> stringResource(Res.string.contribute_location_needed)
-                                else -> pluralStringResource(Res.plurals.contribute_upload_photos, state.photos.size, state.photos.size)
+                                state.plantPhotos.isEmpty() -> stringResource(Res.string.contribute_upload)
+                                else -> pluralStringResource(Res.plurals.contribute_upload_photos, state.plantPhotos.size, state.plantPhotos.size)
                             },
                         )
                     }
@@ -203,8 +209,28 @@ private fun Editor(state: ContributeState, onAction: (ContributeAction) -> Unit,
             }
         }
         items(state.photos, key = { it.uri }) { photo ->
+            val check = state.checks[photo.uri]
             Box(Modifier.aspectRatio(1f).clip(MaterialTheme.shapes.medium)) {
                 RemoteImage(photo.uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                when (check) {
+                    PhotoCheck.CHECKING -> CircularProgressIndicator(
+                        Modifier.align(Alignment.Center).size(28.dp),
+                        strokeWidth = 3.dp,
+                        color = Color.White,
+                    )
+                    PhotoCheck.NOT_PLANT -> Box(
+                        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)).padding(spacing.sm),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(Res.string.contribute_no_plant),
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    PhotoCheck.PLANT, null -> Unit
+                }
                 IconButton(
                     onClick = { onAction(ContributeAction.RemovePhoto(photo)) },
                     modifier = Modifier.align(Alignment.TopEnd),
@@ -217,6 +243,11 @@ private fun Editor(state: ContributeState, onAction: (ContributeAction) -> Unit,
                         )
                     }
                 }
+            }
+        }
+        if (state.photos.any { state.checks[it.uri] == PhotoCheck.NOT_PLANT }) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(Res.string.contribute_no_plant_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
             }
         }
         if (state.photos.size < ContributeViewModel.MAX_PHOTOS) {

@@ -37,7 +37,11 @@ class ContributeViewModelTest : MainDispatcherTest() {
         addresses = { "Hà Nội" },
         appScope = ApplicationScope(CoroutineScope(testDispatcher)),
         notifier = { id, name, uploaded, failed -> notified += Notified(id, name, uploaded, failed) },
+        plantCheck = { photo -> photo.uri !in notPlants },
     )
+
+    /** Photos the plant check finds no plant in. */
+    private val notPlants = mutableSetOf<String>()
 
     private data class Notified(val id: Long, val name: String?, val uploaded: Int, val failed: Int)
     private val notified = mutableListOf<Notified>()
@@ -107,6 +111,29 @@ class ContributeViewModelTest : MainDispatcherTest() {
 
         viewModel.onAction(ContributeAction.LocationPicked(GeoLocation(21.0, 105.8)))
         assertTrue(viewModel.state.value.canUpload)
+    }
+
+    @Test
+    fun `photos with no plant are marked and not uploaded`() {
+        notPlants += "selfie"
+        val viewModel = viewModel()
+        viewModel.onAction(ContributeAction.PhotosPicked(listOf(Photo("a"), Photo("selfie"))))
+        viewModel.onAction(ContributeAction.LocationPicked(GeoLocation(21.0, 105.8)))
+
+        assertEquals(mapOf("a" to PhotoCheck.PLANT, "selfie" to PhotoCheck.NOT_PLANT), viewModel.state.value.checks)
+        viewModel.onAction(ContributeAction.Upload)
+
+        assertEquals(listOf("https://r2/5/a"), contributions.images.single().second.map { it.url })
+    }
+
+    @Test
+    fun `nothing can be uploaded when no photo shows a plant`() {
+        notPlants += "selfie"
+        val viewModel = viewModel()
+        viewModel.onAction(ContributeAction.PhotosPicked(listOf(Photo("selfie"))))
+        viewModel.onAction(ContributeAction.LocationPicked(GeoLocation(21.0, 105.8)))
+
+        assertFalse(viewModel.state.value.canUpload)
     }
 
     @Test
