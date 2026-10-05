@@ -13,3 +13,12 @@ plugins {
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.herblens.module.rules)
 }
+
+// Mocha 11, the Kotlin/JS test runner, pulls in versions of these with advisories (Dependabot);
+// it's test tooling, not in any bundle. Drop once Kotlin moves to Mocha 12.
+plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+    the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().apply {
+        resolution("serialize-javascript", "7.0.5")
+        resolution("diff", "8.0.3")
+    }
+}
