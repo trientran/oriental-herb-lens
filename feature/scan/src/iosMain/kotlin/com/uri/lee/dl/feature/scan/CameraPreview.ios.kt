@@ -33,6 +33,11 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.runBlocking
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.Platform
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 import org.jetbrains.compose.resources.stringResource
 import platform.AVFoundation.AVAuthorizationStatusAuthorized
 import platform.AVFoundation.AVAuthorizationStatusNotDetermined
@@ -60,11 +65,17 @@ import platform.CoreMedia.CMSampleBufferGetImageBuffer
 import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.writeToFile
 import platform.QuartzCore.CATransaction
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIImage
+import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIView
 import platform.darwin.DISPATCH_QUEUE_PRIORITY_DEFAULT
 import platform.darwin.NSObject
@@ -131,9 +142,10 @@ private class CameraSession {
     fun stop() = dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT.toLong(), 0u)) { session.stopRunning() }
 }
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Unit) : NSObject(), AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
     private val context = CIContext()
+    private var lastSaved: TimeMark? = null
 
     override fun captureOutput(output: AVCaptureOutput, didOutputSampleBuffer: CMSampleBufferRef?, fromConnection: AVCaptureConnection) {
         val pixels = CMSampleBufferGetImageBuffer(didOutputSampleBuffer) ?: return
@@ -142,7 +154,17 @@ private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Uni
         val image = UIImage.imageWithCGImage(cgImage).uprightScaled(maxDimension = 640.0)
         CGImageRelease(cgImage)
         val aspect = image.size.useContents { width / height }.toFloat()
+        if (Platform.isDebugBinary) saveForDebugging(image)
         onFrame(IosClassifierImage(image), aspect)
+    }
+
+    /** Debug builds keep the latest frame the model saw (every 2 s) in Documents/debug/frame.jpg. */
+    private fun saveForDebugging(image: UIImage) {
+        if (lastSaved?.let { it.elapsedNow() < 2.seconds } == true) return
+        lastSaved = TimeSource.Monotonic.markNow()
+        val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).first() as String
+        NSFileManager.defaultManager.createDirectoryAtPath("$documents/debug", true, null, null)
+        UIImageJPEGRepresentation(image, 0.8)?.writeToFile("$documents/debug/frame.jpg", atomically = true)
     }
 }
 

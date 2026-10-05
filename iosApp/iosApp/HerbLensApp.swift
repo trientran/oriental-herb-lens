@@ -32,6 +32,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             labeler: MLKitHerbLabeler(),
             detector: MLKitObjectDetector()
         )
+        #if DEBUG
+        DebugTools.start()
+        #endif
         return true
     }
 }

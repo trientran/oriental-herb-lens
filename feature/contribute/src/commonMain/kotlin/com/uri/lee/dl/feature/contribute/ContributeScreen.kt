@@ -82,7 +82,8 @@ import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.core.maps.HerbMap
 import com.uri.lee.dl.core.maps.LatLng
-import com.uri.lee.dl.domain.media.LocalImage
+import com.uri.lee.dl.domain.media.PhotoPick
+import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.model.GeoLocation
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -91,8 +92,8 @@ import org.koin.core.parameter.parametersOf
 
 /** What each platform supplies to the contribute screen. */
 data class ContributePlatform(
-    /** Opens the system photo picker and reports the photos chosen (none if cancelled). */
-    val pickPhotos: ((List<LocalImage>) -> Unit) -> Unit,
+    /** Opens the system photo picker. */
+    val pickPhotos: PickPhotos,
     /** Asks for permission if needed and reports where the device is, or null; null hides the option. */
     val currentLocation: (((GeoLocation?) -> Unit) -> Unit)? = null,
 )
@@ -161,7 +162,7 @@ fun ContributeScreen(
 @Composable
 private fun Editor(state: ContributeState, onAction: (ContributeAction) -> Unit, platform: ContributePlatform, onSignIn: () -> Unit) {
     val spacing = HerbLensTheme.spacing
-    val pick = { platform.pickPhotos { onAction(ContributeAction.PhotosPicked(it)) } }
+    val pick = { platform.pickPhotos(PhotoPick { onAction(ContributeAction.PhotosPicked(it)) }) }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(104.dp),
         modifier = Modifier.widthIn(max = spacing.maxContentWidth).fillMaxWidth(),

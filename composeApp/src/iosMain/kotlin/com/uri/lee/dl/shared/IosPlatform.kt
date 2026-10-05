@@ -3,8 +3,10 @@ package com.uri.lee.dl.shared
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.ml.IosPickedImage
 import com.uri.lee.dl.domain.media.LocalImage
+import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.feature.auth.AppleCredential
+import com.uri.lee.dl.feature.auth.GoogleCredential
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -21,6 +23,7 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
 import platform.PhotosUI.PHPickerConfiguration
+import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCompatible
 import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
@@ -51,10 +54,14 @@ internal class IosPlatform(
 
     fun actions() = PlatformActions(
         pickPhotos = ::pickPhotos,
-        requestGoogleIdToken = {
+        requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->
-                google.signInWithGoogle { token, error ->
-                    if (error != null) continuation.resumeWithException(IllegalStateException(error)) else continuation.resume(token)
+                google.signInWithGoogle { idToken, accessToken, error ->
+                    when {
+                        error != null -> continuation.resumeWithException(IllegalStateException(error))
+                        idToken != null -> continuation.resume(GoogleCredential(idToken, accessToken))
+                        else -> continuation.resume(null)
+                    }
                 }
             }
         },
@@ -80,14 +87,16 @@ internal class IosPlatform(
         onOpenLanguageSettings = { open(UIApplicationOpenSettingsURLString) },
     )
 
-    private fun pickPhotos(onResult: (List<LocalImage>) -> Unit) {
+    private fun pickPhotos(pick: PhotoPick) {
         val configuration = PHPickerConfiguration().apply {
             filter = PHPickerFilter.imagesFilter
             selectionLimit = MAX_PHOTOS
+            // JPEG rather than HEIC: the image loader that shows thumbnails can't decode HEIC
+            preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible
         }
-        val delegate = PickerDelegate { photos ->
+        val delegate = PickerDelegate(pick.onPreparing) { photos ->
             picker = null
-            onResult(photos)
+            pick.onPicked(photos)
         }
         picker = delegate
         val controller = PHPickerViewController(configuration).apply { this.delegate = delegate }
@@ -125,10 +134,14 @@ internal class IosPlatform(
  * Copies each picked photo to a temporary file (the picker's copies vanish when its callback
  * returns), then reports them on the main thread in the order picked.
  */
-private class PickerDelegate(private val onResult: (List<LocalImage>) -> Unit) : NSObject(), PHPickerViewControllerDelegateProtocol {
+private class PickerDelegate(
+    private val onPreparing: (Int) -> Unit,
+    private val onResult: (List<LocalImage>) -> Unit,
+) : NSObject(), PHPickerViewControllerDelegateProtocol {
     override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
         picker.dismissViewControllerAnimated(true, completion = null)
         val results = didFinishPicking.filterIsInstance<PHPickerResult>()
+        if (results.isNotEmpty()) onPreparing(results.size)
         val copies = arrayOfNulls<LocalImage>(results.size)
         val group = dispatch_group_create()
         results.forEachIndexed { index, result ->

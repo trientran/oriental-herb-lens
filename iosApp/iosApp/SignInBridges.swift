@@ -5,25 +5,25 @@ import FirebaseCore
 import GoogleSignIn
 import UIKit
 
-/** Google's account chooser; the ID token becomes a Firebase session in shared code. */
+/** Google's account chooser; the tokens become a Firebase session in shared code. */
 final class GoogleSignInProvider: NSObject, GoogleSignInBridge {
-    func signInWithGoogle(completion: @escaping (String?, String?) -> Void) {
+    func signInWithGoogle(completion: @escaping (String?, String?, String?) -> Void) {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
-            completion(nil, "GoogleService-Info.plist has no CLIENT_ID: enable Google sign-in in Firebase and download it again")
+            completion(nil, nil, "GoogleService-Info.plist has no CLIENT_ID: enable Google sign-in in Firebase and download it again")
             return
         }
         guard let presenter = UIApplication.shared.topViewController else {
-            completion(nil, "Nothing to present the account chooser on")
+            completion(nil, nil, "Nothing to present the account chooser on")
             return
         }
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.signIn(withPresenting: presenter) { result, error in
             if let error = error as NSError?, error.code == GIDSignInError.canceled.rawValue {
-                completion(nil, nil)
+                completion(nil, nil, nil)
             } else if let error {
-                completion(nil, error.localizedDescription)
+                completion(nil, nil, error.localizedDescription)
             } else {
-                completion(result?.user.idToken?.tokenString, nil)
+                completion(result?.user.idToken?.tokenString, result?.user.accessToken.tokenString, nil)
             }
         }
     }

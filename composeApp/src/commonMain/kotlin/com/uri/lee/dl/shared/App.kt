@@ -143,7 +143,7 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                     )
                 }
                 composable<SignInDestination> {
-                    SignInRoute(actions.requestGoogleIdToken, onDone = { navController.popBackStack() }, requestAppleSignIn = actions.requestAppleSignIn)
+                    SignInRoute(actions.requestGoogleSignIn, onDone = { navController.popBackStack() }, requestAppleSignIn = actions.requestAppleSignIn)
                 }
                 composable<ContributeDestination> { entry ->
                     ContributeRoute(

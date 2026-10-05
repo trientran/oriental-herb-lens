@@ -73,7 +73,7 @@
     <string name="scan_pick_plant">Chọn cây</string>
     <string name="scan_point">Hướng camera vào một cây.</string>
     <string name="scan_looking">Đang tìm cây…</string>
-    <string name="scan_tap_plant">Chạm vào khung khác để nhận dạng cây đó.</string>
+    <string name="scan_tap_plant">Chạm vào chấm khác để nhận dạng cây đó.</string>
     <string name="scan_not_recognised">Không nhận ra. Hãy lại gần hơn hoặc thử phần khác của cây.</string>
     <string name="scan_photo_none">Không nhận ra cây thuốc nào trong ảnh này.</string>
     <string name="scan_photo_none_pick">Không nhận ra cây thuốc nào trong các cây ở ảnh này. Hãy thử Toàn cảnh.</string>
@@ -81,6 +81,9 @@
     <string name="scan_photos">Ảnh</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Đang nhận dạng…</string>
+    <plurals name="scan_preparing">
+        <item quantity="other">Đang chuẩn bị %1$d ảnh…</item>
+    </plurals>
     <string name="scan_unknown_species">Loài %1$s</string>
     <string name="scan_camera_needed">Cho phép dùng camera để nhận dạng cây khi bạn hướng camera vào. Bạn cũng có thể chọn ảnh.</string>
     <string name="scan_allow_camera">Cho phép camera</string>

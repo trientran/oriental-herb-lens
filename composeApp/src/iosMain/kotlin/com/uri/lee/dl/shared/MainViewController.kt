@@ -3,9 +3,12 @@ package com.uri.lee.dl.shared
 import androidx.compose.ui.window.ComposeUIViewController
 import platform.UIKit.UIViewController
 
-/** Swift's side of Google sign-in: an ID token, or (null, null) when cancelled, or an error message. */
+/**
+ * Swift's side of Google sign-in: the ID and access tokens (Firebase on iOS needs both), all null
+ * when cancelled, or an error message.
+ */
 interface GoogleSignInBridge {
-    fun signInWithGoogle(completion: (idToken: String?, error: String?) -> Unit)
+    fun signInWithGoogle(completion: (idToken: String?, accessToken: String?, error: String?) -> Unit)
 }
 
 /** Swift's side of Sign in with Apple: the identity token and raw nonce, (null, null, null) when cancelled. */

@@ -15,7 +15,7 @@ class SignInViewModelTest : MainDispatcherTest() {
         val viewModel = SignInViewModel(auth)
 
         viewModel.onAction(SignInAction.GoogleStarted)
-        viewModel.onAction(SignInAction.GoogleFinished("token"))
+        viewModel.onAction(SignInAction.GoogleFinished(GoogleCredential("token")))
 
         assertTrue(viewModel.state.value.isSignedIn)
         assertFalse(viewModel.state.value.isWorking)
@@ -47,7 +47,7 @@ class SignInViewModelTest : MainDispatcherTest() {
         auth.failSignIn = true
         val viewModel = SignInViewModel(auth)
 
-        viewModel.onAction(SignInAction.GoogleFinished("token"))
+        viewModel.onAction(SignInAction.GoogleFinished(GoogleCredential("token")))
 
         assertTrue(viewModel.state.value.hasError)
     }

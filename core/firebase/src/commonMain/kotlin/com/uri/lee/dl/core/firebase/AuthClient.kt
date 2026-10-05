@@ -17,8 +17,8 @@ class AuthClient internal constructor(private val auth: FirebaseAuth) {
     /** A Firebase ID token for our own backend (the photo-upload Worker); refreshed when close to expiry. */
     suspend fun idToken(): String? = auth.currentUser?.getIdToken(forceRefresh = false)
 
-    suspend fun signInWithGoogle(idToken: String) {
-        auth.signInWithCredential(GoogleAuthProvider.credential(idToken = idToken, accessToken = null))
+    suspend fun signInWithGoogle(idToken: String, accessToken: String?) {
+        auth.signInWithCredential(GoogleAuthProvider.credential(idToken = idToken, accessToken = accessToken))
     }
 
     suspend fun signInWithApple(idToken: String, rawNonce: String) {

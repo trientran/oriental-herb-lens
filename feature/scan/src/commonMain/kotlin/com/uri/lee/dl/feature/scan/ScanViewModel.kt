@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /** Whole view identifies everything in sight; Pick a plant finds each plant and identifies one at a time. */
 enum class ScanMode { WHOLE_VIEW, PICK_PLANT }
@@ -43,6 +46,9 @@ data class ShownObject(val id: Int, val region: Region)
 sealed interface ScanAction {
     data class SetMode(val mode: ScanMode) : ScanAction
     data class SelectObject(val id: Int) : ScanAction
+
+    /** The user confirmed [count] photos in the picker; they arrive shortly as [PhotosPicked]. */
+    data class PhotosPreparing(val count: Int) : ScanAction
     data class PhotosPicked(val photos: List<LocalImage>) : ScanAction
     data object BackToCamera : ScanAction
 }
@@ -58,6 +64,8 @@ data class ScanState(
     val frameAspect: Float? = null,
     /** A photo is being read and identified. */
     val isWorking: Boolean = false,
+    /** How many picked photos are still being handed over by the picker; 0 when none. */
+    val preparingPhotos: Int = 0,
     val hasError: Boolean = false,
     val minConfidence: Float = ScanSettings.DEFAULT_MIN_CONFIDENCE,
 )
@@ -77,6 +85,7 @@ class ScanViewModel(
     private var photo: ReadPhoto? = null
     private var photoResults: Map<Int, List<RecognizedHerb>> = emptyMap()
     private var photoJob: Job? = null
+    private var lastFrameLog: TimeMark? = null
 
     init {
         settings.scanSettings
@@ -99,6 +108,7 @@ class ScanViewModel(
             is ScanAction.SelectObject -> setState {
                 copy(selectedId = action.id, results = if (source is ScanSource.Photo) photoResults[action.id].orEmpty() else results)
             }
+            is ScanAction.PhotosPreparing -> setState { copy(preparingPhotos = action.count) }
             is ScanAction.PhotosPicked -> photosPicked(action.photos)
             ScanAction.BackToCamera -> {
                 photoJob?.cancel()
@@ -119,6 +129,7 @@ class ScanViewModel(
             when (state.mode) {
                 ScanMode.WHOLE_VIEW -> {
                     val results = recognizeHerbs(frame, state.minConfidence, MAX_RESULTS)
+                    logFrame { "whole view: ${results.describe()}" }
                     setState { if (mode == ScanMode.WHOLE_VIEW && source == ScanSource.Camera) copy(results = results, frameAspect = aspect) else this }
                 }
                 ScanMode.PICK_PLANT -> {
@@ -129,6 +140,7 @@ class ScanViewModel(
                     val results = found.getOrNull(shown.indexOfFirst { it.id == selected })
                         ?.let { recognizeHerbs(it.image, state.minConfidence, MAX_RESULTS) }
                         .orEmpty()
+                    logFrame { "pick: ${shown.size} objects ${shown.map { it.region }}, selected $selected: ${results.describe()}" }
                     setState {
                         if (mode == ScanMode.PICK_PLANT && source == ScanSource.Camera) {
                             copy(objects = shown, selectedId = selected, results = results, frameAspect = aspect)
@@ -145,7 +157,18 @@ class ScanViewModel(
         }
     }
 
+    /** At most once a second, so the log shows what the camera sees without a line per frame. */
+    private fun logFrame(message: () -> String) {
+        if (lastFrameLog?.let { it.elapsedNow() < 1.seconds } == true) return
+        lastFrameLog = TimeSource.Monotonic.markNow()
+        log.d(message = message)
+    }
+
+    private fun List<RecognizedHerb>.describe() =
+        if (isEmpty()) "nothing above ${currentState.minConfidence}" else joinToString { "${it.label} ${it.confidence}" }
+
     private fun photosPicked(photos: List<LocalImage>) {
+        setState { copy(preparingPhotos = 0) }
         if (photos.isEmpty()) return
         photoJob?.cancel()
         photo = null
