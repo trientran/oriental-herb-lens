@@ -1,4 +1,5 @@
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +47,10 @@ private object SpikeTimings {
 @OptIn(kotlin.js.ExperimentalJsExport::class)
 fun spikeTimings(): String = "${SpikeTimings.catalogReadyMs},${SpikeTimings.species},${SpikeTimings.lastSearchMs}"
 
+/** App Check, Firestore, Google sign-in and the photo Worker, from the browser. */
+@Composable
+expect fun FirebaseChecks()
+
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport("compose") { Spike() }
@@ -77,6 +82,7 @@ private fun Spike() {
         Surface(Modifier.fillMaxSize()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Herb Lens web spike", style = MaterialTheme.typography.titleMedium)
+                FirebaseChecks()
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("Tìm cây thuốc (Vietnamese or Latin)") })
                 val current = index
                 if (current == null) {
@@ -86,11 +92,14 @@ private fun Spike() {
                     val matches = remember(query, current) { if (query.isBlank()) emptyList() else current.search(query, 30) }
                     SpikeTimings.lastSearchMs = mark.elapsedNow().inWholeMilliseconds.toInt()
                     Text("${SpikeTimings.species} species, ready in ${SpikeTimings.catalogReadyMs} ms", style = MaterialTheme.typography.bodyMedium)
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(matches) { match ->
-                            Column {
-                                Text(match.species.preferredVietnameseName ?: match.species.scientificName, style = MaterialTheme.typography.bodyLarge)
-                                Text(match.species.scientificName, style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic))
+                    // Compose text isn't selectable unless it's in a SelectionContainer
+                    SelectionContainer {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(matches) { match ->
+                                Column {
+                                    Text(match.species.preferredVietnameseName ?: match.species.scientificName, style = MaterialTheme.typography.bodyLarge)
+                                    Text(match.species.scientificName, style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic))
+                                }
                             }
                         }
                     }

@@ -34,6 +34,14 @@ kotlin {
                 implementation(libs.compose.components.resources)
             }
         }
+        // Firebase on the web: GitLive has a js target (no wasmJs), plus App Check from the JS SDK
+        val jsMain by getting {
+            dependencies {
+                implementation(libs.gitlive.firebase.auth)
+                implementation(libs.gitlive.firebase.firestore)
+                implementation(libs.kotlinx.coroutines.core)
+            }
+        }
     }
 }
 

@@ -10,6 +10,9 @@
 // Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The app then adds the URL to
 // herbs/{speciesKey}.images in Firestore, where security rules also check bans. No R2
 // credentials ship in the app.
+//
+// The web app calls it from the browser, so the origins in ALLOWED_ORIGINS get CORS headers
+// (the mobile apps send no Origin).
 
 import { isBanned } from './bans.js';
 import { AuthError, verifyIdToken } from './firebase-auth.js';
@@ -24,7 +27,28 @@ function isJpeg(bytes) {
   return bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
 }
 
+function corsHeaders(request, env) {
+  const origin = request.headers.get('origin');
+  const allowed = (env.ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+  if (!origin || !allowed.includes(origin)) return {};
+  return {
+    'access-control-allow-origin': origin,
+    'access-control-allow-methods': 'POST',
+    'access-control-allow-headers': 'authorization, content-type',
+    'access-control-max-age': '86400',
+    vary: 'origin',
+  };
+}
+
 export async function handleRequest(request, env, verify = verifyIdToken, banned = isBanned) {
+  const cors = corsHeaders(request, env);
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  const response = await handleUpload(request, env, verify, banned);
+  for (const [name, value] of Object.entries(cors)) response.headers.set(name, value);
+  return response;
+}
+
+async function handleUpload(request, env, verify, banned) {
   const url = new URL(request.url);
   if (url.pathname !== '/photos') return json(404, { error: 'Not found' });
   if (request.method !== 'POST') return json(405, { error: 'Use POST' });
