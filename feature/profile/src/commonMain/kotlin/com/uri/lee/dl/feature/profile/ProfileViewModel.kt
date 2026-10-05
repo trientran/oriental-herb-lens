@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 sealed interface ProfileAction {
     data class SetMinConfidence(val value: Float) : ProfileAction
-    data class SetDetectObjects(val enabled: Boolean) : ProfileAction
     data object SignOut : ProfileAction
 }
 
@@ -40,7 +39,6 @@ class ProfileViewModel(
     override fun onAction(action: ProfileAction) {
         when (action) {
             is ProfileAction.SetMinConfidence -> save { settings.setMinConfidence(action.value.coerceIn(MIN_CONFIDENCE, MAX_CONFIDENCE)) }
-            is ProfileAction.SetDetectObjects -> save { settings.setDetectObjectsInSingleImage(action.enabled) }
             ProfileAction.SignOut -> save { auth.signOut() }
         }
     }

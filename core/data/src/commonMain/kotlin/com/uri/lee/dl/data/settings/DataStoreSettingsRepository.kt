@@ -18,7 +18,7 @@ internal class DataStoreSettingsRepository(private val dataStore: DataStore<Pref
         .map { prefs ->
             ScanSettings(
                 minConfidence = prefs[CONFIDENCE_LEVEL] ?: ScanSettings.DEFAULT_MIN_CONFIDENCE,
-                detectObjectsInSingleImage = prefs[IS_OBJECTS_MODE_SINGLE_IMAGE] ?: true,
+                detectObjectsInSingleImage = prefs[IS_OBJECTS_MODE_SINGLE_IMAGE] ?: ScanSettings().detectObjectsInSingleImage,
             )
         }
         .distinctUntilChanged()

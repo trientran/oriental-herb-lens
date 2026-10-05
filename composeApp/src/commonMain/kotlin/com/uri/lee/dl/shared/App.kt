@@ -46,7 +46,9 @@ import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
 import com.uri.lee.dl.feature.contribute.ContributeRoute
-import com.uri.lee.dl.feature.identify.IdentifyScreen
+import com.uri.lee.dl.feature.herbdetails.HerbDetailsRoute
+import com.uri.lee.dl.feature.scan.ScanRoute
+import com.uri.lee.dl.feature.contribute.ContributePlatform
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileRoute
 import com.uri.lee.dl.feature.saved.SavedRoute
@@ -62,6 +64,7 @@ import kotlin.reflect.KClass
 @Serializable data object ProfileDestination
 @Serializable data object SignInDestination
 @Serializable data class ContributeDestination(val herbId: Long)
+@Serializable data class SpeciesDestination(val herbId: Long)
 
 private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon: ImageVector, val label: StringResource) {
     IDENTIFY(IdentifyDestination, IdentifyDestination::class, Icons.Filled.CameraAlt, Res.string.nav_identify),
@@ -87,7 +90,7 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
         // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
         // that; none on full-screen flows (sign-in, contributing)
         val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
-        val fullScreen = current?.hasRoute(SignInDestination::class) == true || current?.hasRoute(ContributeDestination::class) == true
+        val fullScreen = listOf(SignInDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
         val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
         val addPhotos = { herbId: Long -> navController.navigate(ContributeDestination(herbId)) }
         NavigationSuiteScaffold(
@@ -109,7 +112,15 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
         ) {
             NavHost(navController, startDestination = BrowseDestination(), modifier = Modifier.fillMaxSize()) {
                 composable<IdentifyDestination> {
-                    IdentifyScreen(onStart = actions.onIdentify, modifier = Modifier.statusBarsPadding())
+                    ScanRoute(pickPhotos = actions.pickPhotos, onOpenSpecies = { navController.navigate(SpeciesDestination(it)) })
+                }
+                composable<SpeciesDestination> { entry ->
+                    HerbDetailsRoute(
+                        herbId = entry.toRoute<SpeciesDestination>().herbId,
+                        onBack = { navController.popBackStack() },
+                        onAddPhotos = addPhotos,
+                        onSignIn = signIn,
+                    )
                 }
                 composable<BrowseDestination> { entry ->
                     SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
@@ -127,7 +138,6 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                             onSignIn = signIn,
                             onShareApp = actions.onShareApp,
                             onOpenLanguageSettings = actions.onOpenLanguageSettings,
-                            onOpenCameraSettings = actions.onOpenCameraSettings,
                         ),
                         modifier = Modifier.statusBarsPadding(),
                     )
@@ -138,7 +148,7 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                 composable<ContributeDestination> { entry ->
                     ContributeRoute(
                         herbId = entry.toRoute<ContributeDestination>().herbId,
-                        platform = actions.contribute,
+                        platform = ContributePlatform(actions.pickPhotos, actions.currentLocation),
                         onSignIn = signIn,
                         onDone = { navController.popBackStack() },
                     )

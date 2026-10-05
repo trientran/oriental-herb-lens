@@ -13,20 +13,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,15 +46,12 @@ import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
 import com.uri.lee.dl.core.designsystem.resources.profile_about
 import com.uri.lee.dl.core.designsystem.resources.profile_app
-import com.uri.lee.dl.core.designsystem.resources.profile_camera_settings
 import com.uri.lee.dl.core.designsystem.resources.profile_contact
 import com.uri.lee.dl.core.designsystem.resources.profile_full_list
 import com.uri.lee.dl.core.designsystem.resources.profile_identification
 import com.uri.lee.dl.core.designsystem.resources.profile_language
 import com.uri.lee.dl.core.designsystem.resources.profile_min_confidence
 import com.uri.lee.dl.core.designsystem.resources.profile_min_confidence_body
-import com.uri.lee.dl.core.designsystem.resources.profile_objects_mode
-import com.uri.lee.dl.core.designsystem.resources.profile_objects_mode_body
 import com.uri.lee.dl.core.designsystem.resources.profile_share
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body
@@ -74,7 +68,6 @@ data class ProfileActions(
     val onSignIn: () -> Unit,
     val onShareApp: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
-    val onOpenCameraSettings: (() -> Unit)? = null,
 )
 
 @Composable
@@ -97,19 +90,6 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
 
             SectionCard(stringResource(Res.string.profile_identification)) {
                 ConfidenceSetting(state.scanSettings.minConfidence) { onAction(ProfileAction.SetMinConfidence(it)) }
-                HorizontalDivider()
-                ListItem(
-                    headlineContent = { Text(stringResource(Res.string.profile_objects_mode)) },
-                    supportingContent = { Text(stringResource(Res.string.profile_objects_mode_body)) },
-                    trailingContent = {
-                        Switch(
-                            checked = state.scanSettings.detectObjectsInSingleImage,
-                            onCheckedChange = { onAction(ProfileAction.SetDetectObjects(it)) },
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                )
-                actions.onOpenCameraSettings?.let { LinkRow(Icons.Filled.CameraAlt, stringResource(Res.string.profile_camera_settings), it) }
             }
 
             SectionCard(stringResource(Res.string.profile_app)) {

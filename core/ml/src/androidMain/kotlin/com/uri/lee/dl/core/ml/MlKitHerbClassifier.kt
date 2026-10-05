@@ -1,5 +1,6 @@
 package com.uri.lee.dl.core.ml
 
+import android.graphics.Bitmap
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeler
@@ -12,8 +13,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 
-/** An ML Kit [InputImage] handed to the classifier. */
-class MlKitClassifierImage(val inputImage: InputImage) : ClassifierImage
+/**
+ * An ML Kit [InputImage] handed to the classifier. With its upright [bitmap], objects found in it
+ * can be cropped out and classified on their own.
+ */
+class MlKitClassifierImage(val inputImage: InputImage, val bitmap: Bitmap? = null) : ClassifierImage {
+    constructor(bitmap: Bitmap) : this(InputImage.fromBitmap(bitmap, 0), bitmap)
+}
 
 /**
  * Runs the herb model through ML Kit's custom image labeler, which reads the label list and input

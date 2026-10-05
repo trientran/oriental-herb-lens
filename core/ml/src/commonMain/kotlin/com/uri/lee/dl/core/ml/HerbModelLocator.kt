@@ -20,5 +20,8 @@ fun interface HerbModelLocator {
     fun current(): HerbModelFile
 }
 
-/** Binds [com.uri.lee.dl.domain.ml.HerbClassifier]; needs a [HerbModelLocator] in the graph. */
+/**
+ * Binds the domain's HerbClassifier, ObjectFinder and PhotoReader, and the upload ImageCompressor;
+ * needs a [HerbModelLocator] in the graph.
+ */
 expect val mlModule: Module

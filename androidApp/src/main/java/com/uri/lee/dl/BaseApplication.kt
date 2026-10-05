@@ -1,36 +1,29 @@
 package com.uri.lee.dl
 
 import android.app.Application
-import com.bumptech.glide.Glide
-import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
-import com.bumptech.glide.load.model.GlideUrl
+import androidx.work.WorkManager
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
-import androidx.work.WorkManager
 import com.uri.lee.dl.data.content.ContentSyncWorker
-import com.uri.lee.dl.data.content.LegacyModelCleanup
-import co.touchlab.kermit.Logger
-import co.touchlab.kermit.Severity
+import com.uri.lee.dl.data.content.LegacyCleanup
 import com.uri.lee.dl.di.appModules
 import com.uri.lee.dl.shared.runStartupTasks
-import org.koin.androidx.workmanager.koin.workManagerFactory
-import okhttp3.OkHttpClient
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
-import timber.log.Timber
-import java.io.InputStream
 
 class BaseApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
-        // Shared modules log through Kermit, which writes to Logcat
+        // All modules log through Kermit, which writes to Logcat
         Logger.setMinSeverity(if (BuildConfig.DEBUG) Severity.Verbose else Severity.Warn)
 
         FirebaseApp.initializeApp(this)
@@ -45,12 +38,8 @@ class BaseApplication : Application() {
             workManagerFactory()
             modules(appModules)
         }.koin
-        get<LegacyModelCleanup>().run()
+        get<LegacyCleanup>().run()
         koin.runStartupTasks()
         ContentSyncWorker.enqueue(WorkManager.getInstance(this))
-        Glide.get(this).registry.replace(
-            GlideUrl::class.java, InputStream::class.java,
-            OkHttpUrlLoader.Factory(get<OkHttpClient>())
-        )
     }
 }

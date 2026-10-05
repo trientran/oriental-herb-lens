@@ -2,7 +2,8 @@ plugins {
     alias(libs.plugins.herblens.kmp.library)
 }
 
-// Herb identification: ML Kit custom image labelling. Android here; iOS (Swift) in Phase 5.
+// Herb identification on the device: ML Kit image labelling and object detection, and decoding
+// picked photos. Android here; iOS (Swift) in Phase 5.
 kotlin {
     sourceSets {
         commonMain.dependencies {
@@ -12,7 +13,10 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.mlkit.image.labeling.custom)
+            implementation(libs.mlkit.objectdetection)
+            implementation(libs.androidx.exifinterface)
             implementation(libs.kotlinx.coroutines.play.services)
+            implementation(libs.koin.android)
         }
     }
 }

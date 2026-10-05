@@ -18,24 +18,18 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.uri.lee.dl.data.platform.UriImage
+import com.uri.lee.dl.core.ml.UriImage
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
-import com.uri.lee.dl.feature.contribute.ContributePlatform
 import com.uri.lee.dl.feature.contribute.ContributeViewModel
-import com.uri.lee.dl.feature.identify.IdentifyMode
-import com.uri.lee.dl.lenscamera.CameraActivity
-import com.uri.lee.dl.lensimage.ImageActivity
-import com.uri.lee.dl.lensimages.ImagesActivity
-import com.uri.lee.dl.settings.SettingsActivity
 import com.uri.lee.dl.shared.PlatformActions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlin.system.exitProcess
 
 /**
- * Android's side of [PlatformActions]: system pickers, permissions, Credential Manager and the
- * scan screens that are still Android views. Create it in onCreate: it registers activity results.
+ * Android's side of [PlatformActions]: system pickers, permissions and Credential Manager.
+ * Create it in onCreate: it registers activity results.
  */
 class AndroidPlatform(private val activity: ComponentActivity) {
 
@@ -56,25 +50,15 @@ class AndroidPlatform(private val activity: ComponentActivity) {
     }
 
     fun actions() = PlatformActions(
-        onIdentify = { mode ->
-            val screen = when (mode) {
-                IdentifyMode.CAMERA -> CameraActivity::class.java
-                IdentifyMode.SINGLE_IMAGE -> ImageActivity::class.java
-                IdentifyMode.MULTIPLE_IMAGES -> ImagesActivity::class.java
-            }
-            activity.startActivity(Intent(activity, screen))
-        },
         requestGoogleIdToken = ::googleIdToken,
-        contribute = ContributePlatform(
-            pickPhotos = { onResult ->
-                onPhotos = onResult
-                photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            },
-            currentLocation = { onResult ->
-                onLocation = onResult
-                locationPermission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
-            },
-        ),
+        pickPhotos = { onResult ->
+            onPhotos = onResult
+            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        },
+        currentLocation = { onResult ->
+            onLocation = onResult
+            locationPermission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+        },
         onOpenStore = { activity.goToPlayStore() },
         onExit = {
             activity.finishAffinity()
@@ -89,7 +73,6 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         } else {
             null
         },
-        onOpenCameraSettings = { activity.startActivity(Intent(activity, SettingsActivity::class.java)) },
         onVoiceSearch = { onResult ->
             onSpeech = onResult
             speech.launch(

@@ -3,11 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
-    alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -75,7 +73,6 @@ android {
         baseline = file("lint-baseline.xml")
     }
     buildFeatures {
-        viewBinding = true
         buildConfig = true
     }
 }
@@ -91,46 +88,22 @@ dependencies {
     implementation(libs.kermit)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.ui)
-    implementation(libs.material)
-    implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.process)
-    implementation(libs.androidx.preference.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
-
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.okhttp)
-    implementation(libs.glide)
-    implementation(libs.glide.okhttp3.integration)
-    implementation(libs.subsampling.scale.image.view)
-    implementation(libs.timber)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.workmanager)
     implementation(libs.androidx.work.runtime.ktx)
-    api(libs.guava)
 
-    implementation(libs.mlkit.objectdetection)
-    implementation(libs.mlkit.objectdetection.custom)
-    implementation(libs.mlkit.image.labeling)
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.auth)
+    // Android-only services behind PlatformActions
     implementation(libs.play.services.location)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
@@ -138,6 +111,8 @@ dependencies {
     testImplementation(projects.core.testing)
     testImplementation(projects.core.firebase)
     testImplementation(libs.ktor.client.core)
+    testImplementation(libs.okio)
     testImplementation(platform(libs.koin.bom))
     testImplementation(libs.koin.test.junit4)
 }
+
