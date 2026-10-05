@@ -18,7 +18,7 @@ function fakeEnv() {
 
 const verify = (token, project) => verifyIdToken(token, project, { getKeys });
 
-async function upload({ token, speciesKey = '3035652', body = JPEG, type = 'image/jpeg', method = 'POST', path = '/photos' } = {}) {
+async function upload({ token, speciesKey = '3035652', body = JPEG, type = 'image/jpeg', method = 'POST', path = '/photos', banned = async () => false } = {}) {
   const env = fakeEnv();
   const headers = { 'content-type': type };
   if (token !== null) headers.authorization = `Bearer ${token ?? (await signToken())}`;
@@ -27,7 +27,7 @@ async function upload({ token, speciesKey = '3035652', body = JPEG, type = 'imag
     headers,
     body: method === 'POST' ? body : undefined,
   });
-  const response = await handleRequest(request, env, verify);
+  const response = await handleRequest(request, env, verify, banned);
   return { response, env, json: await response.json() };
 }
 
@@ -63,4 +63,15 @@ test('rejects bad requests without storing anything', async () => {
     assert.equal(response.status, status, JSON.stringify(Object.keys(args)));
     assert.equal(env.stored.size, 0);
   }
+});
+
+test('banned accounts are refused and nothing is stored', async () => {
+  const { response, env } = await upload({ banned: async (uid) => uid === 'uid-123' });
+  assert.equal(response.status, 403);
+  assert.equal(env.stored.size, 0);
+});
+
+test('an unreachable ban list does not block uploads', async () => {
+  const { response } = await upload({ banned: async () => { throw new Error('offline'); } });
+  assert.equal(response.status, 201);
 });
