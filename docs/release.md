@@ -86,6 +86,17 @@ copy for running `tools/moderate.py` locally (`GOOGLE_APPLICATION_CREDENTIALS`).
 
 Like the release workflow, it appears in the Actions tab once it's on the default branch.
 
+**The same key lets the photo-upload Worker refuse banned accounts.** Give it to the Worker once
+(the Worker skips the check until it has it):
+
+    cd workers/photo-upload
+    npx wrangler secret put FIREBASE_SERVICE_ACCOUNT < /path/to/service-account.json
+
+**Where to keep the key file locally:** outside the repository, e.g.
+`~/.config/herb-lens/service-account.json` (it's a JSON file, not a single value, so it doesn't
+belong in `local.properties`). Point the tools at it with
+`export GOOGLE_APPLICATION_CREDENTIALS=~/.config/herb-lens/service-account.json`.
+
 ## Before the first store release
 
 - Privacy policy and terms (`website/pages/`) published at the URLs the app links to

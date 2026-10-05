@@ -7,9 +7,11 @@
 //
 //   201 {"url": "<public URL of the stored photo>"}
 //
-// The app then adds that URL to herbs/{speciesKey}.images in Firestore, where security rules
-// decide who may attach photos (including bans). No R2 credentials ship in the app.
+// Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The app then adds the URL to
+// herbs/{speciesKey}.images in Firestore, where security rules also check bans. No R2
+// credentials ship in the app.
 
+import { isBanned } from './bans.js';
 import { AuthError, verifyIdToken } from './firebase-auth.js';
 
 export const MAX_BYTES = 5 * 1024 * 1024; // the app sends ~100 KB (600 px, 70 % JPEG)
@@ -22,7 +24,7 @@ function isJpeg(bytes) {
   return bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
 }
 
-export async function handleRequest(request, env, verify = verifyIdToken) {
+export async function handleRequest(request, env, verify = verifyIdToken, banned = isBanned) {
   const url = new URL(request.url);
   if (url.pathname !== '/photos') return json(404, { error: 'Not found' });
   if (request.method !== 'POST') return json(405, { error: 'Use POST' });
@@ -34,6 +36,12 @@ export async function handleRequest(request, env, verify = verifyIdToken) {
   } catch (error) {
     if (error instanceof AuthError) return json(401, { error: 'Sign in again' });
     throw error;
+  }
+  try {
+    if (await banned(uid, env)) return json(403, { error: 'This account can no longer share photos' });
+  } catch (error) {
+    // Firestore unreachable: let the upload through; the rules still refuse to list it for a banned user
+    console.warn('Ban check failed', error);
   }
 
   const speciesKey = url.searchParams.get('speciesKey') ?? '';
