@@ -1,5 +1,11 @@
 package com.uri.lee.dl.feature.herbdetails
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -46,7 +53,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,12 +77,13 @@ import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
 import com.uri.lee.dl.core.designsystem.resources.details_genus
 import com.uri.lee.dl.core.designsystem.resources.details_names
-import com.uri.lee.dl.core.designsystem.resources.details_photo_map
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
+import com.uri.lee.dl.core.designsystem.resources.details_photo_map
+import com.uri.lee.dl.core.designsystem.resources.details_photos_loading
 import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
-import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
 import com.uri.lee.dl.core.designsystem.resources.details_vietnamese_names
+import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
 import com.uri.lee.dl.core.designsystem.resources.generic_error
 import com.uri.lee.dl.core.designsystem.resources.photo_counter
 import com.uri.lee.dl.core.designsystem.resources.retry
@@ -184,7 +195,7 @@ fun HerbDetailsScreen(
                 )
                 state.notFound -> EmptyState(Icons.Filled.SearchOff, stringResource(Res.string.details_not_found))
                 species == null -> LoadingState()
-                else -> DetailsContent(species, state.photos, onAction, onAddPhotos, onSuggestName)
+                else -> DetailsContent(species, state.photos, state.photosLoading, onAction, onAddPhotos, onSuggestName)
             }
         }
     }
@@ -194,6 +205,7 @@ fun HerbDetailsScreen(
 private fun DetailsContent(
     species: Species,
     photos: List<SpeciesPhoto>,
+    photosLoading: Boolean,
     onAction: (HerbDetailsAction) -> Unit,
     onAddPhotos: (() -> Unit)?,
     onSuggestName: () -> Unit,
@@ -207,7 +219,11 @@ private fun DetailsContent(
     ) {
         item("photos") {
             val name = species.preferredVietnameseName ?: species.scientificName
-            if (photos.isEmpty()) NoPhotos(onAddPhotos) else PhotoCarousel(photos, name) { onAction(HerbDetailsAction.ViewPhoto(it)) }
+            when {
+                photos.isNotEmpty() -> PhotoCarousel(photos, name) { onAction(HerbDetailsAction.ViewPhoto(it)) }
+                photosLoading -> PhotosLoading()
+                else -> NoPhotos(onAddPhotos)
+            }
         }
         item("title") {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
@@ -303,6 +319,29 @@ private fun PhotoCarousel(photos: List<SpeciesPhoto>, speciesName: String, onOpe
                 PhotoCredit(photos[pager.currentPage], MaterialTheme.typography.labelSmall, Color.White, showSourceLink = false)
             }
         }
+    }
+}
+
+/** The photo strip's place while photos are fetched: a softly pulsing panel of the same size. */
+@Composable
+private fun PhotosLoading() {
+    val pulse by rememberInfiniteTransition().animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
+    )
+    val description = stringResource(Res.string.details_photos_loading)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(4f / 3f)
+            .clip(MaterialTheme.shapes.large)
+            .graphicsLayer { alpha = pulse }
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(Icons.Filled.Image, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
     }
 }
 

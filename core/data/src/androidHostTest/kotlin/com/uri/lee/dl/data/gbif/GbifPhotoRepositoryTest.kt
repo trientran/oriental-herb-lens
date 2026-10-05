@@ -49,7 +49,7 @@ class GbifPhotoRepositoryTest {
         val photos = repository.photos(3035652)
 
         assertEquals(
-            listOf("https://inaturalist-open-data.s3.amazonaws.com/photos/1/original.jpg", "https://example.org/a/ORIGINAL.JPEG?x=1"),
+            listOf("https://inaturalist-open-data.s3.amazonaws.com/photos/1/large.jpg", "https://example.org/a/ORIGINAL.JPEG?x=1"),
             photos.map { it.url },
         )
         assertTrue(photos.all { it.source == PhotoSource.GBIF })

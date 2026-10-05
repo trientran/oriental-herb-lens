@@ -92,6 +92,10 @@ class ScreenshotTest {
     }
 
     @Test fun detailsWithoutPhotos() = light("details_no_photos") {
+        HerbDetailsScreen(HerbDetailsState(herbId = 3035652, species = Samples.dinhLang, photosLoading = false), onAction = {}, onBack = {}, onAddPhotos = {}, onSuggestName = {})
+    }
+
+    @Test fun detailsLoadingPhotos() = light("details_loading_photos") {
         HerbDetailsScreen(HerbDetailsState(herbId = 3035652, species = Samples.dinhLang), onAction = {}, onBack = {}, onAddPhotos = {}, onSuggestName = {})
     }
 

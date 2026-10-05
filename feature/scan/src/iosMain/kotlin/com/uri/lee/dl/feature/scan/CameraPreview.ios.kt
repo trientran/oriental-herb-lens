@@ -30,6 +30,7 @@ import com.uri.lee.dl.core.ml.uprightScaled
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.autoreleasepool
 import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.runBlocking
@@ -55,14 +56,25 @@ import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
+import platform.CoreGraphics.CGBitmapContextCreate
+import platform.CoreGraphics.CGBitmapContextCreateImage
+import platform.CoreGraphics.CGColorSpaceCreateDeviceRGB
+import platform.CoreGraphics.CGColorSpaceRelease
+import platform.CoreGraphics.CGContextRelease
+import platform.CoreGraphics.CGImageAlphaInfo
 import platform.CoreGraphics.CGImageRelease
+import platform.CoreGraphics.kCGBitmapByteOrder32Little
 import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectZero
-import platform.CoreImage.CIContext
-import platform.CoreImage.CIImage
-import platform.CoreImage.createCGImage
 import platform.CoreMedia.CMSampleBufferGetImageBuffer
 import platform.CoreMedia.CMSampleBufferRef
+import platform.CoreVideo.CVPixelBufferGetBaseAddress
+import platform.CoreVideo.CVPixelBufferGetBytesPerRow
+import platform.CoreVideo.CVPixelBufferGetHeight
+import platform.CoreVideo.CVPixelBufferGetWidth
+import platform.CoreVideo.CVPixelBufferLockBaseAddress
+import platform.CoreVideo.CVPixelBufferUnlockBaseAddress
+import platform.CoreVideo.kCVPixelBufferLock_ReadOnly
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.NSDocumentDirectory
@@ -144,18 +156,46 @@ private class CameraSession {
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Unit) : NSObject(), AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
-    private val context = CIContext()
     private var lastSaved: TimeMark? = null
 
     override fun captureOutput(output: AVCaptureOutput, didOutputSampleBuffer: CMSampleBufferRef?, fromConnection: AVCaptureConnection) {
-        val pixels = CMSampleBufferGetImageBuffer(didOutputSampleBuffer) ?: return
-        val frame = CIImage.imageWithCVPixelBuffer(pixels)
-        val cgImage = context.createCGImage(frame, fromRect = frame.extent) ?: return
-        val image = UIImage.imageWithCGImage(cgImage).uprightScaled(maxDimension = 640.0)
-        CGImageRelease(cgImage)
+        val image = autoreleasepool { copyFrame(didOutputSampleBuffer) } ?: return
         val aspect = image.size.useContents { width / height }.toFloat()
         if (Platform.isDebugBinary) saveForDebugging(image)
         onFrame(IosClassifierImage(image), aspect)
+    }
+
+    /**
+     * Copies the frame's pixels into an image of our own. The camera reuses a few buffers, and an
+     * Objective-C object wrapping one (a CIImage, say) would keep it until Kotlin's garbage
+     * collector frees the wrapper: with all buffers held, the camera stops sending frames for
+     * seconds. Plain CoreGraphics calls, released right here, hold nothing.
+     */
+    private fun copyFrame(sample: CMSampleBufferRef?): UIImage? {
+        val pixels = CMSampleBufferGetImageBuffer(sample) ?: return null
+        CVPixelBufferLockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly)
+        try {
+            val colorSpace = CGColorSpaceCreateDeviceRGB()
+            val bitmap = CGBitmapContextCreate(
+                data = CVPixelBufferGetBaseAddress(pixels),
+                width = CVPixelBufferGetWidth(pixels),
+                height = CVPixelBufferGetHeight(pixels),
+                bitsPerComponent = 8u,
+                bytesPerRow = CVPixelBufferGetBytesPerRow(pixels),
+                space = colorSpace,
+                bitmapInfo = CGImageAlphaInfo.kCGImageAlphaPremultipliedFirst.value or kCGBitmapByteOrder32Little,
+            )
+            CGColorSpaceRelease(colorSpace)
+            val cgImage = CGBitmapContextCreateImage(bitmap)
+            CGContextRelease(bitmap)
+            cgImage ?: return null
+            // Redrawn (and scaled) while the buffer is still locked, so nothing points into it afterwards
+            val image = UIImage.imageWithCGImage(cgImage).uprightScaled(maxDimension = 640.0)
+            CGImageRelease(cgImage)
+            return image
+        } finally {
+            CVPixelBufferUnlockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly)
+        }
     }
 
     /** Debug builds keep the latest frame the model saw (every 2 s) in Documents/debug/frame.jpg. */

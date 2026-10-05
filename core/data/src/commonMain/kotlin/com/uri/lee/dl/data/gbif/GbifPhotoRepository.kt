@@ -75,8 +75,8 @@ internal class GbifPhotoRepository(
         private fun Media.toPhoto(occurrenceKey: Long): SpeciesPhoto? {
             val url = identifier?.takeIf { type == "StillImage" && isOriginal(it) } ?: return null
             return SpeciesPhoto(
-                url = url,
-                thumbnailUrl = smallVariant(url),
+                url = inaturalistSize(url, "large"),
+                thumbnailUrl = inaturalistSize(url, "small"),
                 source = PhotoSource.GBIF,
                 credit = PhotoCredit(
                     creator = creator ?: rightsHolder ?: "Unknown",
@@ -94,11 +94,12 @@ internal class GbifPhotoRepository(
         }
 
         /**
-         * iNaturalist serves the same photo at `small.<ext>`, about 240 px: enough for a grid tile,
-         * and quick from its servers far from Australia and Vietnam. Full size opens on a tap.
+         * iNaturalist serves each photo in several sizes besides the original (often 2000 px or
+         * more, slow to fetch from its servers in Australia and Vietnam): `small` (about 240 px)
+         * for the photo strip and `large` (about 1024 px) for full screen. Other hosts keep [url].
          */
-        internal fun smallVariant(url: String): String =
-            if ("inaturalist" in url) url.replace(Regex("/original\\.(jpe?g)", RegexOption.IGNORE_CASE), "/small.$1") else url
+        internal fun inaturalistSize(url: String, size: String): String =
+            if ("inaturalist" in url) url.replace(Regex("/original\\.(jpe?g)", RegexOption.IGNORE_CASE), "/$size.$1") else url
 
         /** "http://creativecommons.org/licenses/by-nc/4.0/" → "CC BY-NC 4.0"; also GBIF's "CC_BY_4_0" form. */
         internal fun shortLicense(license: String): String {
