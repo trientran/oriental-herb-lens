@@ -54,10 +54,25 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
     }
 
+    // A contributor's own record of who they are: uid, and name and email when shared. The email
+    // must be the one they signed in with; nothing else (favourites, the admin flag) is writable.
+    function validProfile(data, uid) {
+      return data.uid == uid
+        && (!('name' in data) || (data.name is string && data.name.size() <= 200))
+        && (!('email' in data) || data.email == request.auth.token.email);
+    }
+
     // Users read their own document once, to copy old favourites and history to the device
-    // (and the admin flag, until the admin screen is retired), and delete it with their account.
+    // (and the admin flag, until the admin screen is retired), keep their profile on it, and
+    // delete it with their account.
     match /users/{uid} {
       allow get, delete: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'email'])
+        && validProfile(request.resource.data, uid);
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'name', 'email'])
+        && validProfile(request.resource.data, uid);
     }
 
     // Older app versions read this to learn they must update.

@@ -84,10 +84,25 @@ test('name suggestions: well-formed creates only, never read back', async () => 
   await assertFails(addDoc(collection(as(null), 'nameSuggestions'), ok));
 });
 
-test('users read only their own document, and write none', async () => {
+test('users read only their own document', async () => {
   await assertSucceeds(getDoc(doc(as('alice'), 'users/alice')));
   await assertFails(getDoc(doc(as('bob'), 'users/alice')));
-  await assertFails(setDoc(doc(as('alice'), 'users/alice'), { favorite: [9] }, { merge: true }));
+});
+
+const withEmail = (uid, email) => env.authenticatedContext(uid, { email }).firestore();
+
+test('users keep their own profile: uid, name and their sign-in email only', async () => {
+  const alice = withEmail('alice', 'alice@example.org');
+  await assertSucceeds(setDoc(doc(alice, 'users/alice'), { uid: 'alice', name: 'Alice', email: 'alice@example.org' }, { merge: true }));
+  await assertSucceeds(getDoc(doc(alice, 'users/alice')));
+  // An Apple user shares neither name nor email
+  await assertSucceeds(setDoc(doc(as('carol'), 'users/carol'), { uid: 'carol' }, { merge: true }));
+
+  await assertFails(setDoc(doc(alice, 'users/alice'), { email: 'someone@else.org' }, { merge: true }));
+  await assertFails(setDoc(doc(alice, 'users/alice'), { favorite: [9] }, { merge: true }));
+  await assertFails(setDoc(doc(alice, 'users/alice'), { isAdmin: true }, { merge: true }));
+  await assertFails(setDoc(doc(alice, 'users/bob'), { uid: 'bob' }, { merge: true }));
+  await assertFails(setDoc(doc(as('dave'), 'users/dave'), { uid: 'mallory' }));
 });
 
 test('users delete only their own document, with their account', async () => {

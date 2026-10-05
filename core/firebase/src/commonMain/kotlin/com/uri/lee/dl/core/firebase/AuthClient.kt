@@ -12,6 +12,10 @@ class AuthClient internal constructor(private val auth: FirebaseAuth) {
 
     val currentUserId: String? get() = auth.currentUser?.uid
 
+    /** The name and email the provider shared, if any (Apple shares neither, as the app asks for neither). */
+    val displayName: String? get() = auth.currentUser?.displayName?.takeIf { it.isNotBlank() }
+    val email: String? get() = auth.currentUser?.email?.takeIf { it.isNotBlank() }
+
     /** Firebase's provider ids of the ways the user signs in, e.g. `google.com`, `apple.com`. */
     val providerIds: List<String> get() = auth.currentUser?.providerData?.map { it.providerId }.orEmpty()
 

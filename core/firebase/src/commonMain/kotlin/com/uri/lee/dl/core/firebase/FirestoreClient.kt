@@ -4,8 +4,11 @@ import com.uri.lee.dl.core.firebase.FirestorePaths.HERBS
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERB_IMAGES
 import com.uri.lee.dl.core.firebase.FirestorePaths.NAME_SUGGESTIONS
 import com.uri.lee.dl.core.firebase.FirestorePaths.USERS
+import com.uri.lee.dl.core.firebase.FirestorePaths.USER_EMAIL
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_FAVORITES
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_HISTORY
+import com.uri.lee.dl.core.firebase.FirestorePaths.USER_NAME
+import com.uri.lee.dl.core.firebase.FirestorePaths.USER_UID
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FirebaseFirestore
@@ -39,6 +42,19 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     suspend fun legacyUserLibrary(uid: String): LegacyUserLibrary {
         val doc = db.collection(USERS).document(uid).get()
         return LegacyUserLibrary(favorites = doc.ids(USER_FAVORITES), history = doc.ids(USER_HISTORY))
+    }
+
+    /**
+     * Records who a contributor is on `users/{uid}`: uid, and name and email when the provider
+     * shared them. Merged, so favourites and history from old versions stay.
+     */
+    suspend fun saveUserProfile(uid: String, name: String?, email: String?) {
+        val profile = buildMap {
+            put(USER_UID, uid)
+            name?.let { put(USER_NAME, it) }
+            email?.let { put(USER_EMAIL, it) }
+        }
+        db.collection(USERS).document(uid).set(profile, merge = true)
     }
 
     /** Removes `users/{uid}`, where old app versions kept the user's name and email. */
