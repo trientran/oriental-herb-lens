@@ -137,7 +137,7 @@ internal class IosPlatform(
     private fun appStoreUrl(): String =
         (NSBundle.mainBundle.objectForInfoDictionaryKey("HerbLensAppStoreId") as? String)?.takeIf { it.isNotBlank() }
             ?.let { "https://apps.apple.com/app/id$it" }
-            ?: LegalLinks.PRIVACY_POLICY.substringBefore("/pages")
+            ?: LegalLinks.SITE
 
     private companion object {
         const val MAX_PHOTOS = 20L
