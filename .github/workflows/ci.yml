@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  # Other branches are checked through their pull requests: a push to a PR branch would
+  # otherwise run everything twice (push and pull_request), including the slow macOS jobs
+  push:
+    branches: [develop, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      # Launches Gradle; the daemon JVM (JetBrains 25) is provisioned from gradle-daemon-jvm.properties.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Provide untracked build inputs
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > androidApp/google-services.json
+          mkdir -p ~/.gradle
+          echo "MAPBOX_DOWNLOADS_TOKEN=$MAPBOX_DOWNLOADS_TOKEN" >> ~/.gradle/gradle.properties
+
+      # API keys are not needed for unit tests or lint; the build warns and uses empty values.
+      # Shared modules run their tests on the JVM here, and in Node.js for the web targets.
+      # Screenshot tests compare each Compose screen with composeApp/src/androidHostTest/screenshots.
+      - name: Module rules, unit and screenshot tests, lint
+        run: ./gradlew checkModuleRules testDebugUnitTest testAndroidHostTest jsNodeTest wasmJsNodeTest lintDebug -Proborazzi.test.verify=true --console=plain
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+            **/build/outputs/roborazzi/
+          retention-days: 14
+
+  # Every shared module must keep compiling for iOS; the pure ones also run their tests there.
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Provide untracked build inputs
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > androidApp/google-services.json
+          mkdir -p ~/.gradle
+          echo "MAPBOX_DOWNLOADS_TOKEN=$MAPBOX_DOWNLOADS_TOKEN" >> ~/.gradle/gradle.properties
+
+      - name: Compile for iOS and run iOS simulator tests
+        run: ./gradlew compileKotlinIosArm64 iosSimulatorArm64Test --console=plain
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 14
+
+  # The whole Xcode app (Swift bridges, CocoaPods, the Kotlin framework) for devices, where ML Kit
+  # is linked. Unsigned, and without GoogleService-Info.plist or Secrets.xcconfig, which only a
+  # runnable build needs. Its own job, beside the iOS tests: compiling the pods (Firestore's C++
+  # among them) takes about 20 minutes.
+  ios-app:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Provide untracked build inputs
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > androidApp/google-services.json
+          mkdir -p ~/.gradle
+          echo "MAPBOX_DOWNLOADS_TOKEN=$MAPBOX_DOWNLOADS_TOKEN" >> ~/.gradle/gradle.properties
+
+      # Downloaded pod sources; they still compile on every run
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            iosApp/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('iosApp/Podfile.lock') }}
+
+      - name: Build the iOS app
+        working-directory: iosApp
+        run: |
+          pod install
+          xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configuration Debug \
+            -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 40  # the default shell fails the step if xcodebuild does
+
+  photo-upload-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: workers/photo-upload
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm test
+
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: firebase
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: firebase/package-lock.json
+      - run: npm ci
+      - run: npm test

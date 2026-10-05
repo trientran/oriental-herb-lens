@@ -1,0 +1,155 @@
+[versions]
+agp = "9.4.0"
+kotlin = "2.4.20"
+google-services = "4.5.0"
+firebase-crashlytics-plugin = "3.0.8"
+firebase-appdistribution-plugin = "5.3.0"
+
+androidx-camera = "1.6.2"
+androidx-core = "1.16.0"
+androidx-datastore = "1.2.1"
+
+coroutines = "1.11.0"
+firebase-bom = "34.18.0"
+firebase-appcheck-debug = "19.0.0"
+mapbox = "11.14.0"
+mlkit-image-labeling-custom = "17.0.3"
+mlkit-object-detection = "17.0.2"
+play-services-location = "21.3.0"
+serialization = "1.11.0"
+
+koin = "4.2.2"
+gitlive-firebase = "2.7.0"
+kermit = "2.2.0"
+okio = "3.18.2"
+sqldelight = "2.4.0"
+ktor = "3.6.0"
+work = "2.11.2"
+
+compose-multiplatform = "1.12.1"
+compose-material3 = "1.9.0"
+compose-adaptive = "1.2.0"
+compose-material-icons = "1.7.3"
+jetbrains-navigation = "2.9.2"
+jetbrains-lifecycle = "2.11.0"
+androidx-activity = "1.13.0"
+coil = "3.6.3"
+roborazzi = "1.76.0"
+robolectric = "4.17"
+
+junit4 = "4.13.2"
+turbine = "1.2.1"
+
+[libraries]
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidx-camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidx-camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidx-datastore" }
+
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+mapbox-maps = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+
+mlkit-image-labeling-custom = { module = "com.google.mlkit:image-labeling-custom", version.ref = "mlkit-image-labeling-custom" }
+mlkit-objectdetection = { module = "com.google.mlkit:object-detection", version.ref = "mlkit-object-detection" }
+# The general labeller through Google Play services: its model is downloaded by Play, not in the APK
+mlkit-image-labeling-play = { module = "com.google.android.gms:play-services-mlkit-image-labeling", version = "16.0.8" }
+
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-appcheck-debug = { module = "com.google.firebase:firebase-appcheck-debug", version.ref = "firebase-appcheck-debug" }
+firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
+koin-test = { module = "io.insert-koin:koin-test" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4" }
+sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
+sqldelight-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+
+gitlive-firebase-analytics = { module = "dev.gitlive:firebase-analytics", version.ref = "gitlive-firebase" }
+gitlive-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
+gitlive-firebase-config = { module = "dev.gitlive:firebase-config", version.ref = "gitlive-firebase" }
+gitlive-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive-firebase" }
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
+
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "compose-material3" }
+compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "compose-adaptive" }
+compose-material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "compose-adaptive" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icons" }
+androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version = "1.1.1" }
+jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation" }
+jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-lifecycle" }
+jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrains-lifecycle" }
+jetbrains-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "jetbrains-lifecycle" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.2" }
+androidx-credentials = { module = "androidx.credentials:credentials", version = "1.6.0" }
+androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version = "1.6.0" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.1" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+koin-compose = { module = "io.insert-koin:koin-compose" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version = "1.12.1" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.12.1" }
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-junit-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
+# Used by build-logic convention plugins
+android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+compose-gradle-plugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
+compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
+firebase-appdistribution = { id = "com.google.firebase.appdistribution", version.ref = "firebase-appdistribution-plugin" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+
+# Convention plugins from build-logic
+herblens-kmp-library = { id = "herblens.kmp.library" }
+herblens-kmp-compose = { id = "herblens.kmp.compose" }
+herblens-kmp-feature = { id = "herblens.kmp.feature" }
+herblens-module-rules = { id = "herblens.module.rules" }

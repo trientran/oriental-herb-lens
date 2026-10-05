@@ -1,0 +1,57 @@
+# ML Kit for iOS is only published on CocoaPods, so Firebase and Google Sign-In come from here too.
+# After changing this file: cd iosApp && pod install, then open iosApp.xcworkspace.
+platform :ios, '16.0'
+
+target 'iosApp' do
+  # The Kotlin framework (ComposeApp) is static and calls Firebase through GitLive's bindings
+  use_frameworks! :linkage => :static
+
+  pod 'FirebaseCore'
+  pod 'FirebaseAuth'
+  pod 'FirebaseFirestore'
+  pod 'FirebaseRemoteConfig'
+  pod 'FirebaseAppCheck'
+  # Analytics without IdentitySupport: no advertising identifier (IDFA), so no tracking
+  pod 'FirebaseAnalytics/Core'
+  pod 'GoogleSignIn'
+  pod 'GoogleMLKit/ImageLabelingCustom', '8.0.0'
+  pod 'GoogleMLKit/ObjectDetection', '8.0.0'
+  # The general labeller: checks a photo shows a plant before it's shared
+  pod 'GoogleMLKit/ImageLabeling', '8.0.0'
+end
+
+# ML Kit ships only device (arm64) and Intel-simulator (x86_64) binaries, so it can't link into an
+# Apple-silicon simulator build. Link it for devices only; in the simulator the Swift bridges
+# (MLKitBridge.swift) return no results and everything else works.
+ML_KIT_FRAMEWORKS = %w[MLImage MLKitCommon MLKitImageLabeling MLKitImageLabelingCommon MLKitImageLabelingCustom
+                       MLKitObjectDetection MLKitObjectDetectionCommon MLKitVision MLKitVisionKit]
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+    end
+  end
+end
+
+# After integration, when the app's xcconfig files are on disk
+post_integrate do |installer|
+  # ML Kit's podspecs exclude arm64 simulators outright, which leaves Apple-silicon simulators with
+  # no architecture at all. ML Kit is linked for devices only (below), so the exclusion can go.
+  Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', '**', '*.xcconfig')).each do |path|
+    text = File.read(path)
+    File.write(path, text.gsub(/^EXCLUDED_ARCHS\[sdk=iphonesimulator\*\] = arm64\n/, '')) if text.include?('EXCLUDED_ARCHS')
+  end
+
+  installer.aggregate_targets.each do |aggregate|
+    aggregate.user_build_configurations.keys.map { |config| aggregate.xcconfig_path(config) }.each do |path|
+      lines = File.readlines(path).map do |line|
+        next line unless line.start_with?('OTHER_LDFLAGS = ')
+        all = line.sub('OTHER_LDFLAGS = ', '').strip
+        without_ml_kit = ML_KIT_FRAMEWORKS.reduce(all) { |flags, name| flags.gsub(%( -framework "#{name}"), '') }
+        "OTHER_LDFLAGS = #{without_ml_kit}\nOTHER_LDFLAGS[sdk=iphoneos*] = #{all}\n"
+      end
+      File.write(path, lines.join)
+    end
+  end
+end

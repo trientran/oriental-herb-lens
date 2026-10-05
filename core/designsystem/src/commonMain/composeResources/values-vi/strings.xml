@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Med Herb Lens</string>
+
+    <!-- Navigation -->
+    <string name="nav_identify">Nhận dạng</string>
+    <string name="nav_browse">Tra cứu</string>
+    <string name="nav_saved">Đã lưu</string>
+    <string name="nav_profile">Cá nhân</string>
+    <string name="cd_back">Quay lại</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="retry">Thử lại</string>
+    <string name="generic_error">Có lỗi xảy ra. Vui lòng thử lại.</string>
+    <string name="status_suspended">Dịch vụ tạm thời gián đoạn. Vui lòng quay lại sau.</string>
+    <string name="status_update_required">Phiên bản này không còn được hỗ trợ. Vui lòng cập nhật ứng dụng để tiếp tục.</string>
+    <string name="status_update_recommended">Đã có phiên bản mới của ứng dụng.</string>
+    <string name="status_update">Cập nhật</string>
+    <string name="status_later">Để sau</string>
+
+    <!-- Browse and search -->
+    <string name="search_hint">Tìm cây thuốc</string>
+    <string name="search_placeholder">Tên tiếng Việt, tên khoa học hoặc tiếng Anh</string>
+    <string name="cd_clear_search">Xóa nội dung tìm</string>
+    <string name="cd_voice_search">Tìm bằng giọng nói</string>
+    <string name="search_no_results">Không tìm thấy “%1$s”</string>
+    <string name="search_no_results_body">Hãy kiểm tra chính tả hoặc thử tên khoa học.</string>
+    <string name="browse_header">Tất cả cây thuốc</string>
+
+    <!-- Saved -->
+    <string name="saved_favorites">Yêu thích</string>
+    <string name="saved_history">Lịch sử</string>
+    <string name="favorites_empty_title">Chưa có cây yêu thích</string>
+    <string name="favorites_empty_body">Chạm vào hình trái tim ở một cây để lưu tại đây.</string>
+    <string name="history_empty_title">Chưa xem cây nào</string>
+    <string name="history_empty_body">Những cây bạn đã mở sẽ hiện ở đây, mới nhất ở trên.</string>
+
+    <!-- Species details -->
+    <string name="cd_add_favorite">Thêm vào yêu thích</string>
+    <string name="cd_remove_favorite">Bỏ khỏi yêu thích</string>
+    <string name="details_not_found">Cây này không có trong danh mục.</string>
+    <string name="details_photos">Hình ảnh</string>
+    <string name="details_no_photos">Chưa có ảnh. Hãy là người đầu tiên đóng góp.</string>
+    <string name="details_photos_loading">Đang tải ảnh</string>
+    <string name="details_add_photos">Thêm ảnh</string>
+    <string name="details_names">Tên gọi</string>
+    <string name="details_vietnamese_names">Tiếng Việt</string>
+    <string name="details_english_names">Tiếng Anh</string>
+    <string name="details_classification">Phân loại</string>
+    <string name="details_family">Họ</string>
+    <string name="details_genus">Chi</string>
+    <string name="details_view_on_gbif">Xem trên GBIF</string>
+    <string name="details_suggest_name">Đề xuất tên tiếng Việt</string>
+    <string name="photo_counter">%1$d / %2$d</string>
+    <string name="photo_credit">© %1$s · %2$s</string>
+    <string name="photo_credit_publisher">qua %1$s và GBIF</string>
+    <string name="photo_source">Nguồn</string>
+    <string name="photo_by_user">Do người dùng Med Herb Lens chia sẻ</string>
+    <string name="cd_photo">Ảnh %1$s</string>
+    <string name="cd_close">Đóng</string>
+
+    <!-- Suggest a name -->
+    <string name="suggest_name_title">Đề xuất tên tiếng Việt</string>
+    <string name="suggest_name_label">Tên tiếng Việt</string>
+    <string name="suggest_name_body">Chúng tôi sẽ xem xét đề xuất trước khi cập nhật danh mục.</string>
+    <string name="suggest_name_submit">Gửi</string>
+    <string name="suggest_name_sent">Cảm ơn bạn! Đề xuất đã được gửi.</string>
+    <string name="suggest_name_sign_in">Đăng nhập để đề xuất tên.</string>
+
+    <!-- Identify -->
+    <string name="scan_whole_view">Toàn cảnh</string>
+    <string name="scan_pick_plant">Chọn cây</string>
+    <string name="scan_point">Hướng camera vào một cây.</string>
+    <string name="scan_looking">Đang tìm cây…</string>
+    <string name="scan_tap_plant">Chạm vào một chấm để nhận dạng cây đó.</string>
+    <string name="scan_hold_steady">Giữ camera trên một cây, hoặc chạm vào chấm của cây đó.</string>
+    <string name="scan_again">Quét lại</string>
+    <string name="scan_plant_unknown">Không nhận ra. Có thể ứng dụng chưa biết loài này; hãy thử phần khác của cây.</string>
+    <string name="cd_picked_plant">Cây được nhận dạng</string>
+    <string name="scan_not_recognised">Không nhận ra. Hãy lại gần hơn hoặc thử phần khác của cây.</string>
+    <string name="scan_photo_none">Không nhận ra cây thuốc nào trong ảnh này.</string>
+    <string name="scan_photo_none_pick">Không tìm thấy cây riêng lẻ nào trong ảnh này. Hãy thử Toàn cảnh.</string>
+    <string name="scan_photo_failed">Không đọc được ảnh này.</string>
+    <string name="scan_photos">Ảnh</string>
+    <string name="scan_back_to_camera">Camera</string>
+    <string name="scan_working">Đang nhận dạng…</string>
+    <plurals name="scan_preparing">
+        <item quantity="other">Đang chuẩn bị %1$d ảnh…</item>
+    </plurals>
+    <string name="scan_unknown_species">Loài %1$s</string>
+    <string name="scan_camera_needed">Cho phép dùng camera để nhận dạng cây khi bạn hướng camera vào. Bạn cũng có thể chọn ảnh.</string>
+    <string name="scan_allow_camera">Cho phép camera</string>
+    <string name="scan_open_settings">Mở cài đặt</string>
+    <string name="scan_camera_unavailable">Camera sẽ sớm có trên ứng dụng iOS. Trong lúc chờ, hãy chọn ảnh.</string>
+    <string name="cd_plant">Cây %1$d</string>
+
+    <!-- Profile -->
+    <string name="profile_sign_in">Đăng nhập</string>
+    <string name="profile_sign_in_body">Đăng nhập để thêm ảnh và đề xuất tên. Không cần tài khoản để tra cứu.</string>
+    <string name="profile_signed_in">Đã đăng nhập</string>
+    <string name="profile_sign_out">Đăng xuất</string>
+    <string name="profile_delete_account">Xoá tài khoản</string>
+    <string name="delete_account_title">Xoá tài khoản của bạn?</string>
+    <string name="delete_account_body">Thao tác này xoá vĩnh viễn tài khoản Herb Lens và các thông tin đi kèm. Ảnh bạn đã chia sẻ vẫn ở trên trang của cây nhưng không còn gắn với tài khoản nào. Cây đã lưu và lịch sử vẫn ở trên thiết bị này.\n\nĐể xác nhận là bạn, hãy đăng nhập lại một lần nữa.</string>
+    <string name="delete_account_confirm">Xoá tài khoản của tôi</string>
+    <string name="delete_account_confirm_google">Xác nhận với Google và xoá</string>
+    <string name="delete_account_confirm_apple">Xác nhận với Apple và xoá</string>
+    <string name="delete_account_failed">Không xoá được tài khoản. Hãy kiểm tra kết nối và thử lại. Nếu vẫn lỗi, hãy đăng xuất, đăng nhập lại rồi xoá.</string>
+    <string name="profile_identification">Nhận dạng</string>
+    <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%</string>
+    <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>
+    <string name="profile_app">Ứng dụng</string>
+    <string name="profile_language">Ngôn ngữ</string>
+    <string name="profile_full_list">Danh sách dược liệu đầy đủ</string>
+    <string name="profile_share">Chia sẻ ứng dụng này</string>
+    <string name="profile_contact">Liên hệ chúng tôi</string>
+    <string name="profile_about">Giới thiệu</string>
+    <string name="profile_version">Phiên bản %1$s</string>
+
+    <!-- Sign in -->
+    <string name="sign_in_title">Đăng nhập để đóng góp</string>
+    <string name="sign_in_body">Không cần tài khoản để tra cứu và nhận dạng cây thuốc. Đăng nhập để chia sẻ ảnh và đề xuất tên.</string>
+    <string name="sign_in_google">Tiếp tục với Google</string>
+    <string name="sign_in_apple">Tiếp tục với Apple</string>
+    <string name="sign_in_error">Không đăng nhập được. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="terms_of_service">Điều khoản dịch vụ</string>
+
+    <!-- Contribute photos -->
+    <string name="contribute_title">Ảnh %1$s</string>
+    <string name="contribute_upload">Tải lên</string>
+    <plurals name="contribute_upload_photos">
+        <item quantity="other">Tải lên %1$d ảnh</item>
+    </plurals>
+    <string name="cd_remove_photo">Bỏ ảnh</string>
+    <string name="contribute_add_photos">Thêm ảnh</string>
+    <string name="contribute_photos">Ảnh của bạn</string>
+    <string name="contribute_photos_tip">Ảnh rõ nét của một cây là tốt nhất: lá, hoa hoặc cả cây. Camera điện thoại nào cũng được.</string>
+    <string name="contribute_location">Chụp ở đâu?</string>
+    <string name="contribute_location_body">Bắt buộc. Nơi bạn chụp cây: dùng vị trí của bạn, hoặc chọn điểm trên bản đồ.</string>
+    <string name="contribute_location_needed">Thêm nơi chụp để tải lên</string>
+    <string name="contribute_use_my_location">Dùng vị trí của tôi</string>
+    <string name="contribute_choose_on_map">Chọn trên bản đồ</string>
+    <string name="contribute_map_hint">Di chuyển bản đồ để ghim chỉ vào nơi cây mọc</string>
+    <string name="contribute_use_this_place">Chọn nơi này</string>
+    <string name="contribute_remove_location">Bỏ vị trí</string>
+    <string name="contribute_location_unavailable">Không lấy được vị trí. Hãy bật định vị, hoặc chọn trên bản đồ.</string>
+    <string name="contribute_sign_in">Đăng nhập để chia sẻ ảnh. Ảnh sẽ hiện trên trang của cây cho mọi người.</string>
+    <string name="contribute_failed">Tải lên không thành công. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="contribute_uploading">Đã tải %1$d / %2$d</string>
+    <string name="contribute_finished">Cảm ơn bạn! Ảnh đã có trên trang của cây.</string>
+    <string name="contribute_finished_partly">Đã tải %1$d / %2$d ảnh. Không đọc được các ảnh còn lại.</string>
+    <string name="contribute_done">Xong</string>
+    <string name="details_photo_map">Nơi chụp ảnh</string>
+    <string name="notify_uploads_channel">Tải ảnh lên</string>
+    <string name="notify_upload_done_title">Đã chia sẻ ảnh</string>
+    <plurals name="notify_upload_done">
+        <item quantity="other">%1$d ảnh %2$s của bạn đã có trên trang của cây.</item>
+    </plurals>
+    <string name="notify_upload_failed_title">Tải lên không thành công</string>
+    <string name="notify_upload_failed">Không tải được ảnh %1$s của bạn. Hãy mở ứng dụng để thử lại.</string>
+    <string name="cd_more">Tuỳ chọn khác</string>
+    <string name="report_photo">Báo cáo ảnh</string>
+    <string name="report_title">Báo cáo ảnh này?</string>
+    <string name="report_body">Chúng tôi sẽ xem xét trong vòng 24 giờ. Ảnh sẽ được ẩn với bạn ngay lập tức.</string>
+    <string name="report_reason_not_plant">Không phải cây</string>
+    <string name="report_reason_sexual_violent">Khiêu dâm hoặc bạo lực</string>
+    <string name="report_reason_person">Có hình người</string>
+    <string name="report_reason_wrong_species">Sai loài</string>
+    <string name="report_reason_other">Lý do khác</string>
+    <string name="report_send">Báo cáo</string>
+    <string name="hide_contributor">Ẩn ảnh của người đóng góp này</string>
+    <string name="hide_contributor_title">Ẩn ảnh của người đóng góp này?</string>
+    <string name="hide_contributor_body">Bạn sẽ không thấy ảnh nào họ đã chia sẻ, ở mọi loài. Thiết lập này chỉ lưu trên thiết bị này.</string>
+    <string name="hide">Ẩn</string>
+    <string name="notice_reported">Cảm ơn bạn. Ảnh đã được ẩn và chúng tôi sẽ xem xét.</string>
+    <string name="notice_contributor_hidden">Bạn sẽ không thấy ảnh của người đóng góp này nữa.</string>
+    <string name="notice_failed">Không thực hiện được. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="contribute_no_plant">Không thấy cây</string>
+    <string name="contribute_no_plant_hint">Ảnh không tìm thấy cây sẽ không được tải lên. Hãy chia sẻ ảnh rõ nét của chính cây đó.</string>
+    <string name="profile_usage_statistics">Chia sẻ thống kê sử dụng</string>
+    <string name="profile_usage_statistics_body">Số liệu ẩn danh về cách dùng ứng dụng, như những loài cây được nhận dạng, phục vụ nghiên cứu về nhận dạng cây thuốc. Không gửi tài khoản, tên, ảnh hay địa điểm.</string>
+    <string name="profile_privacy">Quyền riêng tư</string>
+</resources>

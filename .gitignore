@@ -22,12 +22,29 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Keystore files - keep these OUTSIDE the repo entirely
 *.jks
 *.keystore
+*.pepk
+keystores/
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
 # Android Profiling
 *.hprof
+
+# Wrangler
+.wrangler/
+.DS_Store
+.kotlin/
+test-images/
+ios-debug/
+# iOS: CocoaPods output, per-developer Xcode state, Firebase config and local secrets
+iosApp/Pods/
+iosApp/iosApp.xcworkspace/xcuserdata/
+iosApp/iosApp.xcodeproj/xcuserdata/
+iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
+iosApp/iosApp/GoogleService-Info.plist
+iosApp/Configuration/Secrets.xcconfig
+iosApp/build/

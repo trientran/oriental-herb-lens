@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.4.0" type="baseline" client="gradle" dependencies="false" name="AGP (9.4.0)" variant="all" version="9.4.0">
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `localeConfig` is only used in API level 33 and higher (current min is 26)"
+        errorLine1="        android:localeConfig=&quot;@xml/locales_config&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="21"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="CredentialManagerMisuse"
+        message="Call to `CredentialManager.getCredential` without use of `NoCredentialException`"
+        errorLine1="            val result = CredentialManager.create(activity)"
+        errorLine2="                         ^">
+        <location
+            file="src/main/java/com/uri/lee/dl/AndroidPlatform.kt"
+            line="89"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 9.7.1 is available: 9.8.0"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-9.7.1-bin.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/wrapper/gradle-wrapper.properties"
+            line="4"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.application than 9.4.0 is available: 9.4.1"
+        errorLine1="agp = &quot;9.4.0&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.kotlin.multiplatform.library than 9.4.0 is available: 9.4.1"
+        errorLine1="agp = &quot;9.4.0&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.tools.build:gradle than 9.4.0 is available: 9.4.1"
+        errorLine1="agp = &quot;9.4.0&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-ktx than 1.16.0 is available: 1.19.1"
+        errorLine1="androidx-core = &quot;1.16.0&quot;"
+        errorLine2="                ~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="9"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.firebase:firebase-bom than 34.18.0 is available: 34.19.0"
+        errorLine1="firebase-bom = &quot;34.18.0&quot;"
+        errorLine2="               ~~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="13"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.firebase:firebase-appcheck-debug than 19.0.0 is available: 19.4.1"
+        errorLine1="firebase-appcheck-debug = &quot;19.0.0&quot;"
+        errorLine2="                          ~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="14"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.gms:play-services-location than 21.3.0 is available: 21.4.0"
+        errorLine1="play-services-location = &quot;21.3.0&quot;"
+        errorLine2="                         ~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="18"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.11.2 is available: 2.12.0"
+        errorLine1="work = &quot;2.11.2&quot;"
+        errorLine2="       ~~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="27"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.navigationevent:navigationevent-compose than 1.1.1 is available: 1.1.2"
+        errorLine1="androidx-navigationevent-compose = { module = &quot;androidx.navigationevent:navigationevent-compose&quot;, version = &quot;1.1.1&quot; }"
+        errorLine2="                                                                                                            ~~~~~~~">
+        <location
+            file="$HOME/StudioProjects/oriental-herb-lens/gradle/libs.versions.toml"
+            line="106"
+            column="109"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `mipmap-anydpi`.">
+        <location
+            file="src/main/res/mipmap-anydpi-v26"/>
+    </issue>
+
+    <issue
+        id="MonochromeLauncherIcon"
+        message="The application adaptive icon is missing a monochrome tag"
+        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(&quot;market://details?id=$packageName&quot;)))"
+        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/uri/lee/dl/AppIntents.kt"
+            line="13"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(&quot;https://play.google.com/store/apps/details?id=$packageName&quot;)))"
+        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/uri/lee/dl/AppIntents.kt"
+            line="15"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            defaults.edit().apply { CAMERA_SETTINGS.forEach(::remove) }.apply()"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/uri/lee/dl/data/content/LegacyCleanup.kt"
+            line="19"
+            column="13"/>
+    </issue>
+
+</issues>

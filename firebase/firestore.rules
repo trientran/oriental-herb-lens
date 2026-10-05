@@ -1,0 +1,101 @@
+rules_version = '2';
+
+// Herb Lens. Species data lives in the app's CSV catalog; Firestore keeps only what users
+// contribute: photo URLs per species and Vietnamese name suggestions for the admin.
+// Deploy only after old app versions have been forced to update (docs/firestore-rollout.md).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Bans are documents bannedUsers/{uid}, created by the admin in the console.
+    function notBanned() {
+      return !exists(/databases/$(database)/documents/bannedUsers/$(request.auth.uid));
+    }
+
+    function contributor() {
+      return signedIn() && notBanned();
+    }
+
+    // Photos may only be added: none removed or changed, at most 20 per write.
+    function onlyAddsPhotos(after, before) {
+      let change = after.diff(before);
+      return after is map
+        && change.removedKeys().size() == 0
+        && change.changedKeys().size() == 0
+        && change.addedKeys().size() > 0
+        && change.addedKeys().size() <= 20
+        && after.size() <= 2000;
+    }
+
+    // herbs/{speciesKey}: an `images` map of photo URL -> uploader details (JSON string).
+    match /herbs/{speciesKey} {
+      allow get: if true;
+      allow create: if contributor()
+        && speciesKey.matches('^[0-9]{1,12}$')
+        && request.resource.data.keys().hasOnly(['images'])
+        && onlyAddsPhotos(request.resource.data.images, {});
+      allow update: if contributor()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['images'])
+        && onlyAddsPhotos(request.resource.data.images, resource.data.get('images', {}));
+    }
+
+    // Read in the console by the admin only.
+    match /nameSuggestions/{id} {
+      allow create: if contributor()
+        && request.resource.data.keys().hasOnly(['speciesKey', 'viName', 'uid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.speciesKey is int
+        && request.resource.data.viName is string
+        && request.resource.data.viName.size() > 0
+        && request.resource.data.viName.size() <= 100
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // Reports of shared photos (App Store guideline 1.2), read by the admin only. Anyone may
+    // report, signed in or not; a signed-in reporter is recorded as themselves.
+    match /photoReports/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['speciesKey', 'url', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
+        && request.resource.data.speciesKey is int
+        && request.resource.data.url is string && request.resource.data.url.size() <= 500
+        && (request.resource.data.uploaderId == null
+            || (request.resource.data.uploaderId is string && request.resource.data.uploaderId.size() <= 128))
+        && request.resource.data.reason in ['NOT_A_PLANT', 'SEXUAL_OR_VIOLENT', 'SHOWS_A_PERSON', 'WRONG_SPECIES', 'OTHER']
+        && (request.resource.data.reporterUid == null
+            || (signedIn() && request.resource.data.reporterUid == request.auth.uid))
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // A contributor's own record of who they are: uid, and name and email when shared. The email
+    // must be the one they signed in with; nothing else (favourites, the admin flag) is writable.
+    function validProfile(data, uid) {
+      return data.uid == uid
+        && (!('name' in data) || (data.name is string && data.name.size() <= 200))
+        && (!('email' in data) || data.email == request.auth.token.email);
+    }
+
+    // Users read their own document once, to copy old favourites and history to the device
+    // (and the admin flag, until the admin screen is retired), keep their profile on it, and
+    // delete it with their account.
+    match /users/{uid} {
+      allow get, delete: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'email'])
+        && validProfile(request.resource.data, uid);
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'name', 'email'])
+        && validProfile(request.resource.data, uid);
+    }
+
+    // Older app versions read this to learn they must update.
+    match /config/mobile {
+      allow get: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

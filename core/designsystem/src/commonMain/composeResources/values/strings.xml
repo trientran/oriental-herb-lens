@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Med Herb Lens</string>
+
+    <!-- Navigation -->
+    <string name="nav_identify">Identify</string>
+    <string name="nav_browse">Browse</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_profile">Profile</string>
+    <string name="cd_back">Back</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Try again</string>
+    <string name="generic_error">Something went wrong. Please try again.</string>
+    <string name="status_suspended">The service is temporarily unavailable. Please come back later.</string>
+    <string name="status_update_required">This version is no longer supported. Please update the app to continue.</string>
+    <string name="status_update_recommended">A new version of the app is available.</string>
+    <string name="status_update">Update</string>
+    <string name="status_later">Later</string>
+
+    <!-- Browse and search -->
+    <string name="search_hint">Search herbs</string>
+    <string name="search_placeholder">Vietnamese, scientific or English name</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_voice_search">Search by voice</string>
+    <string name="search_no_results">No herbs match “%1$s”</string>
+    <string name="search_no_results_body">Check the spelling, or try the scientific name.</string>
+    <string name="browse_header">All herbs</string>
+
+    <!-- Saved -->
+    <string name="saved_favorites">Favourites</string>
+    <string name="saved_history">History</string>
+    <string name="favorites_empty_title">No favourites yet</string>
+    <string name="favorites_empty_body">Tap the heart on a herb to keep it here.</string>
+    <string name="history_empty_title">Nothing viewed yet</string>
+    <string name="history_empty_body">Herbs you open appear here, newest first.</string>
+
+    <!-- Species details -->
+    <string name="cd_add_favorite">Add to favourites</string>
+    <string name="cd_remove_favorite">Remove from favourites</string>
+    <string name="details_not_found">This herb isn’t in the catalog.</string>
+    <string name="details_photos">Photos</string>
+    <string name="details_no_photos">No photos yet. Be the first to add one.</string>
+    <string name="details_photos_loading">Loading photos</string>
+    <string name="details_add_photos">Add photos</string>
+    <string name="details_names">Names</string>
+    <string name="details_vietnamese_names">Vietnamese</string>
+    <string name="details_english_names">English</string>
+    <string name="details_classification">Classification</string>
+    <string name="details_family">Family</string>
+    <string name="details_genus">Genus</string>
+    <string name="details_view_on_gbif">View on GBIF</string>
+    <string name="details_suggest_name">Suggest a Vietnamese name</string>
+    <string name="photo_counter">%1$d of %2$d</string>
+    <string name="photo_credit">© %1$s · %2$s</string>
+    <string name="photo_credit_publisher">via %1$s and GBIF</string>
+    <string name="photo_source">Source</string>
+    <string name="photo_by_user">Shared by a Med Herb Lens user</string>
+    <string name="cd_photo">Photo of %1$s</string>
+    <string name="cd_close">Close</string>
+
+    <!-- Suggest a name -->
+    <string name="suggest_name_title">Suggest a Vietnamese name</string>
+    <string name="suggest_name_label">Vietnamese name</string>
+    <string name="suggest_name_body">We review suggestions before updating the catalog.</string>
+    <string name="suggest_name_submit">Send</string>
+    <string name="suggest_name_sent">Thank you! Your suggestion has been sent.</string>
+    <string name="suggest_name_sign_in">Sign in to suggest a name.</string>
+
+    <!-- Identify -->
+    <string name="scan_whole_view">Whole view</string>
+    <string name="scan_pick_plant">Pick a plant</string>
+    <string name="scan_point">Point the camera at a plant.</string>
+    <string name="scan_looking">Looking for plants…</string>
+    <string name="scan_tap_plant">Tap a dot to identify that plant.</string>
+    <string name="scan_hold_steady">Hold the camera on a plant, or tap its dot.</string>
+    <string name="scan_again">Scan again</string>
+    <string name="scan_plant_unknown">Not recognised. It may not be a herb the app knows yet; try another part of the plant.</string>
+    <string name="cd_picked_plant">The plant identified</string>
+    <string name="scan_not_recognised">Not recognised. Move closer, or try another part of the plant.</string>
+    <string name="scan_photo_none">No herb recognised in this photo.</string>
+    <string name="scan_photo_none_pick">No separate plants found in this photo. Try Whole view.</string>
+    <string name="scan_photo_failed">This photo couldn’t be read.</string>
+    <string name="scan_photos">Photos</string>
+    <string name="scan_back_to_camera">Camera</string>
+    <string name="scan_working">Identifying…</string>
+    <plurals name="scan_preparing">
+        <item quantity="one">Getting your photo ready…</item>
+        <item quantity="other">Getting %1$d photos ready…</item>
+    </plurals>
+    <string name="scan_unknown_species">Species %1$s</string>
+    <string name="scan_camera_needed">Allow the camera to identify plants as you point at it. You can also pick photos instead.</string>
+    <string name="scan_allow_camera">Allow camera</string>
+    <string name="scan_open_settings">Open settings</string>
+    <string name="scan_camera_unavailable">The camera is available in the iOS app soon. Pick photos meanwhile.</string>
+    <string name="cd_plant">Plant %1$d</string>
+
+    <!-- Profile -->
+    <string name="profile_sign_in">Sign in</string>
+    <string name="profile_sign_in_body">Sign in to add photos and suggest names. Browsing works without an account.</string>
+    <string name="profile_signed_in">Signed in</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_delete_account">Delete account</string>
+    <string name="delete_account_title">Delete your account?</string>
+    <string name="delete_account_body">This permanently deletes your Herb Lens account and the details kept with it. Photos you have shared stay on the species pages, no longer linked to an account. Your saved herbs and history stay on this device.\n\nTo confirm it’s you, sign in once more.</string>
+    <string name="delete_account_confirm">Delete my account</string>
+    <string name="delete_account_confirm_google">Confirm with Google and delete</string>
+    <string name="delete_account_confirm_apple">Confirm with Apple and delete</string>
+    <string name="delete_account_failed">The account couldn’t be deleted. Check your connection and try again. If it still fails, sign out, sign in again, then delete.</string>
+    <string name="profile_identification">Identification</string>
+    <string name="profile_min_confidence">Minimum confidence: %1$d%</string>
+    <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
+    <string name="profile_app">App</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_full_list">Full herb list</string>
+    <string name="profile_share">Share this app</string>
+    <string name="profile_contact">Contact us</string>
+    <string name="profile_about">About</string>
+    <string name="profile_version">Version %1$s</string>
+
+    <!-- Sign in -->
+    <string name="sign_in_title">Sign in to contribute</string>
+    <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_in_apple">Continue with Apple</string>
+    <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="terms_of_service">Terms of service</string>
+
+    <!-- Contribute photos -->
+    <string name="contribute_title">Photos of %1$s</string>
+    <string name="contribute_upload">Upload</string>
+    <plurals name="contribute_upload_photos">
+        <item quantity="one">Upload %1$d photo</item>
+        <item quantity="other">Upload %1$d photos</item>
+    </plurals>
+    <string name="cd_remove_photo">Remove photo</string>
+    <string name="contribute_add_photos">Add photos</string>
+    <string name="contribute_photos">Your photos</string>
+    <string name="contribute_photos_tip">Clear photos of one plant work best: its leaves, flowers or the whole plant. Any phone camera is fine.</string>
+    <string name="contribute_location">Where was it?</string>
+    <string name="contribute_location_body">Required. Where you photographed the plant: use your location, or choose the spot on the map.</string>
+    <string name="contribute_location_needed">Add where it was to upload</string>
+    <string name="contribute_use_my_location">Use my location</string>
+    <string name="contribute_choose_on_map">Choose on map</string>
+    <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>
+    <string name="contribute_use_this_place">Use this place</string>
+    <string name="contribute_remove_location">Remove location</string>
+    <string name="contribute_location_unavailable">Your location isn’t available. Check that location is on, or choose on the map.</string>
+    <string name="contribute_sign_in">Sign in to share photos. They appear on the species page for everyone.</string>
+    <string name="contribute_failed">The upload failed. Check your connection and try again.</string>
+    <string name="contribute_uploading">Uploaded %1$d of %2$d</string>
+    <string name="contribute_finished">Thank you! Your photos are on the species page.</string>
+    <string name="contribute_finished_partly">%1$d of %2$d photos uploaded. The others couldn’t be read.</string>
+    <string name="contribute_done">Done</string>
+    <string name="details_photo_map">Where photos were taken</string>
+    <string name="notify_uploads_channel">Photo uploads</string>
+    <string name="notify_upload_done_title">Photos shared</string>
+    <plurals name="notify_upload_done">
+        <item quantity="one">Your photo of %2$s is now on its page.</item>
+        <item quantity="other">Your %1$d photos of %2$s are now on its page.</item>
+    </plurals>
+    <string name="notify_upload_failed_title">Upload failed</string>
+    <string name="notify_upload_failed">Your photos of %1$s couldn’t be uploaded. Open the app to try again.</string>
+    <string name="cd_more">More options</string>
+    <string name="report_photo">Report photo</string>
+    <string name="report_title">Report this photo?</string>
+    <string name="report_body">We’ll review it within 24 hours. It’s hidden for you straight away.</string>
+    <string name="report_reason_not_plant">Not a plant</string>
+    <string name="report_reason_sexual_violent">Sexual or violent</string>
+    <string name="report_reason_person">Shows a person</string>
+    <string name="report_reason_wrong_species">Wrong species</string>
+    <string name="report_reason_other">Something else</string>
+    <string name="report_send">Report</string>
+    <string name="hide_contributor">Hide this contributor’s photos</string>
+    <string name="hide_contributor_title">Hide this contributor’s photos?</string>
+    <string name="hide_contributor_body">You won’t see any photo they shared, on any species. This stays on this device.</string>
+    <string name="hide">Hide</string>
+    <string name="notice_reported">Thanks. The photo is hidden and we’ll review it.</string>
+    <string name="notice_contributor_hidden">You won’t see this contributor’s photos any more.</string>
+    <string name="notice_failed">That didn’t work. Check your connection and try again.</string>
+    <string name="contribute_no_plant">No plant found</string>
+    <string name="contribute_no_plant_hint">Photos where no plant was found won’t be uploaded. Share clear photos of the plant itself.</string>
+    <string name="profile_usage_statistics">Share usage statistics</string>
+    <string name="profile_usage_statistics_body">Anonymous counts of how the app is used, such as which herbs are identified, for research on herb identification. No account, name, photo or place is sent.</string>
+    <string name="profile_privacy">Privacy</string>
+</resources>
