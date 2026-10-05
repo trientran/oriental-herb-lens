@@ -154,4 +154,11 @@
     <string name="contribute_finished_partly">Đã tải %1$d / %2$d ảnh. Không đọc được các ảnh còn lại.</string>
     <string name="contribute_done">Xong</string>
     <string name="details_photo_map">Nơi chụp ảnh</string>
+    <string name="notify_uploads_channel">Tải ảnh lên</string>
+    <string name="notify_upload_done_title">Đã chia sẻ ảnh</string>
+    <plurals name="notify_upload_done">
+        <item quantity="other">%1$d ảnh %2$s của bạn đã có trên trang của cây.</item>
+    </plurals>
+    <string name="notify_upload_failed_title">Tải lên không thành công</string>
+    <string name="notify_upload_failed">Không tải được ảnh %1$s của bạn. Hãy mở ứng dụng để thử lại.</string>
 </resources>

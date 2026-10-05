@@ -159,7 +159,7 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                 composable<ContributeDestination> { entry ->
                     ContributeRoute(
                         herbId = entry.toRoute<ContributeDestination>().herbId,
-                        platform = ContributePlatform(actions.pickPhotos, actions.currentLocation),
+                        platform = ContributePlatform(actions.pickPhotos, actions.currentLocation, actions.requestNotificationPermission),
                         onSignIn = signIn,
                         onDone = { navController.popBackStack() },
                     )

@@ -36,7 +36,11 @@ class ContributeViewModelTest : MainDispatcherTest() {
         submitImages = submit,
         addresses = { "Hà Nội" },
         appScope = ApplicationScope(CoroutineScope(testDispatcher)),
+        notifier = { id, name, uploaded, failed -> notified += Notified(id, name, uploaded, failed) },
     )
+
+    private data class Notified(val id: Long, val name: String?, val uploaded: Int, val failed: Int)
+    private val notified = mutableListOf<Notified>()
 
     @Test
     fun `shows which species the photos are for`() {
@@ -77,6 +81,7 @@ class ContributeViewModelTest : MainDispatcherTest() {
         assertEquals(5L, herbId)
         assertEquals(listOf("https://r2/5/a", "https://r2/5/b"), images.map { it.url })
         assertTrue(images.all { it.location == GeoLocation(21.0, 105.8) })
+        assertEquals(listOf(Notified(5, "Đinh lăng", uploaded = 2, failed = 0)), notified)
     }
 
     @Test

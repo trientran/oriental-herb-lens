@@ -97,6 +97,8 @@ data class ContributePlatform(
     val pickPhotos: PickPhotos,
     /** Asks for permission if needed and reports where the device is, or null; null hides the option. */
     val currentLocation: (((GeoLocation?) -> Unit) -> Unit)? = null,
+    /** Asks once for permission to say when an upload finishes in the background. */
+    val requestNotificationPermission: (() -> Unit)? = null,
 )
 
 @Composable
@@ -137,7 +139,10 @@ fun ContributeScreen(
             if (state.phase == UploadPhase.Editing || state.phase == UploadPhase.Failed) {
                 Surface(tonalElevation = 3.dp) {
                     Button(
-                        onClick = { onAction(ContributeAction.Upload) },
+                        onClick = {
+                            platform.requestNotificationPermission?.invoke()
+                            onAction(ContributeAction.Upload)
+                        },
                         enabled = state.canUpload,
                         modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(spacing.lg),
                     ) {

@@ -20,6 +20,8 @@ data class PlatformActions(
     /** Asks for permission if needed and reports where the device is, or null. */
     val currentLocation: (((GeoLocation?) -> Unit) -> Unit)? = null,
     val onShareApp: (() -> Unit)? = null,
+    /** Asks once for permission to show notifications, e.g. when an upload finishes in the background. */
+    val requestNotificationPermission: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Starts speech recognition and reports what was said. */
     val onVoiceSearch: (((String) -> Unit) -> Unit)? = null,

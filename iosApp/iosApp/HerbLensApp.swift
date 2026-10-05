@@ -3,9 +3,10 @@ import FirebaseAppCheck
 import FirebaseCore
 import GoogleSignIn
 import SwiftUI
+import UserNotifications
 
 /** Firebase and App Check first, then the shared Kotlin app (Koin) with the ML Kit bridges. */
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -35,7 +36,21 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         #if DEBUG
         DebugTools.start()
         #endif
+        // Set before launch ends, so a tap that launched the app is delivered too
+        UNUserNotificationCenter.current().delegate = self
         return true
+    }
+
+    /** Tapping an upload notification opens the species it's about. */
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        if let herbId = response.notification.request.content.userInfo["herbId"] as? NSNumber {
+            IosDeepLinks.shared.openHerb(id: herbId.int64Value)
+        }
+        completionHandler()
     }
 }
 
