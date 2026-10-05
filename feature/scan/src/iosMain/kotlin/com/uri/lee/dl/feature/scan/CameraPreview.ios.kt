@@ -28,6 +28,7 @@ import com.uri.lee.dl.core.designsystem.resources.scan_open_settings
 import com.uri.lee.dl.core.ml.IosClassifierImage
 import com.uri.lee.dl.core.ml.uprightScaled
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import co.touchlab.kermit.Logger
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.autoreleasepool
@@ -71,6 +72,7 @@ import platform.CoreMedia.CMSampleBufferRef
 import platform.CoreVideo.CVPixelBufferGetBaseAddress
 import platform.CoreVideo.CVPixelBufferGetBytesPerRow
 import platform.CoreVideo.CVPixelBufferGetHeight
+import platform.CoreVideo.CVPixelBufferGetPixelFormatType
 import platform.CoreVideo.CVPixelBufferGetWidth
 import platform.CoreVideo.CVPixelBufferLockBaseAddress
 import platform.CoreVideo.CVPixelBufferUnlockBaseAddress
@@ -78,7 +80,11 @@ import platform.CoreVideo.kCVPixelBufferLock_ReadOnly
 import platform.CoreVideo.kCVPixelBufferPixelFormatTypeKey
 import platform.CoreVideo.kCVPixelFormatType_32BGRA
 import platform.Foundation.NSDocumentDirectory
+import platform.CoreFoundation.CFRetain
+import platform.Foundation.CFBridgingRelease
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSNumber
+import platform.Foundation.numberWithUnsignedInt
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
@@ -141,7 +147,12 @@ private class CameraSession {
         val output = AVCaptureVideoDataOutput().apply {
             // Frames that arrive while one is being identified are dropped, not queued
             alwaysDiscardsLateVideoFrames = true
-            videoSettings = mapOf<Any?, Any?>(kCVPixelBufferPixelFormatTypeKey to kCVPixelFormatType_32BGRA)
+            // BGRA, which copyFrame reads. The key must be a Foundation string and the value an
+            // NSNumber: Kotlin's CFString pointer and UInt aren't bridged, and the setting would be
+            // silently ignored (frames then arrive as YUV)
+            videoSettings = mapOf<Any?, Any?>(
+                CFBridgingRelease(CFRetain(kCVPixelBufferPixelFormatTypeKey)) to NSNumber.numberWithUnsignedInt(kCVPixelFormatType_32BGRA),
+            )
             setSampleBufferDelegate(frames, queue)
         }
         if (session.canAddOutput(output)) session.addOutput(output)
@@ -150,16 +161,26 @@ private class CameraSession {
     }
 
     // startRunning blocks while the camera starts, so never on the main thread
-    fun start() = dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT.toLong(), 0u)) { session.startRunning() }
+    fun start() = dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT.toLong(), 0u)) {
+        session.startRunning()
+        Logger.withTag("Camera").i { "Started: running ${session.running}, ${session.inputs.size} inputs, ${session.outputs.size} outputs" }
+    }
     fun stop() = dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT.toLong(), 0u)) { session.stopRunning() }
 }
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Unit) : NSObject(), AVCaptureVideoDataOutputSampleBufferDelegateProtocol {
     private var lastSaved: TimeMark? = null
+    private var lastProblem: TimeMark? = null
+    private val log = Logger.withTag("Camera")
 
     override fun captureOutput(output: AVCaptureOutput, didOutputSampleBuffer: CMSampleBufferRef?, fromConnection: AVCaptureConnection) {
-        val image = autoreleasepool { copyFrame(didOutputSampleBuffer) } ?: return
+        val image = try {
+            autoreleasepool { copyFrame(didOutputSampleBuffer) }
+        } catch (e: Throwable) {
+            problem { "Frame not copied: $e" }
+            null
+        } ?: return
         val aspect = image.size.useContents { width / height }.toFloat()
         if (Platform.isDebugBinary) saveForDebugging(image)
         onFrame(IosClassifierImage(image), aspect)
@@ -172,7 +193,10 @@ private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Uni
      * seconds. Plain CoreGraphics calls, released right here, hold nothing.
      */
     private fun copyFrame(sample: CMSampleBufferRef?): UIImage? {
-        val pixels = CMSampleBufferGetImageBuffer(sample) ?: return null
+        val pixels = CMSampleBufferGetImageBuffer(sample) ?: return null.also { problem { "Frame without pixels" } }
+        if (CVPixelBufferGetPixelFormatType(pixels) != kCVPixelFormatType_32BGRA) {
+            return null.also { problem { "Frame not BGRA: format ${CVPixelBufferGetPixelFormatType(pixels)}" } }
+        }
         CVPixelBufferLockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly)
         try {
             val colorSpace = CGColorSpaceCreateDeviceRGB()
@@ -188,7 +212,8 @@ private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Uni
             CGColorSpaceRelease(colorSpace)
             val cgImage = CGBitmapContextCreateImage(bitmap)
             CGContextRelease(bitmap)
-            cgImage ?: return null
+            if (bitmap == null) problem { "No bitmap for ${CVPixelBufferGetWidth(pixels)} x ${CVPixelBufferGetHeight(pixels)}, ${CVPixelBufferGetBytesPerRow(pixels)} bytes per row" }
+            cgImage ?: return null.also { problem { "Frame image not created" } }
             // Redrawn (and scaled) while the buffer is still locked, so nothing points into it afterwards
             val image = UIImage.imageWithCGImage(cgImage).uprightScaled(maxDimension = 640.0)
             CGImageRelease(cgImage)
@@ -196,6 +221,13 @@ private class FrameDelegate(private val onFrame: (ClassifierImage, Float) -> Uni
         } finally {
             CVPixelBufferUnlockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly)
         }
+    }
+
+    /** Logs why frames are lost, at most every 2 s. */
+    private fun problem(message: () -> String) {
+        if (lastProblem?.let { it.elapsedNow() < 2.seconds } == true) return
+        lastProblem = TimeSource.Monotonic.markNow()
+        log.w(message = message)
     }
 
     /** Debug builds keep the latest frame the model saw (every 2 s) in Documents/debug/frame.jpg. */
