@@ -33,7 +33,7 @@ class IdentifyPlantsUseCaseTest {
     private val recognize = RecognizeHerbsUseCase(classifier, FakeSpeciesRepository(listOf(species(1, "A"), species(2, "B"))))
 
     @Test
-    fun `each plant is identified on its own, recognised ones first`() = runTest {
+    fun `each plant is identified on its own and recognised ones come first`() = runTest {
         val plants = IdentifyPlantsUseCase(finder, recognize)(Crop("photo"), minConfidence = 0.5f)
 
         assertEquals(listOf(flower.region, leaf.region, pot.region), plants.map { it.region })
