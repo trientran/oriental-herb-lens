@@ -67,6 +67,7 @@ import com.uri.lee.dl.core.designsystem.resources.contribute_finished
 import com.uri.lee.dl.core.designsystem.resources.contribute_finished_partly
 import com.uri.lee.dl.core.designsystem.resources.contribute_location
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_body
+import com.uri.lee.dl.core.designsystem.resources.contribute_location_needed
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_unavailable
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos
 import com.uri.lee.dl.core.designsystem.resources.contribute_photos_tip
@@ -141,8 +142,11 @@ fun ContributeScreen(
                         modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(spacing.lg),
                     ) {
                         Text(
-                            if (state.photos.isEmpty()) stringResource(Res.string.contribute_upload)
-                            else pluralStringResource(Res.plurals.contribute_upload_photos, state.photos.size, state.photos.size),
+                            when {
+                                state.photos.isEmpty() -> stringResource(Res.string.contribute_upload)
+                                state.location == null -> stringResource(Res.string.contribute_location_needed)
+                                else -> pluralStringResource(Res.plurals.contribute_upload_photos, state.photos.size, state.photos.size)
+                            },
                         )
                     }
                 }

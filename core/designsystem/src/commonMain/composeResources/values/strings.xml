@@ -73,10 +73,14 @@
     <string name="scan_pick_plant">Pick a plant</string>
     <string name="scan_point">Point the camera at a plant.</string>
     <string name="scan_looking">Looking for plants…</string>
-    <string name="scan_tap_plant">Tap another dot to identify that plant.</string>
+    <string name="scan_tap_plant">Tap a dot to identify that plant.</string>
+    <string name="scan_hold_steady">Hold the camera on a plant, or tap its dot.</string>
+    <string name="scan_again">Scan again</string>
+    <string name="scan_plant_unknown">Not recognised. It may not be a herb the app knows yet; try another part of the plant.</string>
+    <string name="cd_picked_plant">The plant identified</string>
     <string name="scan_not_recognised">Not recognised. Move closer, or try another part of the plant.</string>
     <string name="scan_photo_none">No herb recognised in this photo.</string>
-    <string name="scan_photo_none_pick">No herb recognised among the plants in this photo. Try Whole view.</string>
+    <string name="scan_photo_none_pick">No separate plants found in this photo. Try Whole view.</string>
     <string name="scan_photo_failed">This photo couldn’t be read.</string>
     <string name="scan_photos">Photos</string>
     <string name="scan_back_to_camera">Camera</string>
@@ -129,7 +133,8 @@
     <string name="contribute_photos">Your photos</string>
     <string name="contribute_photos_tip">Clear photos of one plant work best: its leaves, flowers or the whole plant. Any phone camera is fine.</string>
     <string name="contribute_location">Where was it?</string>
-    <string name="contribute_location_body">Optional. A rough area is enough.</string>
+    <string name="contribute_location_body">Required. Where you photographed the plant: use your location, or choose the spot on the map.</string>
+    <string name="contribute_location_needed">Add where it was to upload</string>
     <string name="contribute_use_my_location">Use my location</string>
     <string name="contribute_choose_on_map">Choose on map</string>
     <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>

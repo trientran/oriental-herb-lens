@@ -84,10 +84,24 @@ class ContributeViewModelTest : MainDispatcherTest() {
         unreadable += "b"
         val viewModel = viewModel()
         viewModel.onAction(ContributeAction.PhotosPicked(listOf(Photo("a"), Photo("b"))))
+        viewModel.onAction(ContributeAction.LocationPicked(GeoLocation(21.0, 105.8)))
 
         viewModel.onAction(ContributeAction.Upload)
 
         assertEquals(UploadPhase.Finished(uploaded = 1, failed = 1), viewModel.state.value.phase)
+    }
+
+    @Test
+    fun `photos need a place before they can be uploaded`() {
+        val viewModel = viewModel()
+        viewModel.onAction(ContributeAction.PhotosPicked(listOf(Photo("a"))))
+
+        assertFalse(viewModel.state.value.canUpload)
+        viewModel.onAction(ContributeAction.Upload)
+        assertEquals(UploadPhase.Editing, viewModel.state.value.phase)
+
+        viewModel.onAction(ContributeAction.LocationPicked(GeoLocation(21.0, 105.8)))
+        assertTrue(viewModel.state.value.canUpload)
     }
 
     @Test
