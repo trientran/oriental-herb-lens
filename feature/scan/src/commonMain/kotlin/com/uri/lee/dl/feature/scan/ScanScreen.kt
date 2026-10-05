@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
@@ -42,6 +44,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -63,9 +67,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.component.ConfidenceChip
@@ -84,10 +86,10 @@ import com.uri.lee.dl.core.designsystem.resources.scan_photo_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
 import com.uri.lee.dl.core.designsystem.resources.scan_photos
-import com.uri.lee.dl.core.designsystem.resources.scan_plant_unknown
-import com.uri.lee.dl.core.designsystem.resources.scan_preparing
 import com.uri.lee.dl.core.designsystem.resources.scan_pick_plant
+import com.uri.lee.dl.core.designsystem.resources.scan_plant_unknown
 import com.uri.lee.dl.core.designsystem.resources.scan_point
+import com.uri.lee.dl.core.designsystem.resources.scan_preparing
 import com.uri.lee.dl.core.designsystem.resources.scan_tap_plant
 import com.uri.lee.dl.core.designsystem.resources.scan_unknown_species
 import com.uri.lee.dl.core.designsystem.resources.scan_whole_view
@@ -181,7 +183,10 @@ private fun Single(
         }
         if (wide) {
             Surface(Modifier.width(380.dp).fillMaxHeight(), color = MaterialTheme.colorScheme.surface) {
-                ResultsPanel(state, onAction, onOpenSpecies, Modifier.statusBarsPadding().padding(16.dp))
+                // A Surface stretches its child to its own size; the column lets the panel fit its content
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    ResultsPanel(state, onAction, onOpenSpecies, Modifier.statusBarsPadding().padding(16.dp))
+                }
             }
         }
     }
