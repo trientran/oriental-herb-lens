@@ -105,7 +105,10 @@ actual fun FirebaseChecks() {
                     val token = Firebase.auth.currentUser?.getIdToken(false) ?: error("sign in first")
                     val response = window.fetch(
                         "$PHOTO_UPLOAD_URL/photos?speciesKey=spike",
-                        RequestInit(method = "POST", headers = json("Authorization" to "Bearer $token", "Content-Type" to "image/jpeg")),
+                        // Kotlin's RequestInit() sets every option it isn't given to null, which
+                        // fetch rejects (cache: null), so pass only what's set
+                        json("method" to "POST", "headers" to json("Authorization" to "Bearer $token", "Content-Type" to "image/jpeg"))
+                            .unsafeCast<RequestInit>(),
                     ).await()
                     "HTTP ${response.status} ${response.text().await()}"
                 }
