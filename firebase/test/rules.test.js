@@ -1,7 +1,7 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
-import { addDoc, collection, deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 
 let env;
 
@@ -88,6 +88,12 @@ test('users read only their own document, and write none', async () => {
   await assertSucceeds(getDoc(doc(as('alice'), 'users/alice')));
   await assertFails(getDoc(doc(as('bob'), 'users/alice')));
   await assertFails(setDoc(doc(as('alice'), 'users/alice'), { favorite: [9] }, { merge: true }));
+});
+
+test('users delete only their own document, with their account', async () => {
+  await assertFails(deleteDoc(doc(as('bob'), 'users/alice')));
+  await assertFails(deleteDoc(doc(as(null), 'users/alice')));
+  await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
 });
 
 test('old app versions can still read config/mobile, nobody can write it', async () => {

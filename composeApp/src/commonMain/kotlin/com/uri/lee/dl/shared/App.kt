@@ -43,6 +43,7 @@ import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.model.UpdatePolicy
+import com.uri.lee.dl.feature.auth.DeleteAccountRoute
 import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
 import com.uri.lee.dl.feature.contribute.ContributeRoute
@@ -63,6 +64,7 @@ import kotlin.reflect.KClass
 @Serializable data object SavedDestination
 @Serializable data object ProfileDestination
 @Serializable data object SignInDestination
+@Serializable data object DeleteAccountDestination
 @Serializable data class ContributeDestination(val herbId: Long)
 @Serializable data class SpeciesDestination(val herbId: Long)
 
@@ -90,7 +92,7 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
         // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
         // that; none on full-screen flows (sign-in, contributing)
         val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
-        val fullScreen = listOf(SignInDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
+        val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
         val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
         val addPhotos = { herbId: Long -> navController.navigate(ContributeDestination(herbId)) }
         NavigationSuiteScaffold(
@@ -138,12 +140,21 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
                             onSignIn = signIn,
                             onShareApp = actions.onShareApp,
                             onOpenLanguageSettings = actions.onOpenLanguageSettings,
+                            onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         ),
                         modifier = Modifier.statusBarsPadding(),
                     )
                 }
                 composable<SignInDestination> {
                     SignInRoute(actions.requestGoogleSignIn, onDone = { navController.popBackStack() }, requestAppleSignIn = actions.requestAppleSignIn)
+                }
+                composable<DeleteAccountDestination> {
+                    DeleteAccountRoute(
+                        requestGoogleSignIn = actions.requestGoogleSignIn,
+                        onDone = { navController.popBackStack() },
+                        requestAppleSignIn = actions.requestAppleSignIn,
+                        revokeAppleToken = actions.revokeAppleToken,
+                    )
                 }
                 composable<ContributeDestination> { entry ->
                     ContributeRoute(

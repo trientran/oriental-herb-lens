@@ -26,8 +26,11 @@ sealed interface SignInAction {
 /** What Google's account picker returns; iOS also gives an access token, which Firebase needs there. */
 data class GoogleCredential(val idToken: String, val accessToken: String? = null)
 
-/** What Sign in with Apple returns: the identity token, and the unhashed nonce its request was made with. */
-data class AppleCredential(val idToken: String, val rawNonce: String)
+/**
+ * What Sign in with Apple returns: the identity token, the unhashed nonce its request was made
+ * with, and a one-off authorization code, which revokes the app's tokens when the account is deleted.
+ */
+data class AppleCredential(val idToken: String, val rawNonce: String, val authorizationCode: String? = null)
 
 data class SignInState(
     val isSignedIn: Boolean = false,

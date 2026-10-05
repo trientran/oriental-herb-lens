@@ -2,6 +2,7 @@ package com.uri.lee.dl.testing.fakes
 
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.SignInProvider
 import com.uri.lee.dl.domain.repository.PhotoRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.UploadedImage
@@ -26,6 +27,31 @@ class FakeAuthRepository(uid: String? = "user-1") : AuthRepository {
         userId.value = "apple-$idToken"
     }
     override suspend fun signOut() { userId.value = null }
+
+    override val signInProvider: SignInProvider?
+        get() = userId.value?.let { if (it.startsWith("apple-")) SignInProvider.APPLE else SignInProvider.GOOGLE }
+
+    /** Who the user last proved to be; deleting needs it, as Firebase requires a recent sign-in. */
+    var reauthenticatedAs: String? = null
+    var failDelete = false
+    val deleted = mutableListOf<String>()
+
+    override suspend fun reauthenticateWithGoogle(idToken: String, accessToken: String?) {
+        if (failSignIn) error("sign-in failed")
+        reauthenticatedAs = "google-$idToken"
+    }
+
+    override suspend fun reauthenticateWithApple(idToken: String, rawNonce: String) {
+        if (failSignIn) error("sign-in failed")
+        reauthenticatedAs = "apple-$idToken"
+    }
+
+    override suspend fun deleteAccount() {
+        val uid = userId.value ?: return
+        if (failDelete || reauthenticatedAs == null) error("requires recent login")
+        deleted += uid
+        userId.value = null
+    }
 }
 
 class FakePhotoRepository : PhotoRepository {

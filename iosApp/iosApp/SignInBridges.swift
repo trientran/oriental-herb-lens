@@ -1,6 +1,7 @@
 import AuthenticationServices
 import ComposeApp
 import CryptoKit
+import FirebaseAuth
 import FirebaseCore
 import GoogleSignIn
 import UIKit
@@ -36,9 +37,9 @@ final class GoogleSignInProvider: NSObject, GoogleSignInBridge {
 final class AppleSignInProvider: NSObject, AppleSignInBridge, ASAuthorizationControllerDelegate,
     ASAuthorizationControllerPresentationContextProviding {
     private var nonce: String?
-    private var completion: ((String?, String?, String?) -> Void)?
+    private var completion: ((String?, String?, String?, String?) -> Void)?
 
-    func signInWithApple(completion: @escaping (String?, String?, String?) -> Void) {
+    func signInWithApple(completion: @escaping (String?, String?, String?, String?) -> Void) {
         let nonce = Self.randomNonce()
         self.nonce = nonce
         self.completion = completion
@@ -55,17 +56,18 @@ final class AppleSignInProvider: NSObject, AppleSignInBridge, ASAuthorizationCon
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let tokenData = credential.identityToken,
               let token = String(data: tokenData, encoding: .utf8) else {
-            finish(nil, nil, "Apple returned no identity token")
+            finish(nil, nil, nil, "Apple returned no identity token")
             return
         }
-        finish(token, nonce, nil)
+        let code = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+        finish(token, nonce, code, nil)
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         if (error as? ASAuthorizationError)?.code == .canceled {
-            finish(nil, nil, nil)
+            finish(nil, nil, nil, nil)
         } else {
-            finish(nil, nil, error.localizedDescription)
+            finish(nil, nil, nil, error.localizedDescription)
         }
     }
 
@@ -73,8 +75,15 @@ final class AppleSignInProvider: NSObject, AppleSignInBridge, ASAuthorizationCon
         UIApplication.shared.topViewController?.view.window ?? ASPresentationAnchor()
     }
 
-    private func finish(_ token: String?, _ nonce: String?, _ error: String?) {
-        completion?(token, nonce, error)
+    /** Required when an Apple account is deleted: Firebase passes the code on to Apple. */
+    func revokeToken(authorizationCode: String, completion: @escaping (String?) -> Void) {
+        Auth.auth().revokeToken(withAuthorizationCode: authorizationCode) { error in
+            completion(error?.localizedDescription)
+        }
+    }
+
+    private func finish(_ token: String?, _ nonce: String?, _ code: String?, _ error: String?) {
+        completion?(token, nonce, code, error)
         completion = nil
         self.nonce = nil
     }

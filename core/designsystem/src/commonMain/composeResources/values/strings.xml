@@ -102,6 +102,13 @@
     <string name="profile_sign_in_body">Sign in to add photos and suggest names. Browsing works without an account.</string>
     <string name="profile_signed_in">Signed in</string>
     <string name="profile_sign_out">Sign out</string>
+    <string name="profile_delete_account">Delete account</string>
+    <string name="delete_account_title">Delete your account?</string>
+    <string name="delete_account_body">This permanently deletes your Herb Lens account and the details kept with it. Photos you have shared stay on the species pages, no longer linked to an account. Your saved herbs and history stay on this device.\n\nTo confirm it’s you, sign in once more.</string>
+    <string name="delete_account_confirm">Delete my account</string>
+    <string name="delete_account_confirm_google">Confirm with Google and delete</string>
+    <string name="delete_account_confirm_apple">Confirm with Apple and delete</string>
+    <string name="delete_account_failed">The account couldn’t be deleted. Check your connection and try again. If it still fails, sign out, sign in again, then delete.</string>
     <string name="profile_identification">Identification</string>
     <string name="profile_min_confidence">Minimum confidence: %1$d%</string>
     <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
