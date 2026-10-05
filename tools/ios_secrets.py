@@ -3,7 +3,7 @@
 
   - iosApp/iosApp/GoogleService-Info.plist (Firebase console > Project settings > iOS app):
     REVERSED_CLIENT_ID, the URL scheme Google sign-in returns through
-  - local.properties: PHOTO_UPLOAD_URL, the photo-upload Worker (same as Android)
+  - local.properties (or the environment, in CI): PHOTO_UPLOAD_URL, the photo-upload Worker (same as Android)
 
 Run it again after downloading a new GoogleService-Info.plist.
 """
@@ -20,12 +20,12 @@ OUT = os.path.join(ROOT, "iosApp/Configuration/Secrets.xcconfig")
 def local_property(name):
     path = os.path.join(ROOT, "local.properties")
     if not os.path.exists(path):
-        return ""
+        return os.environ.get(name, "")
     for line in open(path, encoding="utf-8"):
         key, _, value = line.partition("=")
         if key.strip() == name:
             return value.strip()
-    return ""
+    return os.environ.get(name, "")
 
 
 def main():
