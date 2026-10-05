@@ -8,6 +8,39 @@ Bitrise release workflow does:
 - **iOS:** an App Store archive, uploaded to App Store Connect. It appears in **TestFlight** once
   Apple has processed it (usually 10–30 minutes); from there you add testers or submit it for review.
 
+## When
+
+Android, iOS and the web are released together after the last migration phase, once the
+supervisor has signed off a thorough test (plan decision D15, phase R). Everything below is
+ready meanwhile; the secrets are set.
+
+## First release checklist
+
+1. **Test** with the supervisor on Android, iPhone, iPad and the web. Settle with the ethics
+   approval whether usage statistics are opt-in or opt-out (Profile → Privacy; on by default).
+2. **Firestore rules:** if the previous rules were restored meanwhile (so the old app keeps
+   working), deploy `firebase/firestore.rules` again:
+   `cd firebase && npx firebase deploy --only firestore:rules --project oriental-herb-lens-41d17`
+3. **Build:** GitHub → Actions → **Release → Run workflow**, version `1.2` (both platforms).
+4. **Android:**
+   - Play Console → Testing → Internal testing: finish the draft (release notes), roll it out
+     to testers and test the store build.
+   - Promote it to production.
+   - Once it's live, set `mustUpdateAndroid` to `true` in Firestore `config/mobile`, so older
+     versions ask their users to update.
+5. **iOS:**
+   - When the build appears in App Store Connect → TestFlight (10–30 minutes), install it with
+     the TestFlight app and test it.
+   - Fill in the App Store listing:
+     - App Privacy answers (the table at the end of this file);
+     - screenshots: iPhone 6.9″ and iPad 13″;
+     - description, keywords, support URL `https://med-herb-lens.pages.dev`;
+     - age rating 18+, to match the terms;
+     - review notes (below).
+   - Submit the build for review.
+6. **Web:** publish the web app to Cloudflare Pages, replacing the temporary site (`website/`).
+7. **Google Analytics:** data retention 14 months, Google signals off.
+
 ## Running a release
 
 1. Merge what should ship into the branch you release from (usually `master`).
@@ -97,17 +130,27 @@ Like the release workflow, it appears in the Actions tab once it's on the defaul
 belong in `local.properties`). Point the tools at it with
 `export GOOGLE_APPLICATION_CREDENTIALS=~/.config/herb-lens/service-account.json`.
 
-## Before the first store release
+## Done ahead of the release
 
-- Privacy policy and terms (`website/pages/`) published at the URLs the app links to
-  (`LegalLinks` in core:designsystem) and entered in Play Console and App Store Connect.
-- App Store Connect: App Privacy answers, screenshots, description, age rating (18+), and
-  notes for review: account deletion (Profile → Delete account), and the content safeguards
-  of guideline 1.2: photos are checked for a plant on the device before upload, any shared
-  photo can be reported or its contributor hidden (photo viewer → ⋮), reports reach the
-  admin within the hour, and offenders are banned.
-- Firestore: after the Android release is live, set `mustUpdateAndroid` in `config/mobile` so old
-  versions update (the new rules are already deployed; see `docs/firestore-rollout.md`).
+- Privacy policy and terms published at `https://med-herb-lens.pages.dev` (`website/`), and
+  entered in Play Console, App Store Connect and the Google sign-in branding (domain verified).
+- Secrets for both stores and for moderation are set in GitHub; the Worker has its service
+  account.
+
+## App Store review notes
+
+Paste into App Store Connect → the version → App Review Information → Notes:
+
+> Med Herb Lens identifies medicinal herbs with an on-device model; browsing and identification
+> need no account. Signing in (Google or Sign in with Apple) is only needed to share photos or
+> suggest names.
+>
+> Account deletion: Profile → Delete account (the user signs in again to confirm).
+>
+> User-generated content (guideline 1.2): photos are checked on the device and only uploaded
+> if a plant is found; any shared photo can be reported or its contributor hidden (open a photo
+> on a species page → ⋮); reports reach the administrator within the hour and are acted on
+> within 24 hours; offending photos are removed and their uploaders banned. Users must be 18+.
 
 ## App Store privacy answers (App Store Connect → App Privacy)
 
