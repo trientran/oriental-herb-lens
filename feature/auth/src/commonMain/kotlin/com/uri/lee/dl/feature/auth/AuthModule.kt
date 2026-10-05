@@ -5,4 +5,5 @@ import org.koin.dsl.module
 
 val authModule = module {
     viewModelOf(::SignInViewModel)
+    viewModelOf(::DeleteAccountViewModel)
 }

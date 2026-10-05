@@ -67,12 +67,19 @@ internal class IosPlatform(
         },
         requestAppleSignIn = {
             suspendCancellableCoroutine { continuation ->
-                apple.signInWithApple { token, nonce, error ->
+                apple.signInWithApple { token, nonce, code, error ->
                     when {
                         error != null -> continuation.resumeWithException(IllegalStateException(error))
-                        token != null && nonce != null -> continuation.resume(AppleCredential(token, nonce))
+                        token != null && nonce != null -> continuation.resume(AppleCredential(token, nonce, code))
                         else -> continuation.resume(null)
                     }
+                }
+            }
+        },
+        revokeAppleToken = { code ->
+            suspendCancellableCoroutine { continuation ->
+                apple.revokeToken(code) { error ->
+                    if (error != null) continuation.resumeWithException(IllegalStateException(error)) else continuation.resume(Unit)
                 }
             }
         },

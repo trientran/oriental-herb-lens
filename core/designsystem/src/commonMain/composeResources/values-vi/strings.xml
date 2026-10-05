@@ -101,6 +101,13 @@
     <string name="profile_sign_in_body">Đăng nhập để thêm ảnh và đề xuất tên. Không cần tài khoản để tra cứu.</string>
     <string name="profile_signed_in">Đã đăng nhập</string>
     <string name="profile_sign_out">Đăng xuất</string>
+    <string name="profile_delete_account">Xoá tài khoản</string>
+    <string name="delete_account_title">Xoá tài khoản của bạn?</string>
+    <string name="delete_account_body">Thao tác này xoá vĩnh viễn tài khoản Herb Lens và các thông tin đi kèm. Ảnh bạn đã chia sẻ vẫn ở trên trang của cây nhưng không còn gắn với tài khoản nào. Cây đã lưu và lịch sử vẫn ở trên thiết bị này.\n\nĐể xác nhận là bạn, hãy đăng nhập lại một lần nữa.</string>
+    <string name="delete_account_confirm">Xoá tài khoản của tôi</string>
+    <string name="delete_account_confirm_google">Xác nhận với Google và xoá</string>
+    <string name="delete_account_confirm_apple">Xác nhận với Apple và xoá</string>
+    <string name="delete_account_failed">Không xoá được tài khoản. Hãy kiểm tra kết nối và thử lại. Nếu vẫn lỗi, hãy đăng xuất, đăng nhập lại rồi xoá.</string>
     <string name="profile_identification">Nhận dạng</string>
     <string name="profile_min_confidence">Độ tin cậy tối thiểu: %1$d%</string>
     <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>

@@ -12,6 +12,8 @@ data class PlatformActions(
     val requestGoogleSignIn: GoogleSignInRequest,
     /** Sign in with Apple (iOS). */
     val requestAppleSignIn: AppleSignInRequest? = null,
+    /** Revokes the app's Apple tokens when an Apple account is deleted (iOS), as Apple requires. */
+    val revokeAppleToken: (suspend (authorizationCode: String) -> Unit)? = null,
     val onOpenStore: () -> Unit,
     /** Closes the app (shown when the service is suspended). */
     val onExit: () -> Unit,

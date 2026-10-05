@@ -11,9 +11,15 @@ interface GoogleSignInBridge {
     fun signInWithGoogle(completion: (idToken: String?, accessToken: String?, error: String?) -> Unit)
 }
 
-/** Swift's side of Sign in with Apple: the identity token and raw nonce, (null, null, null) when cancelled. */
+/**
+ * Swift's side of Sign in with Apple: the identity token, raw nonce and authorization code, all
+ * null when cancelled. [revokeToken] tells Apple (through Firebase) the app no longer uses the
+ * account, when it's deleted.
+ */
 interface AppleSignInBridge {
-    fun signInWithApple(completion: (idToken: String?, rawNonce: String?, error: String?) -> Unit)
+    fun signInWithApple(completion: (idToken: String?, rawNonce: String?, authorizationCode: String?, error: String?) -> Unit)
+
+    fun revokeToken(authorizationCode: String, completion: (error: String?) -> Unit)
 }
 
 /** The whole app as a view controller, for SwiftUI's UIViewControllerRepresentable. */

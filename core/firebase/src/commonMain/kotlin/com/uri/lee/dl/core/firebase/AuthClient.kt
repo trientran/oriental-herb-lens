@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-/** The signed-in Firebase user. Signing in itself is platform UI (FirebaseUI on Android). */
+/** The signed-in Firebase user. The sign-in UI itself is the platform's (Credential Manager, Google Sign-In, Apple). */
 class AuthClient internal constructor(private val auth: FirebaseAuth) {
 
     val currentUserId: String? get() = auth.currentUser?.uid
+
+    /** Firebase's provider ids of the ways the user signs in, e.g. `google.com`, `apple.com`. */
+    val providerIds: List<String> get() = auth.currentUser?.providerData?.map { it.providerId }.orEmpty()
 
     val userIdChanges: Flow<String?> = auth.authStateChanged.map { it?.uid }.distinctUntilChanged()
 
@@ -22,8 +25,26 @@ class AuthClient internal constructor(private val auth: FirebaseAuth) {
     }
 
     suspend fun signInWithApple(idToken: String, rawNonce: String) {
-        auth.signInWithCredential(OAuthProvider.credential(providerId = "apple.com", idToken = idToken, rawNonce = rawNonce))
+        auth.signInWithCredential(OAuthProvider.credential(providerId = APPLE, idToken = idToken, rawNonce = rawNonce))
     }
 
     suspend fun signOut() = auth.signOut()
+
+    suspend fun reauthenticateWithGoogle(idToken: String, accessToken: String?) {
+        auth.currentUser?.reauthenticate(GoogleAuthProvider.credential(idToken = idToken, accessToken = accessToken))
+    }
+
+    suspend fun reauthenticateWithApple(idToken: String, rawNonce: String) {
+        auth.currentUser?.reauthenticate(OAuthProvider.credential(providerId = APPLE, idToken = idToken, rawNonce = rawNonce))
+    }
+
+    /** Deletes the signed-in account, which also signs it out. */
+    suspend fun deleteUser() {
+        auth.currentUser?.delete()
+    }
+
+    companion object {
+        const val GOOGLE = "google.com"
+        const val APPLE = "apple.com"
+    }
 }

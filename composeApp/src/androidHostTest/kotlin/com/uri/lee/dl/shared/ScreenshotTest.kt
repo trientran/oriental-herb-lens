@@ -35,6 +35,9 @@ import com.uri.lee.dl.feature.herbdetails.HerbDetailsScreen
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
 import com.uri.lee.dl.domain.ml.Region
 import com.uri.lee.dl.domain.model.RecognizedHerb
+import com.uri.lee.dl.feature.auth.DeleteAccountScreen
+import com.uri.lee.dl.feature.auth.DeleteAccountState
+import com.uri.lee.dl.domain.repository.SignInProvider
 import com.uri.lee.dl.feature.scan.BatchItem
 import com.uri.lee.dl.feature.scan.PickedPlant
 import com.uri.lee.dl.feature.scan.ScanMode
@@ -101,6 +104,14 @@ class ScreenshotTest {
 
     @Test fun profile() = both("profile") {
         ProfileScreen(ProfileState(isSignedIn = false, scanSettings = ScanSettings(), versionName = "1.1"), {}, ProfileActions(onSignIn = {}, onShareApp = {}, onOpenLanguageSettings = {}))
+    }
+
+    @Test fun profileSignedIn() = light("profile_signed_in") {
+        ProfileScreen(ProfileState(isSignedIn = true, scanSettings = ScanSettings(), versionName = "1.1"), {}, ProfileActions(onSignIn = {}, onDeleteAccount = {}))
+    }
+
+    @Test fun deleteAccount() = light("delete_account") {
+        DeleteAccountScreen(DeleteAccountState(provider = SignInProvider.APPLE), onConfirm = {}, onBack = {})
     }
 
     @Test fun scanCamera() = both("scan_camera") {

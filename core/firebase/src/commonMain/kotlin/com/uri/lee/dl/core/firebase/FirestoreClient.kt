@@ -41,6 +41,11 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         return LegacyUserLibrary(favorites = doc.ids(USER_FAVORITES), history = doc.ids(USER_HISTORY))
     }
 
+    /** Removes `users/{uid}`, where old app versions kept the user's name and email. */
+    suspend fun deleteUserDocument(uid: String) {
+        db.collection(USERS).document(uid).delete()
+    }
+
     @Serializable
     private data class NameSuggestion(
         val speciesKey: Long,

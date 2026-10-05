@@ -1,8 +1,10 @@
 package com.uri.lee.dl.feature.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,9 +18,11 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -38,15 +42,15 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
-import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
 import com.uri.lee.dl.core.designsystem.resources.profile_about
 import com.uri.lee.dl.core.designsystem.resources.profile_app
 import com.uri.lee.dl.core.designsystem.resources.profile_contact
+import com.uri.lee.dl.core.designsystem.resources.profile_delete_account
 import com.uri.lee.dl.core.designsystem.resources.profile_full_list
 import com.uri.lee.dl.core.designsystem.resources.profile_identification
 import com.uri.lee.dl.core.designsystem.resources.profile_language
@@ -59,15 +63,17 @@ import com.uri.lee.dl.core.designsystem.resources.profile_sign_out
 import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
 import com.uri.lee.dl.core.designsystem.resources.profile_version
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.math.roundToInt
 
 /** Platform features the profile can offer; a null entry hides its row. */
 data class ProfileActions(
     val onSignIn: () -> Unit,
     val onShareApp: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
+    /** Opens account deletion; null hides it. */
+    val onDeleteAccount: (() -> Unit)? = null,
 )
 
 @Composable
@@ -86,7 +92,7 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
             Modifier.widthIn(max = spacing.maxContentWidth).fillMaxWidth().verticalScroll(rememberScrollState()).padding(spacing.lg),
             verticalArrangement = Arrangement.spacedBy(spacing.lg),
         ) {
-            AccountCard(state.isSignedIn, onSignIn = actions.onSignIn, onSignOut = { onAction(ProfileAction.SignOut) })
+            AccountCard(state.isSignedIn, onSignIn = actions.onSignIn, onSignOut = { onAction(ProfileAction.SignOut) }, onDeleteAccount = actions.onDeleteAccount)
 
             SectionCard(stringResource(Res.string.profile_identification)) {
                 ConfidenceSetting(state.scanSettings.minConfidence) { onAction(ProfileAction.SetMinConfidence(it)) }
@@ -112,13 +118,21 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
 }
 
 @Composable
-private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: () -> Unit) {
+private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: () -> Unit, onDeleteAccount: (() -> Unit)?) {
     val spacing = HerbLensTheme.spacing
     SectionCard(stringResource(if (isSignedIn == true) Res.string.profile_signed_in else Res.string.profile_sign_in)) {
         when (isSignedIn) {
-            true -> TextButton(onClick = onSignOut) {
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                Text(stringResource(Res.string.profile_sign_out), Modifier.padding(start = spacing.sm))
+            true -> Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                TextButton(onClick = onSignOut) {
+                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                    Text(stringResource(Res.string.profile_sign_out), Modifier.padding(start = spacing.sm))
+                }
+                if (onDeleteAccount != null) {
+                    TextButton(onClick = onDeleteAccount, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                        Icon(Icons.Filled.NoAccounts, contentDescription = null)
+                        Text(stringResource(Res.string.profile_delete_account), Modifier.padding(start = spacing.sm))
+                    }
+                }
             }
             false -> {
                 Text(stringResource(Res.string.profile_sign_in_body), style = MaterialTheme.typography.bodyMedium)
