@@ -6,6 +6,7 @@ import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
@@ -58,6 +59,7 @@ class ContributeViewModel(
     private val submitImages: SubmitImagesUseCase,
     private val addresses: AddressLine,
     private val appScope: ApplicationScope,
+    private val notifier: UploadNotifier,
 ) : MviViewModel<ContributeState, ContributeAction>(ContributeState(herbId)) {
 
     init {
@@ -91,9 +93,13 @@ class ContributeViewModel(
         val state = currentState
         val location = state.location?.location ?: return
         setState { copy(phase = UploadPhase.Uploading(0, photos.size)) }
+        notifier.uploadStarted()
         appScope.launch {
             try {
                 submitImages(state.herbId, state.photos, location).collect { progress ->
+                    if (progress is SubmitProgress.Finished) {
+                        notifier.uploadFinished(state.herbId, state.speciesName, progress.uploaded, progress.failed)
+                    }
                     setState {
                         copy(
                             phase = when (progress) {
@@ -107,6 +113,7 @@ class ContributeViewModel(
                 throw e
             } catch (e: Exception) {
                 log.e(e) { "Upload failed" }
+                notifier.uploadFinished(state.herbId, state.speciesName, uploaded = 0, failed = state.photos.size)
                 setState { copy(phase = UploadPhase.Failed) }
             }
         }

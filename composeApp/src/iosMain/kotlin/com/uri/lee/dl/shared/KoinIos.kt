@@ -4,6 +4,7 @@ import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.ml.NativeHerbLabeler
 import com.uri.lee.dl.core.ml.NativeObjectDetector
+import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
@@ -28,6 +29,7 @@ fun startKoinIos(
         modules(sharedModules(app) + module {
             single { labeler }
             single { detector }
+            single<UploadNotifier> { IosUploadNotifier(get()) }
         })
     }.koin
     koin.runStartupTasks()

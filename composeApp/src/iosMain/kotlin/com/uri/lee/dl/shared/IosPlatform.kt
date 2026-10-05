@@ -32,6 +32,9 @@ import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIViewController
+import platform.UserNotifications.UNAuthorizationOptionAlert
+import platform.UserNotifications.UNAuthorizationOptionSound
+import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
@@ -89,6 +92,10 @@ internal class IosPlatform(
         onShareApp = {
             val share = UIActivityViewController(activityItems = listOf(appStoreUrl()), applicationActivities = null)
             topController().presentViewController(share, animated = true, completion = null)
+        },
+        requestNotificationPermission = {
+            UNUserNotificationCenter.currentNotificationCenter()
+                .requestAuthorizationWithOptions(UNAuthorizationOptionAlert or UNAuthorizationOptionSound) { _, _ -> }
         },
         // Settings > Med Herb Lens > Language, offered because Info.plist lists both languages
         onOpenLanguageSettings = { open(UIApplicationOpenSettingsURLString) },

@@ -55,7 +55,9 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: drops unused code and resources (most of the icon set, unused library code)
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

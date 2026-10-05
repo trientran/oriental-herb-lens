@@ -156,4 +156,12 @@
     <string name="contribute_finished_partly">%1$d of %2$d photos uploaded. The others couldn’t be read.</string>
     <string name="contribute_done">Done</string>
     <string name="details_photo_map">Where photos were taken</string>
+    <string name="notify_uploads_channel">Photo uploads</string>
+    <string name="notify_upload_done_title">Photos shared</string>
+    <plurals name="notify_upload_done">
+        <item quantity="one">Your photo of %2$s is now on its page.</item>
+        <item quantity="other">Your %1$d photos of %2$s are now on its page.</item>
+    </plurals>
+    <string name="notify_upload_failed_title">Upload failed</string>
+    <string name="notify_upload_failed">Your photos of %1$s couldn’t be uploaded. Open the app to try again.</string>
 </resources>

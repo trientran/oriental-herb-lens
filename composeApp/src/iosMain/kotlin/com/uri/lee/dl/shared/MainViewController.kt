@@ -1,5 +1,6 @@
 package com.uri.lee.dl.shared
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.ComposeUIViewController
 import platform.UIKit.UIViewController
 
@@ -22,10 +23,19 @@ interface AppleSignInBridge {
     fun revokeToken(authorizationCode: String, completion: (error: String?) -> Unit)
 }
 
+/** Species opened from outside the app, e.g. by tapping an upload notification (see HerbLensApp.swift). */
+object IosDeepLinks {
+    internal val herbId = mutableStateOf<Long?>(null)
+
+    fun openHerb(id: Long) {
+        herbId.value = id
+    }
+}
+
 /** The whole app as a view controller, for SwiftUI's UIViewControllerRepresentable. */
 fun MainViewController(google: GoogleSignInBridge, apple: AppleSignInBridge): UIViewController {
     lateinit var controller: UIViewController
     val platform = IosPlatform(google, apple) { controller }
-    controller = ComposeUIViewController { App(platform.actions()) }
+    controller = ComposeUIViewController { App(platform.actions(), openHerbId = IosDeepLinks.herbId.value) }
     return controller
 }

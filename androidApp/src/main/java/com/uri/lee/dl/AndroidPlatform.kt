@@ -3,6 +3,7 @@ package com.uri.lee.dl
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -10,6 +11,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.ComponentActivity
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -46,6 +48,9 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { granted -> if (granted.values.any { it }) fetchLocation() else onLocation?.invoke(null) }
 
+    // The answer needs no handling: the upload notifier checks the permission when it's time
+    private val notificationPermission = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
     private val speech = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { onSpeech?.invoke(it) }
     }
@@ -59,6 +64,14 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         currentLocation = { onResult ->
             onLocation = onResult
             locationPermission.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+        },
+        requestNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            {
+                val granted = ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                if (!granted) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            null
         },
         onOpenStore = { activity.goToPlayStore() },
         onExit = {
