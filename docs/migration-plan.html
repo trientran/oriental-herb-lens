@@ -103,21 +103,31 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-si
 <div class="wrap">
 
 <header class="hero">
-  <div class="kicker">Herb Lens · migration plan · revision 2</div>
+  <div class="kicker">Herb Lens · migration plan · revision 3</div>
   <h1>From one XML Android app to Android, iOS and web on shared Kotlin</h1>
-  <p class="lede">Revision 2 records Phases 0 and 1 as done and adds the decisions made since: the species CSV is the single source of truth, the medicinal content is removed, Firestore keeps only photo URLs and Vietnamese name suggestions, photos come from R2 and GBIF, and herb identification stays on ML Kit on both platforms.</p>
+  <p class="lede">Revision 3 (5 Oct) adds the iOS app, account deletion, geotagged uploads, contributor records on <code>users/{uid}</code> and the reworked Pick a plant (§01). Revision 2 recorded Phases 0 and 1 as done and adds the decisions made since: the species CSV is the single source of truth, the medicinal content is removed, Firestore keeps only photo URLs and Vietnamese name suggestions, photos come from R2 and GBIF, and herb identification stays on ML Kit on both platforms.</p>
   <div class="meta">
-    <span><b>Updated</b> 4 Oct 2026</span>
-    <span><b>Branch</b> <code>develop</code> (Phases 0–1 merged in #3 and #4)</span>
+    <span><b>Updated</b> 5 Oct 2026</span>
+    <span><b>Branch</b> <code>develop</code> (Phases 0–4 merged; Phase 5 in #10)</span>
     <span><b>Targets</b> Android · iOS (iPhone + iPad) · Web (gated)</span>
-    <span><b>Toolchain</b> AGP 9.4 · Kotlin 2.3.21 · compileSdk 37 · minSdk 26</span>
+    <span><b>Toolchain</b> AGP 9.4 · Kotlin 2.4.20 · compileSdk 37 · minSdk 26</span>
   </div>
 </header>
 
 <!-- 01 -->
 <section>
   <div class="sec-no">01</div>
-  <h2>What changed in revision 2</h2>
+  <h2>What changed in revisions 3 and 2</h2>
+  <h3>Revision 3 (5 Oct)</h3>
+  <ul class="tight">
+    <li><b>The iOS app runs on an iPhone</b> (Phase 5, #10): the same Compose UI, with Swift bridges for ML Kit, Google Sign-In and Sign in with Apple. ML Kit works on devices only; the simulator gets stubs.</li>
+    <li><b>Contributors are recorded on <code>users/{uid}</code>:</b> uid, and name and email when the provider shares them (Apple shares neither), written once per user and device. The rules let users write only these fields on their own document, with the email they signed in with. The collection stays: it's also where favourites and history could sync later (D9).</li>
+    <li><b>Accounts can be deleted in the app</b> (App Store guideline 5.1.1(v)): after signing in again, the app deletes <code>users/{uid}</code>, revokes Apple tokens for Apple accounts, and deletes the Firebase account. Shared photos stay, no longer linked to an account (D11).</li>
+    <li><b>Every photo upload needs a place</b> (geotagged research records, D10). Enforced in the app; the rules can't inspect the JSON detail strings.</li>
+    <li><b>Pick a plant reworked</b> on both platforms (D12): a dot on each plant; holding the camera on one for 2 seconds, or tapping its dot, shows the cropped plant with its results and pauses the camera. Whole view identifies the centred square the user sees, not the whole frame stretched to the model's 224 × 224 input.</li>
+    <li><b>The Firestore rules were deployed on 5 Oct</b>, before the new app shipped (see §12).</li>
+  </ul>
+  <h3>Revision 2 (4 Oct)</h3>
   <ul class="tight">
     <li><b>Phases 0 and 1 are done</b> and merged into <code>develop</code> (#3, #4). See §10 for what each delivered and what was deliberately deferred.</li>
     <li><b>The species CSV is the single source of truth</b> for everything the app shows about a species: scientific name, authorship, family, genus, Vietnamese and English names. The app is offline-first: browsing, search and identification work without a network.</li>
@@ -141,7 +151,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-si
       <tr><td>DI</td><td>Koin 4, with a unit test that checks the whole graph</td><td><span class="pill lock">done in Phase 1</span></td></tr>
       <tr><td>Species data</td><td>The CSV catalog (GBIF export plus Vietnamese names) is the only source of species information, stored locally in SQLDelight</td><td><span class="pill lock">locked</span></td></tr>
       <tr><td>Medicinal content</td><td>Removed: no overview, dosing, side effects, interactions or reviews</td><td><span class="pill lock">locked</span></td></tr>
-      <tr><td>Firestore</td><td><code>herbs/{speciesKey}</code> holds an append-only map of photo URLs; <code>nameSuggestions</code> is create-only and read by the admin only. Nothing else is read or written</td><td><span class="pill lock">locked</span></td></tr>
+      <tr><td>Firestore</td><td><code>herbs/{speciesKey}</code> holds an append-only map of photo URLs; <code>nameSuggestions</code> is create-only and read by the admin only; <code>users/{uid}</code> holds each contributor's uid, name and email (revision 3). Nothing else is read or written</td><td><span class="pill lock">locked</span></td></tr>
       <tr><td>Photos</td><td>User uploads on R2 (through a Cloudflare Worker), plus GBIF occurrence photos with credits</td><td><span class="pill lock">locked</span></td></tr>
       <tr><td>Favourites and history</td><td>Stored on the device only</td><td><span class="pill lock">locked</span></td></tr>
       <tr><td>Search</td><td>Local search that ignores Vietnamese diacritics; Algolia removed</td><td><span class="pill lock">locked</span></td></tr>
@@ -429,19 +439,21 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-si
 <section>
   <div class="sec-no">06</div>
   <h2>What stays in Firestore</h2>
-  <p>Species information lives in the CSV. Firestore keeps only what users contribute: photos and Vietnamese name suggestions. The herb document ID is the GBIF species key (confirmed).</p>
+  <p>Species information lives in the CSV. Firestore keeps what users contribute (photos and Vietnamese name suggestions) and who contributed it. The herb document ID is the GBIF species key (confirmed).</p>
   <div class="tbl"><table>
     <thead><tr><th>Data</th><th>Where</th><th>Who reads it</th></tr></thead>
     <tbody>
-      <tr><td>Photo URLs per species, each with uploader ID and optional location</td><td><code>herbs/{speciesKey}.images</code> map (URL → details), append-only</td><td>The app: one document read when a species' photos are shown</td></tr>
+      <tr><td>Photo URLs per species, each with uploader ID and location (required for new uploads since revision 3)</td><td><code>herbs/{speciesKey}.images</code> map (URL → details), append-only</td><td>The app: one document read when a species' photos are shown</td></tr>
       <tr><td>Vietnamese name suggestions</td><td><code>nameSuggestions/{autoId}</code>, create-only</td><td>Only the admin, in the console. Accepted names go into the CSV; the admin then deletes the suggestions</td></tr>
       <tr><td>Everything else on <code>herbs</code> (names, overview, dosing, side effects, interactions, reviews)</td><td>No longer read or written by the app</td><td>Old app versions until they're forced to update; delete afterwards</td></tr>
-      <tr><td>Favourites, history, user profile (<code>users/{uid}</code>)</td><td>Copied to the device once, then no longer used</td><td>Delete after the migration release</td></tr>
+      <tr><td>Contributor record (<code>users/{uid}</code>: uid, name, email)</td><td>Written once per user and device after sign-in; only those fields, only by the owner, with their sign-in email; deleted with the account</td><td>The admin and the research, in the console; later perhaps favourites and history sync (D9)</td></tr>
+      <tr><td>Old favourites and history on <code>users/{uid}</code></td><td>Copied to the device once, then no longer used</td><td>Can be removed from the documents after the migration release</td></tr>
       <tr><td><code>config/mobile</code> (bans, suspension, update flags, label maps)</td><td>Replaced by security rules and Remote Config</td><td>Old app versions only</td></tr>
     </tbody>
   </table></div>
 
   <h3>Security rules (sketch)</h3>
+  <p>The deployed rules, with emulator tests, are in <code>firebase/firestore.rules</code> and <code>firebase/test/rules.test.js</code>; they add the <code>users/{uid}</code> rules below to this sketch.</p>
 <pre><code>rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
@@ -700,6 +712,10 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D6</div><div><b>Browse without signing in; sign in to contribute.</b> Yes.</div></div>
     <div class="decision"><div class="dno">D7</div><div><b>CSV as the single source of truth; medicinal content removed.</b> Yes (4 Oct).</div></div>
     <div class="decision"><div class="dno">D8</div><div><b>ML Kit for herb identification on both platforms; LiteRT only for user-trained models.</b> Yes (4 Oct).</div></div>
+    <div class="decision"><div class="dno">D9</div><div><b>Keep <code>users/{uid}</code>, with each contributor's uid, name and email.</b> Yes (5 Oct). Syncing favourites and history there is a later option: one document per user, written only on change, behind App Check and size-capped rules, with a billing alert. CSV export and import could come as a no-account extra.</div></div>
+    <div class="decision"><div class="dno">D10</div><div><b>Every photo upload is geotagged.</b> Yes (5 Oct), a requirement of the PhD supervisor.</div></div>
+    <div class="decision"><div class="dno">D11</div><div><b>In-app account deletion.</b> Yes (5 Oct). Shared photos stay on species pages; favourites and history stay on the device. Apple token revocation needs the Apple provider's code flow (Services ID, team ID, key) set up in Firebase.</div></div>
+    <div class="decision"><div class="dno">D12</div><div><b>Pick a plant: dots, hold steady or tap, then the cropped plant with its results.</b> Yes (5 Oct), on both platforms, replacing boxes.</div></div>
   </div>
 </section>
 
@@ -712,7 +728,7 @@ service cloud.firestore {
     <tbody>
       <tr><td>A new model's labels don't match the catalog</td><td>The activation check in §04: a model is never switched on without a catalog that covers its labels</td></tr>
       <tr><td>Local search is worse than Algolia</td><td>The §05 test cases and the Algolia baseline in the manual test script, checked before Algolia is removed</td></tr>
-      <tr><td>Tightening the Firestore rules breaks installed apps</td><td>The rollout order in §06</td></tr>
+      <tr><td>Tightening the Firestore rules breaks installed apps</td><td>The rollout order in §06. <b>The rules went live on 5 Oct before the new version shipped</b>, so installed versions can't save favourites or upload photos the old way until users update: ship the new Android version soon, then set <code>mustUpdateAndroid</code> in <code>config/mobile</code></td></tr>
       <tr><td>The <code>r2.dev</code> URL is rate-limited</td><td>Fine for model and catalog downloads; move to a custom domain before user photos are served at scale</td></tr>
       <tr><td>Abuse of the photo-upload Worker</td><td>It accepts only a valid Firebase ID token from a non-banned user, JPEG only, with a size cap; Cloudflare rate limiting on the route</td></tr>
       <tr><td>GBIF photo licensing or availability</td><td>Credits shown for every GBIF photo; CC BY-NC means no commercial use; responses cached per species, and the app works without them</td></tr>
