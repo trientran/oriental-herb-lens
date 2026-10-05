@@ -43,6 +43,7 @@
     <string name="details_not_found">This herb isn’t in the catalog.</string>
     <string name="details_photos">Photos</string>
     <string name="details_no_photos">No photos yet. Be the first to add one.</string>
+    <string name="details_photos_loading">Loading photos</string>
     <string name="details_add_photos">Add photos</string>
     <string name="details_names">Names</string>
     <string name="details_vietnamese_names">Vietnamese</string>

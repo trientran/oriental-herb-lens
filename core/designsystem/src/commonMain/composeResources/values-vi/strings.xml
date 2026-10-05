@@ -43,6 +43,7 @@
     <string name="details_not_found">Cây này không có trong danh mục.</string>
     <string name="details_photos">Hình ảnh</string>
     <string name="details_no_photos">Chưa có ảnh. Hãy là người đầu tiên đóng góp.</string>
+    <string name="details_photos_loading">Đang tải ảnh</string>
     <string name="details_add_photos">Thêm ảnh</string>
     <string name="details_names">Tên gọi</string>
     <string name="details_vietnamese_names">Tiếng Việt</string>

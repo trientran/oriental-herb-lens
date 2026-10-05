@@ -31,6 +31,8 @@ data class HerbDetailsState(
     val userPhotos: List<SpeciesPhoto> = emptyList(),
     /** GBIF photos; empty while loading or offline. */
     val referencePhotos: List<SpeciesPhoto> = emptyList(),
+    /** GBIF photos are still being fetched, so no photos doesn't mean none exist yet. */
+    val photosLoading: Boolean = true,
     val isFavorite: Boolean = false,
     val viewingPhoto: Int? = null,
     val hasError: Boolean = false,
@@ -75,7 +77,7 @@ class HerbDetailsViewModel(
         val id = currentState.herbId
         try {
             val species = catalog.get(id)
-            setState { copy(species = species, notFound = species == null) }
+            setState { copy(species = species, notFound = species == null, photosLoading = species != null) }
             if (species == null) return@launch
             library.recordViewed(id)
             loadReferencePhotos(id)
@@ -83,7 +85,7 @@ class HerbDetailsViewModel(
             throw e
         } catch (e: Exception) {
             log.e(e) { "Species $id unavailable" }
-            setState { copy(hasError = true) }
+            setState { copy(hasError = true, photosLoading = false) }
         }
     }
 
@@ -110,6 +112,8 @@ class HerbDetailsViewModel(
             throw e
         } catch (e: Exception) {
             log.w(e) { "GBIF photos unavailable" } // offline is normal; user photos still show
+        } finally {
+            setState { copy(photosLoading = false) }
         }
     }
 
