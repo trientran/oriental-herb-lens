@@ -3,7 +3,8 @@
 MARKETING_VERSION = 1.1
 CURRENT_PROJECT_VERSION = 9
 PRODUCT_BUNDLE_IDENTIFIER = com.uri.lee.dl
+DEVELOPMENT_TEAM = LY5X89S79S
 // Set once the app is listed: the number in its App Store URL
-APP_STORE_ID =
+APP_STORE_ID = 6819173768
 
 #include? "Secrets.xcconfig"

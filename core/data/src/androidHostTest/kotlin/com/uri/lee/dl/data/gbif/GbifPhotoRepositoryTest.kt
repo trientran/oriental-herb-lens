@@ -66,7 +66,7 @@ class GbifPhotoRepositoryTest {
     fun `lists use iNaturalist's medium size, other hosts the original`() = runTest(dispatcher) {
         val photos = repository.photos(1)
 
-        assertEquals("https://inaturalist-open-data.s3.amazonaws.com/photos/1/small.jpg", photos[0].thumbnailUrl)
+        assertEquals("https://inaturalist-open-data.s3.amazonaws.com/photos/1/medium.jpg", photos[0].thumbnailUrl)
         assertEquals(photos[1].url, photos[1].thumbnailUrl)
     }
 

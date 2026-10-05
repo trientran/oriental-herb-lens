@@ -44,8 +44,9 @@ android {
         applicationId = "com.uri.lee.dl"
         minSdk = 26
         targetSdk = 37
-        versionCode = 9
-        versionName = "1.1"
+        // Release builds in CI pass -PversionCode and -PversionName (.github/workflows/release.yml)
+        versionCode = (findProperty("versionCode") as String?)?.toInt() ?: 9
+        versionName = findProperty("versionName") as String? ?: "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         // workers/photo-upload, e.g. https://herb-lens-photo-upload.<account>.workers.dev
@@ -104,7 +105,6 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.messaging)
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
 

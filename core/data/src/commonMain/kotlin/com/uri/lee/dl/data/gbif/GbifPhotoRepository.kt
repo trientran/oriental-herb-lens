@@ -76,7 +76,7 @@ internal class GbifPhotoRepository(
             val url = identifier?.takeIf { type == "StillImage" && isOriginal(it) } ?: return null
             return SpeciesPhoto(
                 url = inaturalistSize(url, "large"),
-                thumbnailUrl = inaturalistSize(url, "small"),
+                thumbnailUrl = inaturalistSize(url, "medium"),
                 source = PhotoSource.GBIF,
                 credit = PhotoCredit(
                     creator = creator ?: rightsHolder ?: "Unknown",
@@ -95,8 +95,9 @@ internal class GbifPhotoRepository(
 
         /**
          * iNaturalist serves each photo in several sizes besides the original (often 2000 px or
-         * more, slow to fetch from its servers in Australia and Vietnam): `small` (about 240 px)
-         * for the photo strip and `large` (about 1024 px) for full screen. Other hosts keep [url].
+         * more, slow to fetch from its servers in Australia and Vietnam): `medium` (about 500 px)
+         * for the photo strip, which `small` (240 px) leaves soft on big screens, and `large`
+         * (about 1024 px) for full screen. Other hosts keep [url].
          */
         internal fun inaturalistSize(url: String, size: String): String =
             if ("inaturalist" in url) url.replace(Regex("/original\\.(jpe?g)", RegexOption.IGNORE_CASE), "/$size.$1") else url
