@@ -1,5 +1,7 @@
 package com.uri.lee.dl.feature.scan
 
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.FoundObject
@@ -14,13 +16,13 @@ import com.uri.lee.dl.testing.MainDispatcherTest
 import com.uri.lee.dl.testing.fakes.FakeSettingsRepository
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
 import com.uri.lee.dl.testing.fakes.species
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
+import kotlinx.coroutines.test.runTest
 
 class ScanViewModelTest : MainDispatcherTest() {
 
@@ -45,6 +47,11 @@ class ScanViewModelTest : MainDispatcherTest() {
     private val recognize = RecognizeHerbsUseCase(classifier, FakeSpeciesRepository(listOf(species(1, "Polyscias fruticosa"), species(2, "Mentha arvensis"))))
 
     private val clock = TestTimeSource()
+    private val events = mutableListOf<AnalyticsEvent>()
+    private val analytics = object : Analytics {
+        override fun log(event: AnalyticsEvent) { events += event }
+        override fun screen(name: String) = Unit
+    }
     private var cropped: Region? = null
 
     private fun viewModel() = ScanViewModel(
@@ -54,6 +61,7 @@ class ScanViewModelTest : MainDispatcherTest() {
         cropper = { image, region -> cropped = region; image },
         photoReader = { photo -> if (photo.uri == "broken") null else ReadPhoto(Image(photo.uri), 400, 300) },
         settings = settings,
+        analytics = analytics,
         time = clock,
     )
 
@@ -102,6 +110,17 @@ class ScanViewModelTest : MainDispatcherTest() {
         assertEquals(7, viewModel.state.value.picked?.id)
         viewModel.onAction(ScanAction.ClosePicked)
         assertNull(viewModel.state.value.picked)
+    }
+
+    @Test
+    fun `each identification and opened result is counted but not each camera frame`() = runTest {
+        val viewModel = viewModel()
+        repeat(3) { viewModel.analyzeFrame(Image("dinh lang"), 0.75f) } // whole view, same herb
+        viewModel.onAction(ScanAction.ResultOpened(1))
+
+        assertEquals(listOf("identify", "open_result"), events.map { it.name })
+        assertEquals(mapOf("mode" to "whole_view", "source" to "camera", "result_count" to 1, "recognised" to true, "species_id" to 1L, "confidence" to 90L), events[0].parameters)
+        assertEquals(1, events[1].parameters["rank"])
     }
 
     @Test

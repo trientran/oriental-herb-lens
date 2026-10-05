@@ -9,6 +9,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.common)
+            implementation(libs.gitlive.firebase.analytics)
             implementation(libs.gitlive.firebase.auth)
             implementation(libs.gitlive.firebase.config)
             implementation(libs.gitlive.firebase.firestore)

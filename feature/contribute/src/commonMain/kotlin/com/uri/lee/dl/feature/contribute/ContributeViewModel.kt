@@ -4,6 +4,9 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.moderation.PlantCheck
@@ -71,6 +74,7 @@ class ContributeViewModel(
     private val appScope: ApplicationScope,
     private val notifier: UploadNotifier,
     private val plantCheck: PlantCheck,
+    private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<ContributeState, ContributeAction>(ContributeState(herbId)) {
 
     init {
@@ -136,6 +140,7 @@ class ContributeViewModel(
             try {
                 submitImages(state.herbId, state.plantPhotos, location).collect { progress ->
                     if (progress is SubmitProgress.Finished) {
+                        if (progress.uploaded > 0) analytics.log(AnalyticsEvent.PhotosShared(state.herbId, progress.uploaded))
                         notifier.uploadFinished(state.herbId, state.speciesName, progress.uploaded, progress.failed)
                     }
                     setState {

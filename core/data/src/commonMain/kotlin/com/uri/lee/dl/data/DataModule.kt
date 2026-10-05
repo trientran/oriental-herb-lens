@@ -12,7 +12,10 @@ import com.uri.lee.dl.data.content.InstalledReleaseStore
 import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
+import com.uri.lee.dl.data.analytics.FirebaseAnalyticsLogger
+import com.uri.lee.dl.data.analytics.UsageStatisticsSync
 import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
+import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.data.firebase.UserProfileSync
 import com.uri.lee.dl.data.moderation.DefaultModerationRepository
 import com.uri.lee.dl.domain.moderation.ModerationRepository
@@ -61,6 +64,8 @@ val dataModule: Module = module {
     singleOf(::LocalUserLibraryRepository) bind UserLibraryRepository::class
     single { LegacyLibraryMigration(get(), get(), get(named(PreferenceStore.SETTINGS))) }
     single { UserProfileSync(get(), get(), get(named(PreferenceStore.SETTINGS))) }
+    single<Analytics> { FirebaseAnalyticsLogger(get()) }
+    single { UsageStatisticsSync(get(), get()) }
     single<ModerationRepository> { DefaultModerationRepository(get(), get(), get(named(PreferenceStore.SETTINGS))) }
 
     singleOf(::FirebaseAuthRepository) bind AuthRepository::class

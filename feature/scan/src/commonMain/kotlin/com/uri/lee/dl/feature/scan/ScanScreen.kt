@@ -124,7 +124,10 @@ fun ScanRoute(
                 },
             )
         },
-        onOpenSpecies = onOpenSpecies,
+        onOpenSpecies = { id ->
+            viewModel.onAction(ScanAction.ResultOpened(id))
+            onOpenSpecies(id)
+        },
         modifier = modifier,
         camera = { CameraPreview(onFrame = viewModel::analyzeFrame, modifier = Modifier.fillMaxSize()) },
     )

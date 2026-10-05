@@ -9,4 +9,9 @@ interface SettingsRepository {
     suspend fun setMinConfidence(value: Float)
 
     suspend fun setDetectObjectsInSingleImage(enabled: Boolean)
+
+    /** Whether anonymous usage statistics are sent (Profile → Share usage statistics). On by default. */
+    val usageStatistics: Flow<Boolean>
+
+    suspend fun setUsageStatistics(enabled: Boolean)
 }

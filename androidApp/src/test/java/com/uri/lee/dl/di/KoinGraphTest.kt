@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import androidx.lifecycle.SavedStateHandle
 import androidx.work.WorkerParameters
+import com.uri.lee.dl.core.firebase.AnalyticsClient
 import com.uri.lee.dl.core.firebase.AuthClient
 import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.core.firebase.RemoteConfigClient
@@ -37,6 +38,7 @@ class KoinGraphTest {
                 // Supplied by Koin to every ViewModel
                 SavedStateHandle::class,
                 // firebaseModule wraps Firebase SDK objects whose internals aren't ours to check
+                AnalyticsClient::class,
                 AuthClient::class,
                 FirestoreClient::class,
                 RemoteConfigClient::class,

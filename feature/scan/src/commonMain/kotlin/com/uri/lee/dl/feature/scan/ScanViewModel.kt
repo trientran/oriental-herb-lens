@@ -3,6 +3,9 @@ package com.uri.lee.dl.feature.scan
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.FoundObject
@@ -16,18 +19,18 @@ import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.usecase.IdentifyPlantsUseCase
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 /** Whole view identifies everything in sight; Pick a plant finds each plant and identifies one at a time. */
 enum class ScanMode { WHOLE_VIEW, PICK_PLANT }
@@ -56,6 +59,9 @@ sealed interface ScanAction {
 
     /** A tap on a plant's dot. */
     data class SelectObject(val id: Int) : ScanAction
+
+    /** A result was opened (for usage statistics). */
+    data class ResultOpened(val speciesId: Long) : ScanAction
 
     /** Closes the picked plant; on the camera, looking for a plant starts again. */
     data object ClosePicked : ScanAction
@@ -105,6 +111,7 @@ class ScanViewModel(
     private val cropper: ImageCropper,
     private val photoReader: PhotoReader,
     private val settings: SettingsRepository,
+    private val analytics: Analytics = NoAnalytics,
     private val time: TimeSource = TimeSource.Monotonic,
 ) : MviViewModel<ScanState, ScanAction>(ScanState()) {
 
@@ -118,6 +125,8 @@ class ScanViewModel(
     private var tappedId: Int? = null
     private var lastFrame: List<Pair<ShownObject, FoundObject>> = emptyList()
     private var lastFrameLog: TimeMark? = null
+    /** Whole view on the camera reports a new identification only when the top species changes. */
+    private var lastWholeViewTop: Long? = null
 
     private class Steady(val id: Int, val region: Region, val since: TimeMark)
 
@@ -141,6 +150,7 @@ class ScanViewModel(
                 if (currentState.source is ScanSource.Photo) identifyPhoto()
             }
             is ScanAction.SelectObject -> selectObject(action.id)
+            is ScanAction.ResultOpened -> resultOpened(action.speciesId)
             ScanAction.ClosePicked -> {
                 resetCamera()
                 setState { copy(picked = null, steadyId = null) }
@@ -193,6 +203,9 @@ class ScanViewModel(
                     val visible = viewAspect?.let { cropper.crop(frame, visibleSquare(aspect, it)) } ?: frame
                     val results = recognizeHerbs(visible, state.minConfidence, MAX_RESULTS)
                     logFrame { "whole view in ${started.elapsedNow().inWholeMilliseconds} ms: ${results.describe()}" }
+                    val top = results.firstOrNull()?.species?.id
+                    if (top != null && top != lastWholeViewTop) analytics.log(results.identified(WHOLE_VIEW, CAMERA))
+                    lastWholeViewTop = top ?: lastWholeViewTop
                     setState { if (mode == ScanMode.WHOLE_VIEW && source == ScanSource.Camera) copy(results = results, frameAspect = aspect) else this }
                 }
                 ScanMode.PICK_PLANT -> if (state.picked == null) findPlants(frame, aspect, started)
@@ -240,8 +253,25 @@ class ScanViewModel(
         val started = time.markNow()
         val herbs = recognizeHerbs(image, currentState.minConfidence, MAX_RESULTS)
         log.d { "picked $id in ${started.elapsedNow().inWholeMilliseconds} ms: ${herbs.describe()}" }
+        analytics.log(herbs.identified(PICK_PLANT, CAMERA))
         setState { if (mode == ScanMode.PICK_PLANT && source == ScanSource.Camera) copy(picked = PickedPlant(id, image, herbs), steadyId = null) else this }
     }
+
+    /** Which result was opened, and how sure the model was, for usage statistics. */
+    private fun resultOpened(speciesId: Long) {
+        val state = currentState
+        val (herbs, source) = when (val source = state.source) {
+            is ScanSource.Photos -> source.items.firstNotNullOfOrNull { item -> item.herbs?.takeIf { herbs -> herbs.any { it.species?.id == speciesId } } }.orEmpty() to PHOTOS
+            else -> (if (state.mode == ScanMode.PICK_PLANT) state.picked?.herbs.orEmpty() else state.results) to (if (source == ScanSource.Camera) CAMERA else PHOTO)
+        }
+        val index = herbs.indexOfFirst { it.species?.id == speciesId }
+        if (index < 0) return
+        val mode = if (source == PHOTOS || state.mode == ScanMode.WHOLE_VIEW) WHOLE_VIEW else PICK_PLANT
+        analytics.log(AnalyticsEvent.ResultOpened(speciesId, herbs[index].confidence, rank = index + 1, mode = mode, source = source))
+    }
+
+    private fun List<RecognizedHerb>.identified(mode: String, source: String) =
+        AnalyticsEvent.Identified(mode, source, firstOrNull()?.species?.id, firstOrNull()?.confidence, size)
 
     private fun resetCamera() {
         steady = null
@@ -291,11 +321,13 @@ class ScanViewModel(
                 when (currentState.mode) {
                     ScanMode.WHOLE_VIEW -> {
                         val results = recognizeHerbs(read.image, minConfidence, MAX_RESULTS)
+                        analytics.log(results.identified(WHOLE_VIEW, PHOTO))
                         setState { copy(results = results, isWorking = false) }
                     }
                     ScanMode.PICK_PLANT -> {
                         val plants = identifyPlants(read.image, minConfidence, MAX_RESULTS)
                         photoPlants = plants.withIndex().associate { (i, plant) -> i to PickedPlant(i, plant.image, plant.herbs) }
+                        analytics.log(plants.firstOrNull()?.herbs.orEmpty().identified(PICK_PLANT, PHOTO))
                         setState {
                             copy(
                                 objects = plants.mapIndexed { i, plant -> ShownObject(i, plant.region) },
@@ -321,7 +353,7 @@ class ScanViewModel(
             val item = try {
                 val read = photoReader.read(picked)
                 if (read == null) BatchItem(picked.uri, failed = true)
-                else BatchItem(picked.uri, herbs = recognizeHerbs(read.image, minConfidence, MAX_RESULTS))
+                else BatchItem(picked.uri, herbs = recognizeHerbs(read.image, minConfidence, MAX_RESULTS).also { analytics.log(it.identified(WHOLE_VIEW, PHOTOS)) })
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -337,6 +369,13 @@ class ScanViewModel(
 
     companion object {
         const val MAX_RESULTS = 3
+
+        // Usage statistics values
+        private const val WHOLE_VIEW = "whole_view"
+        private const val PICK_PLANT = "pick_plant"
+        private const val CAMERA = "camera"
+        private const val PHOTO = "photo"
+        private const val PHOTOS = "photos"
 
         /** How long the camera stays on a plant before it's identified. */
         val STEADY: Duration = 2.seconds

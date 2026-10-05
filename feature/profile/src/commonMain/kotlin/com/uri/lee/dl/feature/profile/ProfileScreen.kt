@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -28,6 +29,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -61,6 +63,9 @@ import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_out
 import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
+import com.uri.lee.dl.core.designsystem.resources.profile_privacy
+import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
+import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics_body
 import com.uri.lee.dl.core.designsystem.resources.profile_version
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import kotlin.math.roundToInt
@@ -96,6 +101,10 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
 
             SectionCard(stringResource(Res.string.profile_identification)) {
                 ConfidenceSetting(state.scanSettings.minConfidence) { onAction(ProfileAction.SetMinConfidence(it)) }
+            }
+
+            SectionCard(stringResource(Res.string.profile_privacy)) {
+                UsageStatisticsSetting(state.usageStatistics) { onAction(ProfileAction.SetUsageStatistics(it)) }
             }
 
             SectionCard(stringResource(Res.string.profile_app)) {
@@ -164,6 +173,25 @@ private fun ConfidenceSetting(value: Float, onChange: (Float) -> Unit) {
             valueRange = ProfileViewModel.MIN_CONFIDENCE..ProfileViewModel.MAX_CONFIDENCE,
             steps = 12,
         )
+    }
+}
+
+@Composable
+private fun UsageStatisticsSetting(enabled: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().toggleable(value = enabled, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.md),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(Res.string.profile_usage_statistics), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(Res.string.profile_usage_statistics_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = null)
     }
 }
 

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 sealed interface ProfileAction {
     data class SetMinConfidence(val value: Float) : ProfileAction
     data object SignOut : ProfileAction
+    data class SetUsageStatistics(val enabled: Boolean) : ProfileAction
 }
 
 data class ProfileState(
@@ -22,6 +23,7 @@ data class ProfileState(
     val isSignedIn: Boolean? = null,
     val scanSettings: ScanSettings = ScanSettings(),
     val versionName: String = "",
+    val usageStatistics: Boolean = true,
 )
 
 /** Account and settings. */
@@ -34,12 +36,14 @@ class ProfileViewModel(
     init {
         auth.observeUserId().onEach { setState { copy(isSignedIn = it != null) } }.launchIn(viewModelScope)
         settings.scanSettings.onEach { setState { copy(scanSettings = it) } }.launchIn(viewModelScope)
+        settings.usageStatistics.onEach { setState { copy(usageStatistics = it) } }.launchIn(viewModelScope)
     }
 
     override fun onAction(action: ProfileAction) {
         when (action) {
             is ProfileAction.SetMinConfidence -> save { settings.setMinConfidence(action.value.coerceIn(MIN_CONFIDENCE, MAX_CONFIDENCE)) }
             ProfileAction.SignOut -> save { auth.signOut() }
+            is ProfileAction.SetUsageStatistics -> save { settings.setUsageStatistics(action.enabled) }
         }
     }
 

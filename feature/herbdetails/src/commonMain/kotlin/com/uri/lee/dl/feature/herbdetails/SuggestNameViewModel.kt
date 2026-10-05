@@ -3,6 +3,9 @@ package com.uri.lee.dl.feature.herbdetails
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import kotlinx.coroutines.CancellationException
@@ -40,6 +43,7 @@ class SuggestNameViewModel(
     currentName: String,
     private val contributions: ContributionRepository,
     auth: AuthRepository,
+    private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<SuggestNameState, SuggestNameAction>(SuggestNameState(herbId, currentName, draft = currentName)) {
 
     init {
@@ -59,6 +63,7 @@ class SuggestNameViewModel(
         viewModelScope.launch {
             try {
                 contributions.suggestVietnameseName(currentState.herbId, currentState.draft)
+                analytics.log(AnalyticsEvent.NameSuggested(currentState.herbId))
                 setState { copy(isSubmitting = false, isSubmitted = true) }
             } catch (e: CancellationException) {
                 throw e

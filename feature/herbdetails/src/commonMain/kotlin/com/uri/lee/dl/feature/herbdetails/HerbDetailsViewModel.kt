@@ -3,6 +3,9 @@ package com.uri.lee.dl.feature.herbdetails
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.HiddenContent
@@ -67,6 +70,7 @@ class HerbDetailsViewModel(
     private val referencePhotos: ReferencePhotoRepository,
     private val library: UserLibraryRepository,
     private val moderation: ModerationRepository,
+    private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(HerbDetailsState(herbId)) {
 
     init {
@@ -94,6 +98,7 @@ class HerbDetailsViewModel(
                 load()
             }
             is HerbDetailsAction.Report -> moderate(ModerationNotice.REPORTED) {
+                analytics.log(AnalyticsEvent.PhotoReported(action.reason.name))
                 moderation.report(currentState.herbId, action.photo.url, action.photo.uploaderId, action.reason)
             }
             is HerbDetailsAction.HideContributor -> moderate(ModerationNotice.CONTRIBUTOR_HIDDEN) {
@@ -109,6 +114,7 @@ class HerbDetailsViewModel(
             val species = catalog.get(id)
             setState { copy(species = species, notFound = species == null, photosLoading = species != null) }
             if (species == null) return@launch
+            analytics.log(AnalyticsEvent.SpeciesViewed(id))
             library.recordViewed(id)
             loadReferencePhotos(id)
         } catch (e: CancellationException) {
@@ -138,6 +144,7 @@ class HerbDetailsViewModel(
 
     private fun toggleFavorite() {
         val favorite = !currentState.isFavorite
+        if (favorite) analytics.log(AnalyticsEvent.FavoriteAdded(currentState.herbId))
         setState { copy(isFavorite = favorite) } // shown immediately; the library confirms it
         viewModelScope.launch {
             try {

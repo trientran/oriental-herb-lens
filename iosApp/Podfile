@@ -11,6 +11,8 @@ target 'iosApp' do
   pod 'FirebaseFirestore'
   pod 'FirebaseRemoteConfig'
   pod 'FirebaseAppCheck'
+  # Analytics without IdentitySupport: no advertising identifier (IDFA), so no tracking
+  pod 'FirebaseAnalytics/Core'
   pod 'GoogleSignIn'
   pod 'GoogleMLKit/ImageLabelingCustom', '8.0.0'
   pod 'GoogleMLKit/ObjectDetection', '8.0.0'
