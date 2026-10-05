@@ -73,7 +73,7 @@
     <string name="scan_pick_plant">Pick a plant</string>
     <string name="scan_point">Point the camera at a plant.</string>
     <string name="scan_looking">Looking for plants…</string>
-    <string name="scan_tap_plant">Tap another box to identify that plant.</string>
+    <string name="scan_tap_plant">Tap another dot to identify that plant.</string>
     <string name="scan_not_recognised">Not recognised. Move closer, or try another part of the plant.</string>
     <string name="scan_photo_none">No herb recognised in this photo.</string>
     <string name="scan_photo_none_pick">No herb recognised among the plants in this photo. Try Whole view.</string>
@@ -81,6 +81,10 @@
     <string name="scan_photos">Photos</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Identifying…</string>
+    <plurals name="scan_preparing">
+        <item quantity="one">Getting your photo ready…</item>
+        <item quantity="other">Getting %1$d photos ready…</item>
+    </plurals>
     <string name="scan_unknown_species">Species %1$s</string>
     <string name="scan_camera_needed">Allow the camera to identify plants as you point at it. You can also pick photos instead.</string>
     <string name="scan_allow_camera">Allow camera</string>

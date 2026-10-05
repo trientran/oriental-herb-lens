@@ -22,6 +22,7 @@ import com.uri.lee.dl.core.ml.UriImage
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.feature.contribute.ContributeViewModel
+import com.uri.lee.dl.feature.auth.GoogleCredential
 import com.uri.lee.dl.shared.PlatformActions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -50,9 +51,9 @@ class AndroidPlatform(private val activity: ComponentActivity) {
     }
 
     fun actions() = PlatformActions(
-        requestGoogleIdToken = ::googleIdToken,
-        pickPhotos = { onResult ->
-            onPhotos = onResult
+        requestGoogleSignIn = ::googleSignIn,
+        pickPhotos = { pick ->
+            onPhotos = pick.onPicked
             photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         },
         currentLocation = { onResult ->
@@ -83,12 +84,12 @@ class AndroidPlatform(private val activity: ComponentActivity) {
     )
 
     /** Google's account chooser; the ID token is exchanged for a Firebase session in shared code. */
-    private suspend fun googleIdToken(): String? {
+    private suspend fun googleSignIn(): GoogleCredential? {
         val option = GetSignInWithGoogleOption.Builder(activity.getString(R.string.default_web_client_id)).build()
         return try {
             val result = CredentialManager.create(activity)
                 .getCredential(activity, GetCredentialRequest.Builder().addCredentialOption(option).build())
-            GoogleIdTokenCredential.createFrom(result.credential.data).idToken
+            GoogleCredential(GoogleIdTokenCredential.createFrom(result.credential.data).idToken)
         } catch (e: GetCredentialCancellationException) {
             null
         }

@@ -13,8 +13,8 @@ sealed interface SignInAction {
     /** The platform's Google account picker opened. */
     data object GoogleStarted : SignInAction
 
-    /** The picker closed: with an ID token, or null when the user backed out. */
-    data class GoogleFinished(val idToken: String?) : SignInAction
+    /** The picker closed: with a credential, or null when the user backed out. */
+    data class GoogleFinished(val credential: GoogleCredential?) : SignInAction
 
     /** The picker itself failed (no Google account, no Play services, offline). */
     data object GoogleFailed : SignInAction
@@ -22,6 +22,9 @@ sealed interface SignInAction {
     /** Apple's sheet closed: with a credential, or null when the user backed out. */
     data class AppleFinished(val credential: AppleCredential?) : SignInAction
 }
+
+/** What Google's account picker returns; iOS also gives an access token, which Firebase needs there. */
+data class GoogleCredential(val idToken: String, val accessToken: String? = null)
 
 /** What Sign in with Apple returns: the identity token, and the unhashed nonce its request was made with. */
 data class AppleCredential(val idToken: String, val rawNonce: String)
@@ -43,8 +46,8 @@ class SignInViewModel(private val auth: AuthRepository) : MviViewModel<SignInSta
             SignInAction.GoogleStarted -> setState { copy(isWorking = true, hasError = false) }
             SignInAction.GoogleFailed -> setState { copy(isWorking = false, hasError = true) }
             is SignInAction.GoogleFinished -> {
-                val token = action.idToken ?: return setState { copy(isWorking = false) }
-                signIn { auth.signInWithGoogle(token) }
+                val credential = action.credential ?: return setState { copy(isWorking = false) }
+                signIn { auth.signInWithGoogle(credential.idToken, credential.accessToken) }
             }
             is SignInAction.AppleFinished -> {
                 val credential = action.credential ?: return setState { copy(isWorking = false) }

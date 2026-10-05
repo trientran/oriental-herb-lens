@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.sign_in_apple
@@ -52,10 +53,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Asks the platform for a Google ID token (Credential Manager on Android); null means the user
- * backed out. Throws when no account can be offered.
+ * Asks the platform for a Google credential (Credential Manager on Android, Google Sign-In on
+ * iOS); null means the user backed out. Throws when no account can be offered.
  */
-typealias GoogleIdTokenRequest = suspend () -> String?
+typealias GoogleSignInRequest = suspend () -> GoogleCredential?
 
 /** Asks the platform for a Sign in with Apple credential (iOS); null means the user backed out. */
 typealias AppleSignInRequest = suspend () -> AppleCredential?
@@ -63,7 +64,7 @@ typealias AppleSignInRequest = suspend () -> AppleCredential?
 /** Sign-in, needed only to contribute (photos, names). Closes itself once signed in. */
 @Composable
 fun SignInRoute(
-    requestGoogleIdToken: GoogleIdTokenRequest,
+    requestGoogleSignIn: GoogleSignInRequest,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
     /** Offered on iOS, where the App Store requires it next to Google sign-in. */
@@ -79,10 +80,11 @@ fun SignInRoute(
             viewModel.onAction(SignInAction.GoogleStarted)
             scope.launch {
                 val action = try {
-                    SignInAction.GoogleFinished(requestGoogleIdToken())
+                    SignInAction.GoogleFinished(requestGoogleSignIn())
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
+                    Logger.withTag("SignIn").e(e) { "Google sign-in failed" }
                     SignInAction.GoogleFailed
                 }
                 viewModel.onAction(action)
@@ -99,6 +101,7 @@ fun SignInRoute(
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
+                        Logger.withTag("SignIn").e(e) { "Apple sign-in failed" }
                         SignInAction.GoogleFailed
                     }
                     viewModel.onAction(action)

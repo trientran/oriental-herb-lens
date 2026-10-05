@@ -22,6 +22,7 @@ fun startKoinIos(
     labeler: NativeHerbLabeler,
     detector: NativeObjectDetector,
 ) {
+    if (isDebug) DebugLog.start()
     val app = AppInfo(versionName, versionCode, platform = "ios", isDebug = isDebug, photoUploadUrl = photoUploadUrl)
     val koin = startKoin {
         modules(sharedModules(app) + module {

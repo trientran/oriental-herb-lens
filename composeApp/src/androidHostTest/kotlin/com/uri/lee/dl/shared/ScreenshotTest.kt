@@ -117,12 +117,24 @@ class ScreenshotTest {
         )
     }
 
+    @Test fun scanPreparing() = light("scan_preparing") {
+        ScanScreen(ScanState(preparingPhotos = 5), onAction = {}, onPickPhotos = {}, onOpenSpecies = {})
+    }
+
     @Test fun scanPhotos() = light("scan_photos") {
         ScanScreen(
             ScanState(
                 source = ScanSource.Photos(
                     listOf(
                         BatchItem("https://example.org/1.jpg", herbs = listOf(RecognizedHerb("3035652", 0.94f, Samples.dinhLang))),
+                        BatchItem(
+                            "https://example.org/5.jpg",
+                            herbs = listOf(
+                                RecognizedHerb("2766278", 0.57f, Samples.catalog[3]),
+                                RecognizedHerb("3035652", 0.33f, Samples.dinhLang),
+                                RecognizedHerb("9999999", 0.32f, null),
+                            ),
+                        ),
                         BatchItem("https://example.org/2.jpg", herbs = emptyList()),
                         BatchItem("https://example.org/3.jpg"),
                         BatchItem("https://example.org/4.jpg", failed = true),
