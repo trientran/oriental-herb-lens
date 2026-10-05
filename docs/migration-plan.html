@@ -126,6 +126,7 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-si
     <li><b>Every photo upload needs a place</b> (geotagged research records, D10). Enforced in the app; the rules can't inspect the JSON detail strings.</li>
     <li><b>Pick a plant reworked</b> on both platforms (D12): a dot on each plant; holding the camera on one for 2 seconds, or tapping its dot, shows the cropped plant with its results and pauses the camera. Whole view identifies the centred square the user sees, not the whole frame stretched to the model's 224 × 224 input.</li>
     <li><b>The Firestore rules were deployed on 5 Oct</b>, before the new app shipped (see §12).</li>
+    <li><b>Release after the last phase</b> (D15), with the supervisor: a final phase R tests and releases Android, iOS and the web together. The release workflow (<code>.github/workflows/release.yml</code>), store secrets, legal site, moderation and analytics are ready.</li>
   </ul>
   <h3>Revision 2 (4 Oct)</h3>
   <ul class="tight">
@@ -671,7 +672,7 @@ service cloud.firestore {
       <li><input type="checkbox" id="p5-5" checked><label for="p5-5"><span class="tt">AVFoundation camera; object detection with ML Kit iOS</span><span class="td">BGRA frames copied out of the camera's buffers at once (holding them stalled the camera). Pick a plant: dots, hold for 2 s or tap, then the crop and its results (both platforms).</span></label></li>
       <li><input type="checkbox" id="p5-6"><label for="p5-6"><span class="tt">Google Sign-In plus Sign in with Apple</span><span class="td">Required by App Store guideline 4.8. Google works on a device; Apple needs the Apple provider enabled in Firebase and a test.</span></label></li>
       <li><input type="checkbox" id="p5-7" checked><label for="p5-7"><span class="tt">Maps, location and photo picker on iOS</span><span class="td">MapKit instead of Mapbox; Places dropped (pin picker). PHPicker hands over JPEG copies. Uploads need a place.</span></label></li>
-      <li><input type="checkbox" id="p5-8"><label for="p5-8"><span class="tt">iPad layouts; TestFlight</span><span class="td">iPad checked on the 13-inch simulator: navigation rail, list beside details, Identify with results at the side. TestFlight still to do.</span></label></li>
+      <li><input type="checkbox" id="p5-8" checked><label for="p5-8"><span class="tt">iPad layouts; TestFlight</span><span class="td">iPad checked on the 13-inch simulator: navigation rail, list beside details, Identify with results at the side. TestFlight moves to phase R (D15); the release workflow uploads to it.</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> the app on iPhone and iPad.</div>
   </div>
@@ -697,6 +698,17 @@ service cloud.firestore {
     <div class="ships"><b>Ships:</b> users train their own image classifiers on Android, iOS and the web.</div>
   </div>
 
+  <div class="phase" data-phase="R">
+    <div class="phase-h"><div class="phase-no">R</div><div><h3>Testing and release</h3><p>After the last phase, once the supervisor has signed off a thorough test (D15). Steps in <code>docs/release.md</code>.</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="pR-1"><label for="pR-1"><span class="tt">Thorough test with the supervisor</span><span class="td">Manual test script on Android, iPhone, iPad and the web; ethics approval settled (usage statistics opt-in or opt-out).</span></label></li>
+      <li><input type="checkbox" id="pR-2"><label for="pR-2"><span class="tt">Android: Release workflow, then Play Console</span><span class="td">Actions → Release → Run workflow. Finish the draft on the internal testing track, test it, roll out to production; then set <code>mustUpdateAndroid</code> in <code>config/mobile</code>.</span></label></li>
+      <li><input type="checkbox" id="pR-3"><label for="pR-3"><span class="tt">iOS: TestFlight, then App Store review</span><span class="td">The same workflow uploads to TestFlight. Listing: App Privacy answers, screenshots (iPhone 6.9″, iPad 13″), description and keywords, age rating 18+, review notes (account deletion, moderation).</span></label></li>
+      <li><input type="checkbox" id="pR-4"><label for="pR-4"><span class="tt">Web: publish to Cloudflare</span><span class="td">Replaces the temporary site at <code>med-herb-lens.pages.dev</code>.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> Herb Lens on Google Play, the App Store and the web.</div>
+  </div>
+
 </section>
 
 <!-- 11 -->
@@ -718,6 +730,7 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D12</div><div><b>Pick a plant: dots, hold steady or tap, then the cropped plant with its results.</b> Yes (5 Oct), on both platforms, replacing boxes.</div></div>
     <div class="decision"><div class="dno">D13</div><div><b>Moderation of shared photos</b> (App Store guideline 1.2). Yes (5 Oct): an on-device plant check before upload (ML Kit's general labeller); reporting a photo and hiding a contributor in the photo viewer; reports in a create-only <code>photoReports</code> collection; an hourly GitHub workflow opens an issue per report; <code>tools/moderate.py</code> removes photos and bans uploaders. Users must be 18 or over.</div></div>
     <div class="decision"><div class="dno">D14</div><div><b>Google Analytics for Firebase, for the research.</b> Yes (5 Oct), on Android and iOS (web with a consent banner in Phase 6): screen views and a few events (identify, open_result, view_species, add_favorite, share_photos, suggest_name, report_photo); no user ID, advertising ID or ad personalisation, so no tracking; Profile → Share usage statistics turns it off (on by default; switch to opt-in if the ethics approval requires it).</div></div>
+    <div class="decision"><div class="dno">D15</div><div><b>Store releases after the last phase.</b> Yes (5 Oct): Android, iOS and web are released together once the supervisor has signed off a thorough test (phase R). The release workflow, store secrets, legal pages and moderation are ready meanwhile.</div></div>
   </div>
 </section>
 
@@ -730,7 +743,7 @@ service cloud.firestore {
     <tbody>
       <tr><td>A new model's labels don't match the catalog</td><td>The activation check in §04: a model is never switched on without a catalog that covers its labels</td></tr>
       <tr><td>Local search is worse than Algolia</td><td>The §05 test cases and the Algolia baseline in the manual test script, checked before Algolia is removed</td></tr>
-      <tr><td>Tightening the Firestore rules breaks installed apps</td><td>The rollout order in §06. <b>The rules went live on 5 Oct before the new version shipped</b>, so installed versions can't save favourites or upload photos the old way until users update: ship the new Android version soon, then set <code>mustUpdateAndroid</code> in <code>config/mobile</code></td></tr>
+      <tr><td>Tightening the Firestore rules breaks installed apps</td><td>The rollout order in §06. <b>The rules went live on 5 Oct, long before the new version ships (D15)</b>, so the version on Google Play can't save favourites or upload photos until users update. Either accept that until release, or restore the previous rules from the Firestore console's rules history and redeploy <code>firebase/firestore.rules</code> just before release; after the release, set <code>mustUpdateAndroid</code> in <code>config/mobile</code></td></tr>
       <tr><td>The <code>r2.dev</code> URL is rate-limited</td><td>Fine for model and catalog downloads; move to a custom domain before user photos are served at scale</td></tr>
       <tr><td>Abuse of the photo-upload Worker</td><td>It accepts only a valid Firebase ID token from a non-banned user, JPEG only, with a size cap; Cloudflare rate limiting on the route</td></tr>
       <tr><td>GBIF photo licensing or availability</td><td>Credits shown for every GBIF photo; CC BY-NC means no commercial use; responses cached per species, and the app works without them</td></tr>

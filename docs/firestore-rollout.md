@@ -1,8 +1,16 @@
 # Firestore rollout
 
+> **Status (5 Oct 2026):** the rules (step 4) were deployed early, before the new version
+> ships, and the release waits until after the last phase (plan decision D15). Until then the
+> version on Google Play can't save favourites or upload photos. If that matters, restore the
+> previous rules from Firestore console → Rules → history, and deploy `firebase/firestore.rules`
+> again right before the release (`docs/release.md`, first release checklist). Steps 1–3 and 5
+> are still to do, at release time.
+
 From Phase 2 on, the app reads Firestore only for a species' user photos (`herbs/{speciesKey}`)
 and each user's own document once, to copy old favourites and history to the device. It writes
-only photo URLs and Vietnamese name suggestions. `firebase/firestore.rules` locks everything
+photo URLs, Vietnamese name suggestions, photo reports, and each contributor's uid, name and
+email on their own `users/{uid}` document. `firebase/firestore.rules` locks everything
 else down, but **installed older versions still write names, reviews and favourites**, so the
 order of the steps matters.
 
@@ -48,7 +56,8 @@ Once no device runs an old version (or the app has been out for a few months), d
 
 - the old fields on `herbs/*` documents (names, overview, dosing, side effects, interactions,
   reviews), keeping `images`
-- `users/*` documents (favourites and history live on devices now)
+- the old `favorite` and `history` fields of `users/*` documents (they live on devices now;
+  keep the documents, which hold each contributor's uid, name and email)
 - the `deletions` and `uploads` collections
 - the `config/mobile` label maps (`recognized*`, `toBeRecognized*`)
 - the Remote Config parameter `model_url` and the old model file in Firebase Storage
