@@ -178,5 +178,5 @@ private fun LinkRow(icon: ImageVector, label: String, onClick: () -> Unit) {
 }
 
 private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private const val ABOUT_URL = "https://med-herb-lens.web.app/"
+private const val ABOUT_URL = LegalLinks.SITE
 private const val CONTACT_EMAIL = "tptrien@gmail.com"
