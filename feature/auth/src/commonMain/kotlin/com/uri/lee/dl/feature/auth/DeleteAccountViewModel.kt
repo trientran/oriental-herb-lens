@@ -65,8 +65,7 @@ class DeleteAccountViewModel(private val auth: AuthRepository) :
                     is Proof.Google -> auth.reauthenticateWithGoogle(proof.credential.idToken, proof.credential.accessToken)
                     is Proof.Apple -> {
                         auth.reauthenticateWithApple(proof.credential.idToken, proof.credential.rawNonce)
-                        val code = proof.credential.authorizationCode
-                        if (code != null) proof.revoke?.invoke(code)
+                        proof.credential.authorizationCode?.let { code -> proof.revoke?.let { revoke(it, code) } }
                     }
                     Proof.None -> Unit
                 }
@@ -78,6 +77,20 @@ class DeleteAccountViewModel(private val auth: AuthRepository) :
                 log.e(e) { "Account not deleted" }
                 setState { copy(isWorking = false, hasError = true) }
             }
+        }
+    }
+
+    /**
+     * Revoking needs the Apple provider's code flow set up in Firebase (team ID, key ID, private
+     * key). If that fails, the account is still deleted: keeping it would be worse for the user.
+     */
+    private suspend fun revoke(revoke: suspend (String) -> Unit, code: String) {
+        try {
+            revoke(code)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.w(e) { "Apple tokens not revoked" }
         }
     }
 

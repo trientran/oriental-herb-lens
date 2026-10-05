@@ -39,6 +39,17 @@ class DeleteAccountViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `the account is still deleted when Apple's tokens can't be revoked`() {
+        val auth = FakeAuthRepository(uid = "apple-bob")
+        val viewModel = DeleteAccountViewModel(auth)
+
+        viewModel.onAction(DeleteAccountAction.Confirmed(Proof.Apple(AppleCredential("bob", "nonce", "code-1")) { error("Code flow is not enabled") }))
+
+        assertEquals(listOf("apple-bob"), auth.deleted)
+        assertTrue(viewModel.state.value.isDeleted)
+    }
+
+    @Test
     fun `backing out of the confirming sign-in deletes nothing`() {
         val auth = FakeAuthRepository(uid = "google-alice")
         val viewModel = DeleteAccountViewModel(auth)
