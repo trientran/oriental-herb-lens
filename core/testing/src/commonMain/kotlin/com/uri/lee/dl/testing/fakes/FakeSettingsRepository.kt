@@ -12,4 +12,10 @@ class FakeSettingsRepository(initial: ScanSettings = ScanSettings()) : SettingsR
 
     override suspend fun setDetectObjectsInSingleImage(enabled: Boolean) =
         scanSettings.update { it.copy(detectObjectsInSingleImage = enabled) }
+
+    override val usageStatistics = MutableStateFlow(true)
+
+    override suspend fun setUsageStatistics(enabled: Boolean) {
+        usageStatistics.value = enabled
+    }
 }

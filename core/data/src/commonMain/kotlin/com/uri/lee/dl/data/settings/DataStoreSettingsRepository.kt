@@ -31,9 +31,16 @@ internal class DataStoreSettingsRepository(private val dataStore: DataStore<Pref
         dataStore.edit { it[IS_OBJECTS_MODE_SINGLE_IMAGE] = enabled }
     }
 
+    override val usageStatistics: Flow<Boolean> = dataStore.data.map { it[USAGE_STATISTICS] ?: true }.distinctUntilChanged()
+
+    override suspend fun setUsageStatistics(enabled: Boolean) {
+        dataStore.edit { it[USAGE_STATISTICS] = enabled }
+    }
+
     companion object {
         // Persisted key names. Renaming one silently resets the user's setting.
         val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
         val CONFIDENCE_LEVEL = floatPreferencesKey("CONFIDENCE_LEVEL")
+        val USAGE_STATISTICS = booleanPreferencesKey("usage_statistics")
     }
 }

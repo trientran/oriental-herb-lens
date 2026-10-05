@@ -180,4 +180,7 @@
     <string name="notice_failed">Không thực hiện được. Hãy kiểm tra kết nối và thử lại.</string>
     <string name="contribute_no_plant">Không thấy cây</string>
     <string name="contribute_no_plant_hint">Ảnh không tìm thấy cây sẽ không được tải lên. Hãy chia sẻ ảnh rõ nét của chính cây đó.</string>
+    <string name="profile_usage_statistics">Chia sẻ thống kê sử dụng</string>
+    <string name="profile_usage_statistics_body">Số liệu ẩn danh về cách dùng ứng dụng, như những loài cây được nhận dạng, phục vụ nghiên cứu về nhận dạng cây thuốc. Không gửi tài khoản, tên, ảnh hay địa điểm.</string>
+    <string name="profile_privacy">Quyền riêng tư</string>
 </resources>

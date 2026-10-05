@@ -108,3 +108,27 @@ belong in `local.properties`). Point the tools at it with
   admin within the hour, and offenders are banned.
 - Firestore: after the Android release is live, set `mustUpdateAndroid` in `config/mobile` so old
   versions update (the new rules are already deployed; see `docs/firestore-rollout.md`).
+
+## App Store privacy answers (App Store Connect → App Privacy)
+
+Keep these in step with the app; they can be edited at any time. Tracking: **No** for everything
+(no advertising identifier, no ad personalisation, nothing shared with data brokers).
+
+| Data type | Linked to the user | Purposes |
+|---|---|---|
+| Contact Info → Name | Yes | App Functionality |
+| Contact Info → Email Address | Yes | App Functionality |
+| Identifiers → User ID | Yes | App Functionality |
+| User Content → Photos or Videos | Yes | App Functionality, Other Purposes (research, model training) |
+| Location → Precise Location (place of each shared photo) | Yes | App Functionality, Other Purposes (research) |
+| User Content → Other User Content (name suggestions, photo reports) | Yes | App Functionality |
+| Identifiers → Device ID (Analytics app instance ID) | No | Analytics |
+| Usage Data → Product Interaction | No | Analytics |
+| Location → Coarse Location (Analytics, from the IP address) | No | Analytics |
+| Diagnostics → Other Diagnostic Data (app version, device model) | No | Analytics |
+
+Not declared: camera images used for identification (never leave the device), favourites and
+history (stay on the device), crash data (Crashlytics is Android only).
+
+In Google Analytics (Admin → Data collection and modification → Data retention), set event data
+retention to 14 months, as the privacy policy says, and leave Google signals off.

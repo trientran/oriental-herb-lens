@@ -14,7 +14,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
@@ -42,22 +42,24 @@ import com.uri.lee.dl.core.designsystem.resources.status_update
 import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.feature.auth.DeleteAccountRoute
 import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
+import com.uri.lee.dl.feature.contribute.ContributePlatform
 import com.uri.lee.dl.feature.contribute.ContributeRoute
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsRoute
-import com.uri.lee.dl.feature.scan.ScanRoute
-import com.uri.lee.dl.feature.contribute.ContributePlatform
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileRoute
 import com.uri.lee.dl.feature.saved.SavedRoute
+import com.uri.lee.dl.feature.scan.ScanRoute
+import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.reflect.KClass
 
 @Serializable data object IdentifyDestination
 @Serializable data class BrowseDestination(val openHerbId: Long? = null)
@@ -89,6 +91,9 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
             if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
         }
         val current = navController.currentBackStackEntryAsState().value?.destination
+        val analytics = koinInject<Analytics>()
+        val screen = current?.route?.let(::screenName)
+        LaunchedEffect(screen) { screen?.let(analytics::screen) }
         // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
         // that; none on full-screen flows (sign-in, contributing)
         val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
@@ -203,3 +208,8 @@ private fun StatusDialogs(actions: PlatformActions) {
         }
     }
 }
+
+/** "com.uri.lee.dl.shared.SpeciesDestination/{herbId}" → "species", for usage statistics. */
+internal fun screenName(route: String): String =
+    route.substringBefore('/').substringBefore('?').substringAfterLast('.').removeSuffix("Destination")
+        .replace(Regex("([a-z])([A-Z])"), "$1_$2").lowercase()

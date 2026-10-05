@@ -183,4 +183,7 @@
     <string name="notice_failed">That didn’t work. Check your connection and try again.</string>
     <string name="contribute_no_plant">No plant found</string>
     <string name="contribute_no_plant_hint">Photos where no plant was found won’t be uploaded. Share clear photos of the plant itself.</string>
+    <string name="profile_usage_statistics">Share usage statistics</string>
+    <string name="profile_usage_statistics_body">Anonymous counts of how the app is used, such as which herbs are identified, for research on herb identification. No account, name, photo or place is sent.</string>
+    <string name="profile_privacy">Privacy</string>
 </resources>

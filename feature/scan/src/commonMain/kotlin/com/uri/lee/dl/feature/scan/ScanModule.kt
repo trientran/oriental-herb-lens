@@ -5,5 +5,5 @@ import org.koin.dsl.module
 
 val scanModule = module {
     // Spelled out: the view model's clock has a default, which viewModelOf would try to inject
-    viewModel { ScanViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { ScanViewModel(get(), get(), get(), get(), get(), get(), analytics = get()) }
 }
