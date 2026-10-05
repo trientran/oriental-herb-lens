@@ -1,10 +1,13 @@
 package com.uri.lee.dl.testing.fakes
 
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import com.uri.lee.dl.domain.moderation.HiddenContent
+import com.uri.lee.dl.domain.moderation.ModerationRepository
+import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.AuthRepository
-import com.uri.lee.dl.domain.repository.SignInProvider
-import com.uri.lee.dl.domain.repository.PhotoRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
+import com.uri.lee.dl.domain.repository.PhotoRepository
+import com.uri.lee.dl.domain.repository.SignInProvider
 import com.uri.lee.dl.domain.repository.UploadedImage
 import com.uri.lee.dl.domain.repository.UserLibraryRepository
 import kotlinx.coroutines.flow.Flow
@@ -90,5 +93,23 @@ class FakeContributionRepository : ContributionRepository {
     override suspend fun suggestVietnameseName(herbId: Long, name: String) {
         if (fail) error("offline")
         names += herbId to name
+    }
+}
+
+class FakeModerationRepository : ModerationRepository {
+    val hidden = MutableStateFlow(HiddenContent())
+    val reports = mutableListOf<Pair<String, ReportReason>>()
+    var failReports = false
+
+    override fun observeHidden(): Flow<HiddenContent> = hidden
+
+    override suspend fun report(speciesId: Long, photoUrl: String, uploaderId: String?, reason: ReportReason) {
+        hidden.value = hidden.value.copy(photoUrls = hidden.value.photoUrls + photoUrl)
+        if (failReports) error("offline")
+        reports += photoUrl to reason
+    }
+
+    override suspend fun hideContributor(uploaderId: String) {
+        hidden.value = hidden.value.copy(contributors = hidden.value.contributors + uploaderId)
     }
 }

@@ -2,8 +2,10 @@ package com.uri.lee.dl.feature.herbdetails
 
 import com.uri.lee.dl.domain.model.PhotoSource
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.testing.MainDispatcherTest
+import com.uri.lee.dl.testing.fakes.FakeModerationRepository
 import com.uri.lee.dl.testing.fakes.FakePhotoRepository
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
 import com.uri.lee.dl.testing.fakes.FakeUserLibraryRepository
@@ -26,7 +28,8 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
     }
     private val library = FakeUserLibraryRepository()
 
-    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library)
+    private val moderation = FakeModerationRepository()
+    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation)
 
     @Test
     fun `shows the species from the catalog`() {
@@ -41,6 +44,34 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
         photos.photos.value = mapOf(5L to listOf(photo))
 
         assertEquals(listOf(photo, gbifPhoto), viewModel.state.value.photos)
+    }
+
+    @Test
+    fun `a reported photo is hidden and the report sent`() {
+        val viewModel = viewModel()
+        val photo = SpeciesPhoto("https://r2/p.jpg", "https://r2/p.jpg", PhotoSource.USER, uploaderId = "u1")
+        photos.photos.value = mapOf(5L to listOf(photo))
+        viewModel.onAction(HerbDetailsAction.ViewPhoto(0))
+
+        viewModel.onAction(HerbDetailsAction.Report(photo, ReportReason.SEXUAL_OR_VIOLENT))
+
+        assertEquals(listOf(gbifPhoto), viewModel.state.value.photos)
+        assertEquals(listOf(photo.url to ReportReason.SEXUAL_OR_VIOLENT), moderation.reports)
+        assertEquals(ModerationNotice.REPORTED, viewModel.state.value.notice)
+        assertEquals(null, viewModel.state.value.viewingPhoto)
+    }
+
+    @Test
+    fun `hiding a contributor hides all their photos`() {
+        val viewModel = viewModel()
+        val theirs = SpeciesPhoto("https://r2/a.jpg", "https://r2/a.jpg", PhotoSource.USER, uploaderId = "u1")
+        val others = SpeciesPhoto("https://r2/b.jpg", "https://r2/b.jpg", PhotoSource.USER, uploaderId = "u2")
+        photos.photos.value = mapOf(5L to listOf(theirs, others))
+
+        viewModel.onAction(HerbDetailsAction.HideContributor("u1"))
+
+        assertEquals(listOf(others, gbifPhoto), viewModel.state.value.photos)
+        assertEquals(ModerationNotice.CONTRIBUTOR_HIDDEN, viewModel.state.value.notice)
     }
 
     @Test

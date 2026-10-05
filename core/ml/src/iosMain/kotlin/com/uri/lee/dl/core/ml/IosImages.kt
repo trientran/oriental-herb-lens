@@ -62,7 +62,7 @@ internal class IosImageCompressor : ImageCompressor {
     }
 }
 
-private fun load(photo: LocalImage): UIImage? {
+internal fun load(photo: LocalImage): UIImage? {
     val path = NSURL.URLWithString(photo.uri)?.path ?: photo.uri
     return UIImage.imageWithContentsOfFile(path)
 }

@@ -5,39 +5,47 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import com.uri.lee.dl.domain.media.LocalImage
+import com.uri.lee.dl.domain.ml.Region
+import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.PhotoCredit
 import com.uri.lee.dl.domain.model.PhotoSource
+import com.uri.lee.dl.domain.model.RecognizedHerb
 import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import com.uri.lee.dl.domain.repository.SignInProvider
 import com.uri.lee.dl.domain.search.NameKind
 import com.uri.lee.dl.domain.search.SpeciesMatch
-import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.feature.auth.DeleteAccountScreen
+import com.uri.lee.dl.feature.auth.DeleteAccountState
 import com.uri.lee.dl.feature.auth.SignInScreen
 import com.uri.lee.dl.feature.auth.SignInState
 import com.uri.lee.dl.feature.browse.BrowseScreen
+import com.uri.lee.dl.feature.browse.BrowseState
 import com.uri.lee.dl.feature.contribute.ContributePlatform
 import com.uri.lee.dl.feature.contribute.ContributeScreen
 import com.uri.lee.dl.feature.contribute.ContributeState
+import com.uri.lee.dl.feature.contribute.PhotoCheck
 import com.uri.lee.dl.feature.contribute.PickedLocation
 import com.uri.lee.dl.feature.contribute.UploadPhase
-import com.uri.lee.dl.feature.browse.BrowseState
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsScreen
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
-import com.uri.lee.dl.domain.ml.Region
-import com.uri.lee.dl.domain.model.RecognizedHerb
-import com.uri.lee.dl.feature.auth.DeleteAccountScreen
-import com.uri.lee.dl.feature.auth.DeleteAccountState
-import com.uri.lee.dl.domain.repository.SignInProvider
+import com.uri.lee.dl.feature.profile.ProfileActions
+import com.uri.lee.dl.feature.profile.ProfileScreen
+import com.uri.lee.dl.feature.profile.ProfileState
+import com.uri.lee.dl.feature.saved.SavedScreen
+import com.uri.lee.dl.feature.saved.SavedState
+import com.uri.lee.dl.feature.saved.SavedTab
 import com.uri.lee.dl.feature.scan.BatchItem
 import com.uri.lee.dl.feature.scan.PickedPlant
 import com.uri.lee.dl.feature.scan.ScanMode
@@ -46,12 +54,6 @@ import com.uri.lee.dl.feature.scan.ScanSource
 import com.uri.lee.dl.feature.scan.ScanState
 import com.uri.lee.dl.feature.scan.ShownObject
 import com.uri.lee.dl.testing.fakes.FakeImage
-import com.uri.lee.dl.feature.profile.ProfileActions
-import com.uri.lee.dl.feature.profile.ProfileScreen
-import com.uri.lee.dl.feature.profile.ProfileState
-import com.uri.lee.dl.feature.saved.SavedScreen
-import com.uri.lee.dl.feature.saved.SavedState
-import com.uri.lee.dl.feature.saved.SavedTab
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -179,6 +181,18 @@ class ScreenshotTest {
         ContributeScreen(
             ContributeState(herbId = 3035652, speciesName = "Đinh lăng", location = PickedLocation(GeoLocation(21.03, 105.85), "Hoàn Kiếm, Hà Nội")),
             onAction = {}, platform = ContributePlatform(pickPhotos = {}, currentLocation = {}), onSignIn = {}, onDone = {},
+        )
+    }
+
+    @Test fun contributeChecked() = light("contribute_checked") {
+        val photos = listOf("a", "b", "c").map { name -> object : LocalImage { override val uri = "https://example.org/$name.jpg" } }
+        ContributeScreen(
+            ContributeState(
+                herbId = 3035652, speciesName = "Đinh lăng", photos = photos,
+                checks = mapOf(photos[0].uri to PhotoCheck.PLANT, photos[1].uri to PhotoCheck.NOT_PLANT, photos[2].uri to PhotoCheck.CHECKING),
+                location = PickedLocation(GeoLocation(21.03, 105.85), "Hoàn Kiếm, Hà Nội"),
+            ),
+            onAction = {}, platform = ContributePlatform(pickPhotos = {}), onSignIn = {}, onDone = {},
         )
     }
 

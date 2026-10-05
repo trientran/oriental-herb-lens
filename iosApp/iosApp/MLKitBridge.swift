@@ -2,6 +2,7 @@ import ComposeApp
 import UIKit
 #if !targetEnvironment(simulator)
 import MLKitCommon
+import MLKitImageLabeling
 import MLKitImageLabelingCustom
 import MLKitObjectDetection
 import MLKitVision
@@ -19,6 +20,13 @@ final class MLKitHerbLabeler: NSObject, NativeHerbLabeler {
 final class MLKitObjectDetector: NSObject, NativeObjectDetector {
     func detect(image: UIImage, fromCamera: Bool, completion: @escaping ([NativeObject]?, String?) -> Void) {
         completion([], nil)
+    }
+}
+
+/** Lets every photo through, so sharing can be tried in the simulator. */
+final class MLKitGeneralLabeler: NSObject, NativeGeneralLabeler {
+    func labels(image: UIImage, minConfidence: Float, completion: @escaping ([String]?, String?) -> Void) {
+        completion(["Plant"], nil)
     }
 }
 #else
@@ -97,6 +105,31 @@ final class MLKitObjectDetector: NSObject, NativeObjectDetector {
         options.detectorMode = mode
         options.shouldEnableMultipleObjects = true
         return ObjectDetector.objectDetector(options: options)
+    }
+}
+/** ML Kit's general labeller (bundled model), for the check that a photo to share shows a plant. */
+final class MLKitGeneralLabeler: NSObject, NativeGeneralLabeler {
+    private var cached: (confidence: Float, labeler: ImageLabeler)?
+
+    func labels(image: UIImage, minConfidence: Float, completion: @escaping ([String]?, String?) -> Void) {
+        let visionImage = VisionImage(image: image)
+        visionImage.orientation = image.imageOrientation
+        labeler(minConfidence).process(visionImage) { labels, error in
+            if let error {
+                completion(nil, error.localizedDescription)
+            } else {
+                completion((labels ?? []).map(\.text), nil)
+            }
+        }
+    }
+
+    private func labeler(_ confidence: Float) -> ImageLabeler {
+        if let cached, cached.confidence == confidence { return cached.labeler }
+        let options = ImageLabelerOptions()
+        options.confidenceThreshold = NSNumber(value: confidence)
+        let labeler = ImageLabeler.imageLabeler(options: options)
+        cached = (confidence, labeler)
+        return labeler
     }
 }
 #endif

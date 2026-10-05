@@ -716,6 +716,7 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D10</div><div><b>Every photo upload is geotagged.</b> Yes (5 Oct), a requirement of the PhD supervisor.</div></div>
     <div class="decision"><div class="dno">D11</div><div><b>In-app account deletion.</b> Yes (5 Oct). Shared photos stay on species pages; favourites and history stay on the device. Apple token revocation needs the Apple provider's code flow (Services ID, team ID, key) set up in Firebase.</div></div>
     <div class="decision"><div class="dno">D12</div><div><b>Pick a plant: dots, hold steady or tap, then the cropped plant with its results.</b> Yes (5 Oct), on both platforms, replacing boxes.</div></div>
+    <div class="decision"><div class="dno">D13</div><div><b>Moderation of shared photos</b> (App Store guideline 1.2). Yes (5 Oct): an on-device plant check before upload (ML Kit's general labeller); reporting a photo and hiding a contributor in the photo viewer; reports in a create-only <code>photoReports</code> collection; an hourly GitHub workflow opens an issue per report; <code>tools/moderate.py</code> removes photos and bans uploaders. Users must be 18 or over.</div></div>
   </div>
 </section>
 

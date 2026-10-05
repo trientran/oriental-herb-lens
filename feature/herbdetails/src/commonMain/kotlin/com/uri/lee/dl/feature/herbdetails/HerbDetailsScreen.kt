@@ -39,11 +39,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +88,9 @@ import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
 import com.uri.lee.dl.core.designsystem.resources.details_vietnamese_names
 import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
 import com.uri.lee.dl.core.designsystem.resources.generic_error
+import com.uri.lee.dl.core.designsystem.resources.notice_contributor_hidden
+import com.uri.lee.dl.core.designsystem.resources.notice_failed
+import com.uri.lee.dl.core.designsystem.resources.notice_reported
 import com.uri.lee.dl.core.designsystem.resources.photo_counter
 import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
@@ -135,6 +141,8 @@ fun HerbDetailsRoute(
             startIndex = index.coerceIn(0, (state.photos.size - 1).coerceAtLeast(0)),
             speciesName = species?.preferredVietnameseName ?: species?.scientificName.orEmpty(),
             onDismiss = { viewModel.onAction(HerbDetailsAction.ViewPhoto(null)) },
+            onReport = { photo, reason -> viewModel.onAction(HerbDetailsAction.Report(photo, reason)) },
+            onHideContributor = { viewModel.onAction(HerbDetailsAction.HideContributor(it)) },
         )
     }
 }
@@ -149,8 +157,26 @@ fun HerbDetailsScreen(
     onSuggestName: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val snackbar = remember { SnackbarHostState() }
+    val notice = state.notice
+    val message = notice?.let {
+        stringResource(
+            when (it) {
+                ModerationNotice.REPORTED -> Res.string.notice_reported
+                ModerationNotice.CONTRIBUTOR_HIDDEN -> Res.string.notice_contributor_hidden
+                ModerationNotice.FAILED -> Res.string.notice_failed
+            },
+        )
+    }
+    LaunchedEffect(notice) {
+        if (message != null) {
+            snackbar.showSnackbar(message)
+            onAction(HerbDetailsAction.NoticeShown)
+        }
+    }
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 title = {

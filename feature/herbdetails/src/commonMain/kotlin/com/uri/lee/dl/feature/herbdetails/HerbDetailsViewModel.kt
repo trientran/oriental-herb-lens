@@ -5,6 +5,9 @@ import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import com.uri.lee.dl.domain.moderation.HiddenContent
+import com.uri.lee.dl.domain.moderation.ModerationRepository
+import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.PhotoRepository
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
@@ -21,7 +24,19 @@ sealed interface HerbDetailsAction {
     /** Opens the full-screen viewer at [index] of [HerbDetailsState.photos]; null closes it. */
     data class ViewPhoto(val index: Int?) : HerbDetailsAction
     data object Retry : HerbDetailsAction
+
+    /** Reports a shared photo to the administrator; it's hidden for this user at once. */
+    data class Report(val photo: SpeciesPhoto, val reason: ReportReason) : HerbDetailsAction
+
+    /** Hides every photo this contributor shared, for this user. */
+    data class HideContributor(val uploaderId: String) : HerbDetailsAction
+
+    /** The [HerbDetailsState.notice] was shown. */
+    data object NoticeShown : HerbDetailsAction
 }
+
+/** A short confirmation after a moderation action. */
+enum class ModerationNotice { REPORTED, CONTRIBUTOR_HIDDEN, FAILED }
 
 data class HerbDetailsState(
     val herbId: Long,
@@ -36,9 +51,12 @@ data class HerbDetailsState(
     val isFavorite: Boolean = false,
     val viewingPhoto: Int? = null,
     val hasError: Boolean = false,
+    /** Photos and contributors this user hid or reported. */
+    val hidden: HiddenContent = HiddenContent(),
+    val notice: ModerationNotice? = null,
 ) {
-    /** User contributions first, then GBIF photos. */
-    val photos: List<SpeciesPhoto> get() = userPhotos + referencePhotos
+    /** User contributions first, then GBIF photos, without the ones this user hid. */
+    val photos: List<SpeciesPhoto> get() = (userPhotos + referencePhotos).filterNot { hidden.hides(it.url, it.uploaderId) }
 }
 
 /** A species: its names and classification from the catalog, user and GBIF photos, favourite state. */
@@ -48,6 +66,7 @@ class HerbDetailsViewModel(
     private val userPhotos: PhotoRepository,
     private val referencePhotos: ReferencePhotoRepository,
     private val library: UserLibraryRepository,
+    private val moderation: ModerationRepository,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(HerbDetailsState(herbId)) {
 
     init {
@@ -55,6 +74,10 @@ class HerbDetailsViewModel(
         userPhotos.observeUserPhotos(herbId)
             .onEach { setState { copy(userPhotos = it) } }
             .catch { log.w(it) { "User photos unavailable" } } // e.g. offline: GBIF photos may still show
+            .launchIn(viewModelScope)
+        moderation.observeHidden()
+            .onEach { setState { copy(hidden = it) } }
+            .catch { log.w(it) { "Hidden photos unavailable" } }
             .launchIn(viewModelScope)
         library.observeFavorites()
             .onEach { favorites -> setState { copy(isFavorite = herbId in favorites) } }
@@ -70,6 +93,13 @@ class HerbDetailsViewModel(
                 setState { copy(hasError = false) }
                 load()
             }
+            is HerbDetailsAction.Report -> moderate(ModerationNotice.REPORTED) {
+                moderation.report(currentState.herbId, action.photo.url, action.photo.uploaderId, action.reason)
+            }
+            is HerbDetailsAction.HideContributor -> moderate(ModerationNotice.CONTRIBUTOR_HIDDEN) {
+                moderation.hideContributor(action.uploaderId)
+            }
+            HerbDetailsAction.NoticeShown -> setState { copy(notice = null) }
         }
     }
 
@@ -86,6 +116,23 @@ class HerbDetailsViewModel(
         } catch (e: Exception) {
             log.e(e) { "Species $id unavailable" }
             setState { copy(hasError = true, photosLoading = false) }
+        }
+    }
+
+    /** Closes the viewer (the photo is gone from the list) and confirms what happened. */
+    private fun moderate(done: ModerationNotice, block: suspend () -> Unit) {
+        setState { copy(viewingPhoto = null) }
+        viewModelScope.launch {
+            val notice = try {
+                block()
+                done
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.e(e) { "Moderation action failed" }
+                ModerationNotice.FAILED
+            }
+            setState { copy(notice = notice) }
         }
     }
 

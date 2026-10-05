@@ -4,6 +4,7 @@ package com.uri.lee.dl.core.firebase
 internal object FirestorePaths {
     const val HERBS = "herbs"
     const val NAME_SUGGESTIONS = "nameSuggestions"
+    const val PHOTO_REPORTS = "photoReports"
     const val USERS = "users"
 
     const val USER_FAVORITES = "favorite"

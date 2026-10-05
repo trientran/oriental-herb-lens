@@ -14,12 +14,14 @@ target 'iosApp' do
   pod 'GoogleSignIn'
   pod 'GoogleMLKit/ImageLabelingCustom', '8.0.0'
   pod 'GoogleMLKit/ObjectDetection', '8.0.0'
+  # The general labeller: checks a photo shows a plant before it's shared
+  pod 'GoogleMLKit/ImageLabeling', '8.0.0'
 end
 
 # ML Kit ships only device (arm64) and Intel-simulator (x86_64) binaries, so it can't link into an
 # Apple-silicon simulator build. Link it for devices only; in the simulator the Swift bridges
 # (MLKitBridge.swift) return no results and everything else works.
-ML_KIT_FRAMEWORKS = %w[MLImage MLKitCommon MLKitImageLabelingCommon MLKitImageLabelingCustom
+ML_KIT_FRAMEWORKS = %w[MLImage MLKitCommon MLKitImageLabeling MLKitImageLabelingCommon MLKitImageLabelingCustom
                        MLKitObjectDetection MLKitObjectDetectionCommon MLKitVision MLKitVisionKit]
 
 post_install do |installer|

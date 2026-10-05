@@ -161,4 +161,23 @@
     </plurals>
     <string name="notify_upload_failed_title">Tải lên không thành công</string>
     <string name="notify_upload_failed">Không tải được ảnh %1$s của bạn. Hãy mở ứng dụng để thử lại.</string>
+    <string name="cd_more">Tuỳ chọn khác</string>
+    <string name="report_photo">Báo cáo ảnh</string>
+    <string name="report_title">Báo cáo ảnh này?</string>
+    <string name="report_body">Chúng tôi sẽ xem xét trong vòng 24 giờ. Ảnh sẽ được ẩn với bạn ngay lập tức.</string>
+    <string name="report_reason_not_plant">Không phải cây</string>
+    <string name="report_reason_sexual_violent">Khiêu dâm hoặc bạo lực</string>
+    <string name="report_reason_person">Có hình người</string>
+    <string name="report_reason_wrong_species">Sai loài</string>
+    <string name="report_reason_other">Lý do khác</string>
+    <string name="report_send">Báo cáo</string>
+    <string name="hide_contributor">Ẩn ảnh của người đóng góp này</string>
+    <string name="hide_contributor_title">Ẩn ảnh của người đóng góp này?</string>
+    <string name="hide_contributor_body">Bạn sẽ không thấy ảnh nào họ đã chia sẻ, ở mọi loài. Thiết lập này chỉ lưu trên thiết bị này.</string>
+    <string name="hide">Ẩn</string>
+    <string name="notice_reported">Cảm ơn bạn. Ảnh đã được ẩn và chúng tôi sẽ xem xét.</string>
+    <string name="notice_contributor_hidden">Bạn sẽ không thấy ảnh của người đóng góp này nữa.</string>
+    <string name="notice_failed">Không thực hiện được. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="contribute_no_plant">Không thấy cây</string>
+    <string name="contribute_no_plant_hint">Ảnh không tìm thấy cây sẽ không được tải lên. Hãy chia sẻ ảnh rõ nét của chính cây đó.</string>
 </resources>
