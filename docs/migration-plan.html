@@ -572,6 +572,19 @@ service cloud.firestore {
     </tbody>
   </table></div>
   <p><b>What the spike must do:</b> sign in, upload a photo through the Worker and add it to <code>herbs/{speciesKey}</code>; download the CSV from R2 and run the §05 test cases; take a camera frame through <code>getUserMedia</code> and run <code>herb_model.tflite</code> on it. <b>How to decide:</b> if Option A needs more than two sizeable interop wrappers, or the Compose web build fails basic checks for bundle size, first load time or text input with Vietnamese Telex keyboards, choose B. Otherwise choose A.</p>
+  <h3>Spike results (5 Oct, in progress)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Question</th><th>Finding</th></tr></thead>
+    <tbody>
+      <tr><td>Libraries on the web</td><td>Compose 1.12, material3, adaptive, navigation, Koin, Coil, Ktor, SQLDelight (web worker driver), Okio, Kermit: both Kotlin/JS and Kotlin/Wasm. <b>GitLive Firebase: Kotlin/JS only.</b> <b>DataStore: Kotlin/Wasm only.</b></td></tr>
+      <tr><td>Herb model in the browser</td><td>MediaPipe Tasks can't run it (it rejects the per-channel normalisation in the metadata). <b>LiteRT.js 2.5 runs it</b> (CPU/Wasm), with our own preprocessing: resize to 224 × 224, normalise with the metadata's mean 123.675 / 116.28 / 103.53 and std 58.395 / 57.12 / 57.375; labels from the model's <code>labels.txt</code>. 24 GBIF test photos: 13 right first, 17 in the top 3, about 10 ms each.</td></tr>
+      <tr><td>Bundle size (gzip)</td><td>Kotlin/JS: about 4.4 MB (app 1.1 MB, Compose's Skia engine 3.3 MB). Kotlin/Wasm: about 4.4 MB (app 1.0 MB, Skia 3.3 MB). Fonts and the 2.5 MB catalog come on top (the catalog could come compressed from R2).</td></tr>
+      <tr><td>Catalog ready (4,799 species parsed and indexed)</td><td>Kotlin/JS: about 200 ms. Kotlin/Wasm: 600–800 ms (text handling crosses into JavaScript for every Unicode normalisation).</td></tr>
+      <tr><td>Vietnamese text</td><td>Be Vietnam Pro renders all marks; "ngải cứu" finds Artemisia vulgaris in both builds. Typing with a Telex keyboard still to be checked by a person.</td></tr>
+      <tr><td>Still to try</td><td>Sign-in, a Worker upload and a Firestore write from the browser (needs a Firebase web app and App Check with reCAPTCHA); a camera frame through <code>getUserMedia</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Leaning:</b> Option A on <b>Kotlin/JS</b> (not Wasm): Firebase works through GitLive with no wrapper, text handling is 3–4 × faster, and the bundle is the same size. The wrappers it needs are thin, and Option B would need the same browser APIs: settings storage (<code>localStorage</code>, as DataStore has no Kotlin/JS target), LiteRT.js for the model, the camera, the map and the file picker. Option B would also rewrite every screen.</p>
 </section>
 
 <!-- 10 -->
