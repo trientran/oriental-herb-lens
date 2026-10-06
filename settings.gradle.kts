@@ -76,5 +76,3 @@ include(":feature:saved")
 include(":feature:scan")
 
 // Phase 6 spike (temporary): Compose in the browser
-include(":spikes:webCompose")
-project(":spikes:webCompose").projectDir = file("spikes/web/compose")

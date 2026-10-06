@@ -12,9 +12,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
+import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.w3c.dom.url.URL
 
 /**
  * The browser's catalog: the published CSV (Remote Config, on R2) or the copy served with the
@@ -77,7 +79,9 @@ internal class MemorySpeciesRepository(
                 log.e(e) { "Published catalog unusable; using the one served with the site" }
             }
         }
-        return read(fetch(BUNDLED_CATALOG))
+        // Relative to the page (the app may live in a folder, e.g. /app/); Ktor would resolve it
+        // against the site's root
+        return read(fetch(URL(BUNDLED_CATALOG, window.location.href).href))
     }
 
     private suspend fun fetch(url: String): String {
