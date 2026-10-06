@@ -38,6 +38,8 @@ import platform.Foundation.fileHandleForWritingAtPath
 import platform.Foundation.seekToEndOfFile
 import platform.Foundation.writeData
 import platform.Foundation.writeToFile
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 
 /**
@@ -57,30 +59,36 @@ internal object IosResearchBackground : ResearchBackground {
         kotlinx.cinterop.cValue { majorVersion = 26; minorVersion = 0; patchVersion = 0 },
     )
 
-    /** Called while the app launches, as iOS requires (see AppDelegate). */
-    fun register() {
-        if (!supported) return
-        BGTaskScheduler.sharedScheduler.registerForTaskWithIdentifier("$PREFIX.*", usingQueue = null) { started ->
-            val continued = started as? BGContinuedProcessingTask ?: return@registerForTaskWithIdentifier
-            task = continued
-            continued.expirationHandler = {
-                onExpired?.invoke()
-                continued.setTaskCompletedWithSuccess(false)
-                task = null
-            }
-        }
-    }
-
     override fun start(title: String, onExpired: () -> Unit) {
         if (!supported) return
         this.onExpired = onExpired
-        val request = BGContinuedProcessingTaskRequest("$PREFIX.${NSUUID().UUIDString}", title, "Starting…")
-        // Run now or not at all: a run started on the screen shouldn't wait in a queue
-        request.strategy = BGContinuedProcessingTaskRequestSubmissionStrategy.BGContinuedProcessingTaskRequestSubmissionStrategyFail
-        memScoped {
-            val error = alloc<ObjCObjectVar<NSError?>>()
-            if (!BGTaskScheduler.sharedScheduler.submitTaskRequest(request, error.ptr)) {
-                Logger.withTag("Research").w { "No background time: ${error.value?.localizedDescription}" }
+        // UIKit-side work on the main thread
+        dispatch_async(dispatch_get_main_queue()) {
+            // Info.plist permits PREFIX.*, but each task needs a handler under its own identifier,
+            // registered just before it's submitted (Apple DTS: a wildcard handler isn't matched).
+            // Submitting without one throws, which would end the app: hence the check.
+            val identifier = "$PREFIX.${NSUUID().UUIDString}"
+            val registered = BGTaskScheduler.sharedScheduler.registerForTaskWithIdentifier(identifier, usingQueue = null) { started ->
+                val continued = started as? BGContinuedProcessingTask ?: return@registerForTaskWithIdentifier
+                task = continued
+                continued.expirationHandler = {
+                    this.onExpired?.invoke()
+                    continued.setTaskCompletedWithSuccess(false)
+                    task = null
+                }
+            }
+            if (!registered) {
+                Logger.withTag("Research").w { "Couldn't register the background task" }
+                return@dispatch_async
+            }
+            val request = BGContinuedProcessingTaskRequest(identifier, title, "Starting…")
+            // Run now or not at all: a run started on the screen shouldn't wait in a queue
+            request.strategy = BGContinuedProcessingTaskRequestSubmissionStrategy.BGContinuedProcessingTaskRequestSubmissionStrategyFail
+            memScoped {
+                val error = alloc<ObjCObjectVar<NSError?>>()
+                if (!BGTaskScheduler.sharedScheduler.submitTaskRequest(request, error.ptr)) {
+                    Logger.withTag("Research").w { "No background time: ${error.value?.localizedDescription}" }
+                }
             }
         }
     }
@@ -147,6 +155,3 @@ internal class IosResearchFiles : ResearchFiles {
 
     override suspend fun location(name: String): String = NSURL.fileURLWithPath(path(name)).path ?: path(name)
 }
-
-/** Lets Swift register the research background task while the app launches. */
-fun registerResearchBackgroundTask() = IosResearchBackground.register()
