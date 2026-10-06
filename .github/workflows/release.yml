@@ -37,6 +37,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # The daemon JVM (JetBrains 25, gradle-daemon-jvm.properties), installed here rather than
+      # downloaded by Gradle through foojay, whose links break when it drops a build. Gradle finds
+      # it through the Maven toolchains file setup-java writes. The second step sets JAVA_HOME.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: jetbrains
+          java-version: 25
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -88,6 +96,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
+
+      # The daemon JVM (JetBrains 25, gradle-daemon-jvm.properties), installed here rather than
+      # downloaded by Gradle through foojay, whose links break when it drops a build. Gradle finds
+      # it through the Maven toolchains file setup-java writes. The second step sets JAVA_HOME.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: jetbrains
+          java-version: 25
 
       - uses: actions/setup-java@v5
         with:
@@ -149,6 +165,14 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+
+      # The daemon JVM (JetBrains 25, gradle-daemon-jvm.properties), installed here rather than
+      # downloaded by Gradle through foojay, whose links break when it drops a build. Gradle finds
+      # it through the Maven toolchains file setup-java writes. The second step sets JAVA_HOME.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: jetbrains
+          java-version: 25
 
       - uses: actions/setup-java@v5
         with:
