@@ -714,6 +714,16 @@ service cloud.firestore {
     <div class="ships"><b>Ships:</b> users train their own image classifiers on Android, iOS and the web.</div>
   </div>
 
+  <div class="phase" data-phase="8">
+    <div class="phase-h"><div class="phase-no g">8</div><div><h3>Multilingual app</h3><p>After Phase 7 (user, 6 Oct). Until then the app is in English and Vietnamese, and species are named in Vietnamese first only for readers in or from Vietnam (D17).</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p8-1"><label for="p8-1"><span class="tt">The UN's languages for the interface</span><span class="td">Arabic (right to left), Chinese, French, Russian and Spanish, besides English and Vietnamese: Compose resources per language, a language picker on the web, and checked translations of the legal pages.</span></label></li>
+      <li><input type="checkbox" id="p8-2"><label for="p8-2"><span class="tt">Common names in those languages</span><span class="td">From GBIF's vernacular names, added to the catalog CSV; search folds each script.</span></label></li>
+      <li><input type="checkbox" id="p8-3"><label for="p8-3"><span class="tt">How to cite the app</span><span class="td">A Profile section on citing the app in research: the published papers and the apps' links, from a Remote Config key so they can change without a release.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the app in seven languages, and a citation guide.</div>
+  </div>
+
   <div class="phase" data-phase="R">
     <div class="phase-h"><div class="phase-no">R</div><div><h3>Testing and release</h3><p>After the last phase, once the supervisor has signed off a thorough test (D15). Steps in <code>docs/release.md</code>.</p></div><span class="prog"></span></div>
     <ul class="tasks">
@@ -748,6 +758,9 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D14</div><div><b>Google Analytics for Firebase, for the research.</b> Yes (5 Oct), on Android and iOS (web with a consent banner in Phase 6): screen views and a few events (identify, open_result, view_species, add_favorite, share_photos, suggest_name, report_photo); no user ID, advertising ID or ad personalisation, so no tracking; Profile → Share usage statistics turns it off (on by default; switch to opt-in if the ethics approval requires it).</div></div>
     <div class="decision"><div class="dno">D15</div><div><b>Store releases after the last phase.</b> Yes (5 Oct): Android, iOS and web are released together once the supervisor has signed off a thorough test (phase R). The release workflow, store secrets, legal pages and moderation are ready meanwhile.</div></div>
     <div class="decision"><div class="dno">D16</div><div><b>The web app is the shared Compose app on Kotlin/JS</b> (Option A). Yes (6 Oct): Firebase works through GitLive, text handling is 3–4 × faster than on Wasm, the bundle is the same size. Herb identification with LiteRT.js; settings in <code>localStorage</code>. App Check for the web and Telex typing were checked on 6 Oct.</div></div>
+    <div class="decision"><div class="dno">D17</div><div><b>Species are named in Vietnamese first only for readers in or from Vietnam</b>: device language Vietnamese, region Vietnam, or (on the web, which can't see the visitor's country) Vietnam's time zone. Everyone else sees the English name first (or the scientific name), with the Vietnamese name underneath. The interface language still follows the device or the in-app switch (user, 6 Oct). More languages: Phase 8.</div></div>
+    <div class="decision"><div class="dno">D18</div><div><b>Usage statistics are on by default on the web too</b>, as in the apps (user, 6 Oct), with nothing for advertising (consent for ad storage and personalisation denied) and the Profile switch to turn them off, which stops Analytics before it starts. Visitors from the EU would normally be asked first; revisit with the ethics approval (phase R).</div></div>
+    <div class="decision"><div class="dno">D19</div><div><b>No automatic plant check for photos shared from the web.</b> ML Kit's general labeller has no web version, and the herb model refused plants it doesn't know (a fern). Web uploads rely on reports and the administrator's review (D13).</div></div>
   </div>
 </section>
 

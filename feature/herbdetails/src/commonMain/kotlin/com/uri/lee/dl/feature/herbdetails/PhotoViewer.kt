@@ -93,6 +93,7 @@ internal fun PhotoViewer(
             HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
                 ZoomablePhoto(photos[page], contentDescription = stringResource(Res.string.cd_photo, speciesName))
             }
+            PagerArrows(pager)
             Row(Modifier.safeDrawingPadding().align(Alignment.TopEnd)) {
                 val current = photos.getOrNull(pager.currentPage)
                 if (current?.source == PhotoSource.USER) ModerationMenu(current, onReport, onHideContributor)

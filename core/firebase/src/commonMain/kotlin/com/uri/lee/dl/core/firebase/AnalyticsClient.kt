@@ -10,8 +10,8 @@ import dev.gitlive.firebase.analytics.FirebaseAnalytics
 class AnalyticsClient internal constructor(
     private val provider: () -> FirebaseAnalytics,
     /**
-     * In the browser Analytics sets cookies as soon as it starts, so it isn't started until the
-     * visitor allows it; on Android and iOS it starts with the app and is switched off if needed.
+     * In the browser Analytics sets cookies as soon as it starts, so it starts only once usage
+     * statistics are known to be on; on Android and iOS it starts with the app and is switched off if needed.
      */
     private val startOnlyWhenEnabled: Boolean,
 ) {

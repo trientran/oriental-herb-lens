@@ -15,7 +15,8 @@ internal class NominatimAddressLookup : AddressLookup {
 
     override suspend fun addressLine(latitude: Double, longitude: Double): String? = runCatching {
         val url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16" +
-            "&lat=$latitude&lon=$longitude&accept-language=${window.navigator.language},vi,en"
+            // International (English) place names, whatever the browser's language
+            "&lat=$latitude&lon=$longitude&accept-language=en"
         val response = window.fetch(url).await()
         if (!response.ok) return null
         val place: dynamic = response.json().unsafeCast<Promise<dynamic>>().await()

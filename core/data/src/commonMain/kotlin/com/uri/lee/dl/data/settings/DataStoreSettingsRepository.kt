@@ -10,11 +10,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 /** Uses the existing DataStore file and keys, so settings saved by earlier versions carry over. */
-internal class DataStoreSettingsRepository(
-    private val dataStore: KeyValueStore,
-    /** Until the user chooses: on in the apps (pending the ethics approval), off on the web, which asks first (cookies). */
-    private val usageStatisticsByDefault: Boolean = true,
-) : SettingsRepository {
+internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore) : SettingsRepository {
 
     override val scanSettings: Flow<ScanSettings> = dataStore.data
         .map { prefs ->
@@ -33,7 +29,7 @@ internal class DataStoreSettingsRepository(
         dataStore.edit { it[IS_OBJECTS_MODE_SINGLE_IMAGE] = enabled }
     }
 
-    override val usageStatistics: Flow<Boolean> = dataStore.data.map { it[USAGE_STATISTICS] ?: usageStatisticsByDefault }.distinctUntilChanged()
+    override val usageStatistics: Flow<Boolean> = dataStore.data.map { it[USAGE_STATISTICS] ?: true }.distinctUntilChanged()
 
     override suspend fun setUsageStatistics(enabled: Boolean) {
         dataStore.edit { it[USAGE_STATISTICS] = enabled }

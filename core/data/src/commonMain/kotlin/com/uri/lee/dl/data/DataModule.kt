@@ -43,9 +43,7 @@ val dataModule: Module = module {
     singleOf(::SpeciesCsvReader)
     single<ReleaseSource> { RemoteConfigReleaseSource(get()) }
 
-    single<SettingsRepository> {
-        DataStoreSettingsRepository(get(named(PreferenceStore.SETTINGS)), usageStatisticsByDefault = get<AppInfo>().platform != "web")
-    }
+    single<SettingsRepository> { DataStoreSettingsRepository(get(named(PreferenceStore.SETTINGS))) }
     single { UserProfileSync(get(), get(), get(named(PreferenceStore.SETTINGS))) }
     single<Analytics> { FirebaseAnalyticsLogger(get()) }
     single { UsageStatisticsSync(get(), get()) }

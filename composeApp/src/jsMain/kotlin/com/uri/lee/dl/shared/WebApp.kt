@@ -1,6 +1,10 @@
 package com.uri.lee.dl.shared
 
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.domain.model.GeoLocation
@@ -57,6 +61,8 @@ fun startWebApp(config: WebConfig) {
         platform = "web",
         isDebug = config.isDebug,
         photoUploadUrl = config.photoUploadUrl,
+        // A stand-in for the visitor's country, which the browser doesn't know
+        inVietnam = js("Intl.DateTimeFormat().resolvedOptions().timeZone") as? String in setOf("Asia/Ho_Chi_Minh", "Asia/Saigon"),
     )
     val koin = startKoin {
         modules(sharedModules(app) + module { single<UploadNotifier> { WebUploadNotifier() } })
@@ -70,7 +76,30 @@ fun startWebApp(config: WebConfig) {
         currentLocation = ::currentLocation,
         onShareApp = { share(config.siteUrl) },
     )
-    ComposeViewport(document.getElementById("app")!!) { App(actions) }
+    ignoreCancelledRequests()
+    ComposeViewport(document.getElementById("app")!!) {
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
+            // On the web any text can be selected and copied, e.g. a name to search elsewhere
+            SelectionContainer { App(actions) }
+        }
+    }
+}
+
+/** Links open in a new tab; mailto: links go straight to the mail app, without a blank tab. */
+private object WebUriHandler : UriHandler {
+    override fun openUri(uri: String) {
+        if (uri.startsWith("mailto:")) window.location.href = uri else window.open(uri, "_blank", "noopener")
+    }
+}
+
+/**
+ * Leaving a page cancels its requests; Ktor then ends the half-read response with the browser's
+ * AbortError outside any app code. It only means "cancelled", so it isn't reported as an error.
+ */
+private fun ignoreCancelledRequests() {
+    val isAbort = { error: dynamic -> error != null && error.name == "AbortError" }
+    window.addEventListener("error", { event -> if (isAbort(event.asDynamic().error)) event.preventDefault() })
+    window.addEventListener("unhandledrejection", { event -> if (isAbort(event.asDynamic().reason)) event.preventDefault() })
 }
 
 /** The browser's file chooser, for images; on phones it also offers the camera. */
@@ -93,11 +122,17 @@ private fun pickPhotos(pick: PhotoPick) {
 private fun currentLocation(onResult: (GeoLocation?) -> Unit) {
     val geolocation = window.navigator.asDynamic().geolocation
     if (geolocation == null) return onResult(null)
+    // Report once: a late error (e.g. a timeout) must not replace a position already found
+    var reported = false
+    fun report(location: GeoLocation?) {
+        if (!reported) onResult(location)
+        reported = true
+    }
     geolocation.getCurrentPosition(
         { position: dynamic ->
-            onResult(GeoLocation(latitude = position.coords.latitude as Double, longitude = position.coords.longitude as Double))
+            report(GeoLocation(latitude = position.coords.latitude as Double, longitude = position.coords.longitude as Double))
         },
-        { _: dynamic -> onResult(null) },
+        { _: dynamic -> report(null) },
         kotlin.js.json("enableHighAccuracy" to true, "timeout" to 15_000),
     )
 }
@@ -106,7 +141,8 @@ private fun currentLocation(onResult: (GeoLocation?) -> Unit) {
 private fun share(url: String) {
     val navigator = window.navigator.asDynamic()
     if (navigator.share != null) {
-        navigator.share(kotlin.js.json("title" to "Med Herb Lens", "url" to url))
+        // Rejected when the visitor closes the share sheet: nothing to do
+        navigator.share(kotlin.js.json("title" to "Med Herb Lens", "url" to url)).catch { _: dynamic -> }
     } else {
         navigator.clipboard?.writeText(url)
     }

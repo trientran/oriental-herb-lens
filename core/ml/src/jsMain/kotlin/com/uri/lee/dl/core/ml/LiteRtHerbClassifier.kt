@@ -102,7 +102,7 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
 internal suspend fun <T> jsErrorsAsExceptions(block: suspend () -> T): T = try {
     block()
 } catch (e: Throwable) {
-    if (e is Exception || e is Error) throw e
+    if (e is Exception) throw e
     throw IllegalStateException(e.message ?: "Browser error", e)
 }
 

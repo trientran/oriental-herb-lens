@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.Region
@@ -213,7 +214,11 @@ class ScreenshotTest {
     }
 
     @Config(qualifiers = "+vi")
-    @Test fun browseVietnamese() = light("browse_vi") { BrowseScreen(BrowseState(species = Samples.catalog, isLoading = false), {}, {}, selectedId = null) }
+    @Test fun browseVietnamese() = light("browse_vi") {
+        CompositionLocalProvider(LocalVietnameseFirst provides true) {
+            BrowseScreen(BrowseState(species = Samples.catalog, isLoading = false), {}, {}, selectedId = null)
+        }
+    }
 
     private fun both(name: String, content: @Composable () -> Unit) {
         var dark by mutableStateOf(false)

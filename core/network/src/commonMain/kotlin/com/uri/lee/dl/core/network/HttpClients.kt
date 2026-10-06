@@ -9,7 +9,6 @@ import io.ktor.client.plugins.plugin
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -30,14 +29,13 @@ fun herbLensHttpClient(engine: HttpClientEngine, app: AppInfo): HttpClient = Htt
     }
     install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
 }.apply {
-    // In the browser a failed fetch (offline, blocked by an extension, CORS) arrives as a JS
-    // TypeError, which isn't an Exception: callers' `catch (e: Exception)` would miss it
+    // In the browser a failed fetch (offline, blocked by an extension, CORS) isn't an Exception
+    // (a JS error, or Ktor's Error("Fail to fetch")): callers' `catch (e: Exception)` would miss it
     plugin(HttpSend).intercept { request ->
         try {
             execute(request)
         } catch (e: Throwable) {
-            if (e is Exception || e is Error) throw e
-            throw IOException(e.message ?: "Network request failed", e)
+            throw e.asNetworkException()
         }
     }
 }
@@ -54,3 +52,6 @@ val networkModule: Module = module {
 }
 
 internal expect fun platformEngine(): HttpClientEngine
+
+/** What a failed request should throw: unchanged on Android and iOS, an IOException in the browser. */
+internal expect fun Throwable.asNetworkException(): Throwable

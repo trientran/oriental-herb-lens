@@ -70,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.ConfidenceChip
 import com.uri.lee.dl.core.designsystem.component.HerbCard
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
@@ -401,7 +402,7 @@ private fun hintFor(state: ScanState): String = when {
 private fun ResultRow(herb: RecognizedHerb, onOpenSpecies: (Long) -> Unit) {
     val species = herb.species
     HerbCard(
-        title = AnnotatedString(species?.let { it.preferredVietnameseName ?: it.scientificName } ?: stringResource(Res.string.scan_unknown_species, herb.label)),
+        title = AnnotatedString(species?.displayName(LocalVietnameseFirst.current) ?: stringResource(Res.string.scan_unknown_species, herb.label)),
         scientificName = species?.scientificName.orEmpty(),
         supporting = species?.preferredEnglishName,
         onClick = { species?.let { onOpenSpecies(it.id) } },
@@ -480,7 +481,7 @@ private fun CompactResult(herb: RecognizedHerb, onOpenSpecies: (Long) -> Unit) {
     ) {
         Column(Modifier.weight(1f)) {
             Text(
-                species?.let { it.preferredVietnameseName ?: it.scientificName } ?: stringResource(Res.string.scan_unknown_species, herb.label),
+                species?.displayName(LocalVietnameseFirst.current) ?: stringResource(Res.string.scan_unknown_species, herb.label),
                 style = MaterialTheme.typography.titleSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -9,4 +9,9 @@ data class AppInfo(
     val isDebug: Boolean,
     /** The photo-upload Worker (workers/photo-upload); empty when the build has none. */
     val photoUploadUrl: String,
+    /**
+     * The device seems to be in Vietnam beyond what its language and region say: the browser's
+     * time zone on the web. Species are then named in Vietnamese first.
+     */
+    val inVietnam: Boolean = false,
 )

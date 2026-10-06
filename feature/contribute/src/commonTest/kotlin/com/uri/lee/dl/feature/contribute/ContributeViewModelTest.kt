@@ -3,6 +3,7 @@ package com.uri.lee.dl.feature.contribute
 import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
 import com.uri.lee.dl.testing.MainDispatcherTest
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
@@ -29,7 +30,7 @@ class ContributeViewModelTest : MainDispatcherTest() {
         auth = auth,
     )
 
-    private fun viewModel() = ContributeViewModel(
+    private fun viewModel(vietnameseFirst: Boolean = true) = ContributeViewModel(
         herbId = 5,
         catalog = FakeSpeciesRepository(listOf(species(5, "Polyscias fruticosa", vi = listOf("Đinh lăng")))),
         auth = auth,
@@ -38,6 +39,7 @@ class ContributeViewModelTest : MainDispatcherTest() {
         appScope = ApplicationScope(CoroutineScope(testDispatcher)),
         notifier = { id, name, uploaded, failed -> notified += Notified(id, name, uploaded, failed) },
         plantCheck = { photo -> photo.uri !in notPlants },
+        names = NamePreference { vietnameseFirst },
     )
 
     /** Photos the plant check finds no plant in. */
@@ -49,6 +51,8 @@ class ContributeViewModelTest : MainDispatcherTest() {
     @Test
     fun `shows which species the photos are for`() {
         assertEquals("Đinh lăng", viewModel().state.value.speciesName)
+        // Outside Vietnam: no English name in the sample, so the scientific name
+        assertEquals("Polyscias fruticosa", viewModel(vietnameseFirst = false).state.value.speciesName)
     }
 
     @Test

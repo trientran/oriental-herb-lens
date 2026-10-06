@@ -21,7 +21,7 @@ fun secret(name: String): String = localProps.getProperty(name) ?: System.getenv
 
 // Settings the app reads at start-up, like Android's BuildConfig
 val generateWebBuildConfig by tasks.registering {
-    val versionName = findProperty("versionName") as String? ?: "1.1"
+    val versionName = findProperty("versionName") as String? ?: "2.0"
     val uploadUrl = secret("PHOTO_UPLOAD_URL")
     val out = layout.buildDirectory.dir("generated/webBuildConfig")
     inputs.property("versionName", versionName)
@@ -58,11 +58,7 @@ val webContent by tasks.registering(Sync::class) {
 kotlin {
     js {
         browser {
-            commonWebpackConfig {
-                outputFileName = "herblens.js"
-                // Leaflet's stylesheet (core:maps)
-                cssSupport { enabled.set(true) }
-            }
+            commonWebpackConfig { outputFileName = "herblens.js" }
         }
         binaries.executable()
     }

@@ -23,6 +23,12 @@ private external object AppCheckJs {
     fun initializeAppCheck(app: dynamic, options: dynamic): dynamic
 }
 
+@JsModule("firebase/analytics")
+@JsNonModule
+private external object AnalyticsJs {
+    fun setConsent(consent: dynamic)
+}
+
 @JsModule("firebase/auth")
 @JsNonModule
 private external object AuthJs {
@@ -42,6 +48,11 @@ private external object AuthJs {
  * Enterprise), before anything reads Firestore.
  */
 internal fun startFirebase(options: FirebaseOptions, appCheckSiteKey: String) {
+    // Research analytics only, as in the apps: nothing for advertising. Collection itself follows
+    // Profile → Share usage statistics; Analytics doesn't start (or set cookies) while it's off.
+    AnalyticsJs.setConsent(
+        json("ad_storage" to "denied", "ad_user_data" to "denied", "ad_personalization" to "denied", "analytics_storage" to "granted"),
+    )
     Firebase.initialize(null, options)
     AppCheckJs.initializeAppCheck(
         FirebaseAppJs.getApp(),

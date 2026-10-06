@@ -18,12 +18,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.foundation.Image
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
+import org.khronos.webgl.Int8Array
+import kotlin.math.max
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.HtmlElementView
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.scan_allow_camera
 import com.uri.lee.dl.core.designsystem.resources.scan_camera_needed
@@ -39,32 +47,30 @@ import org.w3c.dom.HTMLVideoElement
 import org.w3c.dom.CanvasRenderingContext2D
 import kotlin.js.Promise
 import kotlin.js.json
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * The browser's camera (the back one on phones) in a `<video>`, cropped to fill like a photo app.
- * Frames are copied to a canvas, at most 640 px on the longer side, for the model.
+ * The browser's camera (the back one on phones), cropped to fill like a photo app. The `<video>`
+ * stays off the page: its frames are drawn by Compose, so the buttons and results over the camera
+ * show (an HTML element would sit above the app's canvas). Frames for the model are copies at
+ * most 640 px on the longer side.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 actual fun CameraPreview(onFrame: suspend (ClassifierImage, Float) -> Unit, modifier: Modifier) {
     val currentOnFrame by rememberUpdatedState(onFrame)
     var stream by remember { mutableStateOf<dynamic>(null) }
     var attempt by remember { mutableStateOf(0) }
     var refused by remember { mutableStateOf(false) }
+    var preview by remember { mutableStateOf<ImageBitmap?>(null) }
     val video = remember {
         (document.createElement("video") as HTMLVideoElement).apply {
             autoplay = true
             muted = true
             setAttribute("playsinline", "")
-            style.width = "100%"
-            style.height = "100%"
-            style.setProperty("object-fit", "cover")
         }
     }
     Box(modifier) {
-        HtmlElementView(factory = { video }, modifier = Modifier.fillMaxSize())
+        preview?.let { Image(it, contentDescription = null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
         if (refused) CameraRefused(onRetry = { attempt++ }, Modifier.fillMaxSize())
     }
 
@@ -82,23 +88,25 @@ actual fun CameraPreview(onFrame: suspend (ClassifierImage, Float) -> Unit, modi
             return@LaunchedEffect
         }
         video.asDynamic().srcObject = stream
+        video.play()
+        val frames = FrameCopier()
+        var lastAnalysis = 0.0
         while (true) {
             val width = video.videoWidth
             val height = video.videoHeight
             if (width == 0 || height == 0 || video.readyState < 2) {
-                delay(100)
+                delay(50)
                 continue
             }
-            val scale = minOf(1.0, MAX_SIDE.toDouble() / max(width, height))
-            val canvas = (document.createElement("canvas") as HTMLCanvasElement).apply {
-                this.width = (width * scale).roundToInt()
-                this.height = (height * scale).roundToInt()
+            val canvas = frames.draw(video, width, height)
+            preview = frames.toImageBitmap(canvas)
+            // The model takes ~10 ms; a few frames a second is plenty and keeps the page smooth
+            val now = window.performance.now()
+            if (now - lastAnalysis >= ANALYSIS_GAP_MS) {
+                lastAnalysis = now
+                currentOnFrame(WebClassifierImage(frames.copy(canvas)), width.toFloat() / height)
             }
-            (canvas.getContext("2d") as CanvasRenderingContext2D)
-                .drawImage(video, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
-            currentOnFrame(WebClassifierImage(canvas), width.toFloat() / height)
-            // The model takes ~10 ms; leave the page room to breathe between frames
-            delay(FRAME_GAP_MS)
+            delay(PREVIEW_GAP_MS)
         }
     }
     DisposableEffect(Unit) {
@@ -123,5 +131,47 @@ private fun CameraRefused(onRetry: () -> Unit, modifier: Modifier) {
     }
 }
 
+/** Draws video frames at most [MAX_SIDE] px wide or high, and hands them to Compose. */
+private class FrameCopier {
+    private val canvas = document.createElement("canvas") as HTMLCanvasElement
+    private val context = canvas.getContext("2d", json("willReadFrequently" to true)) as CanvasRenderingContext2D
+    // Compose may still be drawing the previous frame: free images two frames later
+    private val shown = ArrayDeque<Image>()
+
+    fun draw(video: HTMLVideoElement, width: Int, height: Int): HTMLCanvasElement {
+        val scale = minOf(1.0, MAX_SIDE.toDouble() / max(width, height))
+        val w = (width * scale).roundToInt()
+        val h = (height * scale).roundToInt()
+        if (canvas.width != w || canvas.height != h) {
+            canvas.width = w
+            canvas.height = h
+        }
+        context.drawImage(video, 0.0, 0.0, w.toDouble(), h.toDouble())
+        return canvas
+    }
+
+    fun toImageBitmap(canvas: HTMLCanvasElement): ImageBitmap {
+        val pixels = context.getImageData(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble()).data
+        val bytes = Int8Array(pixels.buffer, pixels.byteOffset, pixels.length).unsafeCast<ByteArray>()
+        val image = Image.makeRaster(
+            ImageInfo(canvas.width, canvas.height, ColorType.RGBA_8888, ColorAlphaType.UNPREMUL),
+            bytes,
+            canvas.width * 4,
+        )
+        shown.addLast(image)
+        while (shown.size > 2) shown.removeFirst().close()
+        return image.toComposeImageBitmap()
+    }
+
+    /** A separate copy for the model, which may still be reading it when the next frame is drawn. */
+    fun copy(source: HTMLCanvasElement): HTMLCanvasElement =
+        (document.createElement("canvas") as HTMLCanvasElement).apply {
+            width = source.width
+            height = source.height
+            (getContext("2d") as CanvasRenderingContext2D).drawImage(source, 0.0, 0.0)
+        }
+}
+
 private const val MAX_SIDE = 640
-private const val FRAME_GAP_MS = 150L
+private const val PREVIEW_GAP_MS = 40L
+private const val ANALYSIS_GAP_MS = 150.0
