@@ -58,6 +58,8 @@ data class TrainingState(
     val history: List<EpochStats> = emptyList(),
     /** What the model in use sees: species and probability, most likely first. */
     val predictions: List<Pair<String, Float>> = emptyList(),
+    /** A picked photo being identified instead of the camera, until the user goes back to the camera. */
+    val photo: String? = null,
     val error: TrainingError? = null,
 ) {
     val hasChanges: Boolean get() = model?.hasChanges(lastPhoto) == true
@@ -76,6 +78,7 @@ sealed interface TrainingAction {
     data object Delete : TrainingAction
     data class ImportModel(val fileName: String, val bytes: ByteArray) : TrainingAction
     data class ClassifyPhoto(val photo: LocalImage) : TrainingAction
+    data object BackToCamera : TrainingAction
     data object DismissError : TrainingAction
 }
 
@@ -116,8 +119,12 @@ class TrainingViewModel(
             TrainingAction.Delete -> delete()
             is TrainingAction.ImportModel -> importModel(action.fileName, action.bytes)
             is TrainingAction.ClassifyPhoto -> viewModelScope.launch {
-                reader.read(action.photo)?.image?.let { classify(it) } ?: setState { copy(error = TrainingError.READ_PHOTOS) }
+                // The camera stops updating the results while a photo is shown
+                setState { copy(photo = action.photo.uri, predictions = emptyList()) }
+                val image = reader.read(action.photo)?.image
+                if (image == null) setState { copy(photo = null, error = TrainingError.READ_PHOTOS) } else classify(image, fromCamera = false)
             }
+            TrainingAction.BackToCamera -> setState { copy(photo = null, predictions = emptyList()) }
             TrainingAction.DismissError -> setState { copy(error = null) }
         }
     }
@@ -147,7 +154,7 @@ class TrainingViewModel(
             is TrainingScreen.Use -> screen.id
             else -> null
         }
-        setState { copy(screen = screen, predictions = if (screen is TrainingScreen.Use) predictions else emptyList()) }
+        setState { copy(screen = screen, predictions = emptyList(), photo = null) }
         if (id == null) {
             refresh()
         } else if (currentState.model?.id != id) {
@@ -246,7 +253,8 @@ class TrainingViewModel(
         setState { copy(history = emptyList()) }
         launchWork {
             val examples = store.examples(model.id)
-            val previous = if (model.settings.update == UpdateMode.REPLAY) store.head(model.id) else null
+            // Replay only adds to the last model; with nothing new (new settings, say) it trains afresh
+            val previous = if (model.settings.update == UpdateMode.REPLAY && currentState.hasChanges) store.head(model.id) else null
             val maxEpochs = model.settings.expert.maxEpochs
             val result = withContext(Dispatchers.Default) {
                 ModelTrainer.train(model, examples, previous) { epoch ->
@@ -301,8 +309,9 @@ class TrainingViewModel(
         }
     }
 
-    /** What the model in use thinks [image] shows; also for live camera frames. */
-    suspend fun classify(image: ClassifierImage) {
+    /** What the model in use thinks [image] shows: a camera frame, unless a picked photo is on screen. */
+    suspend fun classify(image: ClassifierImage, fromCamera: Boolean = true) {
+        if (fromCamera && currentState.photo != null) return
         val model = currentState.model ?: return
         val runner = classifierFor(model) ?: return
         val probabilities = runCatching { runner.embed(image) }.getOrElse { e ->
@@ -311,6 +320,7 @@ class TrainingViewModel(
         }
         val labels = model.trainedClasses
         val top = probabilities.indices.filter { it < labels.size }.sortedByDescending { probabilities[it] }.take(3)
+        if (fromCamera && currentState.photo != null) return
         setState { copy(predictions = top.map { labels[it] to probabilities[it] }) }
     }
 

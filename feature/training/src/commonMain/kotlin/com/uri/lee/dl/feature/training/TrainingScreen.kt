@@ -1,6 +1,5 @@
 package com.uri.lee.dl.feature.training
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,7 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
@@ -339,12 +337,13 @@ private fun EditScreen(state: TrainingState, onAction: (TrainingAction) -> Unit,
         }
         Work(state.work)
         val trained = model.isTrained
-        Button(
-            onClick = { onAction(if (trained && !state.hasChanges) TrainingAction.Open(TrainingScreen.Result(model.id)) else TrainingAction.Train) },
-            enabled = state.work == null && model.photos > 0,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(if (trained && !state.hasChanges) Res.string.train_open else if (trained) Res.string.train_retrain else Res.string.train_train))
+        Button(onClick = { onAction(TrainingAction.Train) }, enabled = state.work == null && model.photos > 0, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(if (trained) Res.string.train_retrain else Res.string.train_train))
+        }
+        if (trained && model.report != null) {
+            OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Result(model.id))) }, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.train_see_results))
+            }
         }
     }
     if (adding) AddSpeciesDialog(onDismiss = { adding = false }) { onAction(TrainingAction.AddSpecies(it)); adding = false }
@@ -367,9 +366,17 @@ private fun AddSpeciesDialog(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
 @Composable
 private fun TrainingProgressScreen(state: TrainingState, onAction: (TrainingAction) -> Unit) {
     Page(stringResource(Res.string.train_training_title), onBack = null) {
-        Work(state.work)
-        LossCurve(state.history, Modifier.fillMaxWidth().height(160.dp))
-        Text(stringResource(Res.string.train_curve_legend), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        val last = state.history.lastOrNull()
+        if (last != null && state.work is TrainingWork.Learning) {
+            Text(
+                stringResource(Res.string.train_progress_accuracy, last.epoch, percent(last.validationAccuracy)),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+        } else {
+            Work(state.work)
+        }
+        AccuracyChart(state.history)
         OutlinedButton(onClick = { onAction(TrainingAction.StopTraining) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_stop)) }
     }
 }
@@ -377,23 +384,35 @@ private fun TrainingProgressScreen(state: TrainingState, onAction: (TrainingActi
 private val TRAIN_COLOR = Color(0xFF378ADD)
 private val CHECK_COLOR = Color(0xFFD85A30)
 
-/** Training and validation loss by epoch. */
+/** Share of checking photos right after each round: the curve anyone can read. */
 @Composable
-private fun LossCurve(history: List<com.uri.lee.dl.core.training.EpochStats>, modifier: Modifier) {
-    val axis = MaterialTheme.colorScheme.outlineVariant
-    Canvas(modifier) {
-        drawLine(axis, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1f)
-        if (history.size < 2) return@Canvas
-        val top = history.maxOf { maxOf(it.trainLoss, it.validationLoss) }.coerceAtLeast(1e-3f)
-        val step = size.width / (history.size - 1)
-        fun y(v: Float) = size.height * (1 - v / top)
-        for (i in 1 until history.size) {
-            val a = history[i - 1]
-            val b = history[i]
-            drawLine(TRAIN_COLOR, Offset((i - 1) * step, y(a.trainLoss)), Offset(i * step, y(b.trainLoss)), strokeWidth = 4f)
-            drawLine(CHECK_COLOR, Offset((i - 1) * step, y(a.validationLoss)), Offset(i * step, y(b.validationLoss)), strokeWidth = 4f)
-        }
-    }
+private fun AccuracyChart(history: List<com.uri.lee.dl.core.training.EpochStats>) {
+    LineChart(
+        lines = listOf(ChartLine(CHECK_COLOR, history.map { if (it.validationAccuracy.isNaN()) 0f else it.validationAccuracy })),
+        yMax = 1f,
+        yLabel = stringResource(Res.string.train_chart_accuracy),
+        xLabel = stringResource(Res.string.train_chart_rounds),
+        format = { "${(it * 100).roundToInt()}" },
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Text(stringResource(Res.string.train_accuracy_caption), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+/** Both losses by round, and the round that was kept (lowest checking loss). */
+@Composable
+private fun LossChart(history: List<com.uri.lee.dl.core.training.EpochStats>) {
+    val top = history.maxOfOrNull { maxOf(it.trainLoss, it.validationLoss) }?.coerceAtLeast(0.01f) ?: 1f
+    val kept = history.minByOrNull { it.validationLoss }?.epoch
+    LineChart(
+        lines = listOf(ChartLine(TRAIN_COLOR, history.map { it.trainLoss }), ChartLine(CHECK_COLOR, history.map { it.validationLoss })),
+        yMax = top,
+        yLabel = stringResource(Res.string.train_chart_loss),
+        xLabel = stringResource(Res.string.train_chart_rounds),
+        format = { v -> ((v * 100).roundToInt() / 100.0).toString() },
+        marker = kept,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Text(stringResource(Res.string.train_curve_legend), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
@@ -457,8 +476,8 @@ private fun UnderTheHood(report: ModelReport) {
     TextButton(onClick = { open = !open }) { Text(stringResource(Res.string.train_under_the_hood)) }
     if (!open) return
     if (report.history.size >= 2) {
-        LossCurve(report.history, Modifier.fillMaxWidth().height(140.dp))
-        Text(stringResource(Res.string.train_curve_legend), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        AccuracyChart(report.history)
+        LossChart(report.history)
     }
     if (report.confusion.isNotEmpty()) {
         Text(stringResource(Res.string.train_confusion), style = MaterialTheme.typography.bodySmall)
@@ -538,10 +557,12 @@ private fun UseScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, 
     val spacing = HerbLensTheme.spacing
     Page(model.name, onBack = { onAction(TrainingAction.Back) }) {
         val camera = platform.camera
-        if (camera != null && viewModel != null) {
-            camera({ image, _ -> viewModel.classify(image) }, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp)))
-        } else {
-            Text(stringResource(Res.string.train_use_hint), style = MaterialTheme.typography.bodyMedium)
+        val photo = state.photo
+        val view = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp))
+        when {
+            photo != null -> RemoteImage(photo, contentDescription = null, modifier = view)
+            camera != null && viewModel != null -> camera({ image, _ -> viewModel.classify(image) }, view)
+            else -> Text(stringResource(Res.string.train_use_hint), style = MaterialTheme.typography.bodyMedium)
         }
         state.predictions.forEach { (species, probability) ->
             Row(
@@ -552,10 +573,17 @@ private fun UseScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, 
                 Text(percent(probability), style = MaterialTheme.typography.bodyLarge)
             }
         }
-        OutlinedButton(
-            onClick = { platform.pickPhotos(PhotoPick { photos -> photos.firstOrNull()?.let { onAction(TrainingAction.ClassifyPhoto(it)) } }) },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text(stringResource(Res.string.train_use_pick_photo)) }
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            OutlinedButton(
+                onClick = { platform.pickPhotos(PhotoPick { photos -> photos.firstOrNull()?.let { onAction(TrainingAction.ClassifyPhoto(it)) } }) },
+                modifier = Modifier.weight(1f),
+            ) { Text(stringResource(Res.string.train_use_pick_photo)) }
+            if (photo != null && camera != null) {
+                OutlinedButton(onClick = { onAction(TrainingAction.BackToCamera) }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.train_use_camera))
+                }
+            }
+        }
     }
 }
 

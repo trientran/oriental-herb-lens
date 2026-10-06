@@ -222,7 +222,7 @@
     <string name="train_epoch">Vòng %1$d</string>
     <string name="train_saving">Đang lưu mô hình…</string>
     <string name="train_stop">Dừng</string>
-    <string name="train_curve_legend">Xanh: ảnh để học · Cam: ảnh để kiểm tra</string>
+    <string name="train_curve_legend">Xanh: sai số trên ảnh để học. Cam: sai số trên ảnh kiểm tra để riêng. Huấn luyện dừng khi đường cam thôi giảm; đường gạch đứt đánh dấu vòng được giữ lại.</string>
     <string name="train_ready">%1$s đã sẵn sàng</string>
     <string name="train_right_on_unseen">đúng trên các ảnh chưa từng thấy (%1$d)</string>
     <string name="train_right_on_checking">đúng trên các ảnh kiểm tra (%1$d): thêm ảnh để có ảnh riêng cho việc đánh giá</string>
@@ -266,4 +266,11 @@
     <string name="train_error_open">Không mở được mô hình này.</string>
     <string name="train_ok">OK</string>
     <string name="train_open">Mở</string>
+    <string name="train_use_camera">Dùng camera</string>
+    <string name="train_chart_rounds">Vòng</string>
+    <string name="train_chart_accuracy">Ảnh kiểm tra đúng (%)</string>
+    <string name="train_chart_loss">Sai số (loss)</string>
+    <string name="train_progress_accuracy">Vòng %1$d · ảnh kiểm tra đúng: %2$s</string>
+    <string name="train_accuracy_caption">Sau mỗi vòng, mô hình nhận đúng bao nhiêu ảnh kiểm tra (để riêng, không dùng để học).</string>
+    <string name="train_see_results">Xem kết quả</string>
 </resources>

@@ -225,7 +225,7 @@
     <string name="train_epoch">Round %1$d</string>
     <string name="train_saving">Saving the model…</string>
     <string name="train_stop">Stop</string>
-    <string name="train_curve_legend">Blue: learning photos · Orange: checking photos</string>
+    <string name="train_curve_legend">Blue: error on the photos it learns from. Orange: error on the checking photos, set aside. Training stops once the orange line stops falling; the dashed line marks the round that was kept.</string>
     <string name="train_ready">%1$s is ready</string>
     <string name="train_right_on_unseen">right on photos it hadn’t seen (%1$d)</string>
     <string name="train_right_on_checking">right on its checking photos (%1$d): add more photos to set some aside for testing</string>
@@ -269,4 +269,11 @@
     <string name="train_error_open">Couldn’t open this model.</string>
     <string name="train_ok">OK</string>
     <string name="train_open">Open</string>
+    <string name="train_use_camera">Use the camera</string>
+    <string name="train_chart_rounds">Round</string>
+    <string name="train_chart_accuracy">Checking photos right (%)</string>
+    <string name="train_chart_loss">Error (loss)</string>
+    <string name="train_progress_accuracy">Round %1$d · checking photos right: %2$s</string>
+    <string name="train_accuracy_caption">After each round, how many of the checking photos (set aside, not learned from) the model gets right.</string>
+    <string name="train_see_results">See results</string>
 </resources>
