@@ -539,7 +539,7 @@ private fun UseScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, 
     Page(model.name, onBack = { onAction(TrainingAction.Back) }) {
         val camera = platform.camera
         if (camera != null && viewModel != null) {
-            camera({ image, _ -> viewModel.classify(image) }, Modifier.fillMaxWidth().aspectRatio(3f / 4f).clip(RoundedCornerShape(12.dp)))
+            camera({ image, _ -> viewModel.classify(image) }, Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp)))
         } else {
             Text(stringResource(Res.string.train_use_hint), style = MaterialTheme.typography.bodyMedium)
         }
