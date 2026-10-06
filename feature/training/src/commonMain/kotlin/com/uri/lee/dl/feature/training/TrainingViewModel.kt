@@ -294,8 +294,9 @@ class TrainingViewModel(
         val id = "i" + Random.nextLong(1, Long.MAX_VALUE).toString(36)
         val model = UserModel(id, fileName.substringBeforeLast('.'), labels, imported = true, trainedClasses = labels)
         launchWork {
+            setState { copy(work = TrainingWork.Saving) }
             store.saveImported(model, bytes)
-            refresh()
+            setState { copy(models = store.list()) }
         }
     }
 
