@@ -7,16 +7,20 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
-import dev.gitlive.firebase.FirebaseOptions
 import com.uri.lee.dl.core.ml.WebLocalImage
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.notification.UploadNotifier
+import dev.gitlive.firebase.FirebaseOptions
+import kotlin.js.Promise
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
+import org.w3c.fetch.Response
+import org.w3c.files.Blob
 
 /** The web build's settings, from the webApp module. */
 class WebConfig(
@@ -76,6 +80,7 @@ fun startWebApp(config: WebConfig) {
         onOpenStore = {},
         onExit = {},
         onShareApp = { share(config.siteUrl) },
+        trainingBenchmark = if (config.isDebug) ::benchmarkSources else null,
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
@@ -123,6 +128,30 @@ private fun pickPhotos(pick: PhotoPick) {
     // Chrome and Safari report a cancelled chooser
     input.addEventListener("cancel", { pick.onPicked(emptyList()) })
     input.click()
+}
+
+/**
+ * Phase 7 spike on a developer's machine: labelled photos and backbones from the local test-photo
+ * server (`cd test-images && python3 -m http.server 8767`, with CORS; see docs).
+ */
+private suspend fun benchmarkSources(): BenchmarkSources {
+    val base = "http://127.0.0.1:8767"
+    suspend fun fetchBlob(url: String): Blob {
+        val response = window.asDynamic().fetch(url).unsafeCast<Promise<Response>>().await()
+        check(response.ok) { "HTTP ${response.status} for $url" }
+        return response.blob().await()
+    }
+    val credits = window.asDynamic().fetch("$base/training/credits.csv").unsafeCast<Promise<Response>>().await().text().await()
+    val rows = credits.lines().drop(1).filter { it.isNotBlank() }.map { it.split(',') }
+    val species = rows.map { it[1] }.distinct()
+    val photos = rows.map { row -> BenchmarkPhoto(species.indexOf(row[1]), WebLocalImage(fetchBlob("$base/training/${row[0]}"))) }
+    return BenchmarkSources(
+        photos,
+        mapOf(
+            "mobilenet_v3_small" to "$base/backbones/mobilenet_v3_small.tflite",
+            "mobilenet_v3_large" to "$base/backbones/mobilenet_v3_large.tflite",
+        ),
+    )
 }
 
 /** The system share sheet where there is one (phones), otherwise the link goes to the clipboard. */

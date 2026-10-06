@@ -32,7 +32,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             photoUploadUrl: info["HerbLensPhotoUploadUrl"] as? String ?? "",
             labeler: MLKitHerbLabeler(),
             detector: MLKitObjectDetector(),
-            generalLabeler: MLKitGeneralLabeler()
+            generalLabeler: MLKitGeneralLabeler(),
+            embedder: LiteRTEmbedder()
         )
         #if DEBUG
         DebugTools.start()

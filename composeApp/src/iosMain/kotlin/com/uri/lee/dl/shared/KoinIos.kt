@@ -2,6 +2,7 @@ package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.core.ml.NativeEmbedder
 import com.uri.lee.dl.core.ml.NativeGeneralLabeler
 import com.uri.lee.dl.core.ml.NativeHerbLabeler
 import com.uri.lee.dl.core.ml.NativeObjectDetector
@@ -24,6 +25,7 @@ fun startKoinIos(
     labeler: NativeHerbLabeler,
     detector: NativeObjectDetector,
     generalLabeler: NativeGeneralLabeler,
+    embedder: NativeEmbedder,
 ) {
     if (isDebug) DebugLog.start()
     val app = AppInfo(versionName, versionCode, platform = "ios", isDebug = isDebug, photoUploadUrl = photoUploadUrl)
@@ -32,6 +34,7 @@ fun startKoinIos(
             single { labeler }
             single { detector }
             single { generalLabeler }
+            single { embedder }
             single<UploadNotifier> { IosUploadNotifier(get()) }
         })
     }.koin

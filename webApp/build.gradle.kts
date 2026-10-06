@@ -6,9 +6,10 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-// The web app (plan D16): the shared Compose app on Kotlin/JS, published to Cloudflare Pages.
+// The web app (plan D16): the shared Compose app on Kotlin/JS, published to Cloudflare Pages at
+// /app/ under the website (website/README.md).
 //   ./gradlew :webApp:jsBrowserDevelopmentRun     http://localhost:8080
-//   ./gradlew :webApp:jsBrowserDistribution       the site, in build/dist/js/productionExecutable
+//   ./gradlew :webApp:site                        the whole site, in build/site
 
 val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -71,4 +72,15 @@ kotlin {
             }
         }
     }
+}
+
+// The whole site: the home page and legal pages (website/), with the app at /app/
+val site by tasks.registering(Sync::class) {
+    from(rootProject.file("website")) { exclude("README.md") }
+    from(tasks.named("jsBrowserDistribution")) {
+        into("app")
+        // Webpack bundles Skiko into herblens.js and loads its hashed .wasm: these copies are unused
+        exclude("**/*.map", "skiko.wasm", "skiko.mjs", "skikod8.mjs", "js-reexport-symbols.mjs")
+    }
+    into(layout.buildDirectory.dir("site"))
 }

@@ -1,5 +1,6 @@
 package com.uri.lee.dl.core.ml
 
+import platform.Foundation.NSData
 import platform.UIKit.UIImage
 
 /**
@@ -28,6 +29,17 @@ interface NativeGeneralLabeler {
 interface NativeObjectDetector {
     /** ML Kit's built-in object detector: stream mode with tracking for camera frames, single-image mode otherwise. */
     fun detect(image: UIImage, fromCamera: Boolean, completion: (List<NativeObject>?, String?) -> Unit)
+}
+
+/**
+ * LiteRT (TensorFlowLiteSwift) for user-trained models' backbone (plan Phase 7): runs the .tflite
+ * at [modelPath] on [image] (224 × 224 RGB in [0, 1]) and returns the first output as float32 bytes.
+ */
+interface NativeEmbedder {
+    fun embed(image: UIImage, modelPath: String, completion: (NSData?, String?) -> Unit)
+
+    /** Frees the interpreter kept for [modelPath]. */
+    fun release(modelPath: String)
 }
 
 /** A detected object's frame in image pixels; [trackingId] is -1 when there is none. */

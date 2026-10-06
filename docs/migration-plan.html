@@ -549,7 +549,7 @@ service cloud.firestore {
   <ul class="tight">
     <li><b>Backbone:</b> a general-purpose image model with an embedding output (e.g. an EfficientNet or MobileNet feature extractor), published through the same R2 / Remote Config pipeline as the herb model.</li>
     <li><b>What gets saved:</b> a small "model pack": the backbone's checksum, the class names, the trained weights and accuracy figures. It works on every platform and can be exported and shared.</li>
-    <li><b>To confirm in a spike</b> before any feature work: embedding speed and training time on a low-end Android phone, an older iPhone and a laptop browser, and how LiteRT is called from Kotlin on iOS and web.</li>
+    <li><b>Confirmed by the spike</b> (6 Oct): fast enough everywhere: 44 ms a photo on a Redmi Note 12, 10 ms on an iPhone 17 Pro Max, 7 ms in a laptop browser; training in shared Kotlin takes at most 1.6 s for 128 photos. Backbone: MediaPipe's mobilenet_v3_large embedder. LiteRT is called directly on Android, through a Swift bridge on iOS, and through LiteRT.js on the web. Details in <code>docs/user-trained-models.md</code>.</li>
   </ul>
 </section>
 
@@ -692,21 +692,21 @@ service cloud.firestore {
   </div>
 
   <div class="phase" data-phase="6">
-    <div class="phase-h"><div class="phase-no g">6</div><div><h3>Web app</h3><p>Starts only after the spike in §09.</p></div><span class="prog"></span></div>
+    <div class="phase-h"><div class="phase-no">6</div><div><h3>Web app <span class="pill lock">done</span></h3><p>The shared app on Kotlin/JS (D16); released with the other platforms (D15).</p></div><span class="prog"></span></div>
     <ul class="tasks">
       <li><input type="checkbox" id="p6-1" checked><label for="p6-1"><span class="tt">Time-boxed spike</span><span class="td">Results in §09: Firebase, App Check, sign-in, the Worker and Telex typing all work in the browser. A <code>getUserMedia</code> camera frame comes with the identification screen.</span></label></li>
       <li><input type="checkbox" id="p6-2" checked><label for="p6-2"><span class="tt">Choose Option A or B and record it</span><span class="td">Option A, on Kotlin/JS (D16).</span></label></li>
-      <li><input type="checkbox" id="p6-3"><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">The shared app runs in the browser (<code>:webApp</code>, 6 Oct). Every shared module has a JS target; Android and iOS share <code>mobileMain</code> for SQLite, DataStore files and content sync. In the browser: the catalog in memory, favourites, history and settings in <code>localStorage</code> (a small <code>KeyValueStore</code> over DataStore on the phones), the herb model in LiteRT.js, the camera through <code>getUserMedia</code>, Leaflet with OpenStreetMap, Nominatim for place names, Google sign-in in a popup. No object detection in the browser (ML Kit has no web SDK): "Pick a plant" is hidden, and the plant check before sharing uses the herb model. R2 CORS applied (6 Oct). No photo sharing on the web (D19); usage statistics on by default (D18).</span></label></li>
-      <li><input type="checkbox" id="p6-4"><label for="p6-4"><span class="tt">Publish the web app</span><span class="td">Cloudflare Pages, replacing the temporary site; keep the legal pages and the Search Console tag. With the other platforms at release (D15).</span></label></li>
-      <li><input type="checkbox" id="p6-5"><label for="p6-5"><span class="tt">Remove the spike</span><span class="td"><code>spikes/web</code> and <code>:spikes:webCompose</code>, once the web app covers what they checked.</span></label></li>
+      <li><input type="checkbox" id="p6-3" checked><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">The shared app runs in the browser (<code>:webApp</code>, 6 Oct). Every shared module has a JS target; Android and iOS share <code>mobileMain</code> for SQLite, DataStore files and content sync. In the browser: the catalog in memory, favourites, history and settings in <code>localStorage</code> (a small <code>KeyValueStore</code> over DataStore on the phones), the herb model in LiteRT.js, the camera through <code>getUserMedia</code>, Leaflet with OpenStreetMap, Nominatim for place names, Google sign-in in a popup. No object detection in the browser (ML Kit has no web SDK): "Pick a plant" is hidden, and the plant check before sharing uses the herb model. R2 CORS applied (6 Oct). No photo sharing on the web (D19); usage statistics on by default (D18).</span></label></li>
+      <li><input type="checkbox" id="p6-4" checked><label for="p6-4"><span class="tt">Publish the web app</span><span class="td">Ready (6 Oct): <code>./gradlew :webApp:site</code> builds the site: the HTML home page (search engines and Google's sign-in verification read it), the legal pages at the same paths, and the app at <code>/app/</code>. The Release workflow publishes it with the other platforms (D15); it needs the Cloudflare secrets in <code>docs/release.md</code>.</span></label></li>
+      <li><input type="checkbox" id="p6-5" checked><label for="p6-5"><span class="tt">Remove the spike</span><span class="td">Removed (6 Oct).</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> Herb Lens in the browser on Mac, Windows and Linux.</div>
   </div>
 
   <div class="phase" data-phase="7">
-    <div class="phase-h"><div class="phase-no g">7</div><div><h3>User-trained models</h3><p>Starts only after its spike (§08).</p></div><span class="prog"></span></div>
+    <div class="phase-h"><div class="phase-no g">7</div><div><h3>User-trained models</h3><p>Spike done (§08 results in <code>docs/user-trained-models.md</code>).</p></div><span class="prog"></span></div>
     <ul class="tasks">
-      <li><input type="checkbox" id="p7-1"><label for="p7-1"><span class="tt">Spike: LiteRT backbone on Android, iOS and web; training speed</span></label></li>
+      <li><input type="checkbox" id="p7-1" checked><label for="p7-1"><span class="tt">Spike: LiteRT backbone on Android, iOS and web; training speed</span><span class="td">Done (6 Oct), <code>docs/user-trained-models.md</code>. MediaPipe's mobilenet_v3_large embedder: 44 ms a photo on a Redmi Note 12, 10 ms on an iPhone 17 Pro Max, 7 ms in a laptop browser. The final layer trains in shared Kotlin (<code>core:training</code>) in at most 1.6 s for 128 photos. 69–72 % on 8 similar herb species with 16 photos each.</span></label></li>
       <li><input type="checkbox" id="p7-2"><label for="p7-2"><span class="tt">Publish a backbone with an embedding output</span></label></li>
       <li><input type="checkbox" id="p7-3"><label for="p7-3"><span class="tt">Final-layer trainer in shared Kotlin, tested on every platform</span></label></li>
       <li><input type="checkbox" id="p7-4"><label for="p7-4"><span class="tt"><code>feature:training</code>: collect, train, evaluate, save, share</span></label></li>

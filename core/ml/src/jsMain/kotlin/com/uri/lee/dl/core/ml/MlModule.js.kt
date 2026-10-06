@@ -6,6 +6,7 @@ import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.FoundObject
 import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.ml.ImageCropper
+import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.ObjectFinder
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.moderation.PlantCheck
@@ -24,6 +25,7 @@ actual val mlModule: Module = module {
     single<PlantCheck> { NoPlantCheck }
     single<PhotoReader> { WebPhotoReader() }
     single<ImageCompressor> { WebImageCompressor() }
+    single<ImageEmbedderLoader> { LiteRtEmbedderLoader() }
 }
 
 private object NoObjectFinder : ObjectFinder {

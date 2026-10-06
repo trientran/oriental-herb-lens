@@ -404,7 +404,7 @@ private fun ResultRow(herb: RecognizedHerb, onOpenSpecies: (Long) -> Unit) {
     HerbCard(
         title = AnnotatedString(species?.displayName(LocalVietnameseFirst.current) ?: stringResource(Res.string.scan_unknown_species, herb.label)),
         scientificName = species?.scientificName.orEmpty(),
-        supporting = species?.preferredEnglishName,
+        supporting = species?.otherName(LocalVietnameseFirst.current),
         onClick = { species?.let { onOpenSpecies(it.id) } },
         trailing = { ConfidenceChip(herb.confidence) },
     )

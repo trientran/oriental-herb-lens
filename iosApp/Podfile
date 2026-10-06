@@ -18,6 +18,8 @@ target 'iosApp' do
   pod 'GoogleMLKit/ObjectDetection', '8.0.0'
   # The general labeller: checks a photo shows a plant before it's shared
   pod 'GoogleMLKit/ImageLabeling', '8.0.0'
+  # LiteRT for user-trained models' backbone (Phase 7); the herb model stays on ML Kit
+  pod 'TensorFlowLiteSwift', '2.17.0'
 end
 
 # ML Kit ships only device (arm64) and Intel-simulator (x86_64) binaries, so it can't link into an
