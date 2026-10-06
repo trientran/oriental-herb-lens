@@ -17,13 +17,6 @@ import org.w3c.fetch.Response
 import kotlin.js.Promise
 import kotlin.js.json
 
-@JsModule("@litertjs/core")
-@JsNonModule
-private external object LiteRt {
-    fun loadLiteRt(wasmDirectory: String): Promise<dynamic>
-    fun loadAndCompile(model: dynamic, options: dynamic): Promise<dynamic>
-    class Tensor(data: Float32Array, shape: Array<Int>)
-}
 
 /** Where the browser gets the herb model: the published release, or the copy served with the site. */
 fun interface WebModelSource {
@@ -66,15 +59,12 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
             .map { Classification(model.labels[it], scores[it]) }
     }
 
-    /** LiteRT.js returns some results directly and others as promises, depending on the backend. */
-    private suspend fun settled(value: dynamic): dynamic = js("Promise").resolve(value).unsafeCast<Promise<dynamic>>().await()
-
     private suspend fun model(): Model = model ?: mutex.withLock {
         model ?: load().also { model = it }
     }
 
     private suspend fun load(): Model {
-        LiteRt.loadLiteRt(WASM_DIRECTORY).await()
+        loadLiteRtRuntime()
         val url = source.modelUrl()
         val bytes = window.fetch(url).await().also { check(it.ok) { "HTTP ${it.status} for $url" } }
             .unsafeCast<Response>().arrayBuffer().await()
@@ -89,9 +79,6 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
         const val SIZE = 224
         val MEAN = floatArrayOf(123.675f, 116.28f, 103.53f)
         val STD = floatArrayOf(58.395f, 57.12f, 57.375f)
-
-        /** LiteRT.js's WebAssembly runtime, copied next to index.html by the webApp build. */
-        const val WASM_DIRECTORY = "litert/"
     }
 }
 

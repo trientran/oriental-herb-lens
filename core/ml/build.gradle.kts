@@ -17,6 +17,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.mlkit.image.labeling.custom)
+            // User-trained models' backbone (Phase 7); the herb model stays on ML Kit
+            implementation(libs.litert)
             implementation(libs.mlkit.objectdetection)
             implementation(libs.mlkit.image.labeling.play)
             implementation(libs.kermit)

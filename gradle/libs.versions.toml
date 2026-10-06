@@ -14,6 +14,7 @@ firebase-bom = "34.18.0"
 firebase-appcheck-debug = "19.0.0"
 mapbox = "11.14.0"
 mlkit-image-labeling-custom = "17.0.3"
+litert = "1.4.2"
 mlkit-object-detection = "17.0.2"
 play-services-location = "21.3.0"
 serialization = "1.11.0"
@@ -58,6 +59,7 @@ play-services-location = { module = "com.google.android.gms:play-services-locati
 
 mlkit-image-labeling-custom = { module = "com.google.mlkit:image-labeling-custom", version.ref = "mlkit-image-labeling-custom" }
 mlkit-objectdetection = { module = "com.google.mlkit:object-detection", version.ref = "mlkit-object-detection" }
+litert = { module = "com.google.ai.edge.litert:litert", version.ref = "litert" }
 # The general labeller through Google Play services: its model is downloaded by Play, not in the APK
 mlkit-image-labeling-play = { module = "com.google.android.gms:play-services-mlkit-image-labeling", version = "16.0.8" }
 
