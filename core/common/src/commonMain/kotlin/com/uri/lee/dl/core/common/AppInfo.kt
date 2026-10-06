@@ -4,7 +4,7 @@ package com.uri.lee.dl.core.common
 data class AppInfo(
     val versionName: String,
     val versionCode: Long,
-    /** "android" or "ios": names platform-specific Remote Config keys and the user agent. */
+    /** "android", "ios" or "web": names platform-specific Remote Config keys and the user agent. */
     val platform: String,
     val isDebug: Boolean,
     /** The photo-upload Worker (workers/photo-upload); empty when the build has none. */

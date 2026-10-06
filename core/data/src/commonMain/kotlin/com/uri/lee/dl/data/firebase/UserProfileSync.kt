@@ -1,9 +1,7 @@
 package com.uri.lee.dl.data.firebase
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
+import com.uri.lee.dl.core.datastore.KeyValueStore
+import com.uri.lee.dl.core.datastore.booleanKey
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.firebase.AuthClient
 import com.uri.lee.dl.core.firebase.FirestoreClient
@@ -18,10 +16,10 @@ import kotlinx.coroutines.flow.first
 internal class UserProfileSync(
     private val auth: AuthClient,
     private val firestore: FirestoreClient,
-    private val prefs: DataStore<Preferences>,
+    private val prefs: KeyValueStore,
 ) {
     suspend fun saveIfNeeded(uid: String) {
-        val done = booleanPreferencesKey("profile_saved_$uid")
+        val done = booleanKey("profile_saved_$uid")
         if (prefs.data.first()[done] == true) return
         try {
             firestore.saveUserProfile(uid, auth.displayName, auth.email)

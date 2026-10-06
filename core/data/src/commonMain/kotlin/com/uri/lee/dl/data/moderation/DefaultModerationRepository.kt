@@ -1,9 +1,7 @@
 package com.uri.lee.dl.data.moderation
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.uri.lee.dl.core.datastore.KeyValueStore
+import com.uri.lee.dl.core.datastore.stringSetKey
 import com.uri.lee.dl.core.firebase.AuthClient
 import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.domain.moderation.HiddenContent
@@ -12,11 +10,11 @@ import com.uri.lee.dl.domain.moderation.ReportReason
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/** Reports go to Firestore (`photoReports`) for the administrator; hidden photos and contributors stay in DataStore. */
+/** Reports go to Firestore (`photoReports`) for the administrator; hidden photos and contributors stay on the device. */
 internal class DefaultModerationRepository(
     private val firestore: FirestoreClient,
     private val auth: AuthClient,
-    private val prefs: DataStore<Preferences>,
+    private val prefs: KeyValueStore,
 ) : ModerationRepository {
 
     override fun observeHidden(): Flow<HiddenContent> = prefs.data.map {
@@ -34,7 +32,7 @@ internal class DefaultModerationRepository(
     }
 
     private companion object {
-        val HIDDEN_PHOTOS = stringSetPreferencesKey("hidden_photo_urls")
-        val HIDDEN_CONTRIBUTORS = stringSetPreferencesKey("hidden_contributors")
+        val HIDDEN_PHOTOS = stringSetKey("hidden_photo_urls")
+        val HIDDEN_CONTRIBUTORS = stringSetKey("hidden_contributors")
     }
 }

@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
-// The shared app: App() with navigation, and the Koin graph for Android and iOS.
+// The shared app: App() with navigation, and the Koin graph for Android, iOS and the web.
 kotlin {
     // The iOS app links this as a static framework; Swift sees the exported modules' types
     // (the ML Kit bridge interfaces in core:ml) under their own names.
@@ -22,7 +22,6 @@ kotlin {
             api(projects.core.domain)
             api(projects.core.designsystem)
             implementation(projects.core.data)
-            implementation(projects.core.database)
             implementation(projects.core.datastore)
             implementation(projects.core.network)
             implementation(projects.core.firebase)
@@ -48,6 +47,13 @@ kotlin {
             implementation(libs.compose.material3.adaptive.navigation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kermit)
+        }
+        getByName("mobileMain").dependencies {
+            implementation(projects.core.database)
+        }
+        // The web entry starts Firebase itself (and App Check, which GitLive doesn't wrap)
+        jsMain.dependencies {
+            implementation(libs.gitlive.firebase.auth)
         }
         commonTest.dependencies {
             implementation(projects.core.testing)

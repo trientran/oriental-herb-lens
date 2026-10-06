@@ -3,7 +3,6 @@ plugins {
 }
 
 kotlin {
-    js { nodejs() }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { nodejs() }
 

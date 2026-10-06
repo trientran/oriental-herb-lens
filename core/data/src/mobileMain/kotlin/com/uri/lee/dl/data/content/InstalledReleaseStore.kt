@@ -1,15 +1,13 @@
 package com.uri.lee.dl.data.content
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import com.uri.lee.dl.core.datastore.KeyValueStore
+import com.uri.lee.dl.core.datastore.stringKey
 import com.uri.lee.dl.domain.model.ContentKind
 import com.uri.lee.dl.domain.model.ContentRelease
 import kotlinx.coroutines.flow.first
 
-/** Records which release of each kind is installed, in its own DataStore file ("content"). */
-internal class InstalledReleaseStore(private val dataStore: DataStore<Preferences>) {
+/** Records which release of each kind is installed, in its own preference file ("content"). */
+internal class InstalledReleaseStore(private val dataStore: KeyValueStore) {
 
     suspend fun get(kind: ContentKind): ContentRelease? {
         val prefs = dataStore.data.first()
@@ -29,6 +27,6 @@ internal class InstalledReleaseStore(private val dataStore: DataStore<Preference
         }
     }
 
-    private fun urlKey(kind: ContentKind) = stringPreferencesKey("installed_${kind.name.lowercase()}_url")
-    private fun sha256Key(kind: ContentKind) = stringPreferencesKey("installed_${kind.name.lowercase()}_sha256")
+    private fun urlKey(kind: ContentKind) = stringKey("installed_${kind.name.lowercase()}_url")
+    private fun sha256Key(kind: ContentKind) = stringKey("installed_${kind.name.lowercase()}_sha256")
 }

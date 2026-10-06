@@ -16,7 +16,11 @@ import org.koin.dsl.module
  * client user agents with 403, and GBIF asks API users to identify their app.
  */
 fun herbLensHttpClient(engine: HttpClientEngine, app: AppInfo): HttpClient = HttpClient(engine) {
-    install(UserAgent) { agent = "HerbLens/${app.versionName} (${userAgentPlatform(app.platform)})" }
+    // Browsers send their own user agent, and setting one would make every cross-origin request
+    // (GBIF, R2) need a CORS preflight
+    if (app.platform != "web") {
+        install(UserAgent) { agent = "HerbLens/${app.versionName} (${userAgentPlatform(app.platform)})" }
+    }
     install(HttpTimeout) {
         connectTimeoutMillis = 15_000
         socketTimeoutMillis = 60_000

@@ -9,11 +9,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * A shared module: Android plus iOS (device and Apple-silicon simulator). The namespace comes
- * from the module path, so `:core:domain` is `com.uri.lee.dl.core.domain`. Modules that must also
- * build for the web add `js` and `wasmJs` targets themselves.
+ * A shared module: Android, iOS (device and Apple-silicon simulator) and the web (Kotlin/JS, plan
+ * D16). The namespace comes from the module path, so `:core:domain` is `com.uri.lee.dl.core.domain`.
+ *
+ * Code for Android and iOS but not the browser (SQLite, DataStore files, ML Kit) goes in
+ * `mobileMain`. Pure modules also build for Wasm, to keep them free of JS-only APIs.
  */
 class KmpLibraryConventionPlugin : Plugin<Project> {
+    /** The SQLite catalog: the web keeps the catalog in memory instead. */
+    private val mobileOnly = setOf(":core:database")
+
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("org.jetbrains.kotlin.multiplatform")
         pluginManager.apply("com.android.kotlin.multiplatform.library")
@@ -30,6 +35,21 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
             iosArm64()
             iosSimulatorArm64()
+            if (path !in mobileOnly) {
+                // Tests run on Node; the browser is for the app
+                js {
+                    browser { testTask { enabled = false } }
+                    nodejs()
+                }
+            }
+            applyDefaultHierarchyTemplate {
+                common {
+                    group("mobile") {
+                        withCompilations { it.target.name == "android" }
+                        group("ios") { withIos() }
+                    }
+                }
+            }
 
             compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
             sourceSets.getByName("commonTest").dependencies {

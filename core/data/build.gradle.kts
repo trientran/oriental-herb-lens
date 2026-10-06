@@ -10,7 +10,6 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.common)
             implementation(projects.core.domain)
-            implementation(projects.core.database)
             implementation(projects.core.datastore)
             implementation(projects.core.network)
             implementation(projects.core.firebase)
@@ -19,6 +18,9 @@ kotlin {
             implementation(libs.kermit)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
+        }
+        getByName("mobileMain").dependencies {
+            implementation(projects.core.database)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)

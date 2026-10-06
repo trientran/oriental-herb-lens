@@ -1,15 +1,11 @@
 package com.uri.lee.dl.core.datastore
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import okio.Path
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 /**
- * The app's DataStore files. File names are persisted: renaming one loses what users saved in it.
+ * The app's preference files. File names are persisted: renaming one loses what users saved in it.
  * Inject one with `get(named(PreferenceStore.SETTINGS))`.
  */
 enum class PreferenceStore(val fileName: String) {
@@ -20,14 +16,11 @@ enum class PreferenceStore(val fileName: String) {
     CONTENT("content"),
 }
 
-/** Provides one [DataStore] of [Preferences] per [PreferenceStore], in the platform's app storage. */
+/** Provides one [KeyValueStore] per [PreferenceStore], in the platform's app storage. */
 val dataStoreModule: Module = module {
     PreferenceStore.entries.forEach { store ->
-        single<DataStore<Preferences>>(named(store)) {
-            PreferenceDataStoreFactory.createWithPath { dataStoreDirectory() / "${store.fileName}.preferences_pb" }
-        }
+        single<KeyValueStore>(named(store)) { createKeyValueStore(store) }
     }
 }
 
-/** Same folder Android's `preferencesDataStore` delegate uses, so files written by older versions are found. */
-internal expect fun org.koin.core.scope.Scope.dataStoreDirectory(): Path
+internal expect fun org.koin.core.scope.Scope.createKeyValueStore(store: PreferenceStore): KeyValueStore

@@ -6,7 +6,6 @@ import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.common.Clock
 import com.uri.lee.dl.core.common.text.PlatformTextNormalizer
 import com.uri.lee.dl.core.common.text.TextNormalizer
-import com.uri.lee.dl.core.database.databaseModule
 import com.uri.lee.dl.core.datastore.dataStoreModule
 import com.uri.lee.dl.core.firebase.firebaseModule
 import com.uri.lee.dl.core.location.locationModule
@@ -56,7 +55,7 @@ private val domainModule = module {
 fun sharedModules(app: AppInfo): List<Module> = listOf(
     module { single { app } },
     coreModule,
-    databaseModule,
+    platformStorageModule,
     dataStoreModule,
     networkModule,
     firebaseModule,
@@ -74,6 +73,9 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     scanModule,
     module { single { AddressLine { get<AddressLookup>().addressLine(it.latitude, it.longitude) } } },
 )
+
+/** The SQLite database on Android and iOS; nothing in the browser, which keeps the catalog in memory. */
+internal expect val platformStorageModule: Module
 
 /** Launch-time background work; call once after Koin starts. */
 fun Koin.runStartupTasks() = get<StartupTasks>().launchIn(get<ApplicationScope>())

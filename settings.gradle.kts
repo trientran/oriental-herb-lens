@@ -54,6 +54,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(":androidApp")
 include(":composeApp")
+include(":webApp")
 include(":core:common")
 include(":core:domain")
 include(":core:data")
