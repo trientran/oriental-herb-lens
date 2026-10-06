@@ -1,5 +1,6 @@
 package com.uri.lee.dl.shared
 
+import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.ml.IosPickedImage
 import com.uri.lee.dl.domain.media.LocalImage
@@ -7,9 +8,15 @@ import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.feature.auth.AppleCredential
 import com.uri.lee.dl.feature.auth.GoogleCredential
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import org.koin.mp.KoinPlatform
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
@@ -17,11 +24,17 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.Foundation.NSBundle
+import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSString
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
+import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUUID
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.stringWithContentsOfFile
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCompatible
 import platform.PhotosUI.PHPickerFilter
@@ -42,8 +55,6 @@ import platform.darwin.dispatch_group_create
 import platform.darwin.dispatch_group_enter
 import platform.darwin.dispatch_group_leave
 import platform.darwin.dispatch_group_notify
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /** iOS's side of [PlatformActions]: PHPicker, CoreLocation, the share sheet and the Swift sign-in bridges. */
 internal class IosPlatform(
@@ -55,7 +66,25 @@ internal class IosPlatform(
     private var picker: PickerDelegate? = null
     private var location: LocationDelegate? = null
 
+    /**
+     * Phase 7 spike (debug builds): photos and backbones copied into the app's Documents folder
+     * (training/, backbones/) with devicectl (see docs/user-trained-models.md).
+     */
+    @OptIn(ExperimentalForeignApi::class)
+    private suspend fun benchmarkSources(): BenchmarkSources = withContext(Dispatchers.IO) {
+        val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).first() as String
+        val csv = NSString.stringWithContentsOfFile("$documents/training/credits.csv", NSUTF8StringEncoding, null)
+            ?: error("No training/credits.csv in Documents")
+        val rows = csv.lines().drop(1).filter { it.isNotBlank() }.map { it.split(',') }
+        val species = rows.map { it[1] }.distinct()
+        BenchmarkSources(
+            photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), IosPickedImage("$documents/training/${it[0]}")) },
+            backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { "$documents/backbones/$it.tflite" },
+        )
+    }
+
     fun actions() = PlatformActions(
+        trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
         pickPhotos = ::pickPhotos,
         requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->

@@ -1,4 +1,5 @@
 import ComposeApp
+import TensorFlowLite
 import UIKit
 #if !targetEnvironment(simulator)
 import MLKitCommon
@@ -133,3 +134,65 @@ final class MLKitGeneralLabeler: NSObject, NativeGeneralLabeler {
     }
 }
 #endif
+
+/**
+ * User-trained models' backbone (plan Phase 7) through LiteRT (TensorFlowLiteSwift): 224 × 224
+ * RGB in [0, 1], as the MediaPipe image embedders expect; returns the first output's float32
+ * bytes. One interpreter per model, kept until released; runs off the main thread.
+ */
+final class LiteRTEmbedder: NSObject, NativeEmbedder {
+    private let queue = DispatchQueue(label: "litert.embedder")
+    private var interpreters: [String: Interpreter] = [:]
+    private static let size = 224
+
+    func embed(image: UIImage, modelPath: String, completion: @escaping (Data?, String?) -> Void) {
+        queue.async {
+            do {
+                let interpreter = try self.interpreter(modelPath)
+                guard let input = Self.pixels(image) else { return completion(nil, "Image unreadable") }
+                try interpreter.copy(input, toInputAt: 0)
+                try interpreter.invoke()
+                completion(try interpreter.output(at: 0).data, nil)
+            } catch {
+                completion(nil, error.localizedDescription)
+            }
+        }
+    }
+
+    func release(modelPath: String) {
+        queue.async { self.interpreters[modelPath] = nil }
+    }
+
+    private func interpreter(_ path: String) throws -> Interpreter {
+        if let cached = interpreters[path] { return cached }
+        var options = Interpreter.Options()
+        options.threadCount = 4
+        let interpreter = try Interpreter(modelPath: path, options: options)
+        try interpreter.allocateTensors()
+        interpreters[path] = interpreter
+        return interpreter
+    }
+
+    /** The image drawn at 224 × 224 (upright), as float32 RGB in [0, 1]. */
+    private static func pixels(_ image: UIImage) -> Data? {
+        let side = size
+        var rgba = [UInt8](repeating: 0, count: side * side * 4)
+        guard let context = CGContext(
+            data: &rgba, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side * 4,
+            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else { return nil }
+        UIGraphicsPushContext(context)
+        // UIKit draws upside down in a bare CGContext: flip it, then draw honouring the orientation
+        context.translateBy(x: 0, y: CGFloat(side))
+        context.scaleBy(x: 1, y: -1)
+        image.draw(in: CGRect(x: 0, y: 0, width: side, height: side))
+        UIGraphicsPopContext()
+        var floats = [Float](repeating: 0, count: side * side * 3)
+        for i in 0..<(side * side) {
+            floats[i * 3] = Float(rgba[i * 4]) / 255
+            floats[i * 3 + 1] = Float(rgba[i * 4 + 1]) / 255
+            floats[i * 3 + 2] = Float(rgba[i * 4 + 2]) / 255
+        }
+        return floats.withUnsafeBufferPointer { Data(buffer: $0) }
+    }
+}
