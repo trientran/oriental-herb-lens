@@ -296,7 +296,8 @@ class TrainingViewModel(
         launchWork {
             setState { copy(work = TrainingWork.Saving) }
             store.saveImported(model, bytes)
-            setState { copy(models = store.list()) }
+            val models = store.list()
+            setState { copy(models = models) }
         }
     }
 
