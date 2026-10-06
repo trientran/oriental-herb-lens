@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
@@ -196,24 +197,26 @@ private fun StatusDialogs(actions: PlatformActions) {
     val viewModel = koinViewModel<AppViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val noDismiss = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
-    when {
-        state.status.isSuspended -> AlertDialog(
-            onDismissRequest = {},
-            properties = noDismiss,
-            text = { Text(stringResource(Res.string.status_suspended)) },
-            confirmButton = { TextButton(onClick = actions.onExit) { Text(stringResource(Res.string.ok)) } },
-        )
-        state.showUpdate -> {
-            val required = state.status.update == UpdatePolicy.REQUIRED
-            AlertDialog(
-                onDismissRequest = { if (!required) viewModel.onAction(AppAction.DismissUpdate) },
-                properties = if (required) noDismiss else DialogProperties(),
-                text = { Text(stringResource(if (required) Res.string.status_update_required else Res.string.status_update_recommended)) },
-                confirmButton = { TextButton(onClick = actions.onOpenStore) { Text(stringResource(Res.string.status_update)) } },
-                dismissButton = if (required) null else {
-                    { TextButton(onClick = { viewModel.onAction(AppAction.DismissUpdate) }) { Text(stringResource(Res.string.status_later)) } }
-                },
+    DialogLayer {
+        when {
+            state.status.isSuspended -> AlertDialog(
+                onDismissRequest = {},
+                properties = noDismiss,
+                text = { Text(stringResource(Res.string.status_suspended)) },
+                confirmButton = { TextButton(onClick = actions.onExit) { Text(stringResource(Res.string.ok)) } },
             )
+            state.showUpdate -> {
+                val required = state.status.update == UpdatePolicy.REQUIRED
+                AlertDialog(
+                    onDismissRequest = { if (!required) viewModel.onAction(AppAction.DismissUpdate) },
+                    properties = if (required) noDismiss else DialogProperties(),
+                    text = { Text(stringResource(if (required) Res.string.status_update_required else Res.string.status_update_recommended)) },
+                    confirmButton = { TextButton(onClick = actions.onOpenStore) { Text(stringResource(Res.string.status_update)) } },
+                    dismissButton = if (required) null else {
+                        { TextButton(onClick = { viewModel.onAction(AppAction.DismissUpdate) }) { Text(stringResource(Res.string.status_later)) } }
+                    },
+                )
+            }
         }
     }
 }

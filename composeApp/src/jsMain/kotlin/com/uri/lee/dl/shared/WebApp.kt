@@ -16,6 +16,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 
 /** The web build's settings, from the webApp module. */
@@ -85,10 +86,16 @@ fun startWebApp(config: WebConfig) {
     }
 }
 
-/** Links open in a new tab; mailto: links go straight to the mail app, without a blank tab. */
+/** Links open in a new tab; mailto: links go to the mail app (through a link, without a blank tab). */
 private object WebUriHandler : UriHandler {
     override fun openUri(uri: String) {
-        if (uri.startsWith("mailto:")) window.location.href = uri else window.open(uri, "_blank", "noopener")
+        val link = document.createElement("a") as HTMLAnchorElement
+        link.href = uri
+        if (!uri.startsWith("mailto:")) {
+            link.target = "_blank"
+            link.rel = "noopener"
+        }
+        link.click()
     }
 }
 
@@ -132,8 +139,13 @@ private fun currentLocation(onResult: (GeoLocation?) -> Unit) {
         { position: dynamic ->
             report(GeoLocation(latitude = position.coords.latitude as Double, longitude = position.coords.longitude as Double))
         },
-        { _: dynamic -> report(null) },
-        kotlin.js.json("enableHighAccuracy" to true, "timeout" to 15_000),
+        { error: dynamic ->
+            // 1: refused (by the visitor, or by the system for this browser), 2: unavailable, 3: timed out
+            console.warn("Location unavailable: code ${error.code}, ${error.message}")
+            report(null)
+        },
+        // Wi-Fi positioning is enough for a photo's place, and a computer has no GPS to wait for
+        kotlin.js.json("enableHighAccuracy" to false, "timeout" to 20_000, "maximumAge" to 60_000),
     )
 }
 
