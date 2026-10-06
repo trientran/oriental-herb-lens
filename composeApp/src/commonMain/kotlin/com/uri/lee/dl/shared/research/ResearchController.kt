@@ -128,6 +128,7 @@ class ResearchController(
             val meta = SessionMeta(dataset.name, backbones, dataset.classes.map { c -> c to dataset.images.count { it.className == c } }, Clock.System.now().toString())
             files.write(META, meta.encode().encodeToByteArray())
             files.write(PLAN, ResearchFormats.encodePlan(plan).encodeToByteArray())
+            files.write(HEADERS, headerText().encodeToByteArray())
             log("Device: ${platform.device}; app $appVersion")
             log("Dataset ${dataset.name}: ${dataset.images.size} photos, ${dataset.classes.size} classes")
             log("Plan: ${plan.describe()}")
@@ -139,6 +140,9 @@ class ResearchController(
     fun resume() = launchRun {
         val meta = files.read(META)?.decodeToString()?.let(::parseMeta) ?: error("No saved run")
         val plan = ResearchFormats.decodePlan(files.read(PLAN)?.decodeToString() ?: error("No saved plan"))
+        check(files.read(HEADERS)?.decodeToString() == headerText()) {
+            "This run was started by an earlier version of the app, which saved different columns. Save its results so far, then start a new run."
+        }
         _state.update { it.copy(log = files.read(LOG)?.decodeToString()?.lines()?.filter { l -> l.isNotEmpty() }.orEmpty()) }
         log("Resumed on ${platform.device}")
         execute(meta, plan, state.value.dataset?.takeIf { it.classes == meta.classes.map { c -> c.first } })
@@ -287,8 +291,12 @@ class ResearchController(
         _state.update { it.copy(status = "Preparing the results…", error = null) }
         val archive = runCatching {
             withContext(Dispatchers.Default) {
-                val csv = ResearchSession.headers().mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
-                    ("embedding.csv" to EMBEDDING_HEADER + "\r\n" + meta.backbones.map { b -> files.read("$EMBEDDINGS/$b.csv")?.decodeToString().orEmpty() }.joinToString(""))
+                // The headers the run was started with, matching its rows
+                val saved = files.read(HEADERS)?.decodeToString()?.split(HEADER_SEPARATOR)?.filter { it.isNotEmpty() }
+                    ?.associate { it.substringBefore('\n') to it.substringAfter('\n') }
+                val headers = saved ?: ResearchSession.headers()
+                val csv = headers.mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
+                    ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.map { b -> files.read("$EMBEDDINGS/$b.csv")?.decodeToString().orEmpty() }.joinToString(""))
                 val models = meta.backbones.mapNotNull { b -> files.read("$MODELS/$b.json")?.let { b to ModelPack.fromJson(it.decodeToString()).head } }.toMap()
                 val backbones = models.keys.associateWith { platform.readModel(backboneLocation(it)) }
                 ResearchArchive.build(ResearchResults(csv, models, 0), backbones, meta.classes.map { it.first }, readme(meta))
@@ -323,6 +331,11 @@ class ResearchController(
         appendLine("  It carries TFLite metadata and labels.txt inside; labels.txt is also next to it.")
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }
+
+    /** Each table's name and header line, to save with a run. */
+    private fun headerText(): String =
+        (ResearchSession.headers() + ("embedding.csv" to EMBEDDING_HEADER + "\r\n")).entries
+            .joinToString(HEADER_SEPARATOR) { (table, header) -> "$table\n$header" }
 
     private suspend fun doneLines(): List<String> = files.read(DONE)?.decodeToString()?.lines()?.filter { it.isNotBlank() }.orEmpty()
 
@@ -400,6 +413,8 @@ class ResearchController(
         private const val RESULTS = "$WORK/results"
         private const val MODELS = "$WORK/models"
         private const val EMBEDDINGS = "$WORK/embeddings"
+        private const val HEADERS = "$WORK/headers.txt"
+        private const val HEADER_SEPARATOR = "\u0000"
         private const val EMBEDDING_HEADER = "device,platform,app_version,backbone,photos,unreadable,load_ms,first_ms,median_ms,mean_ms,p90_ms,memory_after_bytes"
 
         private var shared: ResearchController? = null

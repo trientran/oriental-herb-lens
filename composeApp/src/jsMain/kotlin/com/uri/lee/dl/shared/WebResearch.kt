@@ -36,6 +36,7 @@ internal fun webResearch(isDebug: Boolean): ResearchPlatform {
                 memoryBytes = (memory?.usedJSHeapSize as? Number)?.toLong(),
                 batteryPercent = battery.percent,
                 charging = battery.charging,
+                foreground = document.asDynamic().visibilityState == "visible",
             )
         },
         files = WebResearchFiles(),

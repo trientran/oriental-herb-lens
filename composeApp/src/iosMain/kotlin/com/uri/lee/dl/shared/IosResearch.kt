@@ -37,6 +37,7 @@ import platform.Foundation.thermalState
 import platform.Foundation.writeToFile
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationState
 import platform.UIKit.UIDevice
 import platform.UIKit.UIDeviceBatteryState
 import platform.UIKit.UIDocumentPickerDelegateProtocol
@@ -179,6 +180,7 @@ private class FolderPickerDelegate(private val onResult: (NSURL?) -> Unit) : NSO
 private class IosResourceMonitor : ResourceMonitor {
     private var batteryPercent: Int? = null
     private var charging: Boolean? = null
+    private var foreground: Boolean? = null
 
     init {
         dispatch_async(dispatch_get_main_queue()) {
@@ -188,6 +190,7 @@ private class IosResourceMonitor : ResourceMonitor {
     }
 
     private fun readBattery() {
+        foreground = UIApplication.sharedApplication.applicationState == UIApplicationState.UIApplicationStateActive
         val device = UIDevice.currentDevice
         batteryPercent = device.batteryLevel.takeIf { it >= 0f }?.let { (it * 100).toInt() }
         charging = when (device.batteryState) {
@@ -204,6 +207,7 @@ private class IosResourceMonitor : ResourceMonitor {
             cpuMillis = cpuMillis(),
             batteryPercent = batteryPercent,
             charging = charging,
+            foreground = foreground,
             thermal = when (NSProcessInfo.processInfo.thermalState) {
                 NSProcessInfoThermalState.NSProcessInfoThermalStateNominal -> "nominal"
                 NSProcessInfoThermalState.NSProcessInfoThermalStateFair -> "fair"

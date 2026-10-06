@@ -26,7 +26,7 @@ class StudyCsv(private val context: RunContext) {
             "step", "classes_seen", "train_examples", "stored_vectors", "epochs", "best_epoch", "train_ms",
             "train_accuracy", "validation_accuracy", "validation_loss",
             "test_examples", "accuracy", "top3_accuracy", "balanced_accuracy", "macro_f1", "cohens_kappa", "log_loss", "ece",
-            "memory_before_bytes", "memory_after_bytes", "cpu_ms", "charge_used_uah", "battery_percent", "charging", "thermal_before", "thermal_after",
+            "memory_before_bytes", "memory_after_bytes", "cpu_ms", "charge_used_uah", "battery_percent", "charging", "thermal_before", "thermal_after", "foreground_before", "foreground_after",
         ),
     )
     private val perClass = Table(RUN_KEYS + listOf("step", "class", "precision", "recall", "f1", "support"))
@@ -58,6 +58,7 @@ class StudyCsv(private val context: RunContext) {
                 // The charge counter falls as the battery drains
                 difference(step.after.chargeMicroAmpHours, step.before.chargeMicroAmpHours),
                 step.after.batteryPercent, step.after.charging, step.before.thermal, step.after.thermal,
+                step.before.foreground, step.after.foreground,
             )
             e.perClass.forEachIndexed { c, s -> perClass += keys + listOf(step.step, name(c), s.precision, s.recall, s.f1, s.support) }
             for (actual in 0 until e.classes) for (predicted in 0 until e.classes) {

@@ -1,5 +1,6 @@
 package com.uri.lee.dl
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -163,6 +164,9 @@ private class AndroidResourceMonitor(private val context: Context) : ResourceMon
             batteryPercent = battery?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)?.takeIf { it in 0..100 },
             charging = plugged != 0,
             thermal = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) thermalName(power?.currentThermalStatus) else null,
+            foreground = power?.isInteractive == true &&
+                ActivityManager.RunningAppProcessInfo().also(ActivityManager::getMyMemoryState).importance <=
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND,
         )
     }
 

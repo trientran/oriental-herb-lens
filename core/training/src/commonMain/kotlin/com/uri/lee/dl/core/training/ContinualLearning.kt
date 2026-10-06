@@ -124,6 +124,11 @@ data class ResourceSample(
     val charging: Boolean? = null,
     /** The platform's thermal state, e.g. "none", "light", "severe". */
     val thermal: String? = null,
+    /**
+     * Whether the app was on screen (visible, screen on). Phones slow down work in the background,
+     * so timings are only comparable between steps run in the foreground.
+     */
+    val foreground: Boolean? = null,
 )
 
 fun interface ResourceMonitor {
