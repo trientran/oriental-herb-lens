@@ -17,6 +17,7 @@ import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.Region
+import com.uri.lee.dl.domain.model.Citation
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.PhotoCredit
 import com.uri.lee.dl.domain.model.PhotoSource
@@ -111,6 +112,16 @@ class ScreenshotTest {
 
     @Test fun profileSignedIn() = light("profile_signed_in") {
         ProfileScreen(ProfileState(isSignedIn = true, scanSettings = ScanSettings(), versionName = "1.1"), {}, ProfileActions(onSignIn = {}, onDeleteAccount = {}))
+    }
+
+    // Tall enough to reach the citations at the bottom
+    @Config(qualifiers = "w411dp-h1500dp-xxhdpi")
+    @Test fun profileCite() = light("profile_cite") {
+        val citations = listOf(
+            Citation("Tran, T. (2027). Training on the edge: On-device continual learning for invasive plant classification in North American context. Journal name, 1(1), 1–20.", "https://doi.org/10.0000/example"),
+            Citation("Tran, T. (2026). Med Herb Lens (Version 1.1) [Mobile app]. https://med-herb-lens.pages.dev"),
+        )
+        ProfileScreen(ProfileState(isSignedIn = true, scanSettings = ScanSettings(), versionName = "1.1", citations = citations), {}, ProfileActions(onSignIn = {}))
     }
 
     @Test fun deleteAccount() = light("delete_account") {

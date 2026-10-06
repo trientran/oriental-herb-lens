@@ -1,10 +1,12 @@
 package com.uri.lee.dl.testing.fakes
 
+import com.uri.lee.dl.domain.model.Citation
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.HiddenContent
 import com.uri.lee.dl.domain.moderation.ModerationRepository
 import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.CitationRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.PhotoRepository
 import com.uri.lee.dl.domain.repository.SignInProvider
@@ -112,4 +114,9 @@ class FakeModerationRepository : ModerationRepository {
     override suspend fun hideContributor(uploaderId: String) {
         hidden.value = hidden.value.copy(contributors = hidden.value.contributors + uploaderId)
     }
+}
+
+class FakeCitationRepository(var published: List<Citation> = emptyList()) : CitationRepository {
+    var fail = false
+    override suspend fun citations(): List<Citation> = if (fail) error("fetch failed") else published
 }

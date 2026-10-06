@@ -32,6 +32,9 @@ import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
 import com.uri.lee.dl.feature.profile.profileModule
 import com.uri.lee.dl.feature.saved.savedModule
 import com.uri.lee.dl.feature.scan.scanModule
+import com.uri.lee.dl.feature.training.trainingModule
+import com.uri.lee.dl.domain.training.Backbones
+import com.uri.lee.dl.shared.training.DefaultBackbones
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -77,7 +80,10 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     authModule,
     contributeModule,
     scanModule,
+    trainingModule,
     module { single { AddressLine { get<AddressLookup>().addressLine(it.latitude, it.longitude) } } },
+    // User-trained models: each platform binds AppFiles, and LocalBackbones on developers' builds
+    module { single<Backbones> { DefaultBackbones(get(), get(), getOrNull()) } },
 )
 
 /** The SQLite database on Android and iOS; nothing in the browser, which keeps the catalog in memory. */

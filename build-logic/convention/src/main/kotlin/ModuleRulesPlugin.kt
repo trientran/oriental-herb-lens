@@ -29,6 +29,8 @@ class ModuleRulesPlugin : Plugin<Project> {
         path == ":core:data" -> setOf(":core:common", ":core:domain", ":core:ml") + sources
         // The camera hands frames straight to ML Kit, so scanning may use core:ml on Android and iOS
         path == ":feature:scan" -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps", ":core:ml")
+        // Training on the device: the pure-Kotlin trainer
+        path == ":feature:training" -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps", ":core:training")
         path.startsWith(":feature:") -> setOf(":core:common", ":core:domain", ":core:designsystem", ":core:maps")
         else -> null
     }

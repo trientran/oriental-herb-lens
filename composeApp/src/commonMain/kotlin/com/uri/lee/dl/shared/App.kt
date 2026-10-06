@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -42,6 +43,7 @@ import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
 import com.uri.lee.dl.core.designsystem.resources.nav_profile
 import com.uri.lee.dl.core.designsystem.resources.nav_saved
+import com.uri.lee.dl.core.designsystem.resources.nav_train
 import com.uri.lee.dl.core.designsystem.resources.ok
 import com.uri.lee.dl.core.designsystem.resources.status_later
 import com.uri.lee.dl.core.designsystem.resources.status_suspended
@@ -50,8 +52,11 @@ import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
+import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.model.UpdatePolicy
+import com.uri.lee.dl.domain.training.Backbones
 import com.uri.lee.dl.feature.auth.DeleteAccountRoute
 import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
@@ -61,17 +66,24 @@ import com.uri.lee.dl.feature.herbdetails.HerbDetailsRoute
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileRoute
 import com.uri.lee.dl.feature.saved.SavedRoute
+import com.uri.lee.dl.feature.scan.CameraPreview
 import com.uri.lee.dl.feature.scan.ScanRoute
+import com.uri.lee.dl.feature.training.TrainingPlatform
+import com.uri.lee.dl.feature.training.TrainingRoute
+import com.uri.lee.dl.shared.research.ResearchController
+import com.uri.lee.dl.shared.research.ResearchDialog
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Serializable data object IdentifyDestination
 @Serializable data class BrowseDestination(val openHerbId: Long? = null)
 @Serializable data object SavedDestination
+@Serializable data object TrainDestination
 @Serializable data object ProfileDestination
 @Serializable data object SignInDestination
 @Serializable data object DeleteAccountDestination
@@ -82,6 +94,7 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
     IDENTIFY(IdentifyDestination, IdentifyDestination::class, Icons.Filled.CameraAlt, Res.string.nav_identify),
     BROWSE(BrowseDestination(), BrowseDestination::class, Icons.Filled.Search, Res.string.nav_browse),
     SAVED(SavedDestination, SavedDestination::class, Icons.Filled.Bookmarks, Res.string.nav_saved),
+    TRAIN(TrainDestination, TrainDestination::class, Icons.Filled.Psychology, Res.string.nav_train),
     PROFILE(ProfileDestination, ProfileDestination::class, Icons.Filled.Person, Res.string.nav_profile),
 }
 
@@ -102,8 +115,10 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
 @Composable
 private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val navController = rememberNavController()
-    val isDebug = koinInject<AppInfo>().isDebug
+    val appInfo = koinInject<AppInfo>()
+    val isDebug = appInfo.isDebug
     var showBenchmark by remember { mutableStateOf(false) }
+    var showResearch by remember { mutableStateOf(false) }
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
     }
@@ -156,6 +171,20 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                     SavedRoute(onOpenSpecies = open, selectedId = selected, modifier = Modifier.statusBarsPadding())
                 }
             }
+            composable<TrainDestination> {
+                val files = actions.files
+                TrainingRoute(
+                    TrainingPlatform(
+                        pickPhotos = actions.pickPhotos,
+                        pickDatasetFolder = files?.pickDatasetFolder,
+                        pickDatasetZip = files?.pickDatasetZip,
+                        pickModelFile = files?.pickModelFile,
+                        saveFile = files?.saveFile ?: { _, _ -> },
+                        camera = { onFrame, modifier -> CameraPreview(onFrame, modifier) },
+                    ),
+                    modifier = Modifier.statusBarsPadding(),
+                )
+            }
             composable<ProfileDestination> {
                 ProfileRoute(
                     ProfileActions(
@@ -165,6 +194,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         debugTools = listOfNotNull(
                             actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
+                            actions.research?.let { "Research mode" to { showResearch = true } },
                         ),
                     ),
                     modifier = Modifier.statusBarsPadding(),
@@ -194,8 +224,17 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     StatusDialogs(actions)
     val benchmarkSources = actions.trainingBenchmark
     if (showBenchmark && benchmarkSources != null) {
-        val benchmark = TrainingBenchmark(koinInject(), koinInject())
+        val benchmark = TrainingBenchmark(koinInject(), koinInject(), getKoin().getOrNull())
         TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
+    }
+    val research = actions.research
+    if (showResearch && research != null) {
+        val reader = koinInject<PhotoReader>()
+        val embedders = koinInject<ImageEmbedderLoader>()
+        val backbones = koinInject<Backbones>()
+        // One for the app: a run carries on when the screen closes
+        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName) }
+        DialogLayer { ResearchDialog(controller) { showResearch = false } }
     }
 }
 

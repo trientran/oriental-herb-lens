@@ -1,5 +1,6 @@
 package com.uri.lee.dl.feature.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,12 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -36,15 +41,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.component.SectionCard
@@ -52,6 +60,11 @@ import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
 import com.uri.lee.dl.core.designsystem.resources.profile_about
 import com.uri.lee.dl.core.designsystem.resources.profile_app
+import com.uri.lee.dl.core.designsystem.resources.profile_cite
+import com.uri.lee.dl.core.designsystem.resources.profile_cite_body
+import com.uri.lee.dl.core.designsystem.resources.profile_cite_copied
+import com.uri.lee.dl.core.designsystem.resources.profile_cite_copy
+import com.uri.lee.dl.core.designsystem.resources.profile_cite_open
 import com.uri.lee.dl.core.designsystem.resources.profile_contact
 import com.uri.lee.dl.core.designsystem.resources.profile_delete_account
 import com.uri.lee.dl.core.designsystem.resources.profile_full_list
@@ -59,16 +72,17 @@ import com.uri.lee.dl.core.designsystem.resources.profile_identification
 import com.uri.lee.dl.core.designsystem.resources.profile_language
 import com.uri.lee.dl.core.designsystem.resources.profile_min_confidence
 import com.uri.lee.dl.core.designsystem.resources.profile_min_confidence_body
+import com.uri.lee.dl.core.designsystem.resources.profile_privacy
 import com.uri.lee.dl.core.designsystem.resources.profile_share
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_out
 import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
-import com.uri.lee.dl.core.designsystem.resources.profile_privacy
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics_body
 import com.uri.lee.dl.core.designsystem.resources.profile_version
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import com.uri.lee.dl.domain.model.Citation
 import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -80,7 +94,7 @@ data class ProfileActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Opens account deletion; null hides it. */
     val onDeleteAccount: (() -> Unit)? = null,
-    /** Debug builds only: developer tools, by name (not translated). */
+    /** Developer and research tools, by name (not translated). */
     val debugTools: List<Pair<String, () -> Unit>> = emptyList(),
 )
 
@@ -119,6 +133,13 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(ABOUT_URL) }
                 LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
                 actions.debugTools.forEach { (name, run) -> LinkRow(Icons.Filled.Build, name, onClick = run) }
+            }
+
+            if (state.citations.isNotEmpty()) {
+                SectionCard(stringResource(Res.string.profile_cite)) {
+                    Text(stringResource(Res.string.profile_cite_body), style = MaterialTheme.typography.bodyMedium)
+                    state.citations.forEach { CitationItem(it) }
+                }
             }
 
             Text(
@@ -197,6 +218,36 @@ private fun UsageStatisticsSetting(enabled: Boolean, onChange: (Boolean) -> Unit
             )
         }
         Switch(checked = enabled, onCheckedChange = null)
+    }
+}
+
+/** The reference is selectable too, for copying part of it. */
+@Suppress("DEPRECATION") // LocalClipboard needs a platform ClipEntry; plain text is all that's copied here
+@Composable
+private fun CitationItem(citation: Citation) {
+    val clipboard = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
+    var copied by remember(citation) { mutableStateOf(false) }
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.small)
+            .padding(start = HerbLensTheme.spacing.md, top = HerbLensTheme.spacing.md, end = HerbLensTheme.spacing.md),
+    ) {
+        SelectionContainer { Text(citation.text, style = MaterialTheme.typography.bodyMedium) }
+        Row(Modifier.align(Alignment.End)) {
+            citation.url?.let { url ->
+                TextButton(onClick = { uriHandler.openUri(url) }) {
+                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Text(stringResource(Res.string.profile_cite_open), Modifier.padding(start = HerbLensTheme.spacing.sm))
+                }
+            }
+            TextButton(onClick = { clipboard.setText(AnnotatedString(citation.text)); copied = true }) {
+                Icon(if (copied) Icons.Filled.Check else Icons.Filled.ContentCopy, contentDescription = null)
+                Text(
+                    stringResource(if (copied) Res.string.profile_cite_copied else Res.string.profile_cite_copy),
+                    Modifier.padding(start = HerbLensTheme.spacing.sm),
+                )
+            }
+        }
     }
 }
 

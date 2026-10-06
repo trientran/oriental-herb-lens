@@ -18,13 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # Launches Gradle; the daemon JVM (JetBrains 25) is provisioned from gradle-daemon-jvm.properties.
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
 
       - name: Provide untracked build inputs
         env:
@@ -65,6 +67,9 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
 
       - uses: actions/cache@v4
         with:
@@ -109,6 +114,9 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
 
       - uses: actions/cache@v4
         with:
