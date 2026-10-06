@@ -149,28 +149,41 @@ differences.
 The hidden layer doesn't help with this little data. The softmax-only head stays the default; the
 hidden layer is a setting and an ablation in the study.
 
-## Research mode (debug builds)
+## Research mode
 
-Profile → **Research mode (Phase 7)** runs the study protocol on the device it's on and saves
-everything in one zip. Nothing is measured or typed by hand.
+**Opening it:** in every build, tap the version number at the bottom of Profile 7 times; a
+**Research mode** row appears under App and stays (debug builds always show it). Not translated:
+it's for researchers.
 
-1. **Backbones** go where the benchmark's do: `Android/data/com.uri.lee.dl/files/backbones/` (adb),
-   `Documents/backbones/` (iOS, devicectl), or the local test-photo server on port 8767 (web).
+1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
+   from Google's public model storage the first time a run uses them, then stay on the device.
+   Copies put in by hand are used instead when present: `Android/data/com.uri.lee.dl/files/backbones/`
+   (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
 2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,
    hidden files and `__MACOSX` are skipped).
    - Android: **Choose folder** (starts in Download) or **Choose zip**.
    - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
    - Web (Chrome): **Choose folder**.
    - Or, for long runs prepared from a computer, copy the dataset folder into the app's own
-     `datasets/` folder (Android: `adb push <folder> /sdcard/Android/data/com.uri.lee.dl/files/datasets/`;
-     iOS: `xcrun devicectl device copy to … --destination Documents/datasets/<name>`); it is then
-     offered on the screen without a picker.
+     `datasets/` folder; it is then offered on the screen without a picker.
+     Android: `adb push <folder> /sdcard/Android/data/com.uri.lee.dl/files/datasets/`.
+     iOS: Finder → the iPhone → Files → drag the folder onto Herb Lens, into `datasets` (or
+     `xcrun devicectl device copy to … --destination Documents/datasets/<name>` for development builds).
 3. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
-   **Start**. The screen stays on; don't switch apps (iOS suspends apps in the background).
-4. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
-   to Files, AirDrop) and also keeps the zip in `Documents/research/` (copy it off with
-   `devicectl … copy from`), the web downloads the zip. iOS writes the run's log to
-   `Documents/debug/app.log` too.
+   **Start**.
+4. **Leaving it running:**
+   - Android: carries on with the screen off or in another app (a foreground service with a
+     progress notification keeps the CPU awake).
+   - iOS 26 and later: carries on with the phone locked or in another app; iOS shows the
+     progress on the lock screen, and can end it if the phone gets busy. Older iOS: keep the app
+     open (the screen stays on by itself).
+   - Web: keep the tab open and in front, and the computer awake.
+5. **If a run stops** (the app is closed or killed, the system ends it, the battery runs out):
+   open Research mode again and tap **Resume**. Every finished run is saved as it goes, with the
+   embeddings, so it carries on where it stopped without the dataset and without repeating rows.
+6. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
+   to Files, AirDrop) and also keeps the zip in the app's `research/` folder (Finder, Files), the
+   web downloads the zip. A stopped run can also be saved as it is (**Save results so far**).
 
 The zip (`herblens-research-<platform>-<time>.zip`) holds:
 
