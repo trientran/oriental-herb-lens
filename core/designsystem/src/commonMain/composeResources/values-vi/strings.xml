@@ -275,4 +275,8 @@
     <string name="train_see_results">Xem kết quả</string>
     <string name="train_folder_empty_hint">Nếu không thấy thư mục nào (một số điện thoại), hãy dùng tệp zip.</string>
     <string name="train_model_imported_trainable">đã nhập · học thêm được</string>
+    <string name="train_rename">Đổi tên</string>
+    <string name="train_more_options">Tùy chọn khác</string>
+    <string name="train_knows_species">Những loài nhận dạng được (%1$d loài)</string>
+    <string name="train_knows_hint">Mô hình chỉ gọi tên được các loài này. Cây không thuộc danh sách vẫn được gán loài gần nhất, nên hãy xem tỉ lệ phần trăm.</string>
 </resources>

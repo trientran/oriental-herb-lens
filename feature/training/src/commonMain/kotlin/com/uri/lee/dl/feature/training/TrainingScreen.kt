@@ -27,11 +27,14 @@ import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderZip
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -198,6 +201,20 @@ private fun ChoiceRow(icon: ImageVector, title: String, supporting: String? = nu
 @Composable
 private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, platform: TrainingPlatform) {
     val scope = rememberCoroutineScope()
+    var renaming by remember { mutableStateOf<UserModel?>(null) }
+    var deleting by remember { mutableStateOf<UserModel?>(null) }
+    renaming?.let { model ->
+        NameDialog(Res.string.train_rename, model.name, onDismiss = { renaming = null }) {
+            onAction(TrainingAction.Rename(model.id, it))
+            renaming = null
+        }
+    }
+    deleting?.let { model ->
+        ConfirmDeleteDialog(model.name, onDismiss = { deleting = null }) {
+            onAction(TrainingAction.DeleteModel(model.id))
+            deleting = null
+        }
+    }
     Page(stringResource(Res.string.train_models_title), onBack = null) {
         val models = state.models
         when {
@@ -214,11 +231,13 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                     model.report != null -> "${percent(model.report.accuracy)} · " + stringResource(Res.string.train_model_trained_here)
                     else -> stringResource(Res.string.train_model_untrained)
                 }
-                ChoiceRow(
-                    if (model.imported) Icons.Filled.Download else Icons.Filled.Eco,
-                    model.name,
-                    stringResource(Res.string.train_model_summary, model.classes.size, status),
-                ) { onAction(TrainingAction.Open(if (model.imported) TrainingScreen.Use(model.id) else TrainingScreen.Edit(model.id))) }
+                ModelRow(
+                    model = model,
+                    supporting = stringResource(Res.string.train_model_summary, model.classes.size, status),
+                    onOpen = { onAction(TrainingAction.Open(if (model.imported) TrainingScreen.Use(model.id) else TrainingScreen.Edit(model.id))) },
+                    onRename = { renaming = model },
+                    onDelete = { deleting = model },
+                )
             }
         }
         Work(state.work)
@@ -234,6 +253,60 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                 Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
             }
         }
+    }
+}
+
+/** A model in the list: opens it, and a menu to rename or delete it. */
+@Composable
+private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, onRename: () -> Unit, onDelete: () -> Unit) {
+    var menu by remember { mutableStateOf(false) }
+    ListItem(
+        headlineContent = { Text(model.name) },
+        supportingContent = { Text(supporting) },
+        leadingContent = { Icon(if (model.imported || model.importedTrainable) Icons.Filled.Download else Icons.Filled.Eco, contentDescription = null) },
+        trailingContent = {
+            Box {
+                IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, contentDescription = stringResource(Res.string.train_more_options)) }
+                // A popup: kept out of the web page's text selection, like dialogs
+                DialogLayer {
+                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(Res.string.train_rename)) }, onClick = { menu = false; onRename() })
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) },
+                            onClick = { menu = false; onDelete() },
+                        )
+                    }
+                }
+            }
+        },
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onOpen),
+    )
+}
+
+@Composable
+private fun NameDialog(title: StringResource, initial: String, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var name by remember { mutableStateOf(initial) }
+    DialogLayer {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(title)) },
+            text = { OutlinedTextField(name, { name = it }, label = { Text(stringResource(Res.string.train_name)) }, singleLine = true) },
+            confirmButton = { TextButton(onClick = { onSave(name) }, enabled = name.isNotBlank()) { Text(stringResource(Res.string.train_save)) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.train_cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun ConfirmDeleteDialog(name: String, onDismiss: () -> Unit, onDelete: () -> Unit) {
+    DialogLayer {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            text = { Text(stringResource(Res.string.train_delete_confirm, name)) },
+            confirmButton = { TextButton(onClick = onDelete) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.train_cancel)) } },
+        )
     }
 }
 
@@ -466,16 +539,7 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         UnderTheHood(report)
         TextButton(onClick = { confirmDelete = true }) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) }
     }
-    if (confirmDelete) {
-        DialogLayer {
-            AlertDialog(
-                onDismissRequest = { confirmDelete = false },
-                text = { Text(stringResource(Res.string.train_delete_confirm, model.name)) },
-                confirmButton = { TextButton(onClick = { confirmDelete = false; onAction(TrainingAction.Delete) }) { Text(stringResource(Res.string.train_delete)) } },
-                dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(Res.string.train_cancel)) } },
-            )
-        }
-    }
+    if (confirmDelete) ConfirmDeleteDialog(model.name, onDismiss = { confirmDelete = false }) { confirmDelete = false; onAction(TrainingAction.Delete) }
 }
 
 /** The learning curve and the confusion matrix, for those who want to see how it learned. */
@@ -593,7 +657,18 @@ private fun UseScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, 
                 }
             }
         }
+        SpeciesList(model.trainedClasses)
     }
+}
+
+/** What a model can name, so whoever has it (from a friend, say) knows what it can and can't identify. */
+@Composable
+private fun SpeciesList(species: List<String>) {
+    var open by remember { mutableStateOf(false) }
+    TextButton(onClick = { open = !open }) { Text(stringResource(Res.string.train_knows_species, species.size)) }
+    if (!open) return
+    Text(stringResource(Res.string.train_knows_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    species.sortedBy { it.lowercase() }.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
 }
 
 private fun percent(value: Float) = "${(value * 100).roundToInt()}%"

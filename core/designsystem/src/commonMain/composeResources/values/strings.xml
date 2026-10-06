@@ -278,4 +278,8 @@
     <string name="train_see_results">See results</string>
     <string name="train_folder_empty_hint">If no folders show up (some phones), use a zip instead.</string>
     <string name="train_model_imported_trainable">imported · can learn more</string>
+    <string name="train_rename">Rename</string>
+    <string name="train_more_options">More options</string>
+    <string name="train_knows_species">What it can identify (%1$d species)</string>
+    <string name="train_knows_hint">It can only name these species. A plant that isn’t one of them still gets the closest match, so check the percentage.</string>
 </resources>

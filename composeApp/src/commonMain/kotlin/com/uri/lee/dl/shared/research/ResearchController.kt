@@ -50,6 +50,8 @@ data class ResearchState(
     val progress: Float? = null,
     val log: List<String> = emptyList(),
     val error: String? = null,
+    /** The saved run's results so far, by backbone and scenario, for the charts. */
+    val summary: List<ResultGroup> = emptyList(),
 )
 
 /**
@@ -86,7 +88,7 @@ class ResearchController(
     suspend fun refresh() {
         val datasets = runCatching { platform.appDatasets() }.getOrElse { emptyList() }.filter { it.classes.size >= 2 }
         val pending = runCatching { pending() }.getOrNull()
-        _state.update { it.copy(backbones = backbones.available.sorted(), appDatasets = datasets, pending = pending) }
+        _state.update { it.copy(backbones = backbones.available.sorted(), appDatasets = datasets, pending = pending, summary = summary()) }
     }
 
     private suspend fun pending(): PendingRun? {
@@ -154,7 +156,7 @@ class ResearchController(
     fun discard() {
         scope.launch {
             files.delete(WORK)
-            _state.update { it.copy(pending = null, log = emptyList(), status = "", progress = null) }
+            _state.update { it.copy(pending = null, log = emptyList(), status = "", progress = null, summary = emptyList()) }
         }
     }
 
@@ -176,7 +178,8 @@ class ResearchController(
                 platform.keepAwake(false)
                 platform.background.stop()
                 val pending = runCatching { pending() }.getOrNull()
-                _state.update { it.copy(running = false, pending = pending) }
+                val summary = runCatching { summary() }.getOrDefault(emptyList())
+                _state.update { it.copy(running = false, pending = pending, summary = summary) }
             }
         }
     }
@@ -217,6 +220,7 @@ class ResearchController(
             val status = "Run $done of ${session.totalJobs}" + (remaining?.let { "; about ${duration(it)} left" } ?: "")
             _state.update { it.copy(status = status, progress = done.toFloat() / session.totalJobs) }
             platform.background.progress(done, session.totalJobs, status)
+            if (done % SUMMARY_EVERY == 0) _state.update { it.copy(summary = summary()) }
             yield() // lets the screen update and Stop through
         }
         files.write(FINISHED, byteArrayOf())
@@ -324,6 +328,14 @@ class ResearchController(
         (ResearchSession.headers() + ("embedding.csv" to EMBEDDING_HEADER + "\r\n")).entries
             .joinToString(HEADER_SEPARATOR) { (table, header) -> "$table\n$header" }
 
+    /** The saved results so far, summarised for the charts. */
+    private suspend fun summary(): List<ResultGroup> {
+        val headers = ResearchSession.headers()
+        val runs = files.read("$RESULTS/runs.csv")?.decodeToString() ?: return emptyList()
+        val steps = files.read("$RESULTS/steps.csv")?.decodeToString().orEmpty()
+        return runCatching { ResearchSummary.of(headers.getValue("runs.csv") + runs, headers.getValue("steps.csv") + steps) }.getOrDefault(emptyList())
+    }
+
     private suspend fun doneLines(): List<String> = files.read(DONE)?.decodeToString()?.lines()?.filter { it.isNotBlank() }.orEmpty()
 
     private suspend fun doneKeys(): Set<String> = doneLines().map { it.substringBefore('\t') }.toSet()
@@ -395,6 +407,7 @@ class ResearchController(
         private const val MODELS = "$WORK/models"
         private const val EMBEDDINGS = "$WORK/embeddings"
         private const val HEADERS = "$WORK/headers.txt"
+        private const val SUMMARY_EVERY = 10
         private const val HEADER_SEPARATOR = "\u0000"
         private const val EMBEDDING_HEADER = "device,platform,app_version,backbone,photos,unreadable,load_ms,first_ms,median_ms,mean_ms,p90_ms,memory_after_bytes"
 

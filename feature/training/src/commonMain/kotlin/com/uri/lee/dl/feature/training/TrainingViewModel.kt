@@ -76,6 +76,8 @@ sealed interface TrainingAction {
     data object StopTraining : TrainingAction
     data class SaveSettings(val settings: TrainingSettings) : TrainingAction
     data object Delete : TrainingAction
+    data class DeleteModel(val id: String) : TrainingAction
+    data class Rename(val id: String, val name: String) : TrainingAction
     data class ImportModel(val fileName: String, val bytes: ByteArray) : TrainingAction
     data class ClassifyPhoto(val photo: LocalImage) : TrainingAction
     data object BackToCamera : TrainingAction
@@ -117,6 +119,12 @@ class TrainingViewModel(
             TrainingAction.StopTraining -> job?.cancel()
             is TrainingAction.SaveSettings -> saveSettings(action.settings)
             TrainingAction.Delete -> delete()
+            is TrainingAction.DeleteModel -> viewModelScope.launch {
+                store.delete(action.id)
+                if (currentState.model?.id == action.id) setState { copy(model = null) }
+                refresh()
+            }
+            is TrainingAction.Rename -> rename(action.id, action.name)
             is TrainingAction.ImportModel -> importModel(action.fileName, action.bytes)
             is TrainingAction.ClassifyPhoto -> viewModelScope.launch {
                 // The camera stops updating the results while a photo is shown
@@ -293,6 +301,18 @@ class TrainingViewModel(
             backStack.clear()
             setState { copy(model = null) }
             show(TrainingScreen.Models)
+        }
+    }
+
+    private fun rename(id: String, name: String) {
+        val clean = name.trim().replace('\n', ' ')
+        if (clean.isEmpty()) return
+        viewModelScope.launch {
+            val model = store.load(id) ?: return@launch
+            val renamed = model.copy(name = clean)
+            store.save(renamed)
+            if (currentState.model?.id == id) setState { copy(model = renamed) }
+            refresh()
         }
     }
 
