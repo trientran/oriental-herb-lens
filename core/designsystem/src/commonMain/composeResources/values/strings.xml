@@ -282,4 +282,5 @@
     <string name="train_more_options">More options</string>
     <string name="train_knows_species">What it can identify (%1$d species)</string>
     <string name="train_knows_hint">It can only name these species. A plant that isn’t one of them still gets the closest match, so check the percentage.</string>
+    <string name="train_use_only">This model can identify, but not learn more here: it wasn’t shared from Herb Lens, or from an older version. Models shared from the latest Herb Lens can be given new species and photos.</string>
 </resources>

@@ -279,4 +279,5 @@
     <string name="train_more_options">Tùy chọn khác</string>
     <string name="train_knows_species">Những loài nhận dạng được (%1$d loài)</string>
     <string name="train_knows_hint">Mô hình chỉ gọi tên được các loài này. Cây không thuộc danh sách vẫn được gán loài gần nhất, nên hãy xem tỉ lệ phần trăm.</string>
+    <string name="train_use_only">Mô hình này nhận dạng được nhưng không học thêm được ở đây: nó không được chia sẻ từ Herb Lens, hoặc từ phiên bản cũ. Mô hình chia sẻ từ Herb Lens mới nhất có thể học thêm loài và ảnh mới.</string>
 </resources>

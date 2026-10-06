@@ -658,6 +658,10 @@ private fun UseScreen(state: TrainingState, onAction: (TrainingAction) -> Unit, 
             }
         }
         SpeciesList(model.trainedClasses)
+        if (model.imported) {
+            // Why there's no training here: the file doesn't carry what's needed to learn more
+            Text(stringResource(Res.string.train_use_only), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 
