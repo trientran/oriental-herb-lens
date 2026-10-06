@@ -79,4 +79,31 @@ class UserModelsTest {
         assertEquals(4, second.head.classes)
         assertTrue(second.report.perClass.all { (_, accuracy) -> accuracy.isNaN() || accuracy >= 0.8f }, "per class ${second.report.perClass}")
     }
+
+    @Test
+    fun aSharedModelGoesOnLearningWhereItIsImported() {
+        val all = photos(4, 40)
+        val source = UserModel("m", "Shared", listOf("a", "b", "c"))
+        val trained = ModelTrainer.train(source, all.filter { it.classIndex < 3 }, previous = null)
+        val packed = SharedModel.pack(source, trained.head, all.filter { it.classIndex < 3 })
+
+        // What the importer gets: the layers and 20 photos' embeddings per species, all for training
+        val replay = SharedModel.renumbered(UserModelStore.decodeExamples(packed.getValue(SharedModel.REPLAY)), source.settings.expert)
+        assertEquals(60, replay.size)
+        assertTrue(replay.all { ModelTrainer.share(it.photo, source.settings.expert) == ModelTrainer.Share.TRAIN })
+
+        // The importer adds a fourth species with photos of their own
+        val next = replay.maxOf { it.photo } + 1
+        val newPhotos = all.filter { it.classIndex == 3 }.mapIndexed { i, e -> StoredExample(3, next + i, true, e.embedding) }
+        val imported = UserModel(
+            "i", "Shared", listOf("a", "b", "c", "d"),
+            trainedThrough = replay.maxOf { it.photo }, trainedClasses = listOf("a", "b", "c"), importedTrainable = true,
+        )
+        val result = ModelTrainer.train(imported, replay + newPhotos, previous = trained.head)
+        val oldTest = all.filter { it.classIndex < 3 }.map { com.uri.lee.dl.core.training.Example(it.embedding, it.classIndex) }
+        val keptOld = oldTest.count { result.head.predict(it.embedding) == it.label }.toFloat() / oldTest.size
+
+        assertEquals(4, result.head.classes)
+        assertTrue(keptOld >= 0.85f, "old species right: $keptOld")
+    }
 }

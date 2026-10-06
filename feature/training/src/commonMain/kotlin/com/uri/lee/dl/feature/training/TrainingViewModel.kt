@@ -263,7 +263,10 @@ class TrainingViewModel(
             }
             setState { copy(work = TrainingWork.Saving) }
             val trained = model.copy(trainedThrough = result.trainedThrough, trainedClasses = model.classes, report = result.report)
-            val tflite = TfliteExport.export(backbones.read(model.backbone), result.head, model.classes, model.name, author = "Herb Lens")
+            val tflite = TfliteExport.export(
+                backbones.read(model.backbone), result.head, model.classes, model.name, author = "Herb Lens",
+                extraFiles = SharedModel.pack(model, result.head, examples),
+            )
             store.saveTrained(trained, result.head, tflite)
             classifier?.second?.close()
             classifier = null
@@ -294,6 +297,11 @@ class TrainingViewModel(
     }
 
     private fun importModel(fileName: String, bytes: ByteArray) {
+        val shared = runCatching { SharedModel.unpack(bytes) }.getOrNull()
+        if (shared != null) {
+            importShared(fileName, bytes, shared)
+            return
+        }
         val labels = runCatching { TfliteExport.labels(bytes) }.getOrNull()
         if (labels.isNullOrEmpty()) {
             setState { copy(error = TrainingError.NO_LABELS) }
@@ -304,6 +312,32 @@ class TrainingViewModel(
         launchWork {
             setState { copy(work = TrainingWork.Saving) }
             store.saveImported(model, bytes)
+            val models = store.list()
+            setState { copy(models = models) }
+        }
+    }
+
+    /** A model shared from Herb Lens: it can go on learning here, from its layers and replay sample. */
+    private fun importShared(fileName: String, bytes: ByteArray, shared: SharedModel.Unpacked) {
+        val pack = shared.pack
+        val quality = Quality.entries.firstOrNull { it.backbone == pack.backbone && !it.augment } ?: Quality.BALANCED
+        val settings = TrainingSettings(quality = quality)
+        val replay = SharedModel.renumbered(shared.replay, settings.expert)
+        val id = "m" + Random.nextLong(1, Long.MAX_VALUE).toString(36)
+        val model = UserModel(
+            id = id,
+            name = fileName.substringBeforeLast('.'),
+            classes = pack.labels,
+            settings = settings,
+            trainedThrough = replay.maxOfOrNull { it.photo } ?: -1,
+            trainedClasses = pack.labels,
+            importedTrainable = true,
+        )
+        launchWork {
+            setState { copy(work = TrainingWork.Saving) }
+            store.save(model)
+            store.addExamples(id, replay)
+            store.saveTrained(model, pack.head, bytes)
             val models = store.list()
             setState { copy(models = models) }
         }

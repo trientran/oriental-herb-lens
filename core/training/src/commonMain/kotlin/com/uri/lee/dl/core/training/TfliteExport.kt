@@ -27,6 +27,8 @@ object TfliteExport {
         description: String = "",
         author: String = "",
         version: String = "1",
+        /** More files to pack inside, next to labels.txt (TFLite tools ignore them). */
+        extraFiles: Map<String, ByteArray> = emptyMap(),
     ): ByteArray {
         require(labels.size == head.classes) { "${labels.size} labels for ${head.classes} classes" }
         require(labels.none { '\n' in it || '\r' in it }) { "Labels can't contain line breaks" }
@@ -167,8 +169,11 @@ object TfliteExport {
         b.offsetField(MODEL_BUFFERS, buffersVector)
         b.offsetField(MODEL_METADATA, metadataVector)
         val flatBuffer = b.finish(b.endTable(), "TFL3")
-        return StoredZip.append(flatBuffer, mapOf(LABELS_FILE to labels.joinToString("\n", postfix = "\n").encodeToByteArray()))
+        return StoredZip.append(flatBuffer, mapOf(LABELS_FILE to labels.joinToString("\n", postfix = "\n").encodeToByteArray()) + extraFiles)
     }
+
+    /** A file packed in a model by [export] (labels.txt or one of its extra files), or null. */
+    fun packedFile(model: ByteArray, name: String): ByteArray? = StoredZip.read(model, name)
 
     /** The class names packed in a model (this app's exports, or any with TFLite metadata labels), or null. */
     fun labels(model: ByteArray): List<String>? =

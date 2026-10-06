@@ -210,6 +210,7 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
             else -> models.forEach { model ->
                 val status = when {
                     model.imported -> stringResource(Res.string.train_model_imported)
+                    model.importedTrainable && model.report == null -> stringResource(Res.string.train_model_imported_trainable)
                     model.report != null -> "${percent(model.report.accuracy)} · " + stringResource(Res.string.train_model_trained_here)
                     else -> stringResource(Res.string.train_model_untrained)
                 }
@@ -346,6 +347,11 @@ private fun EditScreen(state: TrainingState, onAction: (TrainingAction) -> Unit,
         if (trained && model.report != null) {
             OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Result(model.id))) }, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(Res.string.train_see_results))
+            }
+        }
+        if (trained) {
+            OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Use(model.id))) }, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.train_try_it))
             }
         }
     }

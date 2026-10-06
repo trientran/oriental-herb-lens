@@ -98,6 +98,8 @@ data class UserModel(
     val trainedThrough: Int = -1,
     val trainedClasses: List<String> = emptyList(),
     val report: ModelReport? = null,
+    /** Imported from a model shared by Herb Lens, which can go on learning here. */
+    val importedTrainable: Boolean = false,
 ) {
     val backbone: String get() = settings.quality.backbone
     val isTrained: Boolean get() = imported || trainedClasses.isNotEmpty()
@@ -130,6 +132,7 @@ class UserModelStore(private val files: AppFiles) {
             trainedThrough = meta["trainedThrough"]?.toIntOrNull() ?: -1,
             trainedClasses = meta["trainedClasses"]?.split(SEPARATOR)?.filter { it.isNotEmpty() }.orEmpty(),
             report = files.read("$ROOT/$id/report.txt")?.decodeToString()?.let(::decodeReport),
+            importedTrainable = meta["importedTrainable"] == "true",
         )
     }
 
@@ -171,6 +174,7 @@ class UserModelStore(private val files: AppFiles) {
     private fun encodeMeta(model: UserModel) = buildString {
         appendLine("name=${model.name.replace('\n', ' ')}")
         appendLine("imported=${model.imported}")
+        appendLine("importedTrainable=${model.importedTrainable}")
         appendLine("trainedThrough=${model.trainedThrough}")
         appendLine("trainedClasses=${model.trainedClasses.joinToString(SEPARATOR)}")
         val s = model.settings
@@ -274,6 +278,50 @@ class UserModelStore(private val files: AppFiles) {
                 at += 4 * dimensions
                 StoredExample(classIndex, photo, original, embedding)
             }
+        }
+    }
+}
+
+/**
+ * What a model shared from Herb Lens carries inside its .tflite besides labels.txt, so whoever
+ * imports it can go on training it: the trained layers and backbone (model.json) and a sample of
+ * each species' embeddings to replay (replay.bin), about 100 KB per species. TFLite tools ignore them.
+ */
+object SharedModel {
+    const val MODEL = "herblens/model.json"
+    const val REPLAY = "herblens/replay.bin"
+
+    class Unpacked(val pack: ModelPack, val replay: List<StoredExample>)
+
+    fun pack(model: UserModel, head: ClassifierHead, examples: List<StoredExample>): Map<String, ByteArray> {
+        val expert = model.settings.expert
+        val random = Random(expert.seed)
+        val replay = examples.filter { it.original && ModelTrainer.share(it.photo, expert) == ModelTrainer.Share.TRAIN }
+            .groupBy { it.classIndex }.toList().sortedBy { it.first }
+            .flatMap { (_, list) -> list.shuffled(random).take(expert.replayPerClass) }
+        return mapOf(
+            MODEL to ModelPack(model.backbone, model.classes, head).toJson().encodeToByteArray(),
+            REPLAY to UserModelStore.encodeExamples(replay),
+        )
+    }
+
+    /** What a shared .tflite carries for further training, or null for any other model. */
+    fun unpack(tflite: ByteArray): Unpacked? {
+        val json = com.uri.lee.dl.core.training.TfliteExport.packedFile(tflite, MODEL) ?: return null
+        val pack = runCatching { ModelPack.fromJson(json.decodeToString()) }.getOrNull() ?: return null
+        val replay = com.uri.lee.dl.core.training.TfliteExport.packedFile(tflite, REPLAY)?.let(UserModelStore::decodeExamples).orEmpty()
+        return Unpacked(pack, replay)
+    }
+
+    /**
+     * The replay sample renumbered as this device's photos, all in the training share (so none
+     * is ever used to test the model here).
+     */
+    fun renumbered(replay: List<StoredExample>, expert: ExpertSettings): List<StoredExample> {
+        var next = 0
+        return replay.map { e ->
+            while (ModelTrainer.share(next, expert) != ModelTrainer.Share.TRAIN) next++
+            StoredExample(e.classIndex, next++, true, e.embedding)
         }
     }
 }
