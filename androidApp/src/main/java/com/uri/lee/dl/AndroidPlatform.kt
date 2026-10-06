@@ -79,7 +79,8 @@ class AndroidPlatform(private val activity: ComponentActivity) {
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (BuildConfig.DEBUG) ::benchmarkSources else null,
-        research = if (BuildConfig.DEBUG) research::platform else null,
+        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        research = research::platform,
         requestGoogleSignIn = ::googleSignIn,
         pickPhotos = { pick ->
             onPhotos = pick.onPicked

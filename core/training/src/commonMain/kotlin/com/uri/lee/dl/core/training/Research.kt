@@ -27,9 +27,25 @@ data class ResearchPlan(
 class EmbeddedDataset(val backbone: String, val labels: List<String>, val examples: List<Example>)
 
 sealed interface ResearchProgress {
-    /** Run [number] of [total] for [backbone]. */
-    data class Run(val backbone: String, val number: Int, val total: Int, val result: RunResult) : ResearchProgress
-    data class FinalModel(val backbone: String) : ResearchProgress
+    /** Identifies the job, so a resumed session can skip it. */
+    val key: String
+    val backbone: String
+
+    /**
+     * Run [number] of [total] for [backbone]. [rows] are its rows of each CSV table (no header),
+     * for appending to files as the session goes.
+     */
+    data class Run(
+        override val key: String,
+        override val backbone: String,
+        val number: Int,
+        val total: Int,
+        val result: RunResult,
+        val rows: Map<String, String>,
+    ) : ResearchProgress
+
+    /** The model trained on every photo, to publish. */
+    data class FinalModel(override val key: String, override val backbone: String, val head: ClassifierHead) : ResearchProgress
 }
 
 /** The results of a research run: CSV tables, and a model per backbone trained on all the data. */
@@ -37,34 +53,43 @@ class ResearchResults(val csv: Map<String, String>, val models: Map<String, Clas
 
 /**
  * Runs a [ResearchPlan] over datasets embedded by one or more backbones: the experiment grid of
- * the study. One job at a time ([next]), so a caller can yield, show progress or stop in between.
+ * the study. One job at a time ([next]), so a caller can yield, show progress, save what's done
+ * or stop in between; jobs whose keys are in [done] are skipped (resuming a stopped session).
  */
 class ResearchSession(
     private val datasets: List<EmbeddedDataset>,
     private val plan: ResearchPlan,
-    context: (backbone: String) -> RunContext,
+    private val context: (backbone: String) -> RunContext,
     private val monitor: ResourceMonitor = ResourceMonitor { ResourceSample() },
+    done: Set<String> = emptySet(),
 ) {
     private sealed interface Job {
+        val key: String
         val dataset: EmbeddedDataset
-        class Run(override val dataset: EmbeddedDataset, val scenario: Scenario, val strategy: Strategy, val seed: Int, val index: Int) : Job
-        class FinalModel(override val dataset: EmbeddedDataset) : Job
+        class Run(override val dataset: EmbeddedDataset, val scenario: Scenario, val strategy: Strategy, val seed: Int, val index: Int) : Job {
+            override val key = "${dataset.backbone}|${scenario.id}|${strategy.id}|$seed"
+        }
+        class FinalModel(override val dataset: EmbeddedDataset) : Job {
+            override val key = "${dataset.backbone}|final"
+        }
     }
 
-    private val jobs: List<Job> = datasets.flatMap { dataset ->
+    private val allJobs: List<Job> = datasets.flatMap { dataset ->
         var index = 0
         val runs = plan.scenarios.flatMap { scenario ->
             plan.strategies.flatMap { strategy -> plan.seeds.map { seed -> Job.Run(dataset, scenario, strategy, seed, ++index) } }
         }
         runs + Job.FinalModel(dataset)
     }
+    private val jobs = allJobs.filter { it.key !in done }
     private val tables = datasets.associate { it.backbone to StudyCsv(context(it.backbone)) }
     private val models = mutableMapOf<String, ClassifierHead>()
     private val mark = TimeSource.Monotonic.markNow()
     private var position = 0
 
-    val totalJobs: Int get() = jobs.size
-    val jobsDone: Int get() = position
+    /** Every job in the plan, including any done before a resume. */
+    val totalJobs: Int get() = allJobs.size
+    val jobsDone: Int get() = allJobs.size - jobs.size + position
     fun hasNext(): Boolean = position < jobs.size
 
     /** Does the next job and says what it was. */
@@ -75,17 +100,19 @@ class ResearchSession(
             is Job.Run -> {
                 val result = ContinualRunner.run(dataset.examples, dataset.labels.size, job.scenario, job.strategy, job.seed, plan.options, monitor)
                 tables.getValue(dataset.backbone).add(result)
-                ResearchProgress.Run(dataset.backbone, job.index, plan.runsPerBackbone, result)
+                val rows = StudyCsv(context(dataset.backbone)).apply { add(result) }.files().mapValues { it.value.substringAfter("\r\n") }
+                ResearchProgress.Run(job.key, dataset.backbone, job.index, plan.runsPerBackbone, result, rows)
             }
             is Job.FinalModel -> {
                 // The model to publish: every photo, the usual validation split for early stopping
-                models[dataset.backbone] = HeadTrainer.train(dataset.examples, dataset.labels.size, plan.options.copy(seed = plan.seeds.first())).head
-                ResearchProgress.FinalModel(dataset.backbone)
+                val head = HeadTrainer.train(dataset.examples, dataset.labels.size, plan.options.copy(seed = plan.seeds.first())).head
+                models[dataset.backbone] = head
+                ResearchProgress.FinalModel(job.key, dataset.backbone, head)
             }
         }
     }
 
-    /** What's been done so far (everything, once [hasNext] is false). */
+    /** What this session has done (everything, once [hasNext] is false, unless it was resumed). */
     fun results(): ResearchResults =
         ResearchResults(mergeTables(datasets.map { tables.getValue(it.backbone).files() }), models.toMap(), mark.elapsedNow().inWholeMilliseconds)
 
@@ -103,12 +130,98 @@ class ResearchSession(
             return session.results()
         }
 
+        /** Each CSV table's header line (with its line break), by file name. */
+        fun headers(): Map<String, String> = StudyCsv(RunContext("", "", "", emptyList())).files()
+
         /** Stacks same-named CSV files, keeping the first header. */
         internal fun mergeTables(files: List<Map<String, String>>): Map<String, String> {
             if (files.isEmpty()) return emptyMap()
             return files.first().keys.associateWith { name ->
                 files.mapIndexed { i, f -> f.getValue(name).let { if (i == 0) it else it.substringAfter("\r\n") } }.joinToString("")
             }
+        }
+    }
+}
+
+/** Saving and restoring a session's settings and embeddings, to resume after the app is stopped. */
+object ResearchFormats {
+
+    /** The plan as "key=value" lines. */
+    fun encodePlan(plan: ResearchPlan): String = buildString {
+        appendLine("scenarios=" + plan.scenarios.joinToString(",") { it.id })
+        appendLine("strategies=" + plan.strategies.joinToString(",") { it.id })
+        appendLine("seeds=" + plan.seeds.joinToString(","))
+        val o = plan.options
+        appendLine("learningRate=${o.learningRate}")
+        appendLine("l2=${o.l2}")
+        appendLine("batchSize=${o.batchSize}")
+        appendLine("maxEpochs=${o.maxEpochs}")
+        appendLine("patience=${o.patience}")
+        appendLine("validationFraction=${o.validationFraction}")
+        appendLine("hiddenUnits=${o.hiddenUnits}")
+        appendLine("classBalanced=${o.classBalanced}")
+    }
+
+    fun decodePlan(text: String): ResearchPlan {
+        val values = text.lines().filter { '=' in it }.associate { it.substringBefore('=') to it.substringAfter('=') }
+        fun list(key: String) = values[key].orEmpty().split(',').filter { it.isNotEmpty() }
+        val defaults = TrainingOptions()
+        return ResearchPlan(
+            scenarios = list("scenarios").map(::scenario),
+            strategies = list("strategies").map(::strategy),
+            seeds = list("seeds").map { it.toInt() },
+            options = TrainingOptions(
+                learningRate = values["learningRate"]?.toFloat() ?: defaults.learningRate,
+                l2 = values["l2"]?.toFloat() ?: defaults.l2,
+                batchSize = values["batchSize"]?.toInt() ?: defaults.batchSize,
+                maxEpochs = values["maxEpochs"]?.toInt() ?: defaults.maxEpochs,
+                patience = values["patience"]?.toInt() ?: defaults.patience,
+                validationFraction = values["validationFraction"]?.toFloat() ?: defaults.validationFraction,
+                hiddenUnits = values["hiddenUnits"]?.toInt() ?: defaults.hiddenUnits,
+                classBalanced = values["classBalanced"]?.toBoolean() ?: true,
+            ),
+        )
+    }
+
+    private fun scenario(id: String): Scenario {
+        val kind = ScenarioKind.entries.first { id.startsWith(it.id + "-") }
+        return Scenario(kind, id.removePrefix(kind.id + "-").toInt())
+    }
+
+    private fun strategy(id: String): Strategy = when {
+        id == Strategy.Joint.id -> Strategy.Joint
+        id == Strategy.Naive.id -> Strategy.Naive
+        id == Strategy.Prototypes.id -> Strategy.Prototypes
+        id.startsWith("replay-") -> Strategy.Replay(id.removePrefix("replay-").toInt())
+        else -> error("Unknown strategy $id")
+    }
+
+    /** Embeddings as bytes: "HLE1", count, dimensions, then per example its label and values (little-endian). */
+    fun encodeEmbeddings(examples: List<Example>): ByteArray {
+        val dimensions = examples.firstOrNull()?.embedding?.size ?: 0
+        val out = ByteArray(12 + examples.size * (4 + 4 * dimensions))
+        var at = 0
+        fun int(v: Int) { for (i in 0 until 4) out[at++] = (v shr (8 * i)).toByte() }
+        "HLE1".encodeToByteArray().copyInto(out); at = 4
+        int(examples.size); int(dimensions)
+        for (e in examples) {
+            int(e.label)
+            for (v in e.embedding) int(v.toRawBits())
+        }
+        return out
+    }
+
+    fun decodeEmbeddings(bytes: ByteArray): List<Example> {
+        require(bytes.size >= 12 && bytes.decodeToString(0, 4) == "HLE1") { "Not an embeddings file" }
+        val r = FlatBufferReader(bytes)
+        val count = r.int(4)
+        val dimensions = r.int(8)
+        var at = 12
+        return List(count) {
+            val label = r.int(at); at += 4
+            val embedding = FloatArray(dimensions) { Float.fromBits(r.int(at + 4 * it)) }
+            at += 4 * dimensions
+            Example(embedding, label)
         }
     }
 }

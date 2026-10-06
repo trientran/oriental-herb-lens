@@ -83,7 +83,8 @@ fun startWebApp(config: WebConfig) {
         onExit = {},
         onShareApp = { share(config.siteUrl) },
         trainingBenchmark = if (config.isDebug) ::benchmarkSources else null,
-        research = if (config.isDebug) ::webResearch else null,
+        // Hidden until unlocked (tap the version on Profile 7 times)
+        research = { webResearch(config.isDebug) },
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {

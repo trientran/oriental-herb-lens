@@ -102,7 +102,8 @@ internal class IosPlatform(
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
-        research = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) research::platform else null,
+        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        research = research::platform,
         pickPhotos = ::pickPhotos,
         requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->

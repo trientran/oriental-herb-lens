@@ -18,6 +18,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         AppCheck.setAppCheckProviderFactory(AppAttestProviderFactory())
         #endif
         FirebaseApp.configure()
+        // Must be registered before launch ends: lets a research run carry on in the background (iOS 26+)
+        IosResearchBackgroundKt.registerResearchBackgroundTask()
 
         let info = Bundle.main.infoDictionary ?? [:]
         #if DEBUG

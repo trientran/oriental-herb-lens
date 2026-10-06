@@ -38,4 +38,36 @@ class ResearchTest {
         // The model's own labels survive being packed in the archive
         assertEquals(labels, TfliteExport.labels(model))
     }
+
+    @Test
+    fun resumedSessionSkipsWhatWasDoneAndGivesTheSameRows() {
+        val context = { b: String -> RunContext("Test", "test", b, labels) }
+        val full = ResearchSession(datasets(), plan, context)
+        val all = mutableListOf<ResearchProgress>()
+        while (full.hasNext()) all += full.next()
+
+        val done = all.take(3).map { it.key }.toSet()
+        val resumed = ResearchSession(datasets(), plan, context, done = done)
+        assertEquals(3, resumed.jobsDone)
+        assertEquals(full.totalJobs, resumed.totalJobs)
+        val rest = mutableListOf<ResearchProgress>()
+        while (resumed.hasNext()) rest += resumed.next()
+
+        assertEquals(all.drop(3).map { it.key }, rest.map { it.key })
+        // Rows don't depend on what ran before (time and memory columns aside)
+        val before = (all[3] as ResearchProgress.Run).rows.getValue("runs.csv").split(',').take(12)
+        val after = (rest[0] as ResearchProgress.Run).rows.getValue("runs.csv").split(',').take(12)
+        assertEquals(before, after)
+    }
+
+    @Test
+    fun planAndEmbeddingsSurviveSaving() {
+        val saved = ResearchPlan(options = TrainingOptions(classBalanced = true, hiddenUnits = 100, learningRate = 0.005f))
+        assertEquals(saved, ResearchFormats.decodePlan(ResearchFormats.encodePlan(saved)))
+
+        val examples = clusters(3, 4, 8, 0.3f)
+        val back = ResearchFormats.decodeEmbeddings(ResearchFormats.encodeEmbeddings(examples))
+        assertEquals(examples.map { it.label }, back.map { it.label })
+        assertTrue(examples.zip(back).all { (a, b) -> a.embedding.contentEquals(b.embedding) })
+    }
 }

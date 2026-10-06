@@ -1,6 +1,7 @@
 package com.uri.lee.dl.feature.profile
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,8 +81,10 @@ data class ProfileActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Opens account deletion; null hides it. */
     val onDeleteAccount: (() -> Unit)? = null,
-    /** Debug builds only: developer tools, by name (not translated). */
+    /** Developer and research tools, by name (not translated): debug builds, or research mode once unlocked. */
     val debugTools: List<Pair<String, () -> Unit>> = emptyList(),
+    /** Tapping the version: 7 taps unlock research mode, like Android's developer options. */
+    val onVersionTap: (() -> Unit)? = null,
 )
 
 @Composable
@@ -125,7 +128,12 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 stringResource(Res.string.profile_version, state.versionName),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally).then(
+                    actions.onVersionTap?.let { tap ->
+                        // No ripple: nothing suggests the version does anything
+                        Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = tap)
+                    } ?: Modifier,
+                ),
             )
         }
     }

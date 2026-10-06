@@ -73,7 +73,9 @@ internal class IosResearch(private val topController: () -> UIViewController) {
         device = deviceName(),
         platform = "ios",
         monitor = IosResourceMonitor(),
-        backbones = {
+        files = IosResearchFiles(),
+        // Copied in with devicectl or Finder (see docs/user-trained-models.md)
+        localBackbones = {
             withContext(Dispatchers.IO) {
                 val folder = documents() + "/backbones"
                 NSFileManager.defaultManager.contentsOfDirectoryAtPath(folder, error = null).orEmpty()
@@ -109,6 +111,13 @@ internal class IosResearch(private val topController: () -> UIViewController) {
             // iPad shows the sheet as a popover, which needs an anchor
             sheet.popoverPresentationController?.sourceView = host.view
             host.presentViewController(sheet, animated = true, completion = null)
+        },
+        background = IosResearchBackground,
+        backgroundNote = if (IosResearchBackground.supported) {
+            "The run carries on with the screen locked or in another app; iOS shows its progress on the lock screen and may end it " +
+                "if the phone is busy. If it stops, open Research mode again and tap Resume: finished runs are kept."
+        } else {
+            "Keep Herb Lens open: iOS before 26 pauses it when it leaves the screen. If it stops, open Research mode again and tap Resume."
         },
         keepAwake = { on -> dispatch_async(dispatch_get_main_queue()) { UIApplication.sharedApplication.idleTimerDisabled = on } },
     )

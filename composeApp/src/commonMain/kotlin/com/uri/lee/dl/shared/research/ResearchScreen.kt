@@ -41,7 +41,6 @@ import com.uri.lee.dl.core.training.Scenario
 import com.uri.lee.dl.core.training.ScenarioKind
 import com.uri.lee.dl.core.training.Strategy
 import com.uri.lee.dl.core.training.TrainingOptions
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private val STRATEGIES = listOf(
@@ -49,24 +48,25 @@ private val STRATEGIES = listOf(
 )
 
 /**
- * Research mode (plan Phase 7, debug builds for now, so not translated): choose a dataset and
- * what to run, leave the device running, then save one zip with every result and the models.
+ * Research mode (plan Phase 7; hidden: tap the version on Profile 7 times; for researchers, so not
+ * translated): choose a dataset and what to run, leave the device running, then save one zip with
+ * every result and the models.
  */
 @Composable
 fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
     val state by controller.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    var job by remember { mutableStateOf<Job?>(null) }
     var backbones by remember { mutableStateOf(setOf<String>()) }
     var scenarios by remember { mutableStateOf(ScenarioKind.entries.toSet()) }
     var strategies by remember { mutableStateOf(STRATEGIES.toSet()) }
     var seeds by remember { mutableStateOf(10f) }
     var hiddenLayer by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { controller.loadBackbones() }
+    LaunchedEffect(Unit) { controller.refresh() }
     LaunchedEffect(state.backbones) { if (backbones.isEmpty()) backbones = state.backbones.toSet() }
 
-    Dialog(onDismissRequest = { if (!state.running) onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    // Closing the screen doesn't stop a run: it carries on, and the screen shows it when reopened
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxSize()) {
             Column(
                 Modifier.verticalScroll(rememberScrollState()).padding(16.dp).widthIn(max = 720.dp),
@@ -78,6 +78,24 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                         "with the trained models, in one zip.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
+
+                state.pending?.takeIf { !state.running }?.let { pending ->
+                    Section(if (pending.finished) "Last run: finished" else "Last run: stopped") {
+                        Text(
+                            "${pending.dataset}: ${pending.done} of ${pending.total} runs done. It's kept on this device until you start a new run or discard it.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (pending.finished) {
+                                Button(onClick = { scope.launch { controller.save() } }) { Text("Save results") }
+                            } else {
+                                Button(onClick = controller::resume) { Text("Resume") }
+                                OutlinedButton(onClick = { scope.launch { controller.save() } }) { Text("Save results so far") }
+                            }
+                            TextButton(onClick = controller::discard) { Text("Discard") }
+                        }
+                    }
+                }
 
                 Section("Dataset") {
                     Text("A folder with one subfolder of photos per species.", style = MaterialTheme.typography.bodySmall)
@@ -110,7 +128,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                 }
 
                 Section("Backbones") {
-                    if (state.backbones.isEmpty()) Text("No backbones found on this device.", style = MaterialTheme.typography.bodySmall)
+                    Text("Downloaded from MediaPipe when first used, then kept.", style = MaterialTheme.typography.bodySmall)
                     Chips(state.backbones, backbones, { it }) { backbones = it }
                 }
                 Section("Scenarios (5 steps)") {
@@ -136,17 +154,17 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                 val chosen = state.backbones.filter { it in backbones }
                 Text("${plan.runsPerBackbone * chosen.size} runs", style = MaterialTheme.typography.bodySmall)
 
+                if (controller.backgroundNote.isNotEmpty()) Text(controller.backgroundNote, style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (state.running) {
-                        Button(onClick = { job?.cancel() }) { Text("Stop") }
+                        Button(onClick = controller::stop) { Text("Stop") }
                     } else {
                         Button(
-                            onClick = { job = scope.launch { controller.run(plan, chosen) } },
+                            onClick = { controller.start(plan, chosen) },
                             enabled = state.dataset != null && chosen.isNotEmpty() && plan.runsPerBackbone > 0,
-                        ) { Text("Start") }
-                        if (state.results != null) OutlinedButton(onClick = { scope.launch { controller.save() } }) { Text("Save results") }
-                        TextButton(onClick = onDismiss) { Text("Close") }
+                        ) { Text(if (state.pending != null) "Start a new run" else "Start") }
                     }
+                    TextButton(onClick = onDismiss) { Text("Close") }
                 }
 
                 if (state.status.isNotEmpty()) Text(state.status, style = MaterialTheme.typography.bodyMedium)
