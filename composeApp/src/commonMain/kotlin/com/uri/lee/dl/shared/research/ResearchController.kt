@@ -95,7 +95,7 @@ class ResearchController(
             log("Plan: ${plan.describe()}")
             val locations = platform.backbones().filterKeys { it in backbones }
             backboneBytes = locations.mapValues { (_, location) -> platform.readModel(location) }
-            embeddingRows = mutableListOf("device,platform,app_version,backbone,photos,unreadable,load_ms,median_ms,mean_ms,p90_ms,memory_after_bytes")
+            embeddingRows = mutableListOf("device,platform,app_version,backbone,photos,unreadable,load_ms,first_ms,median_ms,mean_ms,p90_ms,memory_after_bytes")
             val embedded = locations.map { (name, location) -> embed(dataset, name, location) }
 
             val session = ResearchSession(embedded, plan, { RunContext(platform.device, platform.platform, it, dataset.classes, appVersion) }, platform.monitor)
@@ -142,6 +142,7 @@ class ResearchController(
         val times = mutableListOf<Double>()
         val examples = mutableListOf<Example>()
         var unreadable = 0
+        var firstMs: Double? = null
         try {
             dataset.images.forEachIndexed { i, photo ->
                 if (i % 25 == 0) _state.update { it.copy(status = "Embedding with $backbone: $i of ${dataset.images.size}", progress = i.toFloat() / dataset.images.size) }
@@ -151,8 +152,9 @@ class ResearchController(
                 } else {
                     val mark = TimeSource.Monotonic.markNow()
                     val embedding = embedder.embed(image)
-                    // The first is a warm-up (the runtime compiles and allocates), not counted
-                    if (i > 0) times += mark.elapsedNow().inWholeMicroseconds / 1000.0
+                    // The first is a warm-up (some runtimes load the model only now), reported on its own
+                    val ms = mark.elapsedNow().inWholeMicroseconds / 1000.0
+                    if (firstMs == null) firstMs = ms else times += ms
                     examples += Example(embedding, dataset.classes.indexOf(photo.className))
                 }
             }
@@ -163,7 +165,7 @@ class ResearchController(
         fun quantile(q: Double) = if (sorted.isEmpty()) 0.0 else sorted[((sorted.size - 1) * q).roundToInt()]
         val memory = platform.monitor.sample().memoryBytes
         embeddingRows += listOf(
-            platform.device, platform.platform, appVersion, backbone, examples.size, unreadable, loadMs,
+            platform.device, platform.platform, appVersion, backbone, examples.size, unreadable, loadMs, firstMs,
             quantile(0.5), times.average(), quantile(0.9), memory,
         ).joinToString(",") { v -> v?.toString()?.let { if (',' in it || '"' in it) "\"" + it.replace("\"", "\"\"") + "\"" else it } ?: "" }
         log("$backbone: embedded ${examples.size} photos, ${ms(quantile(0.5))} ms median" + if (unreadable > 0) "; $unreadable unreadable, skipped" else "")
@@ -200,7 +202,7 @@ class ResearchController(
         appendLine("  confusion.csv      confusion matrices in long format (actual, predicted, count)")
         appendLine("  task_accuracy.csv  accuracy on each earlier step's classes after every step")
         appendLine("  epochs.csv         learning curves: losses and validation accuracy per epoch")
-        appendLine("  embedding.csv      backbone load time and per-photo embedding time on this device")
+        appendLine("  embedding.csv      backbone load time, first photo (warm-up) and per-photo embedding time on this device")
         appendLine()
         appendLine("models/<backbone>/model.tflite: a standalone LiteRT image classifier trained on every photo.")
         appendLine("  Input: 224 x 224 RGB, float 0-1. Output: a probability per class in labels.txt order.")
