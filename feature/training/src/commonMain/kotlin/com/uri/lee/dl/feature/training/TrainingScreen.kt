@@ -275,13 +275,16 @@ private fun NewModelScreen(onAction: (TrainingAction) -> Unit, platform: Trainin
         ChoiceRow(Icons.Filled.PhotoCamera, stringResource(Res.string.train_collect), stringResource(Res.string.train_collect_body)) {
             onAction(TrainingAction.CreateModel(chosenName(), quality))
         }
-        platform.pickDatasetFolder?.let { pick ->
-            ChoiceRow(Icons.Filled.Folder, stringResource(Res.string.train_import_folder), stringResource(Res.string.train_import_body)) {
+        // A zip first where there is one: some phones' folder pickers show no folders
+        platform.pickDatasetZip?.let { pick ->
+            ChoiceRow(Icons.Filled.FolderZip, stringResource(Res.string.train_import_zip), stringResource(Res.string.train_import_body)) {
                 scope.launch { pick()?.takeIf { it.classes.size >= 2 }?.let { onAction(TrainingAction.ImportDataset(chosenName(), quality, it)) } }
             }
         }
-        platform.pickDatasetZip?.let { pick ->
-            ChoiceRow(Icons.Filled.FolderZip, stringResource(Res.string.train_import_zip), stringResource(Res.string.train_import_body)) {
+        platform.pickDatasetFolder?.let { pick ->
+            val body = stringResource(Res.string.train_import_body) +
+                if (platform.pickDatasetZip != null) "\n" + stringResource(Res.string.train_folder_empty_hint) else ""
+            ChoiceRow(Icons.Filled.Folder, stringResource(Res.string.train_import_folder), body) {
                 scope.launch { pick()?.takeIf { it.classes.size >= 2 }?.let { onAction(TrainingAction.ImportDataset(chosenName(), quality, it)) } }
             }
         }

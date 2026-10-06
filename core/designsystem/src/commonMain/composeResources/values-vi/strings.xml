@@ -273,4 +273,5 @@
     <string name="train_progress_accuracy">Vòng %1$d · ảnh kiểm tra đúng: %2$s</string>
     <string name="train_accuracy_caption">Sau mỗi vòng, mô hình nhận đúng bao nhiêu ảnh kiểm tra (để riêng, không dùng để học).</string>
     <string name="train_see_results">Xem kết quả</string>
+    <string name="train_folder_empty_hint">Nếu không thấy thư mục nào (một số điện thoại), hãy dùng tệp zip.</string>
 </resources>

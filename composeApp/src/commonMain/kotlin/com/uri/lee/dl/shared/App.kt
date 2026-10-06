@@ -18,12 +18,9 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,9 +36,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
-import com.uri.lee.dl.core.datastore.KeyValueStore
-import com.uri.lee.dl.core.datastore.PreferenceStore
-import com.uri.lee.dl.core.datastore.booleanKey
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -79,15 +73,12 @@ import com.uri.lee.dl.feature.training.TrainingRoute
 import com.uri.lee.dl.shared.research.ResearchController
 import com.uri.lee.dl.shared.research.ResearchDialog
 import kotlin.reflect.KClass
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.qualifier.named
 
 @Serializable data object IdentifyDestination
 @Serializable data class BrowseDestination(val openHerbId: Long? = null)
@@ -128,10 +119,6 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val isDebug = appInfo.isDebug
     var showBenchmark by remember { mutableStateOf(false) }
     var showResearch by remember { mutableStateOf(false) }
-    val settings = koinInject<KeyValueStore>(named(PreferenceStore.SETTINGS))
-    val researchUnlocked by remember { settings.data.map { it[RESEARCH_MODE] == true } }.collectAsState(false)
-    var versionTaps by remember { mutableIntStateOf(0) }
-    val scope = rememberCoroutineScope()
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
     }
@@ -207,11 +194,8 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         debugTools = listOfNotNull(
                             actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
-                            actions.research?.takeIf { isDebug || researchUnlocked }?.let { "Research mode" to { showResearch = true } },
+                            actions.research?.let { "Research mode" to { showResearch = true } },
                         ),
-                        onVersionTap = {
-                            if (++versionTaps >= RESEARCH_UNLOCK_TAPS && !researchUnlocked) scope.launch { settings.edit { it[RESEARCH_MODE] = true } }
-                        },
                     ),
                     modifier = Modifier.statusBarsPadding(),
                 )
@@ -294,7 +278,3 @@ private fun StatusDialogs(actions: PlatformActions) {
 internal fun screenName(route: String): String =
     route.substringBefore('/').substringBefore('?').substringAfterLast('.').removeSuffix("Destination")
         .replace(Regex("([a-z])([A-Z])"), "$1_$2").lowercase()
-
-/** Unlocked by tapping the version on Profile [RESEARCH_UNLOCK_TAPS] times; stays unlocked. */
-private val RESEARCH_MODE = booleanKey("research_mode")
-private const val RESEARCH_UNLOCK_TAPS = 7

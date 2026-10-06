@@ -178,9 +178,8 @@ hidden layer is a setting and an ablation in the study.
 
 ## Research mode
 
-**Opening it:** in every build, tap the version number at the bottom of Profile 7 times; a
-**Research mode** row appears under App and stays (debug builds always show it). Not translated:
-it's for researchers.
+**Opening it:** Profile → **Research mode** (the last row under App), in every build. Not
+translated: it's for researchers; everyday training is the Train tab.
 
 1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
    from Google's public model storage the first time a run uses them, then stay on the device.
@@ -188,7 +187,8 @@ it's for researchers.
    (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
 2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,
    hidden files and `__MACOSX` are skipped).
-   - Android: **Choose folder** (starts in Download) or **Choose zip**.
+   - Android: **Choose zip** or **Choose folder**. Some phones' folder pickers (Xiaomi HyperOS)
+     show no folders at all; use a zip there.
    - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
    - Web (Chrome): **Choose folder**.
    - Or, for long runs prepared from a computer, copy the dataset folder into the app's own

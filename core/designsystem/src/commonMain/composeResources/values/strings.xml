@@ -276,4 +276,5 @@
     <string name="train_progress_accuracy">Round %1$d · checking photos right: %2$s</string>
     <string name="train_accuracy_caption">After each round, how many of the checking photos (set aside, not learned from) the model gets right.</string>
     <string name="train_see_results">See results</string>
+    <string name="train_folder_empty_hint">If no folders show up (some phones), use a zip instead.</string>
 </resources>

@@ -98,7 +98,11 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                 }
 
                 Section("Dataset") {
-                    Text("A folder with one subfolder of photos per species.", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "A folder with one subfolder of photos per species." +
+                            if (controller.canPickZip) " If no folders show up (some phones), choose a zip instead." else "",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { scope.launch { controller.pick(zip = false) } }, enabled = !state.running) { Text("Choose folder") }
                         if (controller.canPickZip) {
