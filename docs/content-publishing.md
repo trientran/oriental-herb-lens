@@ -105,3 +105,29 @@ on their next launch, since the old files are still in the bucket.
 | Model has no embedded `labels.txt` | Rejects it |
 | Model labels not all in the catalog | Keeps the verified file and activates it once a catalog covers them |
 | Anything fails | Keeps the current files; the working copy is replaced only after every check passes |
+
+## How to cite
+
+Profile → How to cite lists the works to cite when the app is used in research. They come from the
+Remote Config string parameter `how_to_cite`, so a new paper appears without a release. Leave it
+empty (or unset) and the section is hidden.
+
+The value is a JSON list, newest first. `text` is the full reference as it should be pasted into a
+bibliography; `url` is optional and must be a web link (a DOI link for papers):
+
+```json
+[
+  {
+    "text": "Author, A. (Year). Paper title. Journal, volume(issue), pages. https://doi.org/…",
+    "url": "https://doi.org/…"
+  },
+  {
+    "text": "Author, A. (Year). Med Herb Lens (Version x.y) [Mobile app]. https://med-herb-lens.pages.dev",
+    "url": "https://med-herb-lens.pages.dev"
+  }
+]
+```
+
+References aren't translated: they read the same in every language. A value that isn't a valid
+list is ignored (the app logs a warning), and so are entries with no text.
+

@@ -120,6 +120,11 @@
     <string name="profile_contact">Liên hệ chúng tôi</string>
     <string name="profile_about">Giới thiệu</string>
     <string name="profile_version">Phiên bản %1$s</string>
+    <string name="profile_cite">Cách trích dẫn</string>
+    <string name="profile_cite_body">Bạn dùng Med Herb Lens trong nghiên cứu? Vui lòng trích dẫn:</string>
+    <string name="profile_cite_copy">Sao chép</string>
+    <string name="profile_cite_copied">Đã sao chép</string>
+    <string name="profile_cite_open">Mở</string>
 
     <!-- Sign in -->
     <string name="sign_in_title">Đăng nhập để đóng góp</string>

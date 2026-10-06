@@ -1,7 +1,9 @@
 package com.uri.lee.dl.feature.profile
 
+import com.uri.lee.dl.domain.model.Citation
 import com.uri.lee.dl.testing.MainDispatcherTest
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
+import com.uri.lee.dl.testing.fakes.FakeCitationRepository
 import com.uri.lee.dl.testing.fakes.FakeSettingsRepository
 import com.uri.lee.dl.testing.testAppInfo
 import kotlin.test.Test
@@ -11,7 +13,8 @@ class ProfileViewModelTest : MainDispatcherTest() {
 
     private val auth = FakeAuthRepository()
     private val settings = FakeSettingsRepository()
-    private fun viewModel() = ProfileViewModel(auth, settings, testAppInfo)
+    private val citations = FakeCitationRepository()
+    private fun viewModel() = ProfileViewModel(auth, settings, citations, testAppInfo)
 
     @Test
     fun `signing out updates the account state`() {
@@ -30,5 +33,19 @@ class ProfileViewModelTest : MainDispatcherTest() {
         viewModel.onAction(ProfileAction.SetMinConfidence(0.99f))
 
         assertEquals(ProfileViewModel.MAX_CONFIDENCE, viewModel.state.value.scanSettings.minConfidence)
+    }
+
+    @Test
+    fun `published citations are shown`() {
+        citations.published = listOf(Citation("Tran, T. (2027). Training on the edge.", "https://doi.org/10.0/x"))
+
+        assertEquals(citations.published, viewModel().state.value.citations)
+    }
+
+    @Test
+    fun `no citations when they can't be fetched`() {
+        citations.fail = true
+
+        assertEquals(emptyList(), viewModel().state.value.citations)
     }
 }
