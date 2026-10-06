@@ -44,6 +44,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
+
       - name: Provide signing key and untracked build inputs
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
@@ -95,6 +98,9 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
 
       - uses: actions/cache@v4
         with:
@@ -156,6 +162,9 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      # The JDK Gradle itself runs on
+      - uses: ./.github/actions/daemon-jdk
 
       - name: Build the site
         env:

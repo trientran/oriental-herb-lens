@@ -1,0 +1,50 @@
+name: Daemon JDK
+description: >
+  Installs the JDK Gradle runs on (gradle/gradle-daemon-jvm.properties: JetBrains 25) from JetBrains'
+  own download site and tells Gradle where it is, so Gradle never has to provision it through foojay,
+  whose links break when it drops a build.
+
+runs:
+  using: composite
+  steps:
+    - id: jbr
+      shell: bash
+      env:
+        # Any JetBrains 25 build satisfies the criteria; bump when convenient
+        JBR: jbrsdk-25.0.4
+        JBR_BUILD: b508.27
+      run: |
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) platform=linux-x64 ;;
+          Linux-ARM64) platform=linux-aarch64 ;;
+          macOS-X64) platform=osx-x64 ;;
+          macOS-ARM64) platform=osx-aarch64 ;;
+          *) echo "No JetBrains Runtime for $RUNNER_OS $RUNNER_ARCH" >&2; exit 1 ;;
+        esac
+        echo "file=$JBR-$platform-$JBR_BUILD" >> "$GITHUB_OUTPUT"
+        echo "dir=$RUNNER_TOOL_CACHE/jbr/$JBR-$platform-$JBR_BUILD" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: ${{ steps.jbr.outputs.dir }}
+        key: ${{ steps.jbr.outputs.file }}
+
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        FILE: ${{ steps.jbr.outputs.file }}
+        DIR: ${{ steps.jbr.outputs.dir }}
+      run: |
+        mkdir -p "$DIR"
+        curl -fsSL --retry 3 "https://cache-redirector.jetbrains.com/intellij-jbr/$FILE.tar.gz" | tar -xz -C "$DIR" --strip-components=1
+
+    - shell: bash
+      env:
+        DIR: ${{ steps.jbr.outputs.dir }}
+      run: |
+        home="$DIR"
+        [ -d "$DIR/Contents/Home" ] && home="$DIR/Contents/Home"
+        "$home/bin/java" -version
+        mkdir -p ~/.gradle
+        echo "org.gradle.java.installations.paths=$home" >> ~/.gradle/gradle.properties
