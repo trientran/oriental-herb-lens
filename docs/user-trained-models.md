@@ -123,3 +123,28 @@ the Friedman test and Wilcoxon signed-rank post-hoc tests (paired by seed, Holm 
 effect sizes; devices compared on time, memory and energy, and accuracy checked for equivalence
 (TOST), since the same seed should give the same result up to floating-point and image-resizing
 differences.
+
+## How it runs and what it saves
+
+- **Backbone:** LiteRT on every platform: the LiteRT Interpreter on Android, TensorFlowLiteSwift on
+  iOS, LiteRT.js (WebAssembly) on the web. Embedding uses the same .tflite file everywhere.
+- **Training:** pure Kotlin (`core:training`), compiled for each platform, so the arithmetic is the
+  same on every device.
+- **Saved model:** a standard `.tflite`. The backbone's graph is kept byte for byte, and the head
+  is added after the embedding as L2_NORMALIZATION, FULLY_CONNECTED (+ReLU with a hidden layer)
+  and SOFTMAX layers. One file goes from a 224 × 224 RGB image (float, 0–1) to one probability per
+  class, with `labels.txt` giving the class order. It runs in LiteRT/TensorFlow Lite anywhere.
+  Checked with LiteRT.js: the same answer as the Kotlin head on 8/8 photos, probabilities within
+  1e-6.
+- **Resuming training:** the head is also saved as JSON (`ModelPack`) so the app can continue
+  training it later without reading weights back out of the .tflite.
+
+### Head with a hidden layer (6 Oct 2026, laptop Chrome, 8 species, 16 photos each)
+
+| Head | mobilenet_v3_large | mobilenet_v3_small |
+|---|---|---|
+| Softmax layer only | 72 % | 64 % |
+| 100-unit ReLU layer + softmax (Teachable Machine's design) | 72 % | 63 % |
+
+The hidden layer doesn't help with this little data. The softmax-only head stays the default; the
+hidden layer is a setting and an ablation in the study.
