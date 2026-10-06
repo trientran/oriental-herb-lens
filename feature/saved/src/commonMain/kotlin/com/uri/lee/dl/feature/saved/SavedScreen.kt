@@ -87,7 +87,7 @@ fun SavedScreen(
                     HerbCard(
                         title = AnnotatedString(species.displayName(LocalVietnameseFirst.current)),
                         scientificName = species.scientificName,
-                        supporting = species.preferredEnglishName ?: species.family,
+                        supporting = species.otherName(LocalVietnameseFirst.current) ?: species.family,
                         onClick = { onOpenSpecies(species.id) },
                         selected = species.id == selectedId,
                     )

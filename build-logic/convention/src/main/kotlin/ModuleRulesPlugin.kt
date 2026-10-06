@@ -21,6 +21,7 @@ class ModuleRulesPlugin : Plugin<Project> {
         path == ":core:common" -> emptySet()
         path == ":core:domain" -> setOf(":core:common")
         path == ":core:testing" -> setOf(":core:common", ":core:domain")
+        path == ":core:training" -> emptySet()
         path == ":core:ml" -> setOf(":core:common", ":core:domain")
         path == ":core:designsystem" -> setOf(":core:common")
         path == ":core:maps" -> emptySet()
@@ -33,7 +34,7 @@ class ModuleRulesPlugin : Plugin<Project> {
     }
 
     /** Modules that must stay pure Kotlin: only the Kotlin standard library and coroutines. */
-    private val pure = setOf(":core:common", ":core:domain")
+    private val pure = setOf(":core:common", ":core:domain", ":core:training")
     private val pureGroups = setOf("org.jetbrains.kotlin", "org.jetbrains.kotlinx")
 
     override fun apply(target: Project) {

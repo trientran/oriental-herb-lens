@@ -28,6 +28,8 @@ data class PlatformActions(
     /** Asks once for permission to show notifications, e.g. when an upload finishes in the background. */
     val requestNotificationPermission: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
+    /** Phase 7 spike, debug builds: the labelled photos and backbones to benchmark; null hides it. */
+    val trainingBenchmark: (suspend () -> BenchmarkSources)? = null,
     /** Starts speech recognition and reports what was said. */
     val onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
 )

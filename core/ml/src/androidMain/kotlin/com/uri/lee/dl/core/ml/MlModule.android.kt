@@ -3,6 +3,7 @@ package com.uri.lee.dl.core.ml
 import com.uri.lee.dl.domain.media.ImageCompressor
 import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.ml.ImageCropper
+import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.ObjectFinder
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.moderation.PlantCheck
@@ -17,4 +18,5 @@ actual val mlModule: Module = module {
     single<PlantCheck> { MlKitPlantCheck(androidContext()) }
     single<PhotoReader> { AndroidPhotoReader(androidContext()) }
     single<ImageCompressor> { AndroidImageCompressor(androidContext()) }
+    single<ImageEmbedderLoader> { LiteRtEmbedderLoader() }
 }

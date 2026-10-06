@@ -7,6 +7,9 @@ Bitrise release workflow does:
   **draft** release. In Play Console you add release notes, then roll it out or promote it.
 - **iOS:** an App Store archive, uploaded to App Store Connect. It appears in **TestFlight** once
   Apple has processed it (usually 10–30 minutes); from there you add testers or submit it for review.
+- **Web:** the whole site (home page, privacy policy, terms, and the web app at `/app/`),
+  published to Cloudflare Pages at `https://med-herb-lens.pages.dev`. It's live as soon as the
+  job ends.
 
 ## When
 
@@ -38,17 +41,21 @@ ready meanwhile; the secrets are set.
      - age rating 18+, to match the terms;
      - review notes (below).
    - Submit the build for review.
-6. **Web:** publish the web app to Cloudflare Pages, replacing the temporary site (`website/`).
+6. **Web:** the same workflow publishes the site (choose `all` or `web`). Check
+   `https://med-herb-lens.pages.dev` links to the app and that `/app/` loads, signs in and
+   identifies a photo.
 7. **Google Analytics:** data retention 14 months, Google signals off.
 
 ## Running a release
 
 1. Merge what should ship into the branch you release from (usually `master`).
 2. GitHub → **Actions → Release → Run workflow**. Choose the branch, enter the version shown to
-   users (e.g. `2.0`), and pick Android, iOS or both.
+   users (e.g. `2.0`), and pick `all` or a single platform.
 3. Android: Play Console → Med Herb Lens → **Testing → Internal testing**: the draft release is
    there. Add release notes, save, and roll it out (or promote it to production).
 4. iOS: App Store Connect → Med Herb Lens → **TestFlight**: the build appears when processed.
+5. Web: live at `https://med-herb-lens.pages.dev` when the job ends. Cloudflare Pages keeps every
+   deployment: roll back under Workers & Pages → med-herb-lens → Deployments.
 
 The build number (Android `versionCode`, iOS `CFBundleVersion`) is the workflow's run number times
 10, so every release has a higher one than the last.
@@ -103,6 +110,16 @@ GitHub). Download the `.p8` file; Apple lets you download it only once.
 
 Signing is automatic: Xcode uses the key to sign with a cloud-managed distribution certificate for
 team `LY5X89S79S`. Nothing else is needed on the Apple side.
+
+### Web
+
+| Secret | Value |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | A Cloudflare API token with **Account → Cloudflare Pages → Edit** |
+| `CLOUDFLARE_ACCOUNT_ID` | The account ID (Workers & Pages overview, right-hand side) |
+
+Create the token in the Cloudflare dashboard → My Profile → API Tokens → Create Token → Custom
+token, with only that permission, for your account.
 
 ### Moderation
 

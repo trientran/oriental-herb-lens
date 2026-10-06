@@ -18,6 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.window.DialogProperties
@@ -31,6 +34,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
+import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -98,6 +102,8 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
 @Composable
 private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val navController = rememberNavController()
+    val isDebug = koinInject<AppInfo>().isDebug
+    var showBenchmark by remember { mutableStateOf(false) }
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
     }
@@ -157,6 +163,9 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onShareApp = actions.onShareApp,
                         onOpenLanguageSettings = actions.onOpenLanguageSettings,
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
+                        debugTools = listOfNotNull(
+                            actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
+                        ),
                     ),
                     modifier = Modifier.statusBarsPadding(),
                 )
@@ -183,6 +192,11 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
         }
     }
     StatusDialogs(actions)
+    val benchmarkSources = actions.trainingBenchmark
+    if (showBenchmark && benchmarkSources != null) {
+        val benchmark = TrainingBenchmark(koinInject(), koinInject())
+        TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
+    }
 }
 
 /** Switching tabs keeps each tab's own state (scroll position, open species). */

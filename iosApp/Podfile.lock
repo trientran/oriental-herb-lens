@@ -1480,6 +1480,15 @@ PODS:
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
   - RecaptchaInterop (101.0.0)
+  - TensorFlowLiteC (2.17.0):
+    - TensorFlowLiteC/Core (= 2.17.0)
+  - TensorFlowLiteC/Core (2.17.0)
+  - TensorFlowLiteSwift (2.17.0):
+    - TensorFlowLiteSwift/Core (= 2.17.0)
+  - TensorFlowLiteSwift/Core (2.17.0):
+    - TensorFlowLiteC (= 2.17.0)
+    - TensorFlowLiteSwift/Privacy (= 2.17.0)
+  - TensorFlowLiteSwift/Privacy (2.17.0)
 
 DEPENDENCIES:
   - FirebaseAnalytics/Core
@@ -1492,6 +1501,7 @@ DEPENDENCIES:
   - GoogleMLKit/ImageLabelingCustom (= 8.0.0)
   - GoogleMLKit/ObjectDetection (= 8.0.0)
   - GoogleSignIn
+  - TensorFlowLiteSwift (= 2.17.0)
 
 SPEC REPOS:
   trunk:
@@ -1538,6 +1548,8 @@ SPEC REPOS:
     - PromisesObjC
     - PromisesSwift
     - RecaptchaInterop
+    - TensorFlowLiteC
+    - TensorFlowLiteSwift
 
 SPEC CHECKSUMS:
   abseil: a05cc83bf02079535e17169a73c5be5ba47f714b
@@ -1583,7 +1595,9 @@ SPEC CHECKSUMS:
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
+  TensorFlowLiteSwift: 723fe42222815e72490c79feeff05305530de393
 
-PODFILE CHECKSUM: a24d0fc708ba5a19eafc9cd3720cbdcee97b77d0
+PODFILE CHECKSUM: 84adbba255de0ee40402f24997964b8e773466e6
 
 COCOAPODS: 1.17.0
