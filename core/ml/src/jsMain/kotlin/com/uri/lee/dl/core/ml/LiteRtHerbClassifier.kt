@@ -42,7 +42,10 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
     private val mutex = Mutex()
     private var model: Model? = null
 
-    override suspend fun classify(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> {
+    override suspend fun classify(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> =
+        jsErrorsAsExceptions { run(image, minConfidence, maxResults) }
+
+    private suspend fun run(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> {
         val model = model()
         val canvas = (image as WebClassifierImage).canvas
         val pixels = drawn(canvas, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble(), SIZE, SIZE)
@@ -90,6 +93,17 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
         /** LiteRT.js's WebAssembly runtime, copied next to index.html by the webApp build. */
         const val WASM_DIRECTORY = "litert/"
     }
+}
+
+/**
+ * Errors thrown by browser APIs (a failed fetch, LiteRT.js) are JS errors, not Exceptions, so the
+ * callers' `catch (e: Exception)` would miss them.
+ */
+internal suspend fun <T> jsErrorsAsExceptions(block: suspend () -> T): T = try {
+    block()
+} catch (e: Throwable) {
+    if (e is Exception || e is Error) throw e
+    throw IllegalStateException(e.message ?: "Browser error", e)
 }
 
 /**
