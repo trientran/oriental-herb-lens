@@ -42,16 +42,27 @@ val generateWebBuildConfig by tasks.registering {
     }
 }
 
-// Served next to index.html: the catalog the app falls back to when none is published
+// Served next to index.html: the catalog and model the app falls back to when none is published,
+// and LiteRT.js's WebAssembly runtime (from node_modules, after the npm install)
 val webContent by tasks.registering(Sync::class) {
-    from(rootProject.file("androidApp/assets/herb_catalog.csv"))
+    dependsOn(":kotlinNpmInstall")
+    from(rootProject.file("androidApp/assets")) { include("herb_catalog.csv", "herb_model.tflite") }
+    from(rootProject.layout.buildDirectory.dir("js/node_modules/@litertjs/core/wasm")) {
+        // The threaded and JSPI builds need cross-origin isolation or flags; the plain build is enough
+        include("litert_wasm_internal.*", "litert_wasm_compat_internal.*")
+        into("litert")
+    }
     into(layout.buildDirectory.dir("generated/webContent"))
 }
 
 kotlin {
     js {
         browser {
-            commonWebpackConfig { outputFileName = "herblens.js" }
+            commonWebpackConfig {
+                outputFileName = "herblens.js"
+                // Leaflet's stylesheet (core:maps)
+                cssSupport { enabled.set(true) }
+            }
         }
         binaries.executable()
     }

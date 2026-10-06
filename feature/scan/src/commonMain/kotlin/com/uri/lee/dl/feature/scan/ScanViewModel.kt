@@ -94,6 +94,8 @@ data class ScanState(
     val preparingPhotos: Int = 0,
     val hasError: Boolean = false,
     val minConfidence: Float = ScanSettings.DEFAULT_MIN_CONFIDENCE,
+    /** False where plants can't be picked out (no object detector in the browser): no mode switch. */
+    val canPickPlants: Boolean = true,
 )
 
 /**
@@ -131,11 +133,13 @@ class ScanViewModel(
     private class Steady(val id: Int, val region: Region, val since: TimeMark)
 
     init {
+        setState { copy(canPickPlants = objectFinder.isAvailable) }
         settings.scanSettings
             .onEach { setState { copy(minConfidence = it.minConfidence) } }
             .launchIn(viewModelScope)
         viewModelScope.launch {
-            val pick = runCatching { settings.scanSettings.first().detectObjectsInSingleImage }.getOrDefault(false)
+            val pick = objectFinder.isAvailable &&
+                runCatching { settings.scanSettings.first().detectObjectsInSingleImage }.getOrDefault(false)
             setState { copy(mode = if (pick) ScanMode.PICK_PLANT else ScanMode.WHOLE_VIEW) }
         }
     }

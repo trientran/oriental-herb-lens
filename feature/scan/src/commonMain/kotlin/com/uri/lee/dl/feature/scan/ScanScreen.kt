@@ -178,7 +178,9 @@ private fun Single(
                 is ScanSource.Photos -> Unit
             }
             Objects(state, onAction)
-            ModeSwitch(state.mode, { onAction(ScanAction.SetMode(it)) }, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 12.dp))
+            if (state.canPickPlants) {
+                ModeSwitch(state.mode, { onAction(ScanAction.SetMode(it)) }, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 12.dp))
+            }
             Actions(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, Modifier.align(if (wide) Alignment.BottomCenter else Alignment.TopEnd))
             if (!wide) {
                 ResultsPanel(state, onAction, onOpenSpecies, Modifier.align(Alignment.BottomCenter).padding(12.dp).widthIn(max = 560.dp).fillMaxWidth())

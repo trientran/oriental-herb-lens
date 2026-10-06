@@ -5,9 +5,14 @@ import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.domain.model.GeoLocation
 import dev.gitlive.firebase.FirebaseOptions
+import com.uri.lee.dl.core.ml.WebLocalImage
+import com.uri.lee.dl.domain.media.PhotoPick
+import com.uri.lee.dl.domain.notification.UploadNotifier
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.w3c.dom.HTMLInputElement
 
 /** The web build's settings, from the webApp module. */
 class WebConfig(
@@ -53,11 +58,12 @@ fun startWebApp(config: WebConfig) {
         isDebug = config.isDebug,
         photoUploadUrl = config.photoUploadUrl,
     )
-    val koin = startKoin { modules(sharedModules(app)) }.koin
+    val koin = startKoin {
+        modules(sharedModules(app) + module { single<UploadNotifier> { WebUploadNotifier() } })
+    }.koin
     koin.runStartupTasks()
     val actions = PlatformActions(
-        // Photos and the camera come with identification in the browser
-        pickPhotos = { it.onPicked(emptyList()) },
+        pickPhotos = ::pickPhotos,
         requestGoogleSignIn = ::googleSignInPopup,
         onOpenStore = {},
         onExit = {},
@@ -65,6 +71,22 @@ fun startWebApp(config: WebConfig) {
         onShareApp = { share(config.siteUrl) },
     )
     ComposeViewport(document.getElementById("app")!!) { App(actions) }
+}
+
+/** The browser's file chooser, for images; on phones it also offers the camera. */
+private fun pickPhotos(pick: PhotoPick) {
+    val input = document.createElement("input") as HTMLInputElement
+    input.type = "file"
+    input.accept = "image/*"
+    input.multiple = true
+    input.onchange = {
+        val files = input.files
+        val photos = (0 until (files?.length ?: 0)).mapNotNull { files?.item(it) }.take(MAX_PHOTOS).map(::WebLocalImage)
+        pick.onPicked(photos)
+    }
+    // Chrome and Safari report a cancelled chooser
+    input.addEventListener("cancel", { pick.onPicked(emptyList()) })
+    input.click()
 }
 
 /** The browser's location, after it asks; null if refused or unavailable. */
@@ -89,3 +111,6 @@ private fun share(url: String) {
         navigator.clipboard?.writeText(url)
     }
 }
+
+/** As many as the iOS picker allows. */
+private const val MAX_PHOTOS = 20
