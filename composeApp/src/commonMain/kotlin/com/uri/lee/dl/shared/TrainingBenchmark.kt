@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.training.Example
-import com.uri.lee.dl.core.training.SoftmaxTrainer
+import com.uri.lee.dl.core.training.HeadTrainer
 import com.uri.lee.dl.core.training.TrainingOptions
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
@@ -60,17 +60,18 @@ internal class TrainingBenchmark(private val reader: PhotoReader, private val lo
             }
             embedder.close()
             report("$name: loaded in $loadMs ms; ${examples.first().embedding.size}-d; embedding ${times.median().format()} ms median, ${times.average().format()} ms mean")
-            for (perClass in listOf(16, 5)) {
+            // A softmax layer alone, and with a 100-unit hidden layer like Teachable Machine's
+            for (hidden in listOf(0, 100)) for (perClass in listOf(16, 5)) {
                 val byClass = examples.groupBy { it.label }
                 val train = byClass.values.flatMap { it.take(perClass) }
                 val test = byClass.values.flatMap { it.drop(16) }
                 val trainStart = TimeSource.Monotonic.markNow()
-                val result = SoftmaxTrainer.train(train, classes, TrainingOptions())
+                val result = HeadTrainer.train(train, classes, TrainingOptions(hiddenUnits = hidden))
                 val trainMs = trainStart.elapsedNow().inWholeMilliseconds
-                val correct = test.count { result.classifier.predict(it.embedding) == it.label }
+                val correct = test.count { result.head.predict(it.embedding) == it.label }
                 report(
-                    "  $perClass per class: trained in $trainMs ms (${result.epochs} epochs, best ${result.bestEpoch}); " +
-                        "test accuracy ${percent(correct, test.size)} ($correct/${test.size})",
+                    "  ${if (hidden == 0) "softmax" else "hidden $hidden"}, $perClass per class: trained in $trainMs ms " +
+                        "(${result.epochs} epochs, best ${result.bestEpoch}); test accuracy ${percent(correct, test.size)} ($correct/${test.size})",
                 )
             }
         }
