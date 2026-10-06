@@ -13,9 +13,8 @@ import com.uri.lee.dl.core.training.ResearchSession
 import com.uri.lee.dl.core.training.RunContext
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
+import com.uri.lee.dl.domain.training.Backbones
+import com.uri.lee.dl.domain.training.Dataset
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -66,7 +65,7 @@ class ResearchController(
     private var platform: ResearchPlatform,
     private val reader: PhotoReader,
     private val embedders: ImageEmbedderLoader,
-    private val http: HttpClient,
+    private val backbones: Backbones,
     private val appVersion: String,
 ) {
     private val _state = MutableStateFlow(ResearchState())
@@ -85,10 +84,9 @@ class ResearchController(
     }
 
     suspend fun refresh() {
-        val local = runCatching { platform.localBackbones().keys }.getOrElse { emptySet() }
         val datasets = runCatching { platform.appDatasets() }.getOrElse { emptyList() }.filter { it.classes.size >= 2 }
         val pending = runCatching { pending() }.getOrNull()
-        _state.update { it.copy(backbones = (DOWNLOADABLE.keys + local).sorted(), appDatasets = datasets, pending = pending) }
+        _state.update { it.copy(backbones = backbones.available.sorted(), appDatasets = datasets, pending = pending) }
     }
 
     private suspend fun pending(): PendingRun? {
@@ -229,7 +227,9 @@ class ResearchController(
     private suspend fun loadOrEmbed(backbone: String, classes: List<String>, dataset: Dataset?): EmbeddedDataset {
         files.read("$EMBEDDINGS/$backbone.bin")?.let { return EmbeddedDataset(backbone, classes, ResearchFormats.decodeEmbeddings(it)) }
         checkNotNull(dataset) { "$backbone hadn't finished embedding the photos: choose the same dataset again, then Resume." }
-        val location = backboneLocation(backbone)
+        val location = backbones.location(backbone) {
+            _state.update { it.copy(status = "Downloading $backbone…", progress = null) }
+        }
         val loadStart = TimeSource.Monotonic.markNow()
         val embedder = embedders.load(location)
         val loadMs = loadStart.elapsedNow().inWholeMilliseconds
@@ -272,19 +272,6 @@ class ResearchController(
         return EmbeddedDataset(backbone, classes, examples)
     }
 
-    /** A backbone copied in by hand, or one downloaded once from MediaPipe's public models and kept. */
-    private suspend fun backboneLocation(name: String): String {
-        platform.localBackbones()[name]?.let { return it }
-        val file = "backbones/$name.tflite"
-        if (files.read(file) == null) {
-            val url = DOWNLOADABLE[name] ?: error("No backbone called $name")
-            _state.update { it.copy(status = "Downloading $name…", progress = null) }
-            files.write(file, http.get(url).body<ByteArray>())
-            log("$name: downloaded from $url")
-        }
-        return files.location(file)
-    }
-
     @OptIn(ExperimentalTime::class)
     suspend fun save() {
         val meta = files.read(META)?.decodeToString()?.let(::parseMeta) ?: return
@@ -298,8 +285,8 @@ class ResearchController(
                 val csv = headers.mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
                     ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.map { b -> files.read("$EMBEDDINGS/$b.csv")?.decodeToString().orEmpty() }.joinToString(""))
                 val models = meta.backbones.mapNotNull { b -> files.read("$MODELS/$b.json")?.let { b to ModelPack.fromJson(it.decodeToString()).head } }.toMap()
-                val backbones = models.keys.associateWith { platform.readModel(backboneLocation(it)) }
-                ResearchArchive.build(ResearchResults(csv, models, 0), backbones, meta.classes.map { it.first }, readme(meta))
+                val backboneFiles = models.keys.associateWith { backbones.read(it) }
+                ResearchArchive.build(ResearchResults(csv, models, 0), backboneFiles, meta.classes.map { it.first }, readme(meta))
             }
         }.getOrElse { e -> _state.update { it.copy(status = "", error = e.message ?: e.toString()) }; return }
         val stamp = Clock.System.now().toString().take(19).replace(":", "").replace("-", "")
@@ -398,12 +385,6 @@ class ResearchController(
     }
 
     companion object {
-        /** MediaPipe's image embedders (Apache 2.0), downloaded when first used. */
-        val DOWNLOADABLE = mapOf(
-            "mobilenet_v3_small" to "https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/latest/mobilenet_v3_small.tflite",
-            "mobilenet_v3_large" to "https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/latest/mobilenet_v3_large.tflite",
-        )
-
         private const val WORK = "work"
         private const val META = "$WORK/session.txt"
         private const val PLAN = "$WORK/plan.txt"
@@ -420,7 +401,7 @@ class ResearchController(
         private var shared: ResearchController? = null
 
         /** The app's one controller, so a run outlives the screen (and, on Android, the activity). */
-        fun shared(platform: ResearchPlatform, reader: PhotoReader, embedders: ImageEmbedderLoader, http: HttpClient, appVersion: String): ResearchController =
-            shared?.also { it.attach(platform) } ?: ResearchController(platform, reader, embedders, http, appVersion).also { shared = it }
+        fun shared(platform: ResearchPlatform, reader: PhotoReader, embedders: ImageEmbedderLoader, backbones: Backbones, appVersion: String): ResearchController =
+            shared?.also { it.attach(platform) } ?: ResearchController(platform, reader, embedders, backbones, appVersion).also { shared = it }
     }
 }

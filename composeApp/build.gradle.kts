@@ -36,6 +36,7 @@ kotlin {
             api(projects.feature.profile)
             api(projects.feature.saved)
             api(projects.feature.scan)
+            api(projects.feature.training)
             api(project.dependencies.platform(libs.koin.bom))
             api(libs.koin.core)
             implementation(libs.koin.compose)

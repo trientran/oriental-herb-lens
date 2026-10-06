@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -48,6 +49,7 @@ import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
 import com.uri.lee.dl.core.designsystem.resources.nav_profile
 import com.uri.lee.dl.core.designsystem.resources.nav_saved
+import com.uri.lee.dl.core.designsystem.resources.nav_train
 import com.uri.lee.dl.core.designsystem.resources.ok
 import com.uri.lee.dl.core.designsystem.resources.status_later
 import com.uri.lee.dl.core.designsystem.resources.status_suspended
@@ -60,6 +62,7 @@ import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.model.UpdatePolicy
+import com.uri.lee.dl.domain.training.Backbones
 import com.uri.lee.dl.feature.auth.DeleteAccountRoute
 import com.uri.lee.dl.feature.auth.SignInRoute
 import com.uri.lee.dl.feature.browse.BrowseRoute
@@ -69,10 +72,12 @@ import com.uri.lee.dl.feature.herbdetails.HerbDetailsRoute
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileRoute
 import com.uri.lee.dl.feature.saved.SavedRoute
+import com.uri.lee.dl.feature.scan.CameraPreview
 import com.uri.lee.dl.feature.scan.ScanRoute
+import com.uri.lee.dl.feature.training.TrainingPlatform
+import com.uri.lee.dl.feature.training.TrainingRoute
 import com.uri.lee.dl.shared.research.ResearchController
 import com.uri.lee.dl.shared.research.ResearchDialog
-import io.ktor.client.HttpClient
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -87,6 +92,7 @@ import org.koin.core.qualifier.named
 @Serializable data object IdentifyDestination
 @Serializable data class BrowseDestination(val openHerbId: Long? = null)
 @Serializable data object SavedDestination
+@Serializable data object TrainDestination
 @Serializable data object ProfileDestination
 @Serializable data object SignInDestination
 @Serializable data object DeleteAccountDestination
@@ -97,6 +103,7 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
     IDENTIFY(IdentifyDestination, IdentifyDestination::class, Icons.Filled.CameraAlt, Res.string.nav_identify),
     BROWSE(BrowseDestination(), BrowseDestination::class, Icons.Filled.Search, Res.string.nav_browse),
     SAVED(SavedDestination, SavedDestination::class, Icons.Filled.Bookmarks, Res.string.nav_saved),
+    TRAIN(TrainDestination, TrainDestination::class, Icons.Filled.Psychology, Res.string.nav_train),
     PROFILE(ProfileDestination, ProfileDestination::class, Icons.Filled.Person, Res.string.nav_profile),
 }
 
@@ -177,6 +184,20 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                     SavedRoute(onOpenSpecies = open, selectedId = selected, modifier = Modifier.statusBarsPadding())
                 }
             }
+            composable<TrainDestination> {
+                val files = actions.files
+                TrainingRoute(
+                    TrainingPlatform(
+                        pickPhotos = actions.pickPhotos,
+                        pickDatasetFolder = files?.pickDatasetFolder,
+                        pickDatasetZip = files?.pickDatasetZip,
+                        pickModelFile = files?.pickModelFile,
+                        saveFile = files?.saveFile ?: { _, _ -> },
+                        camera = { onFrame, modifier -> CameraPreview(onFrame, modifier) },
+                    ),
+                    modifier = Modifier.statusBarsPadding(),
+                )
+            }
             composable<ProfileDestination> {
                 ProfileRoute(
                     ProfileActions(
@@ -226,9 +247,9 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     if (showResearch && research != null) {
         val reader = koinInject<PhotoReader>()
         val embedders = koinInject<ImageEmbedderLoader>()
-        val http = koinInject<HttpClient>()
+        val backbones = koinInject<Backbones>()
         // One for the app: a run carries on when the screen closes
-        val controller = remember { ResearchController.shared(research(), reader, embedders, http, appInfo.versionName) }
+        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName) }
         DialogLayer { ResearchDialog(controller) { showResearch = false } }
     }
 }

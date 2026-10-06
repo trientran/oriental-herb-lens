@@ -4,7 +4,12 @@ import com.uri.lee.dl.core.ml.IosPickedImage
 import com.uri.lee.dl.core.training.ResourceMonitor
 import com.uri.lee.dl.core.training.ResourceSample
 import com.uri.lee.dl.domain.media.LocalImage
-import com.uri.lee.dl.shared.research.Dataset
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.training.Dataset
+import com.uri.lee.dl.domain.training.scoped
+import com.uri.lee.dl.feature.training.PickedFile
+import com.uri.lee.dl.shared.training.LocalBackbones
+import org.koin.mp.KoinPlatform
 import com.uri.lee.dl.shared.research.ResearchPlatform
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -44,6 +49,7 @@ import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
 import platform.UIKit.popoverPresentationController
+import platform.UniformTypeIdentifiers.UTTypeData
 import platform.UniformTypeIdentifiers.UTTypeFolder
 import platform.darwin.NSObject
 import platform.darwin.TASK_VM_INFO
@@ -74,22 +80,7 @@ internal class IosResearch(private val topController: () -> UIViewController) {
         device = deviceName(),
         platform = "ios",
         monitor = IosResourceMonitor(),
-        files = IosResearchFiles(),
-        // Copied in with devicectl or Finder (see docs/user-trained-models.md)
-        localBackbones = {
-            withContext(Dispatchers.IO) {
-                val folder = documents() + "/backbones"
-                NSFileManager.defaultManager.contentsOfDirectoryAtPath(folder, error = null).orEmpty()
-                    .filterIsInstance<String>().filter { it.endsWith(".tflite") }.sorted()
-                    .associate { it.removeSuffix(".tflite") to "$folder/$it" }
-            }
-        },
-        readModel = { path ->
-            withContext(Dispatchers.IO) {
-                val data = NSData.dataWithContentsOfFile(path) ?: error("Can't read $path")
-                ByteArray(data.length.toInt()).apply { usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
-            }
-        },
+        files = KoinPlatform.getKoin().get<AppFiles>().scoped("research"),
         pickDatasetFolder = ::pickFolder,
         appDatasets = {
             withContext(Dispatchers.IO) {
@@ -99,20 +90,8 @@ internal class IosResearch(private val topController: () -> UIViewController) {
                     .mapNotNull { name -> readFolder("$folder/$name", name) }
             }
         },
-        saveArchive = { name, bytes ->
-            // Kept in Documents/research too, where devicectl can copy it off the phone
-            val folder = documents() + "/research"
-            val path = "$folder/$name"
-            withContext(Dispatchers.IO) {
-                NSFileManager.defaultManager.createDirectoryAtPath(folder, true, null, null)
-                bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.convert()) }.writeToFile(path, atomically = true)
-            }
-            val sheet = UIActivityViewController(listOf(NSURL.fileURLWithPath(path)), applicationActivities = null)
-            val host = topController()
-            // iPad shows the sheet as a popover, which needs an anchor
-            sheet.popoverPresentationController?.sourceView = host.view
-            host.presentViewController(sheet, animated = true, completion = null)
-        },
+        // Kept in Documents/research too, where devicectl or Finder can copy it off the phone
+        saveArchive = { name, bytes -> share(name, bytes, "research") },
         background = IosResearchBackground,
         backgroundNote = if (IosResearchBackground.supported) {
             "The run carries on with the screen locked or in another app; iOS shows its progress on the lock screen and may end it " +
@@ -122,6 +101,48 @@ internal class IosResearch(private val topController: () -> UIViewController) {
         },
         keepAwake = { on -> dispatch_async(dispatch_get_main_queue()) { UIApplication.sharedApplication.idleTimerDisabled = on } },
     )
+
+    /** Files for user-trained models: datasets, model files, sharing a model. */
+    fun fileActions() = FileActions(
+        pickDatasetFolder = ::pickFolder,
+        pickModelFile = ::pickModelFile,
+        saveFile = { name, bytes -> share(name, bytes, "models") },
+    )
+
+    /** Writes [bytes] to Documents/[folder]/[name] and offers it in the share sheet (Save to Files, AirDrop). */
+    @OptIn(ExperimentalForeignApi::class)
+    private suspend fun share(name: String, bytes: ByteArray, folder: String) {
+        val directory = documents() + "/" + folder
+        val path = "$directory/$name"
+        withContext(Dispatchers.IO) {
+            NSFileManager.defaultManager.createDirectoryAtPath(directory, true, null, null)
+            bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.convert()) }.writeToFile(path, atomically = true)
+        }
+        val sheet = UIActivityViewController(listOf(NSURL.fileURLWithPath(path)), applicationActivities = null)
+        val host = topController()
+        // iPad shows the sheet as a popover, which needs an anchor
+        sheet.popoverPresentationController?.sourceView = host.view
+        host.presentViewController(sheet, animated = true, completion = null)
+    }
+
+    /** A file chosen in Files (copied into the app first), e.g. a .tflite model. */
+    @OptIn(ExperimentalForeignApi::class)
+    private suspend fun pickModelFile(): PickedFile? {
+        val result = CompletableDeferred<NSURL?>()
+        val delegate = FolderPickerDelegate { result.complete(it) }
+        folderDelegate = delegate
+        val picker = UIDocumentPickerViewController(forOpeningContentTypes = listOf(UTTypeData), asCopy = true)
+        picker.delegate = delegate
+        topController().presentViewController(picker, animated = true, completion = null)
+        val url = result.await()
+        folderDelegate = null
+        val path = url?.path ?: return null
+        return withContext(Dispatchers.IO) {
+            val data = NSData.dataWithContentsOfFile(path) ?: return@withContext null
+            val bytes = ByteArray(data.length.toInt()).apply { if (isNotEmpty()) usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
+            PickedFile(url.lastPathComponent ?: "model.tflite", bytes)
+        }
+    }
 
     private suspend fun pickFolder(): Dataset? {
         val result = CompletableDeferred<NSURL?>()
@@ -230,5 +251,22 @@ private class IosResourceMonitor : ResourceMonitor {
         val usage = alloc<rusage>()
         if (getrusage(RUSAGE_SELF, usage.ptr) != 0) return@memScoped null
         usage.ru_utime.tv_sec * 1000 + usage.ru_utime.tv_usec / 1000 + usage.ru_stime.tv_sec * 1000 + usage.ru_stime.tv_usec / 1000
+    }
+}
+
+/** Backbones copied into Documents/backbones with devicectl or Finder (developers; see docs/user-trained-models.md). */
+@OptIn(ExperimentalForeignApi::class)
+internal class IosLocalBackbones : LocalBackbones {
+    override suspend fun locations(): Map<String, String> = withContext(Dispatchers.IO) {
+        val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).first() as String
+        val folder = "$documents/backbones"
+        NSFileManager.defaultManager.contentsOfDirectoryAtPath(folder, error = null).orEmpty()
+            .filterIsInstance<String>().filter { it.endsWith(".tflite") }
+            .associate { it.removeSuffix(".tflite") to "$folder/$it" }
+    }
+
+    override suspend fun read(location: String): ByteArray = withContext(Dispatchers.IO) {
+        val data = NSData.dataWithContentsOfFile(location) ?: error("Can't read $location")
+        ByteArray(data.length.toInt()).apply { usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
     }
 }

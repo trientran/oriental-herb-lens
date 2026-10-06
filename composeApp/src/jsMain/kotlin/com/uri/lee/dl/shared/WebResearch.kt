@@ -3,8 +3,12 @@ package com.uri.lee.dl.shared
 import com.uri.lee.dl.core.ml.WebLocalImage
 import com.uri.lee.dl.core.training.ResourceMonitor
 import com.uri.lee.dl.core.training.ResourceSample
-import com.uri.lee.dl.shared.research.Dataset
-import com.uri.lee.dl.shared.research.ResearchFiles
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.training.Dataset
+import com.uri.lee.dl.domain.training.scoped
+import com.uri.lee.dl.feature.training.PickedFile
+import com.uri.lee.dl.shared.training.LocalBackbones
+import org.koin.mp.KoinPlatform
 import com.uri.lee.dl.shared.research.ResearchPlatform
 import kotlin.js.Promise
 import kotlinx.browser.document
@@ -23,7 +27,7 @@ import org.w3c.files.BlobPropertyBag
  * The web's side of research mode (plan Phase 7), on a developer's machine: backbones come from
  * the local test-photo server (see docs/user-trained-models.md), datasets from a chosen folder.
  */
-internal fun webResearch(isDebug: Boolean): ResearchPlatform {
+internal fun webResearch(): ResearchPlatform {
     val battery = WebBattery()
     var wakeLock: dynamic = null
     return ResearchPlatform(
@@ -39,28 +43,9 @@ internal fun webResearch(isDebug: Boolean): ResearchPlatform {
                 foreground = document.asDynamic().visibilityState == "visible",
             )
         },
-        files = WebResearchFiles(),
-        // A developer's local test server only; everyone else downloads the backbones
-        localBackbones = {
-            if (!isDebug) return@ResearchPlatform emptyMap()
-            BACKBONES.associateWith { "$LOCAL_SERVER/backbones/$it.tflite" }.filterValues { url ->
-                runCatching { fetch(url, kotlin.js.json("method" to "HEAD")).ok }.getOrDefault(false)
-            }
-        },
-        readModel = { url ->
-            val response = fetch(url)
-            check(response.ok) { "HTTP ${response.status} for $url" }
-            Int8Array(response.arrayBuffer().await()).unsafeCast<ByteArray>()
-        },
+        files = KoinPlatform.getKoin().get<AppFiles>().scoped("research"),
         pickDatasetFolder = ::pickFolder,
-        saveArchive = { name, bytes ->
-            val url = URL.createObjectURL(Blob(arrayOf(bytes), BlobPropertyBag(type = "application/zip")))
-            val link = document.createElement("a") as HTMLAnchorElement
-            link.href = url
-            link.download = name
-            link.click()
-            window.setTimeout({ URL.revokeObjectURL(url) }, 60_000)
-        },
+        saveArchive = { name, bytes -> downloadFile(name, bytes, "application/zip") },
         backgroundNote = "Keep this tab open and in front, and the computer awake: browsers slow down background tabs and stop " +
             "when a tab closes. If it stops, open Research mode again and tap Resume: finished runs are kept in this browser.",
         keepAwake = { on ->
@@ -73,6 +58,51 @@ internal fun webResearch(isDebug: Boolean): ResearchPlatform {
             }
         },
     )
+}
+
+/** Files for user-trained models: a dataset folder, a model file, downloading a model. */
+internal fun webFileActions() = FileActions(
+    pickDatasetFolder = ::pickFolder,
+    pickModelFile = ::pickModelFile,
+    saveFile = { name, bytes -> downloadFile(name, bytes, "application/octet-stream") },
+)
+
+/** A .tflite chosen in the browser's file chooser. */
+private suspend fun pickModelFile(): PickedFile? {
+    val result = CompletableDeferred<org.w3c.files.File?>()
+    val input = document.createElement("input") as HTMLInputElement
+    input.type = "file"
+    input.accept = ".tflite"
+    input.onchange = { result.complete(input.files?.item(0)) }
+    input.addEventListener("cancel", { result.complete(null) })
+    input.click()
+    val file = result.await() ?: return null
+    val buffer = file.asDynamic().arrayBuffer().unsafeCast<Promise<org.khronos.webgl.ArrayBuffer>>().await()
+    return PickedFile(file.name, Int8Array(buffer).unsafeCast<ByteArray>())
+}
+
+/** Hands [bytes] to the browser as a download called [name]. */
+internal fun downloadFile(name: String, bytes: ByteArray, type: String) {
+    val url = URL.createObjectURL(Blob(arrayOf(bytes), BlobPropertyBag(type = type)))
+    val link = document.createElement("a") as HTMLAnchorElement
+    link.href = url
+    link.download = name
+    link.click()
+    window.setTimeout({ URL.revokeObjectURL(url) }, 60_000)
+}
+
+/** The local test-photo server's backbones, on a developer's machine (see docs/user-trained-models.md). */
+internal class WebLocalBackbones : LocalBackbones {
+    override suspend fun locations(): Map<String, String> =
+        BACKBONES.associateWith { "$LOCAL_SERVER/backbones/$it.tflite" }.filterValues { url ->
+            runCatching { fetch(url, kotlin.js.json("method" to "HEAD")).ok }.getOrDefault(false)
+        }
+
+    override suspend fun read(location: String): ByteArray {
+        val response = fetch(location)
+        check(response.ok) { "HTTP ${response.status} for $location" }
+        return Int8Array(response.arrayBuffer().await()).unsafeCast<ByteArray>()
+    }
 }
 
 // A plain object for the options: Kotlin's RequestInit would send nulls the browser rejects
@@ -100,7 +130,7 @@ private suspend fun pickFolder(): Dataset? {
  * Files in the browser's private storage for this site (the Origin Private File System), which
  * survives closing the tab. Where a browser doesn't offer it, files only last until the page closes.
  */
-private class WebResearchFiles : ResearchFiles {
+internal class WebAppFiles : AppFiles {
     private val memory = mutableMapOf<String, ByteArray>()
 
     // Typed Any? rather than dynamic: a suspend function returning dynamic breaks Kotlin/JS coroutines
@@ -159,6 +189,19 @@ private class WebResearchFiles : ResearchFiles {
         if (root() == null) { memory.keys.removeAll { it == name || it.startsWith("$name/") }; return }
         val dir = folder(name, create = false) ?: return
         runCatching { dir.asDynamic().removeEntry(name.substringAfterLast('/'), js("({ recursive: true })")).unsafeCast<Promise<Any?>>().await() }
+    }
+
+    override suspend fun list(folder: String): List<String> {
+        if (root() == null) return memory.keys.filter { it.startsWith("$folder/") }.map { it.removePrefix("$folder/").substringBefore('/') }.distinct().sorted()
+        val dir = folder("$folder/x", create = false) ?: return emptyList()
+        val names = mutableListOf<String>()
+        val entries = dir.asDynamic().keys()
+        while (true) {
+            val next = entries.next().unsafeCast<Promise<Any>>().await().asDynamic()
+            if (next.done == true) break
+            names += next.value as String
+        }
+        return names.sorted()
     }
 
     override suspend fun location(name: String): String {

@@ -1,7 +1,7 @@
 package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.shared.research.ResearchBackground
-import com.uri.lee.dl.shared.research.ResearchFiles
+import com.uri.lee.dl.domain.training.AppFiles
 import co.touchlab.kermit.Logger
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ObjCObjectVar
@@ -107,12 +107,12 @@ internal object IosResearchBackground : ResearchBackground {
     }
 }
 
-/** Files in Library/Application Support/research: kept, but not shown in Files or Finder. */
+/** Files in Library/Application Support/app: kept, but not shown in Files or Finder. */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-internal class IosResearchFiles : ResearchFiles {
+internal class IosAppFiles : AppFiles {
     private val root: String by lazy {
         val support = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, true).first() as String
-        "$support/research"
+        "$support/app"
     }
 
     private fun path(name: String) = "$root/$name"
@@ -151,6 +151,10 @@ internal class IosResearchFiles : ResearchFiles {
 
     override suspend fun delete(name: String) {
         withContext(Dispatchers.IO) { NSFileManager.defaultManager.removeItemAtPath(path(name), null) }
+    }
+
+    override suspend fun list(folder: String): List<String> = withContext(Dispatchers.IO) {
+        NSFileManager.defaultManager.contentsOfDirectoryAtPath(path(folder), error = null).orEmpty().filterIsInstance<String>().sorted()
     }
 
     override suspend fun location(name: String): String = NSURL.fileURLWithPath(path(name)).path ?: path(name)

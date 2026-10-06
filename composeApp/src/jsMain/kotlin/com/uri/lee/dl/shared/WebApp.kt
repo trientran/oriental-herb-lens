@@ -16,6 +16,8 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
@@ -71,7 +73,13 @@ fun startWebApp(config: WebConfig) {
         inVietnam = js("Intl.DateTimeFormat().resolvedOptions().timeZone") as? String in setOf("Asia/Ho_Chi_Minh", "Asia/Saigon"),
     )
     val koin = startKoin {
-        modules(sharedModules(app) + module { single<UploadNotifier> { WebUploadNotifier() } })
+        modules(
+            sharedModules(app) + module {
+                single<UploadNotifier> { WebUploadNotifier() }
+                single<AppFiles> { WebAppFiles() }
+                if (config.isDebug) single<LocalBackbones> { WebLocalBackbones() }
+            },
+        )
     }.koin
     koin.runStartupTasks()
     val actions = PlatformActions(
@@ -84,7 +92,8 @@ fun startWebApp(config: WebConfig) {
         onShareApp = { share(config.siteUrl) },
         trainingBenchmark = if (config.isDebug) ::benchmarkSources else null,
         // Hidden until unlocked (tap the version on Profile 7 times)
-        research = { webResearch(config.isDebug) },
+        research = ::webResearch,
+        files = webFileActions(),
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {

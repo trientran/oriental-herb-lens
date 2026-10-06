@@ -19,8 +19,12 @@ import com.uri.lee.dl.core.ml.UriImage
 import com.uri.lee.dl.core.training.ResourceMonitor
 import com.uri.lee.dl.core.training.ResourceSample
 import com.uri.lee.dl.domain.media.LocalImage
-import com.uri.lee.dl.shared.research.Dataset
-import com.uri.lee.dl.shared.research.ResearchFiles
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.training.Dataset
+import com.uri.lee.dl.domain.training.scoped
+import org.koin.mp.KoinPlatform
+import com.uri.lee.dl.feature.training.PickedFile
+import com.uri.lee.dl.shared.FileActions
 import com.uri.lee.dl.shared.research.ResearchPlatform
 import java.io.File
 import java.util.zip.ZipInputStream
@@ -37,24 +41,59 @@ internal class AndroidResearch(private val activity: ComponentActivity) {
     private var folderResult: CompletableDeferred<Uri?>? = null
     private var zipResult: CompletableDeferred<Uri?>? = null
     private var saveResult: CompletableDeferred<Uri?>? = null
+    private var documentResult: CompletableDeferred<Uri?>? = null
 
     private val folderPicker = activity.registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { folderResult?.complete(it) }
     private val zipPicker = activity.registerForActivityResult(ActivityResultContracts.OpenDocument()) { zipResult?.complete(it) }
     private val savePicker = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { saveResult?.complete(it) }
+    private val saveBinaryPicker = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { saveResult?.complete(it) }
+    private val documentPicker = activity.registerForActivityResult(ActivityResultContracts.OpenDocument()) { documentResult?.complete(it) }
+
+    /** Files for user-trained models: datasets, model files, saving a model. */
+    fun fileActions() = FileActions(
+        pickDatasetFolder = ::pickFolder,
+        pickDatasetZip = ::pickZip,
+        pickModelFile = ::pickModelFile,
+        saveFile = { name, bytes -> save(name, bytes, binary = true) },
+    )
+
+    private suspend fun pickFolder(): Dataset? {
+        // Starts in Download, where datasets copied to the phone usually are
+        val download = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Download")
+        val tree = CompletableDeferred<Uri?>().also { folderResult = it }.also { folderPicker.launch(download) }.await()
+        return tree?.let { withContext(Dispatchers.IO) { readTree(it) } }
+    }
+
+    private suspend fun pickZip(): Dataset? {
+        val zip = CompletableDeferred<Uri?>().also { zipResult = it }.also { zipPicker.launch(arrayOf("application/zip")) }.await()
+        return zip?.let { withContext(Dispatchers.IO) { unzip(it) } }
+    }
+
+    private suspend fun pickModelFile(): PickedFile? {
+        val uri = CompletableDeferred<Uri?>().also { documentResult = it }.also { documentPicker.launch(arrayOf("application/octet-stream", "*/*")) }.await()
+            ?: return null
+        return withContext(Dispatchers.IO) {
+            val bytes = requireNotNull(activity.contentResolver.openInputStream(uri)) { "Can't open $uri" }.use { it.readBytes() }
+            PickedFile(displayName(uri) ?: "model.tflite", bytes)
+        }
+    }
+
+    private suspend fun save(name: String, bytes: ByteArray, binary: Boolean) {
+        val picker = if (binary) saveBinaryPicker else savePicker
+        val target = CompletableDeferred<Uri?>().also { saveResult = it }.also { picker.launch(name) }.await() ?: return
+        withContext(Dispatchers.IO) {
+            requireNotNull(activity.contentResolver.openOutputStream(target)) { "Can't write $target" }.use { it.write(bytes) }
+        }
+    }
+
+    private fun displayName(uri: Uri): String? =
+        activity.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { if (it.moveToFirst()) it.getString(0) else null }
 
     fun platform() = ResearchPlatform(
         device = deviceName(),
         platform = "android",
         monitor = AndroidResourceMonitor(activity.applicationContext),
-        files = AndroidResearchFiles(File(activity.applicationContext.filesDir, "research")),
-        // Copied by adb into the app's own folder (see docs/user-trained-models.md)
-        localBackbones = {
-            withContext(Dispatchers.IO) {
-                val folder = File(requireNotNull(activity.getExternalFilesDir(null)) { "No app folder" }, "backbones")
-                folder.listFiles { f -> f.extension == "tflite" }.orEmpty().sortedBy { it.name }.associate { it.nameWithoutExtension to it.path }
-            }
-        },
-        readModel = { withContext(Dispatchers.IO) { File(it).readBytes() } },
+        files = KoinPlatform.getKoin().get<AppFiles>().scoped("research"),
         appDatasets = {
             withContext(Dispatchers.IO) {
                 val folder = File(requireNotNull(activity.getExternalFilesDir(null)) { "No app folder" }, "datasets")
@@ -64,24 +103,9 @@ internal class AndroidResearch(private val activity: ComponentActivity) {
                 }
             }
         },
-        pickDatasetFolder = {
-            // Starts in Download, where datasets copied to the phone usually are
-            val download = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Download")
-            val tree = CompletableDeferred<Uri?>().also { folderResult = it }.also { folderPicker.launch(download) }.await()
-            tree?.let { withContext(Dispatchers.IO) { readTree(it) } }
-        },
-        pickDatasetZip = {
-            val zip = CompletableDeferred<Uri?>().also { zipResult = it }.also { zipPicker.launch(arrayOf("application/zip")) }.await()
-            zip?.let { withContext(Dispatchers.IO) { unzip(it) } }
-        },
-        saveArchive = { name, bytes ->
-            val target = CompletableDeferred<Uri?>().also { saveResult = it }.also { savePicker.launch(name) }.await()
-            if (target != null) {
-                withContext(Dispatchers.IO) {
-                    requireNotNull(activity.contentResolver.openOutputStream(target)) { "Can't write $target" }.use { it.write(bytes) }
-                }
-            }
-        },
+        pickDatasetFolder = ::pickFolder,
+        pickDatasetZip = ::pickZip,
+        saveArchive = { name, bytes -> save(name, bytes, binary = false) },
         background = ResearchService.Background(activity.applicationContext),
         backgroundNote = "The run carries on with the screen off or in another app (see the notification). " +
             "If Android stops the app, open Research mode again and tap Resume: finished runs are kept.",
@@ -180,29 +204,4 @@ private class AndroidResourceMonitor(private val context: Context) : ResourceMon
         PowerManager.THERMAL_STATUS_SHUTDOWN -> "shutdown"
         else -> null
     }
-}
-
-/** Files under the app's private storage. */
-private class AndroidResearchFiles(private val root: File) : ResearchFiles {
-    private fun file(name: String) = File(root, name)
-
-    override suspend fun read(name: String): ByteArray? = withContext(Dispatchers.IO) { file(name).takeIf { it.isFile }?.readBytes() }
-
-    override suspend fun write(name: String, bytes: ByteArray) = withContext(Dispatchers.IO) {
-        val target = file(name).apply { parentFile?.mkdirs() }
-        // Written aside then moved, so a stop part-way leaves the old file, not half a new one
-        val temporary = File(target.path + ".part")
-        temporary.writeBytes(bytes)
-        check(temporary.renameTo(target)) { "Couldn't save $name" }
-    }
-
-    override suspend fun append(name: String, text: String) = withContext(Dispatchers.IO) {
-        file(name).apply { parentFile?.mkdirs() }.appendText(text)
-    }
-
-    override suspend fun delete(name: String) {
-        withContext(Dispatchers.IO) { file(name).deleteRecursively() }
-    }
-
-    override suspend fun location(name: String): String = file(name).path
 }

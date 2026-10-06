@@ -1,4 +1,4 @@
-package com.uri.lee.dl.shared.research
+package com.uri.lee.dl.domain.training
 
 import com.uri.lee.dl.domain.media.LocalImage
 import kotlin.test.Test

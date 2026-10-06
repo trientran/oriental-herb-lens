@@ -104,6 +104,7 @@ internal class IosPlatform(
         trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
         // Hidden in release builds until unlocked (tap the version on Profile 7 times)
         research = research::platform,
+        files = research.fileActions(),
         pickPhotos = ::pickPhotos,
         requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->
