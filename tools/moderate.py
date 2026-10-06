@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Reviews reported photos: lists reports, removes photos, bans uploaders.
+"""Reviews what users send: reported photos, and Vietnamese name suggestions.
 
 Users report photos in the app (photoReports in Firestore, which only this kind of admin access
 can read). App Store guideline 1.2 expects objectionable content to be acted on within 24 hours;
 .github/workflows/moderation.yml opens a GitHub issue for each new report, so you get an email.
+It does the same for each name suggestion (nameSuggestions), which has no deadline.
 
     pip install google-cloud-firestore
     export GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
@@ -12,15 +13,23 @@ can read). App Store guideline 1.2 expects objectionable content to be acted on 
     tools/moderate.py remove REPORT_ID [--ban]    delete the photo (Firestore and R2), close its reports
     tools/moderate.py dismiss REPORT_ID           close a report, keeping the photo
     tools/moderate.py ban UID / unban UID         stop / allow an account contributing
-    tools/moderate.py notify --repo OWNER/REPO    (CI) open an issue per new report
+    tools/moderate.py suggestions                 open name suggestions, with the current names
+    tools/moderate.py dismiss-suggestion ID       close a suggestion (after adding the name, or not)
+    tools/moderate.py notify --repo OWNER/REPO    (CI) open an issue per new report and suggestion
+
+To accept a suggestion, add the name to the species' vietnameseName in
+androidApp/assets/herb_catalog.csv (names separated by "; ", the preferred one first), publish
+the catalog (docs/content-publishing.md), then dismiss the suggestion.
 
 Removing the file from R2 needs Cloudflare's wrangler CLI, logged in (`npx wrangler login`).
 The service account needs the "Cloud Datastore User" role; keep its key out of the repository.
 """
 
 import argparse
+import csv
 import datetime
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -30,6 +39,8 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.field_path import FieldPath
 
 REPORTS = "photoReports"
+SUGGESTIONS = "nameSuggestions"
+CATALOG = "androidApp/assets/herb_catalog.csv"
 HERBS = "herbs"
 BANNED = "bannedUsers"
 # Where the photo-upload Worker stores photos (workers/photo-upload/wrangler.toml)
@@ -129,8 +140,85 @@ def cmd_unban(db, args):
     print("Unbanned %s." % args.uid)
 
 
+def catalog_names(species_key):
+    """(scientific name, current Vietnamese names) from the catalog CSV, if it has the species."""
+    path = os.path.join(os.path.dirname(__file__), "..", CATALOG)
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                if row.get("speciesKey") == str(species_key):
+                    return row.get("canonicalName") or row.get("scientificName"), row.get("vietnameseName") or ""
+    except OSError:
+        pass
+    return None, None
+
+
+def describe_suggestion(snapshot):
+    s = snapshot.to_dict()
+    created = s.get("createdAt")
+    when = created.strftime("%Y-%m-%d %H:%M UTC") if created else "?"
+    scientific, current = catalog_names(s.get("speciesKey"))
+    return "%s  %s  species %s (%s)\n    suggested %s\n    current   %s\n    by        %s" % (
+        snapshot.id, when, s.get("speciesKey"), scientific or "not in the catalog", s.get("viName"),
+        current or "-", s.get("uid"),
+    )
+
+
+def cmd_suggestions(db, args):
+    snapshots = sorted(db.collection(SUGGESTIONS).stream(),
+                       key=lambda s: s.to_dict().get("createdAt") or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc),
+                       reverse=True)
+    if not snapshots:
+        print("No open suggestions.")
+    for snapshot in snapshots:
+        print(describe_suggestion(snapshot))
+
+
+def cmd_dismiss_suggestion(db, args):
+    snapshot = db.collection(SUGGESTIONS).document(args.suggestion_id).get()
+    if not snapshot.exists:
+        fail("no suggestion %s" % args.suggestion_id)
+    snapshot.reference.delete()
+    print("Closed suggestion %s." % args.suggestion_id)
+
+
+def notify_suggestions(db, repo):
+    """Opens a GitHub issue for every name suggestion not announced yet, then marks it announced."""
+    opened = 0
+    for snapshot in db.collection(SUGGESTIONS).stream():
+        suggestion = snapshot.to_dict()
+        if suggestion.get("notifiedAt"):
+            continue
+        key = suggestion.get("speciesKey")
+        name = suggestion.get("viName")
+        scientific, current = catalog_names(key)
+        body = "\n".join([
+            "A user suggested a Vietnamese name.",
+            "",
+            "- Suggested: **%s**" % name,
+            "- Species: %s, %s (https://www.gbif.org/species/%s)" % (scientific or "not in the catalog", key, key),
+            "- Current Vietnamese names: %s" % (current or "none"),
+            "- By: `%s`" % suggestion.get("uid"),
+            "",
+            "If it's right, add it to the species' `vietnameseName` in `%s` (names separated by `; `, "
+            "the preferred one first) and publish the catalog (docs/content-publishing.md). Either way, then:" % CATALOG,
+            "",
+            "```",
+            "tools/moderate.py dismiss-suggestion %s" % snapshot.id,
+            "```",
+            "",
+            "Close this issue once done.",
+        ])
+        title = "Name suggestion: %s for %s" % (name, scientific or "species %s" % key)
+        subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
+                        "--label", "name-suggestion"], check=True)
+        snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})
+        opened += 1
+    return opened
+
+
 def cmd_notify(db, args):
-    """Opens a GitHub issue for every report not announced yet, then marks it announced."""
+    """Opens a GitHub issue for every report and suggestion not announced yet, then marks it announced."""
     opened = 0
     for snapshot in db.collection(REPORTS).stream():
         report = snapshot.to_dict()
@@ -159,7 +247,8 @@ def cmd_notify(db, args):
                         "--label", "moderation"], check=True)
         snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})
         opened += 1
-    print("Opened %d issue(s)." % opened)
+    print("Opened %d issue(s) for reports." % opened)
+    print("Opened %d issue(s) for name suggestions." % notify_suggestions(db, args.repo))
 
 
 def main():
@@ -181,6 +270,10 @@ def main():
     unban = sub.add_parser("unban")
     unban.add_argument("uid")
     unban.set_defaults(run=cmd_unban)
+    sub.add_parser("suggestions").set_defaults(run=cmd_suggestions)
+    dismiss_suggestion = sub.add_parser("dismiss-suggestion")
+    dismiss_suggestion.add_argument("suggestion_id")
+    dismiss_suggestion.set_defaults(run=cmd_dismiss_suggestion)
     notify = sub.add_parser("notify")
     notify.add_argument("--repo", required=True)
     notify.set_defaults(run=cmd_notify)
