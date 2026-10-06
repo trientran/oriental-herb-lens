@@ -110,7 +110,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
     val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
-    val addPhotos = { herbId: Long -> navController.navigate(ContributeDestination(herbId)) }
+    val addPhotos = if (actions.sharePhotos) { herbId: Long -> navController.navigate(ContributeDestination(herbId)) } else null
     NavigationSuiteScaffold(
         layoutType = when {
             fullScreen -> NavigationSuiteType.None

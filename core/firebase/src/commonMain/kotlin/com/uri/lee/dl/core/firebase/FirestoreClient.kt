@@ -37,7 +37,7 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     }
 
     suspend fun addNameSuggestion(speciesKey: Long, vietnameseName: String, uid: String) {
-        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey, vietnameseName, uid))
+        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey.asStoredKey(), vietnameseName, uid))
     }
 
     suspend fun legacyUserLibrary(uid: String): LegacyUserLibrary {
@@ -63,7 +63,7 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
      * reporter is recorded when signed in; anyone may report.
      */
     suspend fun addPhotoReport(speciesKey: Long, url: String, uploaderId: String?, reason: String, reporterUid: String?) {
-        db.collection(PHOTO_REPORTS).add(PhotoReport(speciesKey, url, uploaderId, reason, reporterUid))
+        db.collection(PHOTO_REPORTS).add(PhotoReport(speciesKey.asStoredKey(), url, uploaderId, reason, reporterUid))
     }
 
     /** Removes `users/{uid}`, where old app versions kept the user's name and email. */
@@ -71,9 +71,18 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(USERS).document(uid).delete()
     }
 
+    /**
+     * Species keys are stored as Int: in the browser a Kotlin Long isn't a JS number, and
+     * Firestore's JS SDK refuses it. GBIF keys (about 12 million today) fit easily.
+     */
+    private fun Long.asStoredKey(): Int {
+        require(this in 0..Int.MAX_VALUE) { "Species key out of range: $this" }
+        return toInt()
+    }
+
     @Serializable
     private data class PhotoReport(
-        val speciesKey: Long,
+        val speciesKey: Int,
         val url: String,
         val uploaderId: String?,
         val reason: String,
@@ -83,7 +92,7 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
 
     @Serializable
     private data class NameSuggestion(
-        val speciesKey: Long,
+        val speciesKey: Int,
         val viName: String,
         val uid: String,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,

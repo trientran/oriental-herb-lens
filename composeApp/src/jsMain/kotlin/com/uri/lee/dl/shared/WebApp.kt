@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
-import com.uri.lee.dl.domain.model.GeoLocation
 import dev.gitlive.firebase.FirebaseOptions
 import com.uri.lee.dl.core.ml.WebLocalImage
 import com.uri.lee.dl.domain.media.PhotoPick
@@ -70,11 +69,12 @@ fun startWebApp(config: WebConfig) {
     }.koin
     koin.runStartupTasks()
     val actions = PlatformActions(
+        // Photos are for identifying only: sharing them is in the apps (D19)
         pickPhotos = ::pickPhotos,
+        sharePhotos = false,
         requestGoogleSignIn = ::googleSignInPopup,
         onOpenStore = {},
         onExit = {},
-        currentLocation = ::currentLocation,
         onShareApp = { share(config.siteUrl) },
     )
     ignoreCancelledRequests()
@@ -123,30 +123,6 @@ private fun pickPhotos(pick: PhotoPick) {
     // Chrome and Safari report a cancelled chooser
     input.addEventListener("cancel", { pick.onPicked(emptyList()) })
     input.click()
-}
-
-/** The browser's location, after it asks; null if refused or unavailable. */
-private fun currentLocation(onResult: (GeoLocation?) -> Unit) {
-    val geolocation = window.navigator.asDynamic().geolocation
-    if (geolocation == null) return onResult(null)
-    // Report once: a late error (e.g. a timeout) must not replace a position already found
-    var reported = false
-    fun report(location: GeoLocation?) {
-        if (!reported) onResult(location)
-        reported = true
-    }
-    geolocation.getCurrentPosition(
-        { position: dynamic ->
-            report(GeoLocation(latitude = position.coords.latitude as Double, longitude = position.coords.longitude as Double))
-        },
-        { error: dynamic ->
-            // 1: refused (by the visitor, or by the system for this browser), 2: unavailable, 3: timed out
-            console.warn("Location unavailable: code ${error.code}, ${error.message}")
-            report(null)
-        },
-        // Wi-Fi positioning is enough for a photo's place, and a computer has no GPS to wait for
-        kotlin.js.json("enableHighAccuracy" to false, "timeout" to 20_000, "maximumAge" to 60_000),
-    )
 }
 
 /** The system share sheet where there is one (phones), otherwise the link goes to the clipboard. */

@@ -34,7 +34,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun SpeciesListDetail(
     initialSelection: Long?,
-    onAddPhotos: (Long) -> Unit,
+    /** Null hides adding photos. */
+    onAddPhotos: ((Long) -> Unit)?,
     onSignIn: () -> Unit,
     list: @Composable (selectedId: Long?, open: (Long) -> Unit) -> Unit,
 ) {

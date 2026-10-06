@@ -9,6 +9,11 @@ import com.uri.lee.dl.feature.auth.GoogleSignInRequest
 data class PlatformActions(
     /** Opens the system photo picker. */
     val pickPhotos: PickPhotos,
+    /**
+     * Whether users can share photos of a species. Not on the web (user, 6 Oct): it can't check a
+     * photo shows a plant before upload, so only the apps share photos.
+     */
+    val sharePhotos: Boolean = true,
     val requestGoogleSignIn: GoogleSignInRequest,
     /** Sign in with Apple (iOS). */
     val requestAppleSignIn: AppleSignInRequest? = null,
