@@ -572,6 +572,20 @@ service cloud.firestore {
     </tbody>
   </table></div>
   <p><b>What the spike must do:</b> sign in, upload a photo through the Worker and add it to <code>herbs/{speciesKey}</code>; download the CSV from R2 and run the §05 test cases; take a camera frame through <code>getUserMedia</code> and run <code>herb_model.tflite</code> on it. <b>How to decide:</b> if Option A needs more than two sizeable interop wrappers, or the Compose web build fails basic checks for bundle size, first load time or text input with Vietnamese Telex keyboards, choose B. Otherwise choose A.</p>
+  <h3>Spike results (5–6 Oct)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Question</th><th>Finding</th></tr></thead>
+    <tbody>
+      <tr><td>Libraries on the web</td><td>Compose 1.12, material3, adaptive, navigation, Koin, Coil, Ktor, SQLDelight (web worker driver), Okio, Kermit: both Kotlin/JS and Kotlin/Wasm. <b>GitLive Firebase: Kotlin/JS only.</b> <b>DataStore: Kotlin/Wasm only.</b></td></tr>
+      <tr><td>Herb model in the browser</td><td>MediaPipe Tasks can't run it (it rejects the per-channel normalisation in the metadata). <b>LiteRT.js 2.5 runs it</b> (CPU/Wasm), with our own preprocessing: resize to 224 × 224, normalise with the metadata's mean 123.675 / 116.28 / 103.53 and std 58.395 / 57.12 / 57.375; labels from the model's <code>labels.txt</code>. 24 GBIF test photos: 13 right first, 17 in the top 3, about 10 ms each.</td></tr>
+      <tr><td>Bundle size (gzip)</td><td>Kotlin/JS: about 4.4 MB (app 1.1 MB, Compose's Skia engine 3.3 MB). Kotlin/Wasm: about 4.4 MB (app 1.0 MB, Skia 3.3 MB). Fonts and the 2.5 MB catalog come on top (the catalog could come compressed from R2).</td></tr>
+      <tr><td>Catalog ready (4,799 species parsed and indexed)</td><td>Kotlin/JS: about 200 ms. Kotlin/Wasm: 600–800 ms (text handling crosses into JavaScript for every Unicode normalisation).</td></tr>
+      <tr><td>Vietnamese text</td><td>Be Vietnam Pro renders all marks; "ngải cứu" finds Artemisia vulgaris in both builds. Telex typing checked by a person (6 Oct): marks combine as you type, backspace and the cursor behave. Compose text is selectable only inside a <code>SelectionContainer</code>; the web app wraps names and results in one.</td></tr>
+      <tr><td>Firebase in the browser</td><td>Works (6 Oct). App Check with the <b>Fraud Defense</b> provider (formerly reCAPTCHA Enterprise; reCAPTCHA v3 is deprecated) through the JS SDK, since GitLive has no App Check: a token on localhost, Firestore reads allowed. Google sign-in in a popup. The photo Worker answers the browser (CORS for <code>ALLOWED_ORIGINS</code>, deployed) and accepts the ID token. Two small interop wrappers (App Check, popup sign-in), within the limit.</td></tr>
+      <tr><td>Still to try</td><td>A camera frame through <code>getUserMedia</code>: built with the identification screen.</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Decided (6 Oct, D16):</b> Option A on <b>Kotlin/JS</b> (not Wasm): Firebase works through GitLive with no wrapper, text handling is 3–4 × faster, and the bundle is the same size. The wrappers it needs are thin, and Option B would need the same browser APIs: settings storage (<code>localStorage</code>, as DataStore has no Kotlin/JS target), LiteRT.js for the model, the camera, the map and the file picker. Option B would also rewrite every screen.</p>
 </section>
 
 <!-- 10 -->
@@ -680,8 +694,8 @@ service cloud.firestore {
   <div class="phase" data-phase="6">
     <div class="phase-h"><div class="phase-no g">6</div><div><h3>Web app</h3><p>Starts only after the spike in §09.</p></div><span class="prog"></span></div>
     <ul class="tasks">
-      <li><input type="checkbox" id="p6-1"><label for="p6-1"><span class="tt">Time-boxed spike</span></label></li>
-      <li><input type="checkbox" id="p6-2"><label for="p6-2"><span class="tt">Choose Option A or B and record it</span></label></li>
+      <li><input type="checkbox" id="p6-1" checked><label for="p6-1"><span class="tt">Time-boxed spike</span><span class="td">Results in §09: Firebase, App Check, sign-in, the Worker and Telex typing all work in the browser. A <code>getUserMedia</code> camera frame comes with the identification screen.</span></label></li>
+      <li><input type="checkbox" id="p6-2" checked><label for="p6-2"><span class="tt">Choose Option A or B and record it</span><span class="td">Option A, on Kotlin/JS (D16).</span></label></li>
       <li><input type="checkbox" id="p6-3"><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">Set R2 CORS for the web origin.</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> Herb Lens in the browser on Mac, Windows and Linux.</div>
@@ -731,6 +745,7 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D13</div><div><b>Moderation of shared photos</b> (App Store guideline 1.2). Yes (5 Oct): an on-device plant check before upload (ML Kit's general labeller); reporting a photo and hiding a contributor in the photo viewer; reports in a create-only <code>photoReports</code> collection; an hourly GitHub workflow opens an issue per report; <code>tools/moderate.py</code> removes photos and bans uploaders. Users must be 18 or over.</div></div>
     <div class="decision"><div class="dno">D14</div><div><b>Google Analytics for Firebase, for the research.</b> Yes (5 Oct), on Android and iOS (web with a consent banner in Phase 6): screen views and a few events (identify, open_result, view_species, add_favorite, share_photos, suggest_name, report_photo); no user ID, advertising ID or ad personalisation, so no tracking; Profile → Share usage statistics turns it off (on by default; switch to opt-in if the ethics approval requires it).</div></div>
     <div class="decision"><div class="dno">D15</div><div><b>Store releases after the last phase.</b> Yes (5 Oct): Android, iOS and web are released together once the supervisor has signed off a thorough test (phase R). The release workflow, store secrets, legal pages and moderation are ready meanwhile.</div></div>
+    <div class="decision"><div class="dno">D16</div><div><b>The web app is the shared Compose app on Kotlin/JS</b> (Option A). Yes (6 Oct): Firebase works through GitLive, text handling is 3–4 × faster than on Wasm, the bundle is the same size. Herb identification with LiteRT.js; settings in <code>localStorage</code>. App Check for the web and Telex typing were checked on 6 Oct.</div></div>
   </div>
 </section>
 

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web spike: herb model</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 16px; background: #fafaf5; color: #1b1c18; }
+  table { border-collapse: collapse; } td, th { padding: 4px 8px; border-bottom: 1px solid #ddd; text-align: left; }
+  img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+  .ok { color: #2e6b3a; font-weight: 600; } .bad { color: #b3261e; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Phase 6 spike: herb_model.tflite in the browser</h1>
+<p>MediaPipe Tasks Vision runs the same model the apps use with ML Kit, on the GBIF test photos
+(named by species key). Serve the repository root: <code>python3 -m http.server 8766</code>, then open
+<code>/spikes/web/identify.html</code>.</p>
+<p id="status">Loading…</p>
+<table><thead><tr><th>Photo</th><th>Expected</th><th>Top 3</th><th>Result</th><th>ms</th></tr></thead><tbody id="rows"></tbody></table>
+<script type="module">
+import { FilesetResolver, ImageClassifier } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/vision_bundle.mjs";
+
+const status = document.getElementById("status");
+const rows = document.getElementById("rows");
+const photos = [];
+for (const key of ["2705275", "2766278", "2927192", "3034128", "3035652", "3120946", "3152707", "5384931"]) {
+  for (const n of [1, 2, 3]) photos.push(`${key}_${n}.jpg`);
+}
+
+const started = performance.now();
+const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm");
+const classifier = await ImageClassifier.createFromOptions(vision, {
+  baseOptions: { modelAssetPath: "/androidApp/assets/herb_model.tflite" },
+  maxResults: 3,
+  runningMode: "IMAGE",
+});
+const loadMs = Math.round(performance.now() - started);
+
+let tried = 0, top1 = 0, top3 = 0, totalMs = 0;
+for (const name of photos) {
+  const img = new Image();
+  img.src = `/test-images/${name}`;
+  try { await img.decode(); } catch { continue; } // not every key has photos
+  const expected = name.split("_")[0];
+  const t = performance.now();
+  const result = classifier.classify(img);
+  const ms = performance.now() - t;
+  const cats = result.classifications[0]?.categories ?? [];
+  const labels = cats.map((c) => c.categoryName || c.displayName || String(c.index));
+  tried++; totalMs += ms;
+  const hit1 = labels[0] === expected, hit3 = labels.includes(expected);
+  if (hit1) top1++; if (hit3) top3++;
+  rows.insertAdjacentHTML("beforeend", `<tr><td><img src="${img.src}"></td><td>${expected}</td>
+    <td>${cats.map((c, i) => `${labels[i]} ${(c.score * 100).toFixed(0)}%`).join("<br>")}</td>
+    <td class="${hit1 ? "ok" : hit3 ? "" : "bad"}">${hit1 ? "top 1" : hit3 ? "top 3" : "miss"}</td><td>${ms.toFixed(0)}</td></tr>`);
+}
+const summary = { loadMs, photos: tried, top1, top3, avgMs: Math.round(totalMs / tried) };
+status.textContent = `Model loaded in ${loadMs} ms. ${tried} photos: ${top1} right first, ${top3} in the top 3, ${summary.avgMs} ms each.`;
+window.spikeResult = summary;
+</script>
+</body>
+</html>
