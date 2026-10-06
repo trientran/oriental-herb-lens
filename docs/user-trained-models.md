@@ -172,8 +172,13 @@ hidden layer is a setting and an ablation in the study.
 - **Adding species or photos later:** by default the model replays 20 earlier photos per species
   from the last model, with new species starting from their mean embedding; "Retrain all" trains
   from scratch instead. Every training option is under Advanced.
-- **Try it:** the live camera or a photo. **Share .tflite:** the standalone model, with its
-  labels inside.
+- **Try it:** the live camera, or a photo (which then replaces the camera with its own result).
+  **Share .tflite:** the standalone model, with its labels inside, and, for Herb Lens, the trained
+  layers (`herblens/model.json`) and up to 20 embeddings per species to replay
+  (`herblens/replay.bin`), packed in the same way and ignored by TFLite tools.
+- **Importing a shared model:** one from Herb Lens can go on learning (new species or photos,
+  replaying its packed sample so it keeps the old species); any other .tflite with labels inside
+  can be used to identify, not trained.
 - At least two species to train; the screen asks for 10 photos per species.
 
 ## Research mode
