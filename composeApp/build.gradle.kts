@@ -26,7 +26,8 @@ kotlin {
             implementation(projects.core.network)
             implementation(projects.core.firebase)
             api(projects.core.ml)
-            implementation(projects.core.training)
+            // api: the platforms implement its ResourceMonitor for research mode
+            api(projects.core.training)
             api(projects.core.location)
             api(projects.feature.auth)
             api(projects.feature.browse)
@@ -35,6 +36,7 @@ kotlin {
             api(projects.feature.profile)
             api(projects.feature.saved)
             api(projects.feature.scan)
+            api(projects.feature.training)
             api(project.dependencies.platform(libs.koin.bom))
             api(libs.koin.core)
             implementation(libs.koin.compose)

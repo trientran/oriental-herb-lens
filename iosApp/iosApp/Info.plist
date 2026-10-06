@@ -71,5 +71,15 @@
 	<false/>
 	<key>GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED</key>
 	<false/>
+	<!-- Research mode: a run carries on in the background (BGContinuedProcessingTask, iOS 26+) -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.uri.lee.dl.research.*</string>
+	</array>
+	<!-- Research mode: datasets go into, and results come out of, the app's folder in Finder and Files -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

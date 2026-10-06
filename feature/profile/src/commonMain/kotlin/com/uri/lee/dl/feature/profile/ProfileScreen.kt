@@ -80,7 +80,7 @@ data class ProfileActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Opens account deletion; null hides it. */
     val onDeleteAccount: (() -> Unit)? = null,
-    /** Debug builds only: developer tools, by name (not translated). */
+    /** Developer and research tools, by name (not translated). */
     val debugTools: List<Pair<String, () -> Unit>> = emptyList(),
 )
 

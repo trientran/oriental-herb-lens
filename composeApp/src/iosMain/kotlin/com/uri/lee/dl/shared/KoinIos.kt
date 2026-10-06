@@ -10,6 +10,8 @@ import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 
 /**
@@ -36,6 +38,8 @@ fun startKoinIos(
             single { generalLabeler }
             single { embedder }
             single<UploadNotifier> { IosUploadNotifier(get()) }
+            single<AppFiles> { IosAppFiles() }
+            if (isDebug) single<LocalBackbones> { IosLocalBackbones() }
         })
     }.koin
     koin.runStartupTasks()

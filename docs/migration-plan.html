@@ -107,8 +107,8 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-si
   <h1>From one XML Android app to Android, iOS and web on shared Kotlin</h1>
   <p class="lede">Revision 3 (5 Oct) adds the iOS app, account deletion, geotagged uploads, contributor records on <code>users/{uid}</code> and the reworked Pick a plant (§01). Revision 2 recorded Phases 0 and 1 as done and adds the decisions made since: the species CSV is the single source of truth, the medicinal content is removed, Firestore keeps only photo URLs and Vietnamese name suggestions, photos come from R2 and GBIF, and herb identification stays on ML Kit on both platforms.</p>
   <div class="meta">
-    <span><b>Updated</b> 5 Oct 2026</span>
-    <span><b>Branch</b> <code>develop</code> (Phases 0–4 merged; Phase 5 in #10)</span>
+    <span><b>Updated</b> 7 Oct 2026</span>
+    <span><b>Branch</b> <code>develop</code> (Phases 0–6 merged; Phase 7 in #22)</span>
     <span><b>Targets</b> Android · iOS (iPhone + iPad) · Web (gated)</span>
     <span><b>Toolchain</b> AGP 9.4 · Kotlin 2.4.20 · compileSdk 37 · minSdk 26</span>
   </div>
@@ -541,14 +541,16 @@ service cloud.firestore {
   <div class="tbl"><table>
     <thead><tr><th>Platform</th><th>Backbone (embeddings)</th><th>Training the final layer</th></tr></thead>
     <tbody>
-      <tr><td>Android</td><td>LiteRT</td><td>Shared Kotlin (softmax classifier with Adam, L2 regularisation, early stopping)</td></tr>
+      <tr><td>Android</td><td>LiteRT</td><td>Shared Kotlin (<code>core:training</code>: a softmax layer, optionally with a hidden layer, trained with Adam, L2 regularisation and early stopping)</td></tr>
       <tr><td>iOS</td><td>LiteRT through Swift</td><td>The same Kotlin code, compiled with Kotlin/Native</td></tr>
-      <tr><td>Web</td><td>LiteRT.js or TensorFlow.js (WebGPU, WebAssembly fallback)</td><td>Kotlin/Wasm or the TF.js layers API, depending on the §09 decision</td></tr>
+      <tr><td>Web</td><td>LiteRT.js (WebAssembly)</td><td>The same Kotlin code, compiled with Kotlin/JS (D16)</td></tr>
     </tbody>
   </table></div>
   <ul class="tight">
-    <li><b>Backbone:</b> a general-purpose image model with an embedding output (e.g. an EfficientNet or MobileNet feature extractor), published through the same R2 / Remote Config pipeline as the herb model.</li>
-    <li><b>What gets saved:</b> a small "model pack": the backbone's checksum, the class names, the trained weights and accuracy figures. It works on every platform and can be exported and shared.</li>
+    <li><b>Backbone:</b> MediaPipe's mobilenet_v3_small and mobilenet_v3_large image embedders (Apache 2.0), downloaded once from Google's public model storage when first used and kept on the device (D23). Nothing large ships with the app.</li>
+    <li><b>What gets saved and shared:</b> a standalone <code>.tflite</code>: the backbone's graph kept byte for byte, the trained layers added after its embedding, TFLite metadata and <code>labels.txt</code> packed inside, so any LiteRT or TensorFlow Lite app can use it (checked with LiteRT on Android and the web, and ML Kit). One shared from Herb Lens also carries its trained layers and up to 20 embeddings per species to replay, about 0.11 MB per species, so whoever imports it can go on training it (D22).</li>
+    <li><b>Continual learning:</b> adding species or photos later replays a sample of earlier embeddings (or retrains on everything); each photo stays in the same training, checking or test share as more are added, so test photos are never trained on.</li>
+    <li><b>Two ways in</b> (D20, D21): the Train tab for everyone, and research mode in Profile, which runs the study's grid of scenarios, strategies, seeds and backbones unattended and exports every measurement as CSV. Details in <code>docs/user-trained-models.md</code>.</li>
     <li><b>Confirmed by the spike</b> (6 Oct): fast enough everywhere: 44 ms a photo on a Redmi Note 12, 10 ms on an iPhone 17 Pro Max, 7 ms in a laptop browser; training in shared Kotlin takes at most 1.6 s for 128 photos. Backbone: MediaPipe's mobilenet_v3_large embedder. LiteRT is called directly on Android, through a Swift bridge on iOS, and through LiteRT.js on the web. Details in <code>docs/user-trained-models.md</code>.</li>
   </ul>
 </section>
@@ -704,14 +706,19 @@ service cloud.firestore {
   </div>
 
   <div class="phase" data-phase="7">
-    <div class="phase-h"><div class="phase-no g">7</div><div><h3>User-trained models</h3><p>Spike done (§08 results in <code>docs/user-trained-models.md</code>).</p></div><span class="prog"></span></div>
+    <div class="phase-h"><div class="phase-no g">7</div><div><h3>User-trained models</h3><p>Built and tested on Android, iOS and the web (#22). What's left is the study itself: the real dataset, release builds on each device, the analysis and the Zenodo deposit.</p></div><span class="prog"></span></div>
     <ul class="tasks">
       <li><input type="checkbox" id="p7-1" checked><label for="p7-1"><span class="tt">Spike: LiteRT backbone on Android, iOS and web; training speed</span><span class="td">Done (6 Oct), <code>docs/user-trained-models.md</code>. MediaPipe's mobilenet_v3_large embedder: 44 ms a photo on a Redmi Note 12, 10 ms on an iPhone 17 Pro Max, 7 ms in a laptop browser. The final layer trains in shared Kotlin (<code>core:training</code>) in at most 1.6 s for 128 photos. 69–72 % on 8 similar herb species with 16 photos each.</span></label></li>
-      <li><input type="checkbox" id="p7-2"><label for="p7-2"><span class="tt">Publish a backbone with an embedding output</span></label></li>
-      <li><input type="checkbox" id="p7-3"><label for="p7-3"><span class="tt">Final-layer trainer in shared Kotlin, tested on every platform</span></label></li>
-      <li><input type="checkbox" id="p7-4"><label for="p7-4"><span class="tt"><code>feature:training</code>: collect, train, evaluate, save, share</span></label></li>
+      <li><input type="checkbox" id="p7-2" checked><label for="p7-2"><span class="tt">Backbones with an embedding output</span><span class="td">Done (7 Oct): MediaPipe's MobileNet V3 embedders, downloaded from Google's public storage on first use (D23) rather than published through R2.</span></label></li>
+      <li><input type="checkbox" id="p7-3" checked><label for="p7-3"><span class="tt">Trainer and continual learning in shared Kotlin, tested on every platform</span><span class="td">Done (7 Oct): head with optional hidden layer, class expansion and weight imprinting; joint, naive, replay and prototype strategies; class- and data-incremental scenarios; evaluation and continual-learning metrics; standalone <code>.tflite</code> export.</span></label></li>
+      <li><input type="checkbox" id="p7-4" checked><label for="p7-4"><span class="tt"><code>feature:training</code>: the Train tab</span><span class="td">Done (7 Oct): collect or import photos, train with a live chart, results on unseen photos, try it with the camera or a photo, share and import models (models from Herb Lens can go on learning), rename and delete; English and Vietnamese.</span></label></li>
+      <li><input type="checkbox" id="p7-5" checked><label for="p7-5"><span class="tt">Research mode</span><span class="td">Done (7 Oct): the study grid unattended, device readings per step, running with the screen off (Android foreground service, iOS 26 continued processing) and resuming after any stop, charts of the results, one zip with every CSV, the models and a README.</span></label></li>
+      <li><input type="checkbox" id="p7-6"><label for="p7-6"><span class="tt">Run the study on the full dataset</span><span class="td">About 7,000 photos of 20 invasive species; release builds (debug builds run Kotlin slower) on the Redmi Note 12, the iPhone 17 Pro Max and Chrome on a Mac; both backbones, 10 seeds; the app on screen for timings.</span></label></li>
+      <li><input type="checkbox" id="p7-7"><label for="p7-7"><span class="tt">Analysis for the paper</span><span class="td">A script that stacks the devices' CSVs and produces the tables, figures and tests in the protocol: mean ± SD and 95 % CIs, Friedman with Wilcoxon and Holm, effect sizes, TOST for device equivalence.</span></label></li>
+      <li><input type="checkbox" id="p7-8"><label for="p7-8"><span class="tt">Zenodo deposit</span><span class="td">The dataset, the research-mode zips and the trained models, with a DOI to cite in the paper.</span></label></li>
+      <li><input type="checkbox" id="p7-9"><label for="p7-9"><span class="tt">Play Console: foreground service declaration</span><span class="td">Research mode's background service is the "data sync" type (local file processing); the Play Console asks for a short explanation and video before release.</span></label></li>
     </ul>
-    <div class="ships"><b>Ships:</b> users train their own image classifiers on Android, iOS and the web.</div>
+    <div class="ships"><b>Ships:</b> users train, use and share their own image classifiers on Android, iOS and the web; researchers run the study on the device.</div>
   </div>
 
   <div class="phase" data-phase="8">
@@ -761,6 +768,10 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D17</div><div><b>Species are named in Vietnamese first only for readers in or from Vietnam</b>: device language Vietnamese, region Vietnam, or (on the web, which can't see the visitor's country) Vietnam's time zone. Everyone else sees the English name first (or the scientific name), with the Vietnamese name underneath. The interface language still follows the device or the in-app switch (user, 6 Oct). More languages: Phase 8.</div></div>
     <div class="decision"><div class="dno">D18</div><div><b>Usage statistics are on by default on the web too</b>, as in the apps (user, 6 Oct), with nothing for advertising (consent for ad storage and personalisation denied) and the Profile switch to turn them off, which stops Analytics before it starts. Visitors from the EU would normally be asked first; revisit with the ethics approval (phase R).</div></div>
     <div class="decision"><div class="dno">D19</div><div><b>The web app doesn't share photos</b> (user, 6 Oct): it can't check a photo shows a plant before upload (ML Kit's general labeller has no web version, and the herb model refused plants it doesn't know). Sharing photos stays in the apps; the web identifies from photos and the camera, and suggests names. Cloud Vision through the upload Worker would allow it later (1,000 free checks a month).</div></div>
+    <div class="decision"><div class="dno">D20</div><div><b>Training is for everyone, in a Train tab</b> (user, 7 Oct), on Android, iOS and the web: simple choices (quality Fast, Balanced or Best; keep old species or retrain) with every training option under Advanced. Models are shared as standalone <code>.tflite</code> files; the species a model knows are listed when it's used.</div></div>
+    <div class="decision"><div class="dno">D21</div><div><b>Research mode is in Profile in every build</b> (user, 7 Oct), so the study's timings come from the same builds users install. It exports everything (CSV tables, models, README) in one zip and charts the results.</div></div>
+    <div class="decision"><div class="dno">D22</div><div><b>Only models from Herb Lens can be trained further</b> (user, 7 Oct): they carry their trained layers and a replay sample. Models from other tools can be imported to identify, not trained. If models are hosted on R2 later, only that small part goes up (about 1–2 MB for 20 species); the app rebuilds the <code>.tflite</code> from the backbone it already has.</div></div>
+    <div class="decision"><div class="dno">D23</div><div><b>Backbones come from Google's public MediaPipe storage</b> (7 Oct), downloaded on first use and kept, instead of being published through R2: they are the same files the spike measured, free to redistribute (Apache 2.0), and reachable from the web app (CORS allowed).</div></div>
   </div>
 </section>
 
@@ -780,7 +791,7 @@ service cloud.firestore {
       <tr><td>GitLive falls behind the official Firebase SDKs</td><td>Used only inside <code>core:firebase</code>; any call can fall back to the native SDK per platform</td></tr>
       <tr><td>Herb identification differs between Android and iOS</td><td>Same model, same ML Kit runtime family, and the same test images on both platforms</td></tr>
       <tr><td>Kotlin/Wasm isn't mature enough</td><td>The Phase 6 decision gate; pure modules already compile for both web options</td></tr>
-      <tr><td>On-device training too slow on low-end phones</td><td>Final layer only; the Phase 7 spike measures it before feature work</td></tr>
+      <tr><td>On-device training too slow on low-end phones</td><td>Final layer only. Measured: at most 1.6 s for 128 photos on a Redmi Note 12 (Phase 7 spike); the full study grid on 192 photos took 15 min there</td></tr>
     </tbody>
   </table></div>
 </section>

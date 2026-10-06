@@ -44,6 +44,7 @@ class AndroidPlatform(private val activity: ComponentActivity) {
     private var onPhotos: ((List<LocalImage>) -> Unit)? = null
     private var onLocation: ((GeoLocation?) -> Unit)? = null
     private var onSpeech: ((String) -> Unit)? = null
+    private val research = AndroidResearch(activity)
 
     private val photoPicker = activity.registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(ContributeViewModel.MAX_PHOTOS),
@@ -71,11 +72,16 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         BenchmarkSources(
             photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), UriImage(Uri.fromFile(File(root, "training/${it[0]}")))) },
             backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { File(root, "backbones/$it.tflite").path },
+            readModel = { withContext(Dispatchers.IO) { File(it).readBytes() } },
+            saveModel = { name, bytes -> withContext(Dispatchers.IO) { File(activity.cacheDir, name).apply { writeBytes(bytes) }.path } },
         )
     }
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (BuildConfig.DEBUG) ::benchmarkSources else null,
+        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        research = research::platform,
+        files = research.fileActions(),
         requestGoogleSignIn = ::googleSignIn,
         pickPhotos = { pick ->
             onPhotos = pick.onPicked

@@ -123,3 +123,110 @@ the Friedman test and Wilcoxon signed-rank post-hoc tests (paired by seed, Holm 
 effect sizes; devices compared on time, memory and energy, and accuracy checked for equivalence
 (TOST), since the same seed should give the same result up to floating-point and image-resizing
 differences.
+
+## How it runs and what it saves
+
+- **Backbone:** LiteRT on every platform: the LiteRT Interpreter on Android, TensorFlowLiteSwift on
+  iOS, LiteRT.js (WebAssembly) on the web. Embedding uses the same .tflite file everywhere.
+- **Training:** pure Kotlin (`core:training`), compiled for each platform, so the arithmetic is the
+  same on every device.
+- **Saved model:** a standard `.tflite`. The backbone's graph is kept byte for byte, and the head
+  is added after the embedding as L2_NORMALIZATION, FULLY_CONNECTED (+ReLU with a hidden layer)
+  and SOFTMAX layers. One file goes from a 224 × 224 RGB image (float, 0–1) to one probability per
+  class, with `labels.txt` giving the class order. It runs in LiteRT/TensorFlow Lite anywhere.
+  Checked with LiteRT.js: the same answer as the Kotlin head on 8/8 photos, probabilities within
+  1e-6.
+- **Resuming training:** the head is also saved as JSON (`ModelPack`) so the app can continue
+  training it later without reading weights back out of the .tflite.
+
+### Head with a hidden layer (6 Oct 2026, laptop Chrome, 8 species, 16 photos each)
+
+| Head | mobilenet_v3_large | mobilenet_v3_small |
+|---|---|---|
+| Softmax layer only | 72 % | 64 % |
+| 100-unit ReLU layer + softmax (Teachable Machine's design) | 72 % | 63 % |
+
+The hidden layer doesn't help with this little data. The softmax-only head stays the default; the
+hidden layer is a setting and an ablation in the study.
+
+## Train tab (everyone)
+
+- **Your models:** trained here, or imported (any .tflite with labels inside; models made in Herb
+  Lens have them).
+- **New model:** a name, a quality and photos.
+
+  | Quality | What it uses |
+  |---|---|
+  | Fast | mobilenet_v3_small |
+  | Balanced (default) | mobilenet_v3_large |
+  | Best | mobilenet_v3_large, plus two centre crops of every photo |
+
+  Photos are collected species by species from the photo picker, or imported as a folder (a zip
+  too on Android). Each photo is embedded once, when it's added; only embeddings are kept, in the
+  app's files.
+- **Splitting the photos:** each photo goes into training, checking (early stopping) or test
+  photos by its number and the seed (70/15/15 by default). A photo keeps its share as more are
+  added, so test photos are never trained on, however often the model is updated. The result
+  screen reports accuracy on those test photos, per species, and the pair most often confused.
+  Under the hood: the learning curves and the confusion matrix.
+- **Adding species or photos later:** by default the model replays 20 earlier photos per species
+  from the last model, with new species starting from their mean embedding; "Retrain all" trains
+  from scratch instead. Every training option is under Advanced.
+- **Try it:** the live camera, or a photo (which then replaces the camera with its own result).
+  **Share .tflite:** the standalone model, with its labels inside, and, for Herb Lens, the trained
+  layers (`herblens/model.json`) and up to 20 embeddings per species to replay
+  (`herblens/replay.bin`), packed in the same way and ignored by TFLite tools.
+- **Importing a shared model:** one from Herb Lens can go on learning (new species or photos,
+  replaying its packed sample so it keeps the old species); any other .tflite with labels inside
+  can be used to identify, not trained.
+- At least two species to train; the screen asks for 10 photos per species.
+
+## Research mode
+
+**Opening it:** Profile → **Research mode** (the last row under App), in every build. Not
+translated: it's for researchers; everyday training is the Train tab.
+
+1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
+   from Google's public model storage the first time a run uses them, then stay on the device.
+   Copies put in by hand are used instead when present: `Android/data/com.uri.lee.dl/files/backbones/`
+   (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
+2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,
+   hidden files and `__MACOSX` are skipped).
+   - Android: **Choose zip** or **Choose folder**. Some phones' folder pickers (Xiaomi HyperOS)
+     show no folders at all; use a zip there.
+   - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
+   - Web (Chrome): **Choose folder**.
+   - Or, for long runs prepared from a computer, copy the dataset folder into the app's own
+     `datasets/` folder; it is then offered on the screen without a picker.
+     Android: `adb push <folder> /sdcard/Android/data/com.uri.lee.dl/files/datasets/`.
+     iOS: Finder → the iPhone → Files → drag the folder onto Herb Lens, into `datasets` (or
+     `xcrun devicectl device copy to … --destination Documents/datasets/<name>` for development builds).
+3. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
+   **Start**.
+4. **Leaving it running:**
+   - Android: carries on with the screen off or in another app (a foreground service with a
+     progress notification keeps the CPU awake).
+   - iOS 26 and later: carries on with the phone locked or in another app; iOS shows the
+     progress on the lock screen, and can end it if the phone gets busy. Older iOS: keep the app
+     open (the screen stays on by itself).
+   - Web: keep the tab open and in front, and the computer awake.
+5. **If a run stops** (the app is closed or killed, the system ends it, the battery runs out):
+   open Research mode again and tap **Resume**. Every finished run is saved as it goes, with the
+   embeddings, so it carries on where it stopped without the dataset and without repeating rows.
+6. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
+   to Files, AirDrop) and also keeps the zip in the app's `research/` folder (Finder, Files), the
+   web downloads the zip. A stopped run can also be saved as it is (**Save results so far**).
+
+The zip (`herblens-research-<platform>-<time>.zip`) holds:
+
+- `README.txt`: device, dataset (photos per class), the plan and the run's log.
+- `results/runs.csv`, `steps.csv`, `per_class.csv`, `confusion.csv`, `task_accuracy.csv`,
+  `epochs.csv`: one row per observation, each naming device, platform, app version, backbone,
+  scenario, strategy, seed and training settings, so files from several devices stack directly.
+  `steps.csv` holds the device readings: training time, memory before/after, CPU time, battery
+  charge used (Android), battery level, charging state, thermal state.
+- `results/embedding.csv`: backbone load time and per-photo embedding time (median, mean, p90).
+- `models/<backbone>/model.tflite`: a standalone classifier trained on every photo, with its
+  `labels.txt` inside and next to it; `head.json` for continuing training in the app.
+
+For energy figures on Android, run unplugged: the charge counter only falls while discharging.

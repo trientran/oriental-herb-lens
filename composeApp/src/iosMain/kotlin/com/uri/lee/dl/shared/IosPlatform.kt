@@ -11,6 +11,13 @@ import com.uri.lee.dl.feature.auth.GoogleCredential
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.posix.memcpy
+import platform.Foundation.writeToFile
+import platform.Foundation.dataWithContentsOfFile
+import platform.Foundation.dataWithBytes
+import platform.Foundation.NSData
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -65,6 +72,7 @@ internal class IosPlatform(
     // UIKit holds delegates weakly; these keep them alive while in use
     private var picker: PickerDelegate? = null
     private var location: LocationDelegate? = null
+    private val research = IosResearch(::topController)
 
     /**
      * Phase 7 spike (debug builds): photos and backbones copied into the app's Documents folder
@@ -80,11 +88,23 @@ internal class IosPlatform(
         BenchmarkSources(
             photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), IosPickedImage("$documents/training/${it[0]}")) },
             backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { "$documents/backbones/$it.tflite" },
+            readModel = { path ->
+                val data = NSData.dataWithContentsOfFile(path) ?: error("Can't read $path")
+                ByteArray(data.length.toInt()).apply { usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
+            },
+            saveModel = { name, bytes ->
+                val path = NSTemporaryDirectory() + name
+                bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.toULong()) }.writeToFile(path, atomically = true)
+                path
+            },
         )
     }
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
+        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        research = research::platform,
+        files = research.fileActions(),
         pickPhotos = ::pickPhotos,
         requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->

@@ -75,5 +75,6 @@ include(":feature:herbdetails")
 include(":feature:profile")
 include(":feature:saved")
 include(":feature:scan")
+include(":feature:training")
 
 // Phase 6 spike (temporary): Compose in the browser

@@ -2,8 +2,11 @@ package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.training.Dataset
+import com.uri.lee.dl.feature.training.PickedFile
 import com.uri.lee.dl.feature.auth.AppleSignInRequest
 import com.uri.lee.dl.feature.auth.GoogleSignInRequest
+import com.uri.lee.dl.shared.research.ResearchPlatform
 
 /** What each platform does itself: pickers, sign-in UI, sharing, store links. A null entry hides the feature. */
 data class PlatformActions(
@@ -30,6 +33,19 @@ data class PlatformActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Phase 7 spike, debug builds: the labelled photos and backbones to benchmark; null hides it. */
     val trainingBenchmark: (suspend () -> BenchmarkSources)? = null,
+    /** User-trained models: dataset and model-file pickers, saving a model; null hides those buttons. */
+    val files: FileActions? = null,
+    /** Phase 7 research mode (debug builds for now): device readings, dataset pickers, saving results; null hides it. */
+    val research: (() -> ResearchPlatform)? = null,
     /** Starts speech recognition and reports what was said. */
     val onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
+)
+
+/** Files for user-trained models (plan Phase 7); a null entry hides its button. */
+class FileActions(
+    val pickDatasetFolder: (suspend () -> Dataset?)? = null,
+    val pickDatasetZip: (suspend () -> Dataset?)? = null,
+    val pickModelFile: (suspend () -> PickedFile?)? = null,
+    /** Hands a file to the user: save dialog, share sheet or download. */
+    val saveFile: suspend (name: String, bytes: ByteArray) -> Unit,
 )
