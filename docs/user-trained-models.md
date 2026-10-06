@@ -81,3 +81,45 @@ optimised. No older iPhone was available; the slowest device, the Redmi Note 12,
   LiteRT.js, like the herb model.
 - **Model pack:** a small JSON file: the backbone's name and SHA-256, the class names, the
   weights and biases, and the accuracy figures. A pack only works with the backbone it was trained on.
+
+## Study protocol (decided 6 Oct 2026)
+
+For the paper "Training on the edge: On-device continual learning for invasive plant
+classification in a North American context". The app runs every configuration itself (Research
+mode) and exports the CSVs; nothing is measured by hand. Datasets and trained models go to Zenodo.
+
+**Dataset:** about 7,000 photos of 20 invasive species, one folder per species.
+
+**Splits:** stratified per species, random for each seed: 70 % train, 15 % validation (early
+stopping), 15 % test. The test set is never trained on.
+
+**Seeds:** 10 per configuration (seeds 1–10). Each seed fixes the split, the order species arrive
+in and the training order. `kotlin.random.Random(seed)` gives the same sequence on every
+platform, so a seed means the same split and order on every device.
+
+**Scenarios:**
+- **Class-incremental:** 5 steps of 4 species, in a random order for each seed.
+- **Data-incremental:** all 20 species from the start; 5 steps, each adding 20 % of the training photos.
+
+**Strategies:** joint retraining on all stored embeddings (upper bound); naive fine-tuning on new
+data only (lower bound); replay with a buffer of 5, 10, 20 and 50 embeddings per species; class
+prototypes (nearest class mean, no training).
+
+**Backbones:** mobilenet_v3_large (main); mobilenet_v3_small (efficiency comparison).
+
+**Devices:** Redmi Note 12 (mid-range Android), iPhone 17 Pro Max, a laptop browser (Chrome,
+macOS). Embeddings are computed once per backbone and device, then reused by every seed and
+strategy; their cost is reported separately.
+
+**Measured by the app, per step:** accuracy, top-3 accuracy, balanced accuracy, macro and
+per-species precision, recall and F1, Cohen's κ, log loss, calibration error (ECE), the confusion
+matrix; accuracy on old and new species; average incremental accuracy, forgetting and backward
+transfer; training time and epochs; peak memory; CPU time; energy (charge counter, Android only);
+thermal state. Per device: embedding and prediction time (median, 90th and 99th percentile),
+model and embedding-store sizes, device and app details.
+
+**Analysis:** mean ± SD and 95 % confidence intervals over the 10 seeds; strategies compared with
+the Friedman test and Wilcoxon signed-rank post-hoc tests (paired by seed, Holm correction), with
+effect sizes; devices compared on time, memory and energy, and accuracy checked for equivalence
+(TOST), since the same seed should give the same result up to floating-point and image-resizing
+differences.
