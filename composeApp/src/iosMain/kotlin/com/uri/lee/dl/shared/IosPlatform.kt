@@ -11,6 +11,13 @@ import com.uri.lee.dl.feature.auth.GoogleCredential
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.posix.memcpy
+import platform.Foundation.writeToFile
+import platform.Foundation.dataWithContentsOfFile
+import platform.Foundation.dataWithBytes
+import platform.Foundation.NSData
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -80,6 +87,15 @@ internal class IosPlatform(
         BenchmarkSources(
             photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), IosPickedImage("$documents/training/${it[0]}")) },
             backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { "$documents/backbones/$it.tflite" },
+            readModel = { path ->
+                val data = NSData.dataWithContentsOfFile(path) ?: error("Can't read $path")
+                ByteArray(data.length.toInt()).apply { usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
+            },
+            saveModel = { name, bytes ->
+                val path = NSTemporaryDirectory() + name
+                bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.toULong()) }.writeToFile(path, atomically = true)
+                path
+            },
         )
     }
 

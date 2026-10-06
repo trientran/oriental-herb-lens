@@ -20,6 +20,8 @@ import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.fetch.Response
+import org.khronos.webgl.Int8Array
+import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 
 /** The web build's settings, from the webApp module. */
@@ -151,6 +153,12 @@ private suspend fun benchmarkSources(): BenchmarkSources {
             "mobilenet_v3_small" to "$base/backbones/mobilenet_v3_small.tflite",
             "mobilenet_v3_large" to "$base/backbones/mobilenet_v3_large.tflite",
         ),
+        readModel = { url ->
+            val buffer = window.asDynamic().fetch(url).unsafeCast<Promise<Response>>().await().arrayBuffer().await()
+            Int8Array(buffer).unsafeCast<ByteArray>()
+        },
+        // A blob: URL the LiteRT loader can fetch like any other
+        saveModel = { _, bytes -> URL.createObjectURL(Blob(arrayOf(bytes))) },
     )
 }
 

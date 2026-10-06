@@ -71,6 +71,8 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         BenchmarkSources(
             photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), UriImage(Uri.fromFile(File(root, "training/${it[0]}")))) },
             backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { File(root, "backbones/$it.tflite").path },
+            readModel = { withContext(Dispatchers.IO) { File(it).readBytes() } },
+            saveModel = { name, bytes -> withContext(Dispatchers.IO) { File(activity.cacheDir, name).apply { writeBytes(bytes) }.path } },
         )
     }
 
