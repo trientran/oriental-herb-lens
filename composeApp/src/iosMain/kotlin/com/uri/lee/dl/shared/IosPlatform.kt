@@ -72,6 +72,7 @@ internal class IosPlatform(
     // UIKit holds delegates weakly; these keep them alive while in use
     private var picker: PickerDelegate? = null
     private var location: LocationDelegate? = null
+    private val research = IosResearch(::topController)
 
     /**
      * Phase 7 spike (debug builds): photos and backbones copied into the app's Documents folder
@@ -101,6 +102,7 @@ internal class IosPlatform(
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
+        research = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) research::platform else null,
         pickPhotos = ::pickPhotos,
         requestGoogleSignIn = {
             suspendCancellableCoroutine { continuation ->

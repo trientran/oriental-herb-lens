@@ -35,6 +35,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
+import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
+import com.uri.lee.dl.domain.ml.PhotoReader
+import com.uri.lee.dl.shared.research.ResearchController
+import com.uri.lee.dl.shared.research.ResearchDialog
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -103,8 +107,10 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
 @Composable
 private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val navController = rememberNavController()
-    val isDebug = koinInject<AppInfo>().isDebug
+    val appInfo = koinInject<AppInfo>()
+    val isDebug = appInfo.isDebug
     var showBenchmark by remember { mutableStateOf(false) }
+    var showResearch by remember { mutableStateOf(false) }
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
     }
@@ -166,6 +172,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         debugTools = listOfNotNull(
                             actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
+                            actions.research?.takeIf { isDebug }?.let { "Research mode (Phase 7)" to { showResearch = true } },
                         ),
                     ),
                     modifier = Modifier.statusBarsPadding(),
@@ -197,6 +204,14 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     if (showBenchmark && benchmarkSources != null) {
         val benchmark = TrainingBenchmark(koinInject(), koinInject(), getKoin().getOrNull())
         TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
+    }
+    val research = actions.research
+    if (showResearch && research != null) {
+        val reader = koinInject<PhotoReader>()
+        val embedders = koinInject<ImageEmbedderLoader>()
+        // Kept while the dialog is open; a run stops when it closes
+        val controller = remember { ResearchController(research(), reader, embedders, appInfo.versionName) }
+        ResearchDialog(controller) { showResearch = false }
     }
 }
 

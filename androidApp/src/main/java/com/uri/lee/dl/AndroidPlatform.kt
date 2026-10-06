@@ -44,6 +44,7 @@ class AndroidPlatform(private val activity: ComponentActivity) {
     private var onPhotos: ((List<LocalImage>) -> Unit)? = null
     private var onLocation: ((GeoLocation?) -> Unit)? = null
     private var onSpeech: ((String) -> Unit)? = null
+    private val research = AndroidResearch(activity)
 
     private val photoPicker = activity.registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(ContributeViewModel.MAX_PHOTOS),
@@ -78,6 +79,7 @@ class AndroidPlatform(private val activity: ComponentActivity) {
 
     fun actions() = PlatformActions(
         trainingBenchmark = if (BuildConfig.DEBUG) ::benchmarkSources else null,
+        research = if (BuildConfig.DEBUG) research::platform else null,
         requestGoogleSignIn = ::googleSignIn,
         pickPhotos = { pick ->
             onPhotos = pick.onPicked

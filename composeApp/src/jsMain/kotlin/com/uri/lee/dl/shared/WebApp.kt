@@ -83,6 +83,7 @@ fun startWebApp(config: WebConfig) {
         onExit = {},
         onShareApp = { share(config.siteUrl) },
         trainingBenchmark = if (config.isDebug) ::benchmarkSources else null,
+        research = if (config.isDebug) ::webResearch else null,
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {

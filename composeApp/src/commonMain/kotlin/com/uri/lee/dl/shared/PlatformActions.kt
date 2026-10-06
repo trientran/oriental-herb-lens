@@ -4,6 +4,7 @@ import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.feature.auth.AppleSignInRequest
 import com.uri.lee.dl.feature.auth.GoogleSignInRequest
+import com.uri.lee.dl.shared.research.ResearchPlatform
 
 /** What each platform does itself: pickers, sign-in UI, sharing, store links. A null entry hides the feature. */
 data class PlatformActions(
@@ -30,6 +31,8 @@ data class PlatformActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Phase 7 spike, debug builds: the labelled photos and backbones to benchmark; null hides it. */
     val trainingBenchmark: (suspend () -> BenchmarkSources)? = null,
+    /** Phase 7 research mode (debug builds for now): device readings, dataset pickers, saving results; null hides it. */
+    val research: (() -> ResearchPlatform)? = null,
     /** Starts speech recognition and reports what was said. */
     val onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
 )

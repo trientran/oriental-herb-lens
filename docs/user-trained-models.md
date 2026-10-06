@@ -148,3 +148,34 @@ differences.
 
 The hidden layer doesn't help with this little data. The softmax-only head stays the default; the
 hidden layer is a setting and an ablation in the study.
+
+## Research mode (debug builds)
+
+Profile → **Research mode (Phase 7)** runs the study protocol on the device it's on and saves
+everything in one zip. Nothing is measured or typed by hand.
+
+1. **Backbones** go where the benchmark's do: `Android/data/com.uri.lee.dl/files/backbones/` (adb),
+   `Documents/backbones/` (iOS, devicectl), or the local test-photo server on port 8767 (web).
+2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,
+   hidden files and `__MACOSX` are skipped).
+   - Android: **Choose folder** (starts in Download) or **Choose zip**.
+   - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
+   - Web (Chrome): **Choose folder**.
+3. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
+   **Start**. The screen stays on; don't switch apps (iOS suspends apps in the background).
+4. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
+   to Files, AirDrop), the web downloads the zip.
+
+The zip (`herblens-research-<platform>-<time>.zip`) holds:
+
+- `README.txt`: device, dataset (photos per class), the plan and the run's log.
+- `results/runs.csv`, `steps.csv`, `per_class.csv`, `confusion.csv`, `task_accuracy.csv`,
+  `epochs.csv`: one row per observation, each naming device, platform, app version, backbone,
+  scenario, strategy, seed and training settings, so files from several devices stack directly.
+  `steps.csv` holds the device readings: training time, memory before/after, CPU time, battery
+  charge used (Android), battery level, charging state, thermal state.
+- `results/embedding.csv`: backbone load time and per-photo embedding time (median, mean, p90).
+- `models/<backbone>/model.tflite`: a standalone classifier trained on every photo, with its
+  `labels.txt` inside and next to it; `head.json` for continuing training in the app.
+
+For energy figures on Android, run unplugged: the charge counter only falls while discharging.
