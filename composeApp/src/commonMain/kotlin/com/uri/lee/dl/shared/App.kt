@@ -66,6 +66,7 @@ import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -194,7 +195,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     StatusDialogs(actions)
     val benchmarkSources = actions.trainingBenchmark
     if (showBenchmark && benchmarkSources != null) {
-        val benchmark = TrainingBenchmark(koinInject(), koinInject())
+        val benchmark = TrainingBenchmark(koinInject(), koinInject(), getKoin().getOrNull())
         TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
     }
 }

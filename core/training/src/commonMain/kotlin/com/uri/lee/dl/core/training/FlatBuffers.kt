@@ -145,6 +145,8 @@ internal class FlatBufferBuilder(initialSize: Int = 1024) {
         return offset()
     }
 
+    fun createFloatVector(values: FloatArray): Int = createIntVector(values.map { it.toRawBits() })
+
     fun createOffsetVector(targets: List<Int>): Int {
         prep(4, 4 * targets.size)
         for (i in targets.indices.reversed()) addOffset(targets[i])

@@ -7,13 +7,29 @@ package com.uri.lee.dl.core.training
  * float 0–1 for the MediaPipe MobileNets); the output is one probability per class, in the order
  * of the labels saved with it.
  *
+ * The file stands alone: it carries standard TFLite metadata (input normalisation, output
+ * labels) and the class names as `labels.txt` packed inside, so MediaPipe, ML Kit or this app can
+ * use it as an image classifier with nothing else.
+ *
  * The backbone file is copied in whole and the new model's tables point into it, so its layers
  * and their options are kept exactly as they were, whatever operators it uses. Its metadata and
  * signatures, which describe an embedder, are left out.
  */
 object TfliteExport {
 
-    fun export(backbone: ByteArray, head: ClassifierHead, description: String = "Herb Lens user-trained classifier"): ByteArray {
+    const val LABELS_FILE = "labels.txt"
+
+    fun export(
+        backbone: ByteArray,
+        head: ClassifierHead,
+        labels: List<String>,
+        name: String = "Herb Lens user-trained classifier",
+        description: String = "",
+        author: String = "",
+        version: String = "1",
+    ): ByteArray {
+        require(labels.size == head.classes) { "${labels.size} labels for ${head.classes} classes" }
+        require(labels.none { '\n' in it || '\r' in it }) { "Labels can't contain line breaks" }
         val model = FlatBufferReader(backbone)
         val root = model.root
         require(backbone.decodeToString(4, 8) == "TFL3") { "Not a .tflite model" }
@@ -29,6 +45,7 @@ object TfliteExport {
         val oldBuffers = model.tables(root, MODEL_BUFFERS)
         require(oldBuffers.none { model.field(it, BUFFER_OFFSET) != null }) { "Backbones with external buffers aren't supported" }
         val oldOpcodes = model.tables(root, MODEL_OPERATOR_CODES)
+        val inputShape = model.ints(oldTensors[model.ints(graph, SUBGRAPH_INPUTS).single()], TENSOR_SHAPE)
 
         val b = FlatBufferBuilder(backbone.size + head.params.size * 4 + 4096)
         val blob = b.addBlob(backbone)
@@ -115,6 +132,15 @@ object TfliteExport {
         b.startTable(); b.floatField(0, 1f); val softmaxOptions = b.endTable()
         operator(softmaxCode, listOf(logits), probabilities, OPTIONS_SOFTMAX, softmaxOptions)
 
+        // Metadata, in a buffer of its own, named as the TFLite tools expect
+        val metadataBytes = ModelMetadata.build(name, description, author, version, inputShape.getOrElse(1) { 224 }, LABELS_FILE)
+        val metadataData = b.createByteVector(metadataBytes)
+        b.startTable(); b.offsetField(BUFFER_DATA, metadataData); newBuffers += b.endTable()
+        val metadataBuffer = oldBuffers.size + newBuffers.size - 1
+        val metadataName = b.createString("TFLITE_METADATA")
+        b.startTable(); b.offsetField(0, metadataName); b.intField(1, metadataBuffer); val metadataEntry = b.endTable()
+        val metadataVector = b.createOffsetVector(listOf(metadataEntry))
+
         // The subgraph: the backbone's tensors and operators followed by the new ones
         val tensorsVector = b.createOffsetVector(oldTensors.map { old(it) } + newTensors)
         val operatorsVector = b.createOffsetVector(model.tables(graph, SUBGRAPH_OPERATORS).map { old(it) } + newOperators)
@@ -132,15 +158,21 @@ object TfliteExport {
         val opcodesVector = b.createOffsetVector(oldOpcodes.map { old(it) } + newOpcodes)
         val subgraphsVector = b.createOffsetVector(listOf(newGraph))
         val buffersVector = b.createOffsetVector(oldBuffers.map { old(it) } + newBuffers)
-        val descriptionOffset = b.createString(description)
+        val descriptionOffset = b.createString(name)
         b.startTable()
         b.intField(MODEL_VERSION, model.intField(root, MODEL_VERSION, 3))
         b.offsetField(MODEL_OPERATOR_CODES, opcodesVector)
         b.offsetField(MODEL_SUBGRAPHS, subgraphsVector)
         b.offsetField(MODEL_DESCRIPTION, descriptionOffset)
         b.offsetField(MODEL_BUFFERS, buffersVector)
-        return b.finish(b.endTable(), "TFL3")
+        b.offsetField(MODEL_METADATA, metadataVector)
+        val flatBuffer = b.finish(b.endTable(), "TFL3")
+        return StoredZip.append(flatBuffer, mapOf(LABELS_FILE to labels.joinToString("\n", postfix = "\n").encodeToByteArray()))
     }
+
+    /** The class names packed in a model (this app's exports, or any with TFLite metadata labels), or null. */
+    fun labels(model: ByteArray): List<String>? =
+        StoredZip.read(model, LABELS_FILE)?.decodeToString()?.lines()?.map { it.trim() }?.filter { it.isNotEmpty() }
 
     // Field ids and enum values from the TFLite schema (tensorflow/compiler/mlir/lite/schema/schema.fbs)
     private const val MODEL_VERSION = 0
@@ -148,6 +180,7 @@ object TfliteExport {
     private const val MODEL_SUBGRAPHS = 2
     private const val MODEL_DESCRIPTION = 3
     private const val MODEL_BUFFERS = 4
+    private const val MODEL_METADATA = 6
     internal const val SUBGRAPH_TENSORS = 0
     internal const val SUBGRAPH_INPUTS = 1
     internal const val SUBGRAPH_OUTPUTS = 2

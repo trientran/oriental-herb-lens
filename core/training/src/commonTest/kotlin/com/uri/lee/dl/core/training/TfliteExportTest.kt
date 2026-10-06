@@ -38,6 +38,8 @@ class TfliteExportTest {
         return b.finish(b.endTable(), "TFL3")
     }
 
+    private fun labels(n: Int) = List(n) { "Species $it" }
+
     private fun floats(reader: FlatBufferReader, buffer: Int): FloatArray {
         val data = reader.deref(reader.field(buffer, 0)!!)
         return FloatArray(reader.int(data) / 4) { Float.fromBits(reader.int(data + 4 + 4 * it)) }
@@ -46,7 +48,7 @@ class TfliteExportTest {
     @Test
     fun addsTheHeadAfterTheEmbedding() {
         val head = HeadTrainer.train(clusters(3, 10, 8, 0.3f), 3, TrainingOptions(hiddenUnits = 4, maxEpochs = 5)).head
-        val model = FlatBufferReader(TfliteExport.export(identityBackbone(8), head))
+        val model = FlatBufferReader(TfliteExport.export(identityBackbone(8), head, labels(head.classes)))
 
         assertEquals("TFL3", model.bytes.decodeToString(4, 8))
         val graph = model.tables(model.root, 2).single()
@@ -63,14 +65,15 @@ class TfliteExportTest {
 
         // The weights, in order, are exactly the head's
         val buffers = model.tables(model.root, 4)
-        val weights = buffers.drop(1).map { floats(model, it) }.reduce { a, b -> a + b }
+        // The last buffer is the metadata
+        val weights = buffers.drop(1).dropLast(1).map { floats(model, it) }.reduce { a, b -> a + b }
         assertTrue(head.params.contentEquals(weights))
     }
 
     @Test
     fun weightDataIsAlignedFor16Bytes() {
         val head = HeadTrainer.train(clusters(3, 10, 8, 0.3f), 3, TrainingOptions(maxEpochs = 2)).head
-        val model = FlatBufferReader(TfliteExport.export(identityBackbone(8), head))
+        val model = FlatBufferReader(TfliteExport.export(identityBackbone(8), head, labels(head.classes)))
 
         model.tables(model.root, 4).drop(1).forEach { buffer -> assertEquals(0, (model.deref(model.field(buffer, 0)!!) + 4) % 16) }
     }
@@ -79,6 +82,28 @@ class TfliteExportTest {
     fun refusesAMismatchedBackbone() {
         val head = HeadTrainer.train(clusters(3, 10, 8, 0.3f), 3, TrainingOptions(maxEpochs = 2)).head
 
-        assertFailsWith<IllegalArgumentException> { TfliteExport.export(identityBackbone(16), head) }
+        assertFailsWith<IllegalArgumentException> { TfliteExport.export(identityBackbone(16), head, labels(head.classes)) }
+    }
+
+    @Test
+    fun carriesItsLabelsAndMetadata() {
+        val head = HeadTrainer.train(clusters(3, 10, 8, 0.3f), 3, TrainingOptions(maxEpochs = 2)).head
+        val bytes = TfliteExport.export(identityBackbone(8), head, listOf("Lantana camara", "Mimosa pigra", "Cây mắc cỡ"))
+        val model = FlatBufferReader(bytes)
+
+        assertEquals(listOf("Lantana camara", "Mimosa pigra", "Cây mắc cỡ"), TfliteExport.labels(bytes))
+        val entry = model.tables(model.root, 6).single()
+        assertEquals("TFLITE_METADATA", model.string(entry, 0))
+        val buffer = model.tables(model.root, 4)[model.intField(entry, 1)]
+        val data = model.deref(model.field(buffer, 0)!!)
+        val metadata = FlatBufferReader(bytes.copyOfRange(data + 4, data + 4 + model.int(data)))
+        assertEquals("M001", metadata.bytes.decodeToString(4, 8))
+        val output = metadata.tables(metadata.tables(metadata.root, 3).single(), 3).single()
+        assertEquals("labels.txt", metadata.string(metadata.tables(output, 6).single(), 0))
+    }
+
+    @Test
+    fun crcMatchesTheStandard() {
+        assertEquals(0xCBF43926.toInt(), StoredZip.crc32("123456789".encodeToByteArray()))
     }
 }

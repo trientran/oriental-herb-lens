@@ -25,6 +25,7 @@ import com.uri.lee.dl.core.training.TfliteExport
 import com.uri.lee.dl.core.training.TrainingOptions
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.core.training.ClassifierHead
+import com.uri.lee.dl.domain.ml.ClassifierFileLoader
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
@@ -51,7 +52,12 @@ class BenchmarkSources(
  * layer on 16 photos per class (and on 5, for a "few photos" case) and tests on the rest. Reports
  * load, embedding and training times and accuracy; also written to the log.
  */
-internal class TrainingBenchmark(private val reader: PhotoReader, private val loader: ImageEmbedderLoader) {
+internal class TrainingBenchmark(
+    private val reader: PhotoReader,
+    private val loader: ImageEmbedderLoader,
+    /** Where the platform has one, a classifier that reads the exported file's metadata and labels. */
+    private val classifierFiles: ClassifierFileLoader? = null,
+) {
 
     suspend fun run(sources: BenchmarkSources, report: (String) -> Unit) {
         val classes = sources.photos.maxOf { it.label } + 1
@@ -103,8 +109,12 @@ internal class TrainingBenchmark(private val reader: PhotoReader, private val lo
         images: List<ClassifierImage>,
         report: (String) -> Unit,
     ) {
-        val exported = TfliteExport.export(sources.readModel(location), head)
-        val merged = loader.load(sources.saveModel("${name}_hidden${head.hidden}.tflite", exported))
+        val labels = List(head.classes) { "class $it" }
+        val exported = TfliteExport.export(sources.readModel(location), head, labels)
+        val saved = sources.saveModel("${name}_hidden${head.hidden}.tflite", exported)
+        val merged = loader.load(saved)
+        val labeler = classifierFiles?.load(saved)
+        var labelerAgrees = 0
         val backbone = loader.load(location)
         var maxDifference = 0f
         var agree = 0
@@ -113,10 +123,12 @@ internal class TrainingBenchmark(private val reader: PhotoReader, private val lo
             val fromKotlin = head.probabilities(backbone.embed(image))
             for (i in fromKotlin.indices) maxDifference = maxOf(maxDifference, abs(fromFile[i] - fromKotlin[i]))
             if (fromFile.indexOfMaxValue() == fromKotlin.indexOfMaxValue()) agree++
+            if (labeler?.classify(image, 0f, 1)?.firstOrNull()?.label == labels[fromKotlin.indexOfMaxValue()]) labelerAgrees++
         }
         merged.close()
         backbone.close()
         report("    exported .tflite (${exported.size / 1024} KB): same answer on $agree/${images.size}, largest probability difference $maxDifference")
+        if (labeler != null) report("    read by the platform classifier (metadata and packed labels): same label on $labelerAgrees/${images.size}")
     }
 
     private fun FloatArray.indexOfMaxValue() = indices.maxBy { this[it] }
