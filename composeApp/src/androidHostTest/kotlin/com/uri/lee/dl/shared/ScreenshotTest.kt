@@ -10,8 +10,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.unit.LayoutDirection
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
@@ -211,6 +213,14 @@ class ScreenshotTest {
             ScanState(results = listOf(RecognizedHerb("3035652", 0.92f, Samples.dinhLang), RecognizedHerb("2766278", 0.74f, Samples.catalog[3]))),
             onAction = {}, onPickPhotos = {}, onOpenSpecies = {},
         )
+    }
+
+    // Right to left: everything mirrored
+    @Config(qualifiers = "+ar-ldrtl")
+    @Test fun browseArabic() = light("browse_ar") {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            BrowseScreen(BrowseState(species = Samples.catalog, isLoading = false), {}, {}, selectedId = null)
+        }
     }
 
     @Config(qualifiers = "+vi")

@@ -1,0 +1,3 @@
+/* Permission prompts, in the app's languages */
+"NSCameraUsageDescription" = "Identifiez les plantes en pointant l’appareil photo vers elles.";
+"NSLocationWhenInUseUsageDescription" = "Enregistrez approximativement l’endroit où pousse une plante que vous photographiez.";

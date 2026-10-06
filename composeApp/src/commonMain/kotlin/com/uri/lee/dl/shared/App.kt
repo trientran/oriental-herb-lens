@@ -1,6 +1,11 @@
 package com.uri.lee.dl.shared
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
@@ -10,6 +15,7 @@ import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -22,8 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -39,12 +51,14 @@ import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
+import com.uri.lee.dl.core.designsystem.resources.cancel
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
 import com.uri.lee.dl.core.designsystem.resources.nav_profile
 import com.uri.lee.dl.core.designsystem.resources.nav_saved
 import com.uri.lee.dl.core.designsystem.resources.nav_train
 import com.uri.lee.dl.core.designsystem.resources.ok
+import com.uri.lee.dl.core.designsystem.resources.profile_language
 import com.uri.lee.dl.core.designsystem.resources.status_later
 import com.uri.lee.dl.core.designsystem.resources.status_suspended
 import com.uri.lee.dl.core.designsystem.resources.status_update
@@ -108,7 +122,11 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
 fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val vietnameseFirst = koinInject<NamePreference>().vietnameseFirst()
     HerbLensTheme {
-        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst) { AppContent(actions, openHerbId) }
+        // Right to left for Arabic everywhere: Android does it itself, the web and iOS follow this
+        val direction = if (Locale.current.language in RTL_LANGUAGES) LayoutDirection.Rtl else LocalLayoutDirection.current
+        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst, LocalLayoutDirection provides direction) {
+            AppContent(actions, openHerbId)
+        }
     }
 }
 
@@ -119,6 +137,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val isDebug = appInfo.isDebug
     var showBenchmark by remember { mutableStateOf(false) }
     var showResearch by remember { mutableStateOf(false) }
+    var showLanguages by remember { mutableStateOf(false) }
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
     }
@@ -144,7 +163,8 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                     selected = current?.hasRoute(item.routeClass) == true,
                     onClick = { navController.navigateTopLevel(item.route) },
                     icon = { Icon(item.icon, contentDescription = null) },
-                    label = { Text(stringResource(item.label)) },
+                    // One line in every language: five tabs leave little room on a phone
+                    label = { Text(stringResource(item.label), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis) },
                 )
             }
         },
@@ -190,7 +210,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                     ProfileActions(
                         onSignIn = signIn,
                         onShareApp = actions.onShareApp,
-                        onOpenLanguageSettings = actions.onOpenLanguageSettings,
+                        onOpenLanguageSettings = actions.onOpenLanguageSettings ?: actions.languages?.let { { showLanguages = true } },
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         debugTools = listOfNotNull(
                             actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
@@ -226,6 +246,10 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     if (showBenchmark && benchmarkSources != null) {
         val benchmark = TrainingBenchmark(koinInject(), koinInject(), getKoin().getOrNull())
         TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
+    }
+    val languages = actions.languages
+    if (showLanguages && languages != null) {
+        DialogLayer { LanguageDialog(languages) { showLanguages = false } }
     }
     val research = actions.research
     if (showResearch && research != null) {
@@ -278,3 +302,29 @@ private fun StatusDialogs(actions: PlatformActions) {
 internal fun screenName(route: String): String =
     route.substringBefore('/').substringBefore('?').substringAfterLast('.').removeSuffix("Destination")
         .replace(Regex("([a-z])([A-Z])"), "$1_$2").lowercase()
+
+/** Languages written right to left; of the app's, only Arabic. */
+private val RTL_LANGUAGES = setOf("ar", "fa", "he", "ur")
+
+/** The web's language picker: each language by its own name. */
+@Composable
+private fun LanguageDialog(languages: LanguageChoice, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.profile_language)) },
+        text = {
+            Column {
+                languages.options.forEach { (code, name) ->
+                    Row(
+                        Modifier.fillMaxWidth().clickable { if (code != languages.current) languages.choose(code) else onDismiss() }.padding(vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = code == languages.current, onClick = null)
+                        Text(name, Modifier.padding(start = 12.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    )
+}

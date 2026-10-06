@@ -61,6 +61,7 @@ class WebFirebaseConfig(
 /** Starts the app in the page's `#app` element. */
 @OptIn(ExperimentalComposeUiApi::class)
 fun startWebApp(config: WebConfig) {
+    applySavedLanguage()
     startFirebase(config.firebase.toOptions(), config.appCheckSiteKey)
     val app = AppInfo(
         versionName = config.versionName,
@@ -94,12 +95,13 @@ fun startWebApp(config: WebConfig) {
         // Hidden until unlocked (tap the version on Profile 7 times)
         research = ::webResearch,
         files = webFileActions(),
+        languages = LanguageChoice(WEB_LANGUAGES, current = window.navigator.language.substringBefore('-'), choose = ::chooseWebLanguage),
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
         CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
             // On the web any text can be selected and copied, e.g. a name to search elsewhere
-            SelectionContainer { App(actions) }
+            WithFallbackFonts { SelectionContainer { App(actions) } }
         }
     }
 }

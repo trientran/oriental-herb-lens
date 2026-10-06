@@ -1,0 +1,3 @@
+/* Permission prompts, in the app's languages */
+"NSCameraUsageDescription" = "Identify herbs by pointing the camera at them.";
+"NSLocationWhenInUseUsageDescription" = "Record roughly where a plant you photograph grows.";

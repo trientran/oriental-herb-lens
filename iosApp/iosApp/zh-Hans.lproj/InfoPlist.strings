@@ -1,0 +1,3 @@
+/* Permission prompts, in the app's languages */
+"NSCameraUsageDescription" = "将相机对准植物即可识别。";
+"NSLocationWhenInUseUsageDescription" = "记录你拍摄的植物大致生长在哪里。";

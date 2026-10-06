@@ -1,0 +1,3 @@
+/* Permission prompts, in the app's languages */
+"NSCameraUsageDescription" = "تعرّف على النباتات بتوجيه الكاميرا نحوها.";
+"NSLocationWhenInUseUsageDescription" = "سجّل تقريبًا المكان الذي ينمو فيه النبات الذي تصوّره.";

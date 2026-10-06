@@ -1,0 +1,3 @@
+/* Permission prompts, in the app's languages */
+"NSCameraUsageDescription" = "Nhận dạng cây thuốc bằng cách hướng camera vào cây.";
+"NSLocationWhenInUseUsageDescription" = "Ghi lại vị trí gần đúng nơi cây bạn chụp đang mọc.";

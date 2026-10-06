@@ -35,6 +35,10 @@ jobs:
           mkdir -p ~/.gradle
           echo "MAPBOX_DOWNLOADS_TOKEN=$MAPBOX_DOWNLOADS_TOKEN" >> ~/.gradle/gradle.properties
 
+      # Every language has every string, with the same placeholders and its plural forms
+      - name: Translations
+        run: python3 tools/check_translations.py
+
       # API keys are not needed for unit tests or lint; the build warns and uses empty values.
       # Shared modules run their tests on the JVM here, and in Node.js for the web targets.
       # Screenshot tests compare each Compose screen with composeApp/src/androidHostTest/screenshots.

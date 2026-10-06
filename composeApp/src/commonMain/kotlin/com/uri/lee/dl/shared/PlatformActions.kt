@@ -31,6 +31,8 @@ data class PlatformActions(
     /** Asks once for permission to show notifications, e.g. when an upload finishes in the background. */
     val requestNotificationPermission: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
+    /** An in-app language picker, where the system has no per-app language setting (the web). */
+    val languages: LanguageChoice? = null,
     /** Phase 7 spike, debug builds: the labelled photos and backbones to benchmark; null hides it. */
     val trainingBenchmark: (suspend () -> BenchmarkSources)? = null,
     /** User-trained models: dataset and model-file pickers, saving a model; null hides those buttons. */
@@ -49,3 +51,6 @@ class FileActions(
     /** Hands a file to the user: save dialog, share sheet or download. */
     val saveFile: suspend (name: String, bytes: ByteArray) -> Unit,
 )
+
+/** The app's languages as (code, name in that language), the current one, and how to switch. */
+class LanguageChoice(val options: List<Pair<String, String>>, val current: String, val choose: (String) -> Unit)

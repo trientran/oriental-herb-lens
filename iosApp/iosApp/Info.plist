@@ -25,6 +25,11 @@
 	<array>
 		<string>en</string>
 		<string>vi</string>
+		<string>ar</string>
+		<string>es</string>
+		<string>fr</string>
+		<string>ru</string>
+		<string>zh-Hans</string>
 	</array>
 	<!-- Google sign-in returns to the app through its reversed client ID -->
 	<key>CFBundleURLTypes</key>
