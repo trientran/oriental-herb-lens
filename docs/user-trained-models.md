@@ -161,10 +161,16 @@ everything in one zip. Nothing is measured or typed by hand.
    - Android: **Choose folder** (starts in Download) or **Choose zip**.
    - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
    - Web (Chrome): **Choose folder**.
+   - Or, for long runs prepared from a computer, copy the dataset folder into the app's own
+     `datasets/` folder (Android: `adb push <folder> /sdcard/Android/data/com.uri.lee.dl/files/datasets/`;
+     iOS: `xcrun devicectl device copy to … --destination Documents/datasets/<name>`); it is then
+     offered on the screen without a picker.
 3. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
    **Start**. The screen stays on; don't switch apps (iOS suspends apps in the background).
 4. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
-   to Files, AirDrop), the web downloads the zip.
+   to Files, AirDrop) and also keeps the zip in `Documents/research/` (copy it off with
+   `devicectl … copy from`), the web downloads the zip. iOS writes the run's log to
+   `Documents/debug/app.log` too.
 
 The zip (`herblens-research-<platform>-<time>.zip`) holds:
 
