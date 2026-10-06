@@ -149,6 +149,33 @@ differences.
 The hidden layer doesn't help with this little data. The softmax-only head stays the default; the
 hidden layer is a setting and an ablation in the study.
 
+## Train tab (everyone)
+
+- **Your models:** trained here, or imported (any .tflite with labels inside; models made in Herb
+  Lens have them).
+- **New model:** a name, a quality and photos.
+
+  | Quality | What it uses |
+  |---|---|
+  | Fast | mobilenet_v3_small |
+  | Balanced (default) | mobilenet_v3_large |
+  | Best | mobilenet_v3_large, plus two centre crops of every photo |
+
+  Photos are collected species by species from the photo picker, or imported as a folder (a zip
+  too on Android). Each photo is embedded once, when it's added; only embeddings are kept, in the
+  app's files.
+- **Splitting the photos:** each photo goes into training, checking (early stopping) or test
+  photos by its number and the seed (70/15/15 by default). A photo keeps its share as more are
+  added, so test photos are never trained on, however often the model is updated. The result
+  screen reports accuracy on those test photos, per species, and the pair most often confused.
+  Under the hood: the learning curves and the confusion matrix.
+- **Adding species or photos later:** by default the model replays 20 earlier photos per species
+  from the last model, with new species starting from their mean embedding; "Retrain all" trains
+  from scratch instead. Every training option is under Advanced.
+- **Try it:** the live camera or a photo. **Share .tflite:** the standalone model, with its
+  labels inside.
+- At least two species to train; the screen asks for 10 photos per species.
+
 ## Research mode
 
 **Opening it:** in every build, tap the version number at the bottom of Profile 7 times; a
