@@ -1,6 +1,7 @@
 package com.uri.lee.dl.data.gbif
 
 import com.uri.lee.dl.core.common.AppDispatchers
+import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.PhotoCredit
 import com.uri.lee.dl.domain.model.PhotoSource
 import com.uri.lee.dl.domain.model.SpeciesPhoto
@@ -49,7 +50,13 @@ internal class GbifPhotoRepository(
     internal data class OccurrencePage(val results: List<Occurrence> = emptyList())
 
     @Serializable
-    internal data class Occurrence(val key: Long, val media: List<Media> = emptyList())
+    internal data class Occurrence(
+        val key: Long,
+        val media: List<Media> = emptyList(),
+        // Where it was observed; providers may coarsen it for protected species
+        val decimalLatitude: Double? = null,
+        val decimalLongitude: Double? = null,
+    )
 
     @Serializable
     internal data class Media(
@@ -69,7 +76,8 @@ internal class GbifPhotoRepository(
 
         internal fun toPhotos(page: OccurrencePage): List<SpeciesPhoto> =
             page.results.flatMap { occurrence ->
-                occurrence.media.mapNotNull { media -> media.toPhoto(occurrence.key) }
+                val location = occurrence.decimalLatitude?.let { lat -> occurrence.decimalLongitude?.let { GeoLocation(lat, it) } }
+                occurrence.media.mapNotNull { media -> media.toPhoto(occurrence.key)?.copy(location = location) }
             }.distinctBy { it.url }
 
         private fun Media.toPhoto(occurrenceKey: Long): SpeciesPhoto? {

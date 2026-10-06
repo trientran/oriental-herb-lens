@@ -19,6 +19,9 @@ class FoundObject(
 
 /** Finds the separate objects (plants, leaves, flowers) in an image. */
 interface ObjectFinder {
+    /** False where the platform has no object detector (the browser): then nothing is ever found. */
+    val isAvailable: Boolean get() = true
+
     /** [fromCamera] tracks objects from frame to frame; otherwise the image is treated as a single photo. */
     suspend fun find(image: ClassifierImage, fromCamera: Boolean): List<FoundObject>
 }

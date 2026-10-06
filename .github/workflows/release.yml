@@ -3,7 +3,7 @@
 #     it in Play Console (release notes, rollout), then promote it.
 #   - iOS: an archive uploaded to App Store Connect, where it appears in TestFlight once processed.
 #
-# Run it from the Actions tab (Release > Run workflow) with the version name, e.g. 1.2.
+# Run it from the Actions tab (Release > Run workflow) with the version name, e.g. 2.0.
 # The build number (Android versionCode, iOS CFBundleVersion) is the run number times 10, so it
 # always grows. Set up the secrets first: docs/release.md.
 name: Release
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: Version shown to users, e.g. 1.2
+        description: Version shown to users, e.g. 2.0
         required: true
       platforms:
         description: What to release

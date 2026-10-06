@@ -108,10 +108,11 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
             }
 
             SectionCard(stringResource(Res.string.profile_app)) {
-                actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), it) }
+                actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), onClick = it) }
                 LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) { uriHandler.openUri(HERB_LIST_URL) }
-                actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), it) }
-                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact)) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
+                actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
+                // The address too: without a mail app set up, a mailto link does nothing
+                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAIL) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(ABOUT_URL) }
                 LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
             }
@@ -196,9 +197,10 @@ private fun UsageStatisticsSetting(enabled: Boolean, onChange: (Boolean) -> Unit
 }
 
 @Composable
-private fun LinkRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null, onClick: () -> Unit) {
     ListItem(
         headlineContent = { Text(label) },
+        supportingContent = supporting?.let { { Text(it) } },
         leadingContent = { Icon(icon, contentDescription = null) },
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier = Modifier.clickable(onClick = onClick).semantics { role = Role.Button },

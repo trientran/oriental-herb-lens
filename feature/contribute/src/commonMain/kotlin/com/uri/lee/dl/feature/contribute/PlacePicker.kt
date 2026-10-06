@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.contribute_map_hint
@@ -47,41 +48,43 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun PlacePicker(start: GeoLocation?, onPicked: (GeoLocation) -> Unit, onDismiss: () -> Unit) {
     var center by remember { mutableStateOf(start?.let { LatLng(it.latitude, it.longitude) }) }
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(Res.string.contribute_map_hint), style = MaterialTheme.typography.titleMedium) },
-                    navigationIcon = {
-                        IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close)) }
-                    },
-                )
-            },
-            bottomBar = {
-                Surface(tonalElevation = 3.dp) {
-                    Button(
-                        onClick = { center?.let { onPicked(GeoLocation(it.latitude, it.longitude)) } },
-                        enabled = center != null,
-                        modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(HerbLensTheme.spacing.lg),
-                    ) { Text(stringResource(Res.string.contribute_use_this_place)) }
+    DialogLayer {
+        Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(Res.string.contribute_map_hint), style = MaterialTheme.typography.titleMedium) },
+                        navigationIcon = {
+                            IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close)) }
+                        },
+                    )
+                },
+                bottomBar = {
+                    Surface(tonalElevation = 3.dp) {
+                        Button(
+                            onClick = { center?.let { onPicked(GeoLocation(it.latitude, it.longitude)) } },
+                            enabled = center != null,
+                            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(HerbLensTheme.spacing.lg),
+                        ) { Text(stringResource(Res.string.contribute_use_this_place)) }
+                    }
+                },
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize()) {
+                    HerbMap(
+                        points = listOfNotNull(start?.let { LatLng(it.latitude, it.longitude) }),
+                        modifier = Modifier.fillMaxSize(),
+                        interactive = true,
+                        onCenterChanged = { center = it },
+                        showMarkers = false,
+                    )
+                    // The pin's tip marks the centre
+                    Icon(
+                        Icons.Filled.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.align(Alignment.Center).size(48.dp).offset(y = (-24).dp),
+                    )
                 }
-            },
-        ) { padding ->
-            Box(Modifier.padding(padding).fillMaxSize()) {
-                HerbMap(
-                    points = listOfNotNull(start?.let { LatLng(it.latitude, it.longitude) }),
-                    modifier = Modifier.fillMaxSize(),
-                    interactive = true,
-                    onCenterChanged = { center = it },
-                    showMarkers = false,
-                )
-                // The pin's tip marks the centre
-                Icon(
-                    Icons.Filled.Place,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.align(Alignment.Center).size(48.dp).offset(y = (-24).dp),
-                )
             }
         }
     }

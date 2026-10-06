@@ -33,9 +33,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.highlighted
@@ -50,7 +51,6 @@ import com.uri.lee.dl.core.designsystem.resources.search_no_results
 import com.uri.lee.dl.core.designsystem.resources.search_no_results_body
 import com.uri.lee.dl.core.designsystem.resources.search_placeholder
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
-import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.search.NameKind
 import com.uri.lee.dl.domain.search.SpeciesMatch
 import org.jetbrains.compose.resources.stringResource
@@ -66,7 +66,7 @@ fun BrowseRoute(
     /** Starts platform speech recognition and reports the text; null hides the microphone. */
     onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
 ) {
-    val vietnamese = Locale.current.language == "vi"
+    val vietnamese = LocalVietnameseFirst.current
     val viewModel = koinViewModel<BrowseViewModel> { parametersOf(vietnamese) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     BrowseScreen(
@@ -205,23 +205,27 @@ private fun SearchResults(query: String, results: List<SpeciesMatch>, selectedId
                 species = match.species,
                 selected = match.species.id == selectedId,
                 onClick = { onOpenSpecies(match.species.id) },
-                title = titleFor(match),
-                supporting = supportingFor(match.species, match),
+                title = titleFor(match, LocalVietnameseFirst.current),
+                supporting = supportingFor(match, LocalVietnameseFirst.current),
             )
         }
     }
 }
 
-/** The Vietnamese name, highlighted when that's where the query matched. */
+/** The name shown first, highlighted when that's where the query matched. */
 @Composable
-private fun titleFor(match: SpeciesMatch) = when (match.kind) {
-    NameKind.VIETNAMESE -> highlighted(match.matchedName, match.highlight)
-    else -> highlighted(match.species.preferredVietnameseName ?: match.species.scientificName, null)
+private fun titleFor(match: SpeciesMatch, vietnameseFirst: Boolean): AnnotatedString {
+    val titleKind = if (vietnameseFirst) NameKind.VIETNAMESE else NameKind.ENGLISH
+    val title = match.species.displayName(vietnameseFirst)
+    return if (match.kind == titleKind && match.matchedName == title) highlighted(match.matchedName, match.highlight)
+    else highlighted(title, null)
 }
 
-/** Shows which other name matched (a synonym, the English name), so the result makes sense. */
-private fun supportingFor(species: Species, match: SpeciesMatch): String? = when {
-    match.kind == NameKind.VIETNAMESE && match.matchedName != species.preferredVietnameseName -> match.matchedName
-    match.kind == NameKind.ENGLISH -> match.matchedName
-    else -> species.preferredEnglishName ?: species.family
+/** Shows which other name matched (a synonym, the other language's name), so the result makes sense. */
+private fun supportingFor(match: SpeciesMatch, vietnameseFirst: Boolean): String? {
+    val species = match.species
+    return when {
+        match.kind != NameKind.SCIENTIFIC && match.matchedName != species.displayName(vietnameseFirst) -> match.matchedName
+        else -> species.otherName(vietnameseFirst) ?: species.family
+    }
 }

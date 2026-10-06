@@ -696,7 +696,9 @@ service cloud.firestore {
     <ul class="tasks">
       <li><input type="checkbox" id="p6-1" checked><label for="p6-1"><span class="tt">Time-boxed spike</span><span class="td">Results in §09: Firebase, App Check, sign-in, the Worker and Telex typing all work in the browser. A <code>getUserMedia</code> camera frame comes with the identification screen.</span></label></li>
       <li><input type="checkbox" id="p6-2" checked><label for="p6-2"><span class="tt">Choose Option A or B and record it</span><span class="td">Option A, on Kotlin/JS (D16).</span></label></li>
-      <li><input type="checkbox" id="p6-3"><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">Set R2 CORS for the web origin.</span></label></li>
+      <li><input type="checkbox" id="p6-3"><label for="p6-3"><span class="tt">Build browse, search, identification and contributions</span><span class="td">The shared app runs in the browser (<code>:webApp</code>, 6 Oct). Every shared module has a JS target; Android and iOS share <code>mobileMain</code> for SQLite, DataStore files and content sync. In the browser: the catalog in memory, favourites, history and settings in <code>localStorage</code> (a small <code>KeyValueStore</code> over DataStore on the phones), the herb model in LiteRT.js, the camera through <code>getUserMedia</code>, Leaflet with OpenStreetMap, Nominatim for place names, Google sign-in in a popup. No object detection in the browser (ML Kit has no web SDK): "Pick a plant" is hidden, and the plant check before sharing uses the herb model. R2 CORS applied (6 Oct). No photo sharing on the web (D19); usage statistics on by default (D18).</span></label></li>
+      <li><input type="checkbox" id="p6-4"><label for="p6-4"><span class="tt">Publish the web app</span><span class="td">Cloudflare Pages, replacing the temporary site; keep the legal pages and the Search Console tag. With the other platforms at release (D15).</span></label></li>
+      <li><input type="checkbox" id="p6-5"><label for="p6-5"><span class="tt">Remove the spike</span><span class="td"><code>spikes/web</code> and <code>:spikes:webCompose</code>, once the web app covers what they checked.</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> Herb Lens in the browser on Mac, Windows and Linux.</div>
   </div>
@@ -710,6 +712,16 @@ service cloud.firestore {
       <li><input type="checkbox" id="p7-4"><label for="p7-4"><span class="tt"><code>feature:training</code>: collect, train, evaluate, save, share</span></label></li>
     </ul>
     <div class="ships"><b>Ships:</b> users train their own image classifiers on Android, iOS and the web.</div>
+  </div>
+
+  <div class="phase" data-phase="8">
+    <div class="phase-h"><div class="phase-no g">8</div><div><h3>Multilingual app</h3><p>After Phase 7 (user, 6 Oct). Until then the app is in English and Vietnamese, and species are named in Vietnamese first only for readers in or from Vietnam (D17).</p></div><span class="prog"></span></div>
+    <ul class="tasks">
+      <li><input type="checkbox" id="p8-1"><label for="p8-1"><span class="tt">The UN's languages for the interface</span><span class="td">Arabic (right to left), Chinese, French, Russian and Spanish, besides English and Vietnamese: Compose resources per language, a language picker on the web, and checked translations of the legal pages.</span></label></li>
+      <li><input type="checkbox" id="p8-2"><label for="p8-2"><span class="tt">Common names in those languages</span><span class="td">From GBIF's vernacular names, added to the catalog CSV; search folds each script.</span></label></li>
+      <li><input type="checkbox" id="p8-3"><label for="p8-3"><span class="tt">How to cite the app</span><span class="td">A Profile section on citing the app in research: the published papers and the apps' links, from a Remote Config key so they can change without a release.</span></label></li>
+    </ul>
+    <div class="ships"><b>Ships:</b> the app in seven languages, and a citation guide.</div>
   </div>
 
   <div class="phase" data-phase="R">
@@ -746,6 +758,9 @@ service cloud.firestore {
     <div class="decision"><div class="dno">D14</div><div><b>Google Analytics for Firebase, for the research.</b> Yes (5 Oct), on Android and iOS (web with a consent banner in Phase 6): screen views and a few events (identify, open_result, view_species, add_favorite, share_photos, suggest_name, report_photo); no user ID, advertising ID or ad personalisation, so no tracking; Profile → Share usage statistics turns it off (on by default; switch to opt-in if the ethics approval requires it).</div></div>
     <div class="decision"><div class="dno">D15</div><div><b>Store releases after the last phase.</b> Yes (5 Oct): Android, iOS and web are released together once the supervisor has signed off a thorough test (phase R). The release workflow, store secrets, legal pages and moderation are ready meanwhile.</div></div>
     <div class="decision"><div class="dno">D16</div><div><b>The web app is the shared Compose app on Kotlin/JS</b> (Option A). Yes (6 Oct): Firebase works through GitLive, text handling is 3–4 × faster than on Wasm, the bundle is the same size. Herb identification with LiteRT.js; settings in <code>localStorage</code>. App Check for the web and Telex typing were checked on 6 Oct.</div></div>
+    <div class="decision"><div class="dno">D17</div><div><b>Species are named in Vietnamese first only for readers in or from Vietnam</b>: device language Vietnamese, region Vietnam, or (on the web, which can't see the visitor's country) Vietnam's time zone. Everyone else sees the English name first (or the scientific name), with the Vietnamese name underneath. The interface language still follows the device or the in-app switch (user, 6 Oct). More languages: Phase 8.</div></div>
+    <div class="decision"><div class="dno">D18</div><div><b>Usage statistics are on by default on the web too</b>, as in the apps (user, 6 Oct), with nothing for advertising (consent for ad storage and personalisation denied) and the Profile switch to turn them off, which stops Analytics before it starts. Visitors from the EU would normally be asked first; revisit with the ethics approval (phase R).</div></div>
+    <div class="decision"><div class="dno">D19</div><div><b>The web app doesn't share photos</b> (user, 6 Oct): it can't check a photo shows a plant before upload (ML Kit's general labeller has no web version, and the herb model refused plants it doesn't know). Sharing photos stays in the apps; the web identifies from photos and the camera, and suggests names. Cloud Vision through the upload Worker would allow it later (1,000 free checks a month).</div></div>
   </div>
 </section>
 

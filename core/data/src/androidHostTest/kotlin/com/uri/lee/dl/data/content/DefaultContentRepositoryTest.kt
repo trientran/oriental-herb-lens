@@ -1,24 +1,31 @@
 package com.uri.lee.dl.data.content
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.uri.lee.dl.core.common.AppDispatchers
-import com.uri.lee.dl.data.catalog.CatalogSource
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.uri.lee.dl.core.common.AppDispatchers
+import com.uri.lee.dl.core.common.text.PlatformTextNormalizer
+import com.uri.lee.dl.core.datastore.DataStoreKeyValueStore
+import com.uri.lee.dl.data.catalog.CatalogSource
+import com.uri.lee.dl.data.catalog.SpeciesCsvReader
 import com.uri.lee.dl.data.catalog.SqlSpeciesRepository
 import com.uri.lee.dl.data.db.HerbLensDatabase
-import com.uri.lee.dl.data.catalog.SpeciesCsvReader
-import com.uri.lee.dl.core.common.text.PlatformTextNormalizer
 import com.uri.lee.dl.domain.model.ContentKind.CATALOG
 import com.uri.lee.dl.domain.model.ContentKind.MODEL
 import com.uri.lee.dl.domain.model.ContentRelease
 import com.uri.lee.dl.domain.model.InstallResult
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
+import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
+import okio.FileSystem
+import okio.Path.Companion.toOkioPath
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -27,12 +34,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import okio.FileSystem
-import okio.Path.Companion.toOkioPath
-import java.io.ByteArrayOutputStream
-import java.security.MessageDigest
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 class DefaultContentRepositoryTest {
 
@@ -65,7 +66,9 @@ class DefaultContentRepositoryTest {
     fun setUp() {
         files = ContentFiles(folder.newFolder("files").toOkioPath())
         installed = InstalledReleaseStore(
-            PreferenceDataStoreFactory.create(scope = scope.backgroundScope) { folder.newFile("content.preferences_pb") }
+            DataStoreKeyValueStore(
+                PreferenceDataStoreFactory.create(scope = scope.backgroundScope) { folder.newFile("content.preferences_pb") }
+            )
         )
         val source = object : CatalogSource {
             override fun readText() = files.installed(CATALOG).toFile().takeIf { it.isFile }?.readText() ?: bundledCatalog

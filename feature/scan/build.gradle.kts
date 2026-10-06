@@ -2,13 +2,17 @@ plugins {
     alias(libs.plugins.herblens.kmp.feature)
 }
 
-// Identify: the camera (CameraX on Android, AVFoundation on iOS) or picked photos, classified on the device.
+// Identify: the camera (CameraX on Android, AVFoundation on iOS, getUserMedia in the browser) or
+// picked photos, classified on the device.
 kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.material3.adaptive.layout)
         }
         iosMain.dependencies {
+            implementation(projects.core.ml)
+        }
+        jsMain.dependencies {
             implementation(projects.core.ml)
         }
         androidMain.dependencies {

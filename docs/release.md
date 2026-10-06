@@ -21,7 +21,7 @@ ready meanwhile; the secrets are set.
 2. **Firestore rules:** if the previous rules were restored meanwhile (so the old app keeps
    working), deploy `firebase/firestore.rules` again:
    `cd firebase && npx firebase deploy --only firestore:rules --project oriental-herb-lens-41d17`
-3. **Build:** GitHub → Actions → **Release → Run workflow**, version `1.2` (both platforms).
+3. **Build:** GitHub → Actions → **Release → Run workflow**, version `2.0` (both platforms).
 4. **Android:**
    - Play Console → Testing → Internal testing: finish the draft (release notes), roll it out
      to testers and test the store build.
@@ -45,7 +45,7 @@ ready meanwhile; the secrets are set.
 
 1. Merge what should ship into the branch you release from (usually `master`).
 2. GitHub → **Actions → Release → Run workflow**. Choose the branch, enter the version shown to
-   users (e.g. `1.2`), and pick Android, iOS or both.
+   users (e.g. `2.0`), and pick Android, iOS or both.
 3. Android: Play Console → Med Herb Lens → **Testing → Internal testing**: the draft release is
    there. Add release notes, save, and roll it out (or promote it to production).
 4. iOS: App Store Connect → Med Herb Lens → **TestFlight**: the build appears when processed.

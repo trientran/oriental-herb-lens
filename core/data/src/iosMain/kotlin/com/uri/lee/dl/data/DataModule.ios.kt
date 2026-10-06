@@ -12,6 +12,7 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
 internal actual val platformDataModule: Module = module {
+    includes(mobileDataModule)
     single { ContentFiles(applicationSupportDirectory().toPath()) }
     single<CatalogSource> { IosCatalogSource(get(), get()) }
 }

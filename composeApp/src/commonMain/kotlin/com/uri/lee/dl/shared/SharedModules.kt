@@ -6,7 +6,8 @@ import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.core.common.Clock
 import com.uri.lee.dl.core.common.text.PlatformTextNormalizer
 import com.uri.lee.dl.core.common.text.TextNormalizer
-import com.uri.lee.dl.core.database.databaseModule
+import androidx.compose.ui.text.intl.Locale
+import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.core.datastore.dataStoreModule
 import com.uri.lee.dl.core.firebase.firebaseModule
 import com.uri.lee.dl.core.location.locationModule
@@ -36,6 +37,10 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 private val coreModule = module {
+    single<NamePreference> {
+        val app = get<AppInfo>()
+        NamePreference { vietnameseFirst(app) }
+    }
     single { AppDispatchers() }
     single { ApplicationScope(CoroutineScope(SupervisorJob() + get<AppDispatchers>().default)) }
     single { Clock.System }
@@ -56,7 +61,7 @@ private val domainModule = module {
 fun sharedModules(app: AppInfo): List<Module> = listOf(
     module { single { app } },
     coreModule,
-    databaseModule,
+    platformStorageModule,
     dataStoreModule,
     networkModule,
     firebaseModule,
@@ -74,6 +79,16 @@ fun sharedModules(app: AppInfo): List<Module> = listOf(
     scanModule,
     module { single { AddressLine { get<AddressLookup>().addressLine(it.latitude, it.longitude) } } },
 )
+
+/** The SQLite database on Android and iOS; nothing in the browser, which keeps the catalog in memory. */
+internal expect val platformStorageModule: Module
+
+/**
+ * Species are named in Vietnamese first for readers using Vietnamese, with the region set to
+ * Vietnam, or (on the web) in Vietnam's time zone; in English first for everyone else.
+ */
+internal fun vietnameseFirst(app: AppInfo): Boolean =
+    Locale.current.language == "vi" || Locale.current.region == "VN" || app.inVietnam
 
 /** Launch-time background work; call once after Koin starts. */
 fun Koin.runStartupTasks() = get<StartupTasks>().launchIn(get<ApplicationScope>())

@@ -1,10 +1,8 @@
 package com.uri.lee.dl.data.settings
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.floatPreferencesKey
+import com.uri.lee.dl.core.datastore.KeyValueStore
+import com.uri.lee.dl.core.datastore.booleanKey
+import com.uri.lee.dl.core.datastore.floatKey
 import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +10,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 /** Uses the existing DataStore file and keys, so settings saved by earlier versions carry over. */
-internal class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>) : SettingsRepository {
+internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore) : SettingsRepository {
 
     override val scanSettings: Flow<ScanSettings> = dataStore.data
         .map { prefs ->
@@ -39,8 +37,8 @@ internal class DataStoreSettingsRepository(private val dataStore: DataStore<Pref
 
     companion object {
         // Persisted key names. Renaming one silently resets the user's setting.
-        val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanPreferencesKey("IS_OBJECTS_MODE")
-        val CONFIDENCE_LEVEL = floatPreferencesKey("CONFIDENCE_LEVEL")
-        val USAGE_STATISTICS = booleanPreferencesKey("usage_statistics")
+        val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanKey("IS_OBJECTS_MODE")
+        val CONFIDENCE_LEVEL = floatKey("CONFIDENCE_LEVEL")
+        val USAGE_STATISTICS = booleanKey("usage_statistics")
     }
 }

@@ -46,7 +46,7 @@ android {
         targetSdk = 37
         // Release builds in CI pass -PversionCode and -PversionName (.github/workflows/release.yml)
         versionCode = (findProperty("versionCode") as String?)?.toInt() ?: 9
-        versionName = findProperty("versionName") as String? ?: "1.1"
+        versionName = findProperty("versionName") as String? ?: "2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         // workers/photo-upload, e.g. https://herb-lens-photo-upload.<account>.workers.dev

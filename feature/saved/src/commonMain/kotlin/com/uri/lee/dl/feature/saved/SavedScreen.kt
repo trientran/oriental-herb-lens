@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.HerbCard
@@ -84,7 +85,7 @@ fun SavedScreen(
             ) {
                 items(shown, key = { it.id }) { species ->
                     HerbCard(
-                        title = AnnotatedString(species.preferredVietnameseName ?: species.scientificName),
+                        title = AnnotatedString(species.displayName(LocalVietnameseFirst.current)),
                         scientificName = species.scientificName,
                         supporting = species.preferredEnglishName ?: species.family,
                         onClick = { onOpenSpecies(species.id) },

@@ -2,7 +2,7 @@ package com.uri.lee.dl.data
 
 import com.uri.lee.dl.data.analytics.UsageStatisticsSync
 import com.uri.lee.dl.data.firebase.UserProfileSync
-import com.uri.lee.dl.data.library.LegacyLibraryMigration
+import com.uri.lee.dl.data.library.LibraryMigration
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 /** Background work every app starts once at launch. */
 class StartupTasks internal constructor(
     private val auth: AuthRepository,
-    private val legacyLibrary: LegacyLibraryMigration,
+    private val legacyLibrary: LibraryMigration,
     private val profile: UserProfileSync,
     private val settings: SettingsRepository,
     private val usageStatistics: UsageStatisticsSync,

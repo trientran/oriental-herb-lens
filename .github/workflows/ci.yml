@@ -38,8 +38,8 @@ jobs:
       # API keys are not needed for unit tests or lint; the build warns and uses empty values.
       # Shared modules run their tests on the JVM here, and in Node.js for the web targets.
       # Screenshot tests compare each Compose screen with composeApp/src/androidHostTest/screenshots.
-      - name: Module rules, unit and screenshot tests, lint
-        run: ./gradlew checkModuleRules testDebugUnitTest testAndroidHostTest jsNodeTest wasmJsNodeTest lintDebug -Proborazzi.test.verify=true --console=plain
+      - name: Module rules, unit and screenshot tests, lint, the web app
+        run: ./gradlew checkModuleRules testDebugUnitTest testAndroidHostTest jsNodeTest wasmJsNodeTest lintDebug :webApp:jsBrowserDistribution -Proborazzi.test.verify=true --console=plain
 
       - name: Upload reports
         if: always()

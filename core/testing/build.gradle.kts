@@ -4,7 +4,6 @@ plugins {
 
 // Fakes and fixtures for tests in every module. Only ever added to test source sets.
 kotlin {
-    js { nodejs() }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { nodejs() }
 

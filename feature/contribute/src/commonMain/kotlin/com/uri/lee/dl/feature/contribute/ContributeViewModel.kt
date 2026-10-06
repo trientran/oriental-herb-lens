@@ -9,6 +9,7 @@ import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.moderation.PlantCheck
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.repository.AuthRepository
@@ -75,13 +76,14 @@ class ContributeViewModel(
     private val notifier: UploadNotifier,
     private val plantCheck: PlantCheck,
     private val analytics: Analytics = NoAnalytics,
+    private val names: NamePreference = NamePreference { false },
 ) : MviViewModel<ContributeState, ContributeAction>(ContributeState(herbId)) {
 
     init {
         auth.observeUserId().onEach { setState { copy(isSignedIn = it != null) } }.launchIn(viewModelScope)
         viewModelScope.launch {
             val species = runCatching { catalog.get(herbId) }.getOrNull()
-            setState { copy(speciesName = species?.let { it.preferredVietnameseName ?: it.scientificName }) }
+            setState { copy(speciesName = species?.displayName(names.vietnameseFirst())) }
         }
     }
 
