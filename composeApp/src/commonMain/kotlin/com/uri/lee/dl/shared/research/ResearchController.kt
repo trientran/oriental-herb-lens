@@ -1,5 +1,6 @@
 package com.uri.lee.dl.shared.research
 
+import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.training.EmbeddedDataset
 import com.uri.lee.dl.core.training.Example
 import com.uri.lee.dl.core.training.ResearchArchive
@@ -25,6 +26,8 @@ import kotlinx.coroutines.yield
 /** Where a research run is up to, for the screen. */
 data class ResearchState(
     val dataset: Dataset? = null,
+    /** Datasets already in the app's folder, to choose without a picker. */
+    val appDatasets: List<Dataset> = emptyList(),
     val backbones: List<String> = emptyList(),
     val running: Boolean = false,
     /** What's happening now, e.g. "Embedding with mobilenet_v3_large: 1,204 of 7,000". */
@@ -57,8 +60,11 @@ class ResearchController(
 
     suspend fun loadBackbones() {
         val names = runCatching { platform.backbones().keys.toList() }.getOrElse { emptyList() }
-        _state.update { it.copy(backbones = names) }
+        val datasets = runCatching { platform.appDatasets() }.getOrElse { emptyList() }.filter { it.classes.size >= 2 }
+        _state.update { it.copy(backbones = names, appDatasets = datasets) }
     }
+
+    fun choose(dataset: Dataset) = _state.update { it.copy(dataset = dataset, results = null, log = emptyList(), error = null) }
 
     suspend fun pick(zip: Boolean) {
         val picker = if (zip) platform.pickDatasetZip ?: return else platform.pickDatasetFolder
@@ -202,7 +208,10 @@ class ResearchController(
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }
 
-    private fun log(line: String) = _state.update { it.copy(log = it.log + line) }
+    private fun log(line: String) {
+        Logger.withTag("Research").i { line }
+        _state.update { it.copy(log = it.log + line) }
+    }
 
     private fun percent(v: Float) = "${(v * 1000).roundToInt() / 10.0} %"
     private fun ms(v: Double) = ((v * 10).roundToInt() / 10.0).toString()

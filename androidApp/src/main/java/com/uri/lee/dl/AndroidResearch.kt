@@ -52,6 +52,15 @@ internal class AndroidResearch(private val activity: ComponentActivity) {
             }
         },
         readModel = { withContext(Dispatchers.IO) { File(it).readBytes() } },
+        appDatasets = {
+            withContext(Dispatchers.IO) {
+                val folder = File(requireNotNull(activity.getExternalFilesDir(null)) { "No app folder" }, "datasets")
+                folder.listFiles { f -> f.isDirectory }.orEmpty().sortedBy { it.name }.map { dataset ->
+                    val files = dataset.walkTopDown().filter { it.isFile }.map { it.relativeTo(dataset).path to UriImage(Uri.fromFile(it)) }.toList()
+                    Dataset.fromPaths(dataset.name, files)
+                }
+            }
+        },
         pickDatasetFolder = {
             // Starts in Download, where datasets copied to the phone usually are
             val download = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Download")

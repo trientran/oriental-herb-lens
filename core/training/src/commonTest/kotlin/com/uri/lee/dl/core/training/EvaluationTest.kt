@@ -65,4 +65,17 @@ class EvaluationTest {
         assertEquals(40, before)
         assertTrue(data.count { prototypes.predict(it.embedding) == it.label } >= 76)
     }
+
+    @Test
+    fun csvNumbersAreTheSameTextOnEveryPlatform() {
+        assertEquals("0.1", csvField(0.1f))
+        assertEquals("0.001", csvField(1e-3f))
+        assertEquals("0.6666667", csvField(2f / 3))
+        assertEquals("0.000123456", csvField(0.000123456f))
+        assertEquals("123.4568", csvField(123.45678f))
+        assertEquals("-2.5", csvField(-2.5))
+        assertEquals("1", csvField(1.0f))
+        assertEquals("0", csvField(0f))
+        assertEquals("", csvField(Float.NaN))
+    }
 }

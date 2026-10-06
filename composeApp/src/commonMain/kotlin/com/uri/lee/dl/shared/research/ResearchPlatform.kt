@@ -53,6 +53,11 @@ class ResearchPlatform(
     val pickDatasetFolder: suspend () -> Dataset?,
     /** The same from a .zip, where the platform can open one. */
     val pickDatasetZip: (suspend () -> Dataset?)? = null,
+    /**
+     * Datasets copied into the app's own folder (adb, devicectl), one folder each in datasets/:
+     * no picker needed, which suits long runs prepared from a computer.
+     */
+    val appDatasets: suspend () -> List<Dataset> = { emptyList() },
     /** Hands the results archive to the user (save dialog, share sheet or download). */
     val saveArchive: suspend (fileName: String, bytes: ByteArray) -> Unit,
     /** Keeps the screen on during a long run, so the device doesn't sleep. */

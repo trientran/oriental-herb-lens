@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -86,6 +87,19 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                             OutlinedButton(onClick = { scope.launch { controller.pick(zip = true) } }, enabled = !state.running) { Text("Choose zip") }
                         }
                     }
+                    if (state.appDatasets.isNotEmpty()) {
+                        Text("In the app's folder:", style = MaterialTheme.typography.bodySmall)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            state.appDatasets.forEach { d ->
+                                FilterChip(
+                                    selected = state.dataset === d,
+                                    onClick = { controller.choose(d) },
+                                    enabled = !state.running,
+                                    label = { Text("${d.name} (${d.images.size})") },
+                                )
+                            }
+                        }
+                    }
                     state.dataset?.let { d ->
                         Text("${d.name}: ${d.images.size} photos, ${d.classes.size} classes", style = MaterialTheme.typography.bodyMedium)
                         Text(
@@ -139,7 +153,8 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                 state.progress?.let { LinearProgressIndicator(progress = { it }, modifier = Modifier.fillMaxWidth()) }
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
                 if (state.log.isNotEmpty()) {
-                    Text(state.log.joinToString("\n"), fontFamily = FontFamily.Monospace, fontSize = 11.sp, lineHeight = 15.sp)
+                    // Its own selection: the page's doesn't reach into a dialog
+                    SelectionContainer { Text(state.log.joinToString("\n"), fontFamily = FontFamily.Monospace, fontSize = 11.sp, lineHeight = 15.sp) }
                 }
             }
         }

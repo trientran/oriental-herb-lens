@@ -211,7 +211,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
         val embedders = koinInject<ImageEmbedderLoader>()
         // Kept while the dialog is open; a run stops when it closes
         val controller = remember { ResearchController(research(), reader, embedders, appInfo.versionName) }
-        ResearchDialog(controller) { showResearch = false }
+        DialogLayer { ResearchDialog(controller) { showResearch = false } }
     }
 }
 

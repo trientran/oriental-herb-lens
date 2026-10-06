@@ -27,7 +27,7 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSProcessInfo
 import platform.Foundation.NSProcessInfoThermalState
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
-import platform.Foundation.NSTemporaryDirectory
+
 import platform.Foundation.NSThread
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
@@ -88,9 +88,20 @@ internal class IosResearch(private val topController: () -> UIViewController) {
             }
         },
         pickDatasetFolder = ::pickFolder,
-        saveArchive = { name, bytes ->
-            val path = NSTemporaryDirectory() + name
+        appDatasets = {
             withContext(Dispatchers.IO) {
+                val folder = documents() + "/datasets"
+                NSFileManager.defaultManager.contentsOfDirectoryAtPath(folder, error = null).orEmpty()
+                    .filterIsInstance<String>().filterNot { it.startsWith('.') }.sorted()
+                    .mapNotNull { name -> readFolder("$folder/$name", name) }
+            }
+        },
+        saveArchive = { name, bytes ->
+            // Kept in Documents/research too, where devicectl can copy it off the phone
+            val folder = documents() + "/research"
+            val path = "$folder/$name"
+            withContext(Dispatchers.IO) {
+                NSFileManager.defaultManager.createDirectoryAtPath(folder, true, null, null)
                 bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.convert()) }.writeToFile(path, atomically = true)
             }
             val sheet = UIActivityViewController(listOf(NSURL.fileURLWithPath(path)), applicationActivities = null)
@@ -114,16 +125,18 @@ internal class IosResearch(private val topController: () -> UIViewController) {
         folder ?: return null
         // Kept open for the rest of the session: the photos are read during the run
         folder.startAccessingSecurityScopedResource()
-        return withContext(Dispatchers.IO) {
-            val root = folder.path ?: return@withContext null
-            val enumerator = NSFileManager.defaultManager.enumeratorAtPath(root) ?: return@withContext null
-            val files = mutableListOf<Pair<String, LocalImage>>()
-            while (true) {
-                val relative = enumerator.nextObject() as? String ?: break
-                files += relative to IosPickedImage(NSURL.fileURLWithPath("$root/$relative").absoluteString ?: continue)
-            }
-            Dataset.fromPaths(folder.lastPathComponent ?: "dataset", files)
+        return withContext(Dispatchers.IO) { readFolder(folder.path ?: return@withContext null, folder.lastPathComponent ?: "dataset") }
+    }
+
+    /** Every file under [root], by its path inside it. */
+    private fun readFolder(root: String, name: String): Dataset? {
+        val enumerator = NSFileManager.defaultManager.enumeratorAtPath(root) ?: return null
+        val files = mutableListOf<Pair<String, LocalImage>>()
+        while (true) {
+            val relative = enumerator.nextObject() as? String ?: break
+            files += relative to IosPickedImage(NSURL.fileURLWithPath("$root/$relative").absoluteString ?: continue)
         }
+        return Dataset.fromPaths(name, files)
     }
 
     @OptIn(ExperimentalForeignApi::class)

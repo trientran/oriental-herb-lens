@@ -1,5 +1,7 @@
 package com.uri.lee.dl.core.training
 
+import kotlin.math.pow
+
 /** Where and how a run happened, written on every row so files from several devices can be stacked. */
 data class RunContext(
     /** e.g. "Redmi Note 12", "iPhone 17 Pro Max", "Chrome 141 on macOS". */
@@ -96,12 +98,37 @@ class StudyCsv(private val context: RunContext) {
     }
 }
 
+/**
+ * [value] to 7 significant digits (a float's precision), so every platform writes the same text:
+ * JavaScript would otherwise print a float's double expansion (0.1f as 0.10000000149011612).
+ */
+internal fun significant(value: Double): String {
+    if (value == 0.0) return "0"
+    if (value.isInfinite()) return value.toString()
+    val magnitude = kotlin.math.floor(kotlin.math.log10(kotlin.math.abs(value))).toInt()
+    val decimals = (6 - magnitude).coerceIn(0, 20)
+    val scale = 10.0.pow(decimals)
+    val rounded = kotlin.math.round(value * scale) / scale
+    // Whole numbers without ".0" on the JVM, and no exponent for small values on either platform
+    val text = if (decimals == 0) kotlin.math.round(rounded).toLong().toString() else plainDecimal(rounded, decimals)
+    return text
+}
+
+private fun plainDecimal(value: Double, decimals: Int): String {
+    val negative = value < 0
+    val scaled = kotlin.math.round(kotlin.math.abs(value) * 10.0.pow(decimals)).toLong()
+    val digits = scaled.toString().padStart(decimals + 1, '0')
+    val whole = digits.dropLast(decimals)
+    val fraction = digits.takeLast(decimals).trimEnd('0')
+    return (if (negative) "-" else "") + whole + if (fraction.isEmpty()) "" else ".$fraction"
+}
+
 /** A value as a CSV field: empty for null or NaN, quoted when it holds a comma, quote or line break. */
 internal fun csvField(value: Any?): String {
     val text = when (value) {
         null -> ""
-        is Float -> if (value.isNaN()) "" else value.toString()
-        is Double -> if (value.isNaN()) "" else value.toString()
+        is Float -> if (value.isNaN()) "" else significant(value.toDouble())
+        is Double -> if (value.isNaN()) "" else significant(value)
         else -> value.toString()
     }
     return if (text.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) "\"" + text.replace("\"", "\"\"") + "\"" else text
