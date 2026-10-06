@@ -113,6 +113,10 @@ team `LY5X89S79S`. Nothing else is needed on the Apple side.
 `.github/workflows/moderation.yml` runs every hour and opens a GitHub issue (label `moderation`)
 for each photo reported in the app, so GitHub emails you. Act on it within 24 hours with
 `tools/moderate.py` (remove the photo, ban the uploader, or dismiss), then close the issue.
+It also opens an issue (label `name-suggestion`) for each Vietnamese name users suggest: add
+the ones that are right to the catalog CSV and publish it, then `tools/moderate.py
+dismiss-suggestion ID` and close the issue. GitHub pauses scheduled workflows after 60 days
+without commits (it emails first); re-enable it in the Actions tab.
 Create the key in Google Cloud console → IAM & Admin → Service accounts (project
 `oriental-herb-lens-41d17`) → Create → role Cloud Datastore User → Keys → Add key → JSON. Keep a
 copy for running `tools/moderate.py` locally (`GOOGLE_APPLICATION_CREDENTIALS`).
