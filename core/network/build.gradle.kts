@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.herblens.kmp.library)
 }
 
-// The shared HTTP client: OkHttp on Android, NSURLSession on iOS.
+// The shared HTTP client: OkHttp on Android, NSURLSession on iOS, fetch in the browser.
 kotlin {
     sourceSets {
         commonMain.dependencies {
@@ -18,6 +18,9 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+        jsMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
     }
 }

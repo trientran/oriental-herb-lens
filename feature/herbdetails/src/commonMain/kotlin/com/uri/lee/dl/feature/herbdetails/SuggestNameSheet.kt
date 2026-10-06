@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cancel
 import com.uri.lee.dl.core.designsystem.resources.generic_error
@@ -43,8 +44,10 @@ import org.koin.core.parameter.parametersOf
 internal fun SuggestNameSheet(herbId: Long, currentName: String, onSignIn: () -> Unit, onDismiss: () -> Unit) {
     val viewModel = koinViewModel<SuggestNameViewModel>(key = "suggest-$herbId") { parametersOf(herbId, currentName) }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        SuggestNameContent(state, viewModel::onAction, onSignIn, onDismiss)
+    DialogLayer {
+        ModalBottomSheet(onDismissRequest = onDismiss) {
+            SuggestNameContent(state, viewModel::onAction, onSignIn, onDismiss)
+        }
     }
 }
 

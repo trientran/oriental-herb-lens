@@ -1,5 +1,6 @@
 # Every hour, opens a GitHub issue for each photo reported in the app, so the admin gets an
-# email and can act within 24 hours (App Store guideline 1.2). Act with tools/moderate.py.
+# email and can act within 24 hours (App Store guideline 1.2), and one for each Vietnamese name
+# suggestion. Act with tools/moderate.py.
 # Needs the FIREBASE_SERVICE_ACCOUNT_JSON secret (docs/release.md).
 name: Moderation
 
@@ -26,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Open an issue per new report
+      - name: Open an issue per new report and name suggestion
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           GH_TOKEN: ${{ github.token }}
@@ -36,5 +37,7 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/service-account.json"
           gh label create moderation --repo "$GITHUB_REPOSITORY" --color B60205 \
             --description "A photo reported in the app" 2>/dev/null || true
+          gh label create name-suggestion --repo "$GITHUB_REPOSITORY" --color 0E8A16 \
+            --description "A Vietnamese name suggested in the app" 2>/dev/null || true
           python3 tools/moderate.py notify --repo "$GITHUB_REPOSITORY"
           rm -f "$RUNNER_TEMP/service-account.json"

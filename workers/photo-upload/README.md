@@ -35,6 +35,16 @@ PHOTO_UPLOAD_URL=https://herb-lens-photo-upload.<account>.workers.dev
 bucket moves to a custom domain, change `PUBLIC_BASE_URL` and deploy again; photos uploaded before
 keep their old URLs, so keep the r2.dev URL enabled.
 
+## Web app access (CORS)
+
+The web app reads photos with `fetch`, so the bucket must allow its origins, and the Worker
+answers its uploads for the origins in `ALLOWED_ORIGINS` (`wrangler.toml`). Keep both lists in
+step. Apply the bucket's rules once, and again whenever `r2-cors.json` changes:
+
+```bash
+npx wrangler r2 bucket cors set herb-lens-content --file r2-cors.json
+```
+
 ## Recommended: rate limiting
 
 In the Cloudflare dashboard → Security → WAF → Rate limiting rules, add a rule for this Worker's

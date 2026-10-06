@@ -3,6 +3,7 @@ package com.uri.lee.dl.data.settings
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import com.uri.lee.dl.core.datastore.DataStoreKeyValueStore
 import com.uri.lee.dl.core.datastore.PreferenceStore
 import com.uri.lee.dl.domain.model.ScanSettings
 import kotlinx.coroutines.flow.first
@@ -23,7 +24,7 @@ class DataStoreSettingsRepositoryTest {
     private val dataStore = PreferenceDataStoreFactory.create(scope = scope.backgroundScope) {
         folder.newFile("settings.preferences_pb")
     }
-    private val repository = DataStoreSettingsRepository(dataStore)
+    private val repository = DataStoreSettingsRepository(DataStoreKeyValueStore(dataStore))
 
     @Test
     fun `persisted file and key names are unchanged`() {

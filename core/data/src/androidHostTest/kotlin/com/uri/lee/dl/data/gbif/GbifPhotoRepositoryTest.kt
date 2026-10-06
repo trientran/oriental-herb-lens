@@ -3,6 +3,7 @@ package com.uri.lee.dl.data.gbif
 import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.core.network.herbLensHttpClient
 import com.uri.lee.dl.testing.testAppInfo
+import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.PhotoCredit
 import com.uri.lee.dl.domain.model.PhotoSource
 import io.ktor.client.engine.mock.MockEngine
@@ -20,7 +21,7 @@ class GbifPhotoRepositoryTest {
 
     private val body = """
         {"results": [
-          {"key": 111, "media": [
+          {"key": 111, "decimalLatitude": -34.88, "decimalLongitude": 138.6, "media": [
             {"type": "StillImage", "identifier": "https://inaturalist-open-data.s3.amazonaws.com/photos/1/original.jpg",
              "references": "https://www.inaturalist.org/photos/1", "creator": "alice", "publisher": "iNaturalist",
              "license": "http://creativecommons.org/licenses/by-nc/4.0/", "rightsHolder": "alice"},
@@ -60,6 +61,14 @@ class GbifPhotoRepositoryTest {
         assertEquals("bob", photos[1].credit?.creator)
         assertEquals("CC BY 4.0", photos[1].credit?.license)
         assertEquals("https://www.gbif.org/occurrence/222", photos[1].credit?.sourceUrl)
+    }
+
+    @Test
+    fun `photos carry where the occurrence was observed, when GBIF has it`() = runTest(dispatcher) {
+        val photos = repository.photos(1)
+
+        assertEquals(GeoLocation(-34.88, 138.6), photos[0].location)
+        assertEquals(null, photos[1].location)
     }
 
     @Test

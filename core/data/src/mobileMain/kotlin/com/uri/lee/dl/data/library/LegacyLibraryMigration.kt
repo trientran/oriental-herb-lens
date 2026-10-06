@@ -1,9 +1,7 @@
 package com.uri.lee.dl.data.library
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
+import com.uri.lee.dl.core.datastore.KeyValueStore
+import com.uri.lee.dl.core.datastore.booleanKey
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.firebase.FirestoreClient
 import kotlinx.coroutines.CancellationException
@@ -17,10 +15,10 @@ import kotlinx.coroutines.flow.first
 internal class LegacyLibraryMigration(
     private val firestore: FirestoreClient,
     private val library: LocalUserLibraryRepository,
-    private val prefs: DataStore<Preferences>,
-) {
-    suspend fun migrateIfNeeded(uid: String) {
-        val done = booleanPreferencesKey("library_migrated_$uid")
+    private val prefs: KeyValueStore,
+) : LibraryMigration {
+    override suspend fun migrateIfNeeded(uid: String) {
+        val done = booleanKey("library_migrated_$uid")
         if (prefs.data.first()[done] == true) return
         try {
             val legacy = firestore.legacyUserLibrary(uid)

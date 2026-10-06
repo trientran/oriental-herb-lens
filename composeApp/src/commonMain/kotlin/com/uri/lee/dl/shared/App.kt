@@ -15,6 +15,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,6 +31,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
@@ -43,6 +46,7 @@ import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.feature.auth.DeleteAccountRoute
 import com.uri.lee.dl.feature.auth.SignInRoute
@@ -85,94 +89,100 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
  */
 @Composable
 fun App(actions: PlatformActions, openHerbId: Long? = null) {
+    val vietnameseFirst = koinInject<NamePreference>().vietnameseFirst()
     HerbLensTheme {
-        val navController = rememberNavController()
-        LaunchedEffect(openHerbId) {
-            if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
-        }
-        val current = navController.currentBackStackEntryAsState().value?.destination
-        val analytics = koinInject<Analytics>()
-        val screen = current?.route?.let(::screenName)
-        LaunchedEffect(screen) { screen?.let(analytics::screen) }
-        // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
-        // that; none on full-screen flows (sign-in, contributing)
-        val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
-        val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
-        val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
-        val addPhotos = { herbId: Long -> navController.navigate(ContributeDestination(herbId)) }
-        NavigationSuiteScaffold(
-            layoutType = when {
-                fullScreen -> NavigationSuiteType.None
-                wide -> NavigationSuiteType.NavigationRail
-                else -> NavigationSuiteType.NavigationBar
-            },
-            navigationSuiteItems = {
-                TopLevel.entries.forEach { item ->
-                    item(
-                        selected = current?.hasRoute(item.routeClass) == true,
-                        onClick = { navController.navigateTopLevel(item.route) },
-                        icon = { Icon(item.icon, contentDescription = null) },
-                        label = { Text(stringResource(item.label)) },
-                    )
-                }
-            },
-        ) {
-            NavHost(navController, startDestination = BrowseDestination(), modifier = Modifier.fillMaxSize()) {
-                composable<IdentifyDestination> {
-                    ScanRoute(pickPhotos = actions.pickPhotos, onOpenSpecies = { navController.navigate(SpeciesDestination(it)) })
-                }
-                composable<SpeciesDestination> { entry ->
-                    HerbDetailsRoute(
-                        herbId = entry.toRoute<SpeciesDestination>().herbId,
-                        onBack = { navController.popBackStack() },
-                        onAddPhotos = addPhotos,
-                        onSignIn = signIn,
-                    )
-                }
-                composable<BrowseDestination> { entry ->
-                    SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
-                        BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, modifier = Modifier.statusBarsPadding())
-                    }
-                }
-                composable<SavedDestination> {
-                    SpeciesListDetail(null, addPhotos, signIn) { selected, open ->
-                        SavedRoute(onOpenSpecies = open, selectedId = selected, modifier = Modifier.statusBarsPadding())
-                    }
-                }
-                composable<ProfileDestination> {
-                    ProfileRoute(
-                        ProfileActions(
-                            onSignIn = signIn,
-                            onShareApp = actions.onShareApp,
-                            onOpenLanguageSettings = actions.onOpenLanguageSettings,
-                            onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
-                        ),
-                        modifier = Modifier.statusBarsPadding(),
-                    )
-                }
-                composable<SignInDestination> {
-                    SignInRoute(actions.requestGoogleSignIn, onDone = { navController.popBackStack() }, requestAppleSignIn = actions.requestAppleSignIn)
-                }
-                composable<DeleteAccountDestination> {
-                    DeleteAccountRoute(
-                        requestGoogleSignIn = actions.requestGoogleSignIn,
-                        onDone = { navController.popBackStack() },
-                        requestAppleSignIn = actions.requestAppleSignIn,
-                        revokeAppleToken = actions.revokeAppleToken,
-                    )
-                }
-                composable<ContributeDestination> { entry ->
-                    ContributeRoute(
-                        herbId = entry.toRoute<ContributeDestination>().herbId,
-                        platform = ContributePlatform(actions.pickPhotos, actions.currentLocation, actions.requestNotificationPermission),
-                        onSignIn = signIn,
-                        onDone = { navController.popBackStack() },
-                    )
+        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst) { AppContent(actions, openHerbId) }
+    }
+}
+
+@Composable
+private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
+    val navController = rememberNavController()
+    LaunchedEffect(openHerbId) {
+        if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
+    }
+    val current = navController.currentBackStackEntryAsState().value?.destination
+    val analytics = koinInject<Analytics>()
+    val screen = current?.route?.let(::screenName)
+    LaunchedEffect(screen) { screen?.let(analytics::screen) }
+    // A rail from 600dp wide (tablets, foldables, phones in landscape); the bottom bar below
+    // that; none on full-screen flows (sign-in, contributing)
+    val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
+    val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
+    val addPhotos = if (actions.sharePhotos) { herbId: Long -> navController.navigate(ContributeDestination(herbId)) } else null
+    NavigationSuiteScaffold(
+        layoutType = when {
+            fullScreen -> NavigationSuiteType.None
+            wide -> NavigationSuiteType.NavigationRail
+            else -> NavigationSuiteType.NavigationBar
+        },
+        navigationSuiteItems = {
+            TopLevel.entries.forEach { item ->
+                item(
+                    selected = current?.hasRoute(item.routeClass) == true,
+                    onClick = { navController.navigateTopLevel(item.route) },
+                    icon = { Icon(item.icon, contentDescription = null) },
+                    label = { Text(stringResource(item.label)) },
+                )
+            }
+        },
+    ) {
+        NavHost(navController, startDestination = BrowseDestination(), modifier = Modifier.fillMaxSize()) {
+            composable<IdentifyDestination> {
+                ScanRoute(pickPhotos = actions.pickPhotos, onOpenSpecies = { navController.navigate(SpeciesDestination(it)) })
+            }
+            composable<SpeciesDestination> { entry ->
+                HerbDetailsRoute(
+                    herbId = entry.toRoute<SpeciesDestination>().herbId,
+                    onBack = { navController.popBackStack() },
+                    onAddPhotos = addPhotos,
+                    onSignIn = signIn,
+                )
+            }
+            composable<BrowseDestination> { entry ->
+                SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
+                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, modifier = Modifier.statusBarsPadding())
                 }
             }
+            composable<SavedDestination> {
+                SpeciesListDetail(null, addPhotos, signIn) { selected, open ->
+                    SavedRoute(onOpenSpecies = open, selectedId = selected, modifier = Modifier.statusBarsPadding())
+                }
+            }
+            composable<ProfileDestination> {
+                ProfileRoute(
+                    ProfileActions(
+                        onSignIn = signIn,
+                        onShareApp = actions.onShareApp,
+                        onOpenLanguageSettings = actions.onOpenLanguageSettings,
+                        onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
+                    ),
+                    modifier = Modifier.statusBarsPadding(),
+                )
+            }
+            composable<SignInDestination> {
+                SignInRoute(actions.requestGoogleSignIn, onDone = { navController.popBackStack() }, requestAppleSignIn = actions.requestAppleSignIn)
+            }
+            composable<DeleteAccountDestination> {
+                DeleteAccountRoute(
+                    requestGoogleSignIn = actions.requestGoogleSignIn,
+                    onDone = { navController.popBackStack() },
+                    requestAppleSignIn = actions.requestAppleSignIn,
+                    revokeAppleToken = actions.revokeAppleToken,
+                )
+            }
+            composable<ContributeDestination> { entry ->
+                ContributeRoute(
+                    herbId = entry.toRoute<ContributeDestination>().herbId,
+                    platform = ContributePlatform(actions.pickPhotos, actions.currentLocation, actions.requestNotificationPermission),
+                    onSignIn = signIn,
+                    onDone = { navController.popBackStack() },
+                )
+            }
         }
-        StatusDialogs(actions)
     }
+    StatusDialogs(actions)
 }
 
 /** Switching tabs keeps each tab's own state (scroll position, open species). */
@@ -187,24 +197,26 @@ private fun StatusDialogs(actions: PlatformActions) {
     val viewModel = koinViewModel<AppViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val noDismiss = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
-    when {
-        state.status.isSuspended -> AlertDialog(
-            onDismissRequest = {},
-            properties = noDismiss,
-            text = { Text(stringResource(Res.string.status_suspended)) },
-            confirmButton = { TextButton(onClick = actions.onExit) { Text(stringResource(Res.string.ok)) } },
-        )
-        state.showUpdate -> {
-            val required = state.status.update == UpdatePolicy.REQUIRED
-            AlertDialog(
-                onDismissRequest = { if (!required) viewModel.onAction(AppAction.DismissUpdate) },
-                properties = if (required) noDismiss else DialogProperties(),
-                text = { Text(stringResource(if (required) Res.string.status_update_required else Res.string.status_update_recommended)) },
-                confirmButton = { TextButton(onClick = actions.onOpenStore) { Text(stringResource(Res.string.status_update)) } },
-                dismissButton = if (required) null else {
-                    { TextButton(onClick = { viewModel.onAction(AppAction.DismissUpdate) }) { Text(stringResource(Res.string.status_later)) } }
-                },
+    DialogLayer {
+        when {
+            state.status.isSuspended -> AlertDialog(
+                onDismissRequest = {},
+                properties = noDismiss,
+                text = { Text(stringResource(Res.string.status_suspended)) },
+                confirmButton = { TextButton(onClick = actions.onExit) { Text(stringResource(Res.string.ok)) } },
             )
+            state.showUpdate -> {
+                val required = state.status.update == UpdatePolicy.REQUIRED
+                AlertDialog(
+                    onDismissRequest = { if (!required) viewModel.onAction(AppAction.DismissUpdate) },
+                    properties = if (required) noDismiss else DialogProperties(),
+                    text = { Text(stringResource(if (required) Res.string.status_update_required else Res.string.status_update_recommended)) },
+                    confirmButton = { TextButton(onClick = actions.onOpenStore) { Text(stringResource(Res.string.status_update)) } },
+                    dismissButton = if (required) null else {
+                        { TextButton(onClick = { viewModel.onAction(AppAction.DismissUpdate) }) { Text(stringResource(Res.string.status_later)) } }
+                    },
+                )
+            }
         }
     }
 }

@@ -4,9 +4,14 @@ package com.uri.lee.dl.core.common
 data class AppInfo(
     val versionName: String,
     val versionCode: Long,
-    /** "android" or "ios": names platform-specific Remote Config keys and the user agent. */
+    /** "android", "ios" or "web": names platform-specific Remote Config keys and the user agent. */
     val platform: String,
     val isDebug: Boolean,
     /** The photo-upload Worker (workers/photo-upload); empty when the build has none. */
     val photoUploadUrl: String,
+    /**
+     * The device seems to be in Vietnam beyond what its language and region say: the browser's
+     * time zone on the web. Species are then named in Vietnamese first.
+     */
+    val inVietnam: Boolean = false,
 )

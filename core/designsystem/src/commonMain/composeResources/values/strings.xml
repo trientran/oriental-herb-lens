@@ -59,6 +59,8 @@
     <string name="photo_source">Source</string>
     <string name="photo_by_user">Shared by a Med Herb Lens user</string>
     <string name="cd_photo">Photo of %1$s</string>
+    <string name="cd_previous_photo">Previous photo</string>
+    <string name="cd_next_photo">Next photo</string>
     <string name="cd_close">Close</string>
 
     <!-- Suggest a name -->

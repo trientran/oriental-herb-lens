@@ -4,7 +4,6 @@ plugins {
 
 // Entities, repository interfaces and use cases. Pure Kotlin: see the module rules in build-logic.
 kotlin {
-    js { nodejs() }
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { nodejs() }
 

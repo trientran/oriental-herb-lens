@@ -21,4 +21,15 @@ data class Species(
 ) {
     val preferredVietnameseName: String? get() = vietnameseNames.firstOrNull()
     val preferredEnglishName: String? get() = englishNames.firstOrNull()
+
+    /**
+     * The name shown first: Vietnamese for readers in or from Vietnam, English for everyone else,
+     * and the scientific name when the species has no common name in that language.
+     */
+    fun displayName(vietnameseFirst: Boolean): String =
+        (if (vietnameseFirst) preferredVietnameseName else preferredEnglishName) ?: scientificName
+
+    /** The common name in the other language, shown under [displayName]; null when there's none. */
+    fun otherName(vietnameseFirst: Boolean): String? =
+        if (vietnameseFirst) preferredEnglishName else preferredVietnameseName
 }

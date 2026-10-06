@@ -10,7 +10,9 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
+import platform.MapKit.MKCoordinateSpanMake
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKPointAnnotation
@@ -45,6 +47,21 @@ actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolea
             delegate.framed = true
             delegate.framedPoints = points
             if (!frame) return@UIKitView
+            if (points.size > 1) {
+                // Fit them all, with a margin, as Android does
+                val minLat = points.minOf { it.latitude }
+                val maxLat = points.maxOf { it.latitude }
+                val minLon = points.minOf { it.longitude }
+                val maxLon = points.maxOf { it.longitude }
+                map.setRegion(
+                    MKCoordinateRegionMake(
+                        CLLocationCoordinate2DMake((minLat + maxLat) / 2, (minLon + maxLon) / 2),
+                        MKCoordinateSpanMake(((maxLat - minLat) * 1.3).coerceIn(0.05, 170.0), ((maxLon - minLon) * 1.3).coerceIn(0.05, 360.0)),
+                    ),
+                    animated = false,
+                )
+                return@UIKitView
+            }
             val center = points.firstOrNull() ?: DefaultCenter
             val metres = if (points.isEmpty()) 1_500_000.0 else 20_000.0
             map.setRegion(

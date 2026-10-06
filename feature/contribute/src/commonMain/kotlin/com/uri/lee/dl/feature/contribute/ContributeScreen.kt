@@ -303,7 +303,8 @@ private fun LocationSection(
                 FilledTonalButton(onClick = {
                     unavailable = false
                     currentLocation { found ->
-                        if (found == null) unavailable = true else onAction(ContributeAction.LocationPicked(found))
+                        unavailable = found == null
+                        if (found != null) onAction(ContributeAction.LocationPicked(found))
                     }
                 }) {
                     Icon(Icons.Filled.MyLocation, contentDescription = null)

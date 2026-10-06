@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cancel
@@ -86,32 +87,35 @@ internal fun PhotoViewer(
     onReport: (SpeciesPhoto, ReportReason) -> Unit = { _, _ -> },
     onHideContributor: (String) -> Unit = {},
 ) {
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        val pager = rememberPagerState(initialPage = startIndex) { photos.size }
-        val spacing = HerbLensTheme.spacing
-        Box(Modifier.fillMaxSize().background(Color.Black)) {
-            HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
-                ZoomablePhoto(photos[page], contentDescription = stringResource(Res.string.cd_photo, speciesName))
-            }
-            Row(Modifier.safeDrawingPadding().align(Alignment.TopEnd)) {
-                val current = photos.getOrNull(pager.currentPage)
-                if (current?.source == PhotoSource.USER) ModerationMenu(current, onReport, onHideContributor)
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close), tint = Color.White)
+    DialogLayer {
+        Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            val pager = rememberPagerState(initialPage = startIndex) { photos.size }
+            val spacing = HerbLensTheme.spacing
+            Box(Modifier.fillMaxSize().background(Color.Black)) {
+                HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+                    ZoomablePhoto(photos[page], contentDescription = stringResource(Res.string.cd_photo, speciesName))
                 }
-            }
-            Column(
-                Modifier.align(Alignment.BottomStart).fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.6f))
-                    .safeDrawingPadding()
-                    .padding(spacing.lg),
-            ) {
-                Text(
-                    stringResource(Res.string.photo_counter, pager.currentPage + 1, photos.size),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                )
-                PhotoCredit(photos[pager.currentPage], MaterialTheme.typography.bodySmall, Color.White)
+                PagerArrows(pager)
+                Row(Modifier.safeDrawingPadding().align(Alignment.TopEnd)) {
+                    val current = photos.getOrNull(pager.currentPage)
+                    if (current?.source == PhotoSource.USER) ModerationMenu(current, onReport, onHideContributor)
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close), tint = Color.White)
+                    }
+                }
+                Column(
+                    Modifier.align(Alignment.BottomStart).fillMaxWidth()
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .safeDrawingPadding()
+                        .padding(spacing.lg),
+                ) {
+                    Text(
+                        stringResource(Res.string.photo_counter, pager.currentPage + 1, photos.size),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White,
+                    )
+                    PhotoCredit(photos[pager.currentPage], MaterialTheme.typography.bodySmall, Color.White)
+                }
             }
         }
     }

@@ -63,6 +63,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.LoadingState
@@ -139,7 +140,7 @@ fun HerbDetailsRoute(
         PhotoViewer(
             photos = state.photos,
             startIndex = index.coerceIn(0, (state.photos.size - 1).coerceAtLeast(0)),
-            speciesName = species?.preferredVietnameseName ?: species?.scientificName.orEmpty(),
+            speciesName = species?.displayName(LocalVietnameseFirst.current).orEmpty(),
             onDismiss = { viewModel.onAction(HerbDetailsAction.ViewPhoto(null)) },
             onReport = { photo, reason -> viewModel.onAction(HerbDetailsAction.Report(photo, reason)) },
             onHideContributor = { viewModel.onAction(HerbDetailsAction.HideContributor(it)) },
@@ -181,7 +182,7 @@ fun HerbDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        state.species?.let { it.preferredVietnameseName ?: it.scientificName }.orEmpty(),
+                        state.species?.displayName(LocalVietnameseFirst.current).orEmpty(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -244,7 +245,7 @@ private fun DetailsContent(
         verticalArrangement = Arrangement.spacedBy(spacing.lg),
     ) {
         item("photos") {
-            val name = species.preferredVietnameseName ?: species.scientificName
+            val name = species.displayName(LocalVietnameseFirst.current)
             when {
                 photos.isNotEmpty() -> PhotoCarousel(photos, name) { onAction(HerbDetailsAction.ViewPhoto(it)) }
                 photosLoading -> PhotosLoading()
@@ -253,11 +254,12 @@ private fun DetailsContent(
         }
         item("title") {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                species.preferredVietnameseName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
+                val commonName = species.displayName(LocalVietnameseFirst.current).takeIf { it != species.scientificName }
+                commonName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
                 ScientificName(
                     species.scientificName,
                     authorship = species.authorship,
-                    style = if (species.preferredVietnameseName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
+                    style = if (commonName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -320,7 +322,7 @@ private fun LabeledValue(label: String, value: String, italic: Boolean = false) 
     }
 }
 
-/** Swipeable photos; tapping one opens the full-screen viewer. */
+/** Swipeable photos (or with the arrows); tapping one opens the full-screen viewer. */
 @Composable
 private fun PhotoCarousel(photos: List<SpeciesPhoto>, speciesName: String, onOpen: (Int) -> Unit) {
     val pager = rememberPagerState { photos.size }
@@ -334,6 +336,7 @@ private fun PhotoCarousel(photos: List<SpeciesPhoto>, speciesName: String, onOpe
                 modifier = Modifier.fillMaxSize().clickable { onOpen(page) },
             )
         }
+        PagerArrows(pager)
         Surface(
             color = Color.Black.copy(alpha = 0.55f),
             contentColor = Color.White,

@@ -7,11 +7,31 @@ import dev.gitlive.firebase.analytics.FirebaseAnalytics
  * ad personalisation (see the Android manifest and the iOS Info.plist and Podfile), and no user ID,
  * so events can't be tied to an account.
  */
-class AnalyticsClient internal constructor(private val analytics: FirebaseAnalytics) {
+class AnalyticsClient internal constructor(
+    private val provider: () -> FirebaseAnalytics,
+    /**
+     * In the browser Analytics sets cookies as soon as it starts, so it starts only once usage
+     * statistics are known to be on; on Android and iOS it starts with the app and is switched off if needed.
+     */
+    private val startOnlyWhenEnabled: Boolean,
+) {
+    private var analytics: FirebaseAnalytics? = null
 
-    fun logEvent(name: String, parameters: Map<String, Any>) = analytics.logEvent(name, parameters)
+    private fun analytics(): FirebaseAnalytics? =
+        analytics ?: if (startOnlyWhenEnabled && !enabled) null else provider().also { analytics = it }
 
-    fun setCollectionEnabled(enabled: Boolean) = analytics.setAnalyticsCollectionEnabled(enabled)
+    private var enabled = false
 
-    fun setUserProperty(name: String, value: String) = analytics.setUserProperty(name, value)
+    fun logEvent(name: String, parameters: Map<String, Any>) {
+        analytics()?.logEvent(name, parameters)
+    }
+
+    fun setCollectionEnabled(enabled: Boolean) {
+        this.enabled = enabled
+        analytics()?.setAnalyticsCollectionEnabled(enabled)
+    }
+
+    fun setUserProperty(name: String, value: String) {
+        analytics()?.setUserProperty(name, value)
+    }
 }

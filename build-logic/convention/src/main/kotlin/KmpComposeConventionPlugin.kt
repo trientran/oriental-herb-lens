@@ -34,6 +34,15 @@ class KmpComposeConventionPlugin : Plugin<Project> {
         }
         dependencies { "androidRuntimeClasspath"(lib("compose-ui-tooling")) }
 
+        // Compose tests in the browser need the Skiko runtime bundled by webpack (CMP-4906). These
+        // modules' tests are ViewModel tests, which already run on Android and iOS, so their JS
+        // tests aren't built at all (linking them also ran CI out of memory).
+        tasks.matching {
+            it.name.startsWith("jsTest") || it.name.startsWith("jsNodeTest") || it.name.startsWith("jsBrowserTest") ||
+                it.name == "checkComposeUiTestConfigurationForJs" ||
+                (it.name.startsWith("compileTest") && it.name.endsWith("KotlinJs"))
+        }.configureEach { enabled = false }
+
         // Each module's resources get a Res class in its own package, e.g. com.uri.lee.dl.feature.search.resources
         extensions.configure<ComposeExtension> {
             (this as org.gradle.api.plugins.ExtensionAware).extensions.configure<ResourcesExtension> {
