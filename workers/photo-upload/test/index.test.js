@@ -75,3 +75,27 @@ test('an unreachable ban list does not block uploads', async () => {
   const { response } = await upload({ banned: async () => { throw new Error('offline'); } });
   assert.equal(response.status, 201);
 });
+
+test('answers the browser preflight for allowed origins only', async () => {
+  const env = { ...fakeEnv(), ALLOWED_ORIGINS: 'https://med-herb-lens.pages.dev,http://localhost:8080' };
+  const preflight = (origin) => handleRequest(new Request('https://worker.example/photos', { method: 'OPTIONS', headers: { origin } }), env, verify);
+
+  const allowed = await preflight('https://med-herb-lens.pages.dev');
+  assert.equal(allowed.status, 204);
+  assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://med-herb-lens.pages.dev');
+  assert.match(allowed.headers.get('access-control-allow-headers'), /authorization/);
+  assert.equal((await preflight('https://evil.example')).headers.get('access-control-allow-origin'), null);
+});
+
+test('adds CORS headers to responses for an allowed origin', async () => {
+  const env = { ...fakeEnv(), ALLOWED_ORIGINS: 'http://localhost:8080' };
+  const request = new Request('https://worker.example/photos?speciesKey=3035652', {
+    method: 'POST',
+    headers: { origin: 'http://localhost:8080', 'content-type': 'image/jpeg', authorization: `Bearer ${await signToken()}` },
+    body: JPEG,
+  });
+  const response = await handleRequest(request, env, verify, async () => false);
+
+  assert.equal(response.status, 201);
+  assert.equal(response.headers.get('access-control-allow-origin'), 'http://localhost:8080');
+});
