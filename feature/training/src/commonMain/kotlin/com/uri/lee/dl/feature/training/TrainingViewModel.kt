@@ -18,6 +18,17 @@ import kotlin.random.Random
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.SettingsRepository
+import com.uri.lee.dl.domain.sharing.CommunityModel
+import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.ModelReportReason
+import com.uri.lee.dl.domain.sharing.SharingProblem
+import com.uri.lee.dl.domain.sharing.SharingRules
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,6 +45,10 @@ sealed interface TrainingScreen {
     data class Result(val id: String) : TrainingScreen
     data class Settings(val id: String) : TrainingScreen
     data class Use(val id: String) : TrainingScreen
+
+    /** Models others shared, and one of them. */
+    data object Community : TrainingScreen
+    data class CommunityModel(val id: String) : TrainingScreen
 }
 
 /** Something running that the screen shows progress for. */
@@ -42,9 +57,20 @@ sealed interface TrainingWork {
     data class Reading(val done: Int, val total: Int) : TrainingWork
     data class Learning(val epoch: Int, val maxEpochs: Int) : TrainingWork
     data object Saving : TrainingWork
+    data object Uploading : TrainingWork
 }
 
-enum class TrainingError { READ_PHOTOS, DOWNLOAD, TRAIN, NO_LABELS, IMPORT, TOO_FEW_SPECIES, OPEN_MODEL }
+enum class TrainingError { READ_PHOTOS, DOWNLOAD, TRAIN, NO_LABELS, IMPORT, TOO_FEW_SPECIES, OPEN_MODEL, SHARE, COMMUNITY }
+
+/** What sharing a model with everyone needs from the user first. */
+sealed interface SharingStep {
+    data object SignIn : SharingStep
+    data object Terms : SharingStep
+    data class Problem(val problem: SharingProblem) : SharingStep
+}
+
+/** Something done, said once. */
+enum class TrainingMessage { SHARED, ADDED, REPORTED, HIDDEN, REMOVED }
 
 data class TrainingState(
     val screen: TrainingScreen = TrainingScreen.Models,
@@ -64,6 +90,12 @@ data class TrainingState(
     /** A picked photo being identified instead of the camera, until the user goes back to the camera. */
     val photo: String? = null,
     val error: TrainingError? = null,
+    /** Models everyone shared; null until loaded, which happens only while those screens are open. */
+    val community: List<CommunityModel>? = null,
+    /** The signed-in user (their own shared models can be removed); null when signed out. */
+    val userId: String? = null,
+    val sharing: SharingStep? = null,
+    val message: TrainingMessage? = null,
 ) {
     val hasChanges: Boolean get() = model?.hasChanges(lastPhoto) == true
 }
@@ -85,6 +117,16 @@ sealed interface TrainingAction {
     data class ClassifyPhoto(val photo: LocalImage) : TrainingAction
     data object BackToCamera : TrainingAction
     data object DismissError : TrainingAction
+
+    /** Shares the trained model on screen with everyone (after sign-in, the terms and the name checks). */
+    data object ShareWithEveryone : TrainingAction
+    data object AcceptSharingTerms : TrainingAction
+    data object DismissSharing : TrainingAction
+    data class AddCommunityModel(val id: String) : TrainingAction
+    data class ReportCommunityModel(val id: String, val reason: ModelReportReason) : TrainingAction
+    data class HideSharer(val uploaderId: String) : TrainingAction
+    data class RemoveCommunityModel(val id: String) : TrainingAction
+    data object DismissMessage : TrainingAction
 }
 
 /**
@@ -98,6 +140,9 @@ class TrainingViewModel(
     private val reader: PhotoReader,
     private val embedders: ImageEmbedderLoader,
     private val cropper: ImageCropper,
+    private val community: CommunityModelRepository,
+    private val auth: AuthRepository,
+    private val settings: SettingsRepository,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<TrainingState, TrainingAction>(TrainingState()) {
 
@@ -106,9 +151,14 @@ class TrainingViewModel(
     private val embedderLock = Mutex()
     private var embedder: Pair<String, ImageEmbedder>? = null
     private var classifier: Pair<String, ImageEmbedder>? = null
+    private var communityJob: Job? = null
 
     init {
         refresh()
+        auth.observeUserId()
+            .onEach { setState { copy(userId = it) } }
+            .catch { log.w(it) { "Sign-in state unavailable" } }
+            .launchIn(viewModelScope)
     }
 
     override fun onAction(action: TrainingAction) {
@@ -144,6 +194,106 @@ class TrainingViewModel(
             }
             TrainingAction.BackToCamera -> setState { copy(photo = null, predictions = emptyList()) }
             TrainingAction.DismissError -> setState { copy(error = null) }
+            TrainingAction.ShareWithEveryone -> shareWithEveryone(termsAccepted = false)
+            TrainingAction.AcceptSharingTerms -> {
+                viewModelScope.launch { runCatching { settings.acceptSharingTerms() } }
+                shareWithEveryone(termsAccepted = true)
+            }
+            TrainingAction.DismissSharing -> setState { copy(sharing = null) }
+            is TrainingAction.AddCommunityModel -> addCommunityModel(action.id)
+            is TrainingAction.ReportCommunityModel -> reportCommunityModel(action.id, action.reason)
+            is TrainingAction.HideSharer -> viewModelScope.launch {
+                runCatching { community.hideUploader(action.uploaderId) }
+                back()
+                setState { copy(message = TrainingMessage.HIDDEN) }
+            }
+            is TrainingAction.RemoveCommunityModel -> {
+                val shared = sharedModel(action.id) ?: return
+                launchWork(TrainingError.COMMUNITY) {
+                    community.remove(shared)
+                    back()
+                    setState { copy(message = TrainingMessage.REMOVED) }
+                }
+            }
+            TrainingAction.DismissMessage -> setState { copy(message = null) }
+        }
+    }
+
+    private fun sharedModel(id: String) = currentState.community?.firstOrNull { it.id == id }
+
+    private fun shareWithEveryone(termsAccepted: Boolean) {
+        val model = currentState.model ?: return
+        if (currentState.userId == null) {
+            setState { copy(sharing = SharingStep.SignIn) }
+            return
+        }
+        viewModelScope.launch {
+            if (!termsAccepted && !runCatching { settings.sharingTermsAccepted.first() }.getOrDefault(false)) {
+                setState { copy(sharing = SharingStep.Terms) }
+                return@launch
+            }
+            val file = store.tflite(model.id)
+            if (file == null) {
+                setState { copy(sharing = null, error = TrainingError.SHARE) }
+                return@launch
+            }
+            SharingRules.problem(model.name, model.trainedClasses, file.size)?.let {
+                setState { copy(sharing = SharingStep.Problem(it)) }
+                return@launch
+            }
+            setState { copy(sharing = null) }
+            launchWork(TrainingError.SHARE) {
+                setState { copy(work = TrainingWork.Uploading) }
+                // Trained here, so the file carries what's needed to go on learning
+                community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file)
+                analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community"))
+                setState { copy(message = TrainingMessage.SHARED) }
+            }
+        }
+    }
+
+    private fun addCommunityModel(id: String) {
+        val shared = sharedModel(id) ?: return
+        launchWork(TrainingError.COMMUNITY) {
+            setState { copy(work = TrainingWork.Downloading) }
+            val bytes = community.download(shared)
+            if (importFile("${shared.name}.tflite", bytes)) {
+                analytics.log(AnalyticsEvent.CommunityModelAdded(shared.species.size, shared.trainable))
+                backStack.clear()
+                show(TrainingScreen.Models)
+                setState { copy(message = TrainingMessage.ADDED) }
+            }
+        }
+    }
+
+    private fun reportCommunityModel(id: String, reason: ModelReportReason) {
+        val shared = sharedModel(id) ?: return
+        if (currentState.userId == null) {
+            setState { copy(sharing = SharingStep.SignIn) }
+            return
+        }
+        launchWork(TrainingError.COMMUNITY) {
+            community.report(shared, reason)
+            analytics.log(AnalyticsEvent.ModelReported(reason.name))
+            back()
+            setState { copy(message = TrainingMessage.REPORTED) }
+        }
+    }
+
+    /** Listens to the shared models only while their screens are open: each listen reads the list. */
+    private fun watchCommunity(open: Boolean) {
+        if (open && communityJob == null) {
+            communityJob = community.observe()
+                .onEach { setState { copy(community = it) } }
+                .catch {
+                    log.w(it) { "Shared models unavailable" }
+                    setState { copy(community = emptyList(), error = TrainingError.COMMUNITY) }
+                }
+                .launchIn(viewModelScope)
+        } else if (!open) {
+            communityJob?.cancel()
+            communityJob = null
+            setState { copy(community = null) }
         }
     }
 
@@ -173,6 +323,8 @@ class TrainingViewModel(
             else -> null
         }
         setState { copy(screen = screen, predictions = emptyList(), photo = null) }
+        watchCommunity(screen is TrainingScreen.Community || screen is TrainingScreen.CommunityModel)
+        if (screen is TrainingScreen.Community || screen is TrainingScreen.CommunityModel) return
         if (id == null) {
             refresh()
         } else if (currentState.model?.id != id) {
@@ -334,30 +486,32 @@ class TrainingViewModel(
         }
     }
 
-    private fun importModel(fileName: String, bytes: ByteArray) {
+    private fun importModel(fileName: String, bytes: ByteArray) = launchWork { importFile(fileName, bytes) }
+
+    /** Adds a model file to the user's models; false (with the error shown) when it isn't one. */
+    private suspend fun importFile(fileName: String, bytes: ByteArray): Boolean {
         val shared = runCatching { SharedModel.unpack(bytes) }.getOrNull()
         if (shared != null) {
             importShared(fileName, bytes, shared)
-            return
+            return true
         }
         val labels = runCatching { TfliteExport.labels(bytes) }.getOrNull()
         if (labels.isNullOrEmpty()) {
             setState { copy(error = TrainingError.NO_LABELS) }
-            return
+            return false
         }
         val id = "i" + Random.nextLong(1, Long.MAX_VALUE).toString(36)
         val model = UserModel(id, fileName.substringBeforeLast('.'), labels, imported = true, trainedClasses = labels)
-        launchWork {
-            setState { copy(work = TrainingWork.Saving) }
-            store.saveImported(model, bytes)
-            analytics.log(AnalyticsEvent.ModelImported(trainable = false, speciesCount = labels.size))
-            val models = store.list()
-            setState { copy(models = models) }
-        }
+        setState { copy(work = TrainingWork.Saving) }
+        store.saveImported(model, bytes)
+        analytics.log(AnalyticsEvent.ModelImported(trainable = false, speciesCount = labels.size))
+        val models = store.list()
+        setState { copy(models = models) }
+        return true
     }
 
     /** A model shared from Herb Lens: it can go on learning here, from its layers and replay sample. */
-    private fun importShared(fileName: String, bytes: ByteArray, shared: SharedModel.Unpacked) {
+    private suspend fun importShared(fileName: String, bytes: ByteArray, shared: SharedModel.Unpacked) {
         val pack = shared.pack
         val quality = Quality.entries.firstOrNull { it.backbone == pack.backbone && !it.augment } ?: Quality.BALANCED
         val settings = TrainingSettings(quality = quality)
@@ -372,15 +526,13 @@ class TrainingViewModel(
             trainedClasses = pack.labels,
             importedTrainable = true,
         )
-        launchWork {
-            setState { copy(work = TrainingWork.Saving) }
-            store.save(model)
-            store.addExamples(id, replay)
-            store.saveTrained(model, pack.head, bytes)
-            analytics.log(AnalyticsEvent.ModelImported(trainable = true, speciesCount = model.classes.size))
-            val models = store.list()
-            setState { copy(models = models) }
-        }
+        setState { copy(work = TrainingWork.Saving) }
+        store.save(model)
+        store.addExamples(id, replay)
+        store.saveTrained(model, pack.head, bytes)
+        analytics.log(AnalyticsEvent.ModelImported(trainable = true, speciesCount = model.classes.size))
+        val models = store.list()
+        setState { copy(models = models) }
     }
 
     /** What the model in use thinks [image] shows: a camera frame, unless a picked photo is on screen. */
@@ -413,12 +565,13 @@ class TrainingViewModel(
     suspend fun export(): Pair<String, ByteArray>? {
         val model = currentState.model ?: return null
         val bytes = store.tflite(model.id) ?: return null
-        analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size))
+        analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "file"))
         val name = model.name.filter { it.isLetterOrDigit() || it == ' ' || it == '-' }.trim().replace(' ', '_').ifEmpty { "model" }
         return "$name.tflite" to bytes
     }
 
-    private fun launchWork(block: suspend kotlinx.coroutines.CoroutineScope.() -> Unit) {
+    /** [failure] is the error shown if [block] fails; by default, from the screen it ran on. */
+    private fun launchWork(failure: TrainingError? = null, block: suspend kotlinx.coroutines.CoroutineScope.() -> Unit) {
         job = viewModelScope.launch {
             try {
                 block()
@@ -426,7 +579,7 @@ class TrainingViewModel(
                 throw e
             } catch (e: Exception) {
                 log.e(e) { "Training work failed" }
-                setState { copy(error = if (screen is TrainingScreen.Training) TrainingError.TRAIN else TrainingError.IMPORT) }
+                setState { copy(error = failure ?: if (screen is TrainingScreen.Training) TrainingError.TRAIN else TrainingError.IMPORT) }
             } finally {
                 setState { copy(work = null) }
                 // Stopped or failed while training: back to the model

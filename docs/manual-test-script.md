@@ -138,6 +138,19 @@ Upload photos you took yourself.
 2. Single image and live camera still recognise herbs (on-device model).
 3. Herbs viewed earlier still open (Firestore cache).
 
+## 12a. Shared models (Train tab)
+
+1. Train a model with two species. On its results, Share with everyone: signed out, it asks you to
+   sign in; signed in, the terms show once, then it uploads and says it's shared.
+2. Name a model with an email address or a link: sharing refuses and says why.
+3. Your models → Models shared by others lists it (newest first) with its species and size.
+   On its page, Stop sharing removes it for everyone.
+4. On a second account, open the model: Add to my models puts it in Your models, ready to try and
+   to train further. Report hides it at once; Hide this person's models hides their models and
+   photos.
+5. Firestore console: `sharedModels` and `modelReports` hold the entries; R2 holds
+   `models/<id>.tflite` until it's no longer shared.
+
 ## 13. Content update (model and catalog)
 
 Follow docs/content-publishing.md to publish a catalog or model, then:

@@ -16,6 +16,21 @@ The Worker checks the ID token against Google's signing keys (issuer and audienc
 uploader's uid as metadata. The app then adds the URL to `herbs/{speciesKey}.images` in
 Firestore; the security rules decide who may attach photos, including bans.
 
+It also stores models shared from the Train tab:
+
+```
+POST /models
+Authorization: Bearer <Firebase ID token>
+<.tflite bytes>
+
+201 {"id": "<uuid>", "url": "https://<public bucket URL>/models/<uuid>.tflite", "size": <bytes>}
+
+DELETE /models/<uuid>          (its uploader only) 204
+```
+
+Only TensorFlow Lite files (identifier `TFL3`) up to 25 MB; the app then lists the model in
+`sharedModels/{id}`, whose rules check the entry. The CORS headers allow POST and DELETE.
+
 ## Deploy
 
 From this directory, logged in with `wrangler login`:

@@ -19,4 +19,9 @@ interface SettingsRepository {
     val identifyNoticeSeen: Flow<Boolean>
 
     suspend fun setIdentifyNoticeSeen()
+
+    /** Whether the user accepted the terms for sharing models with everyone (Train tab). */
+    val sharingTermsAccepted: Flow<Boolean>
+
+    suspend fun acceptSharingTerms()
 }

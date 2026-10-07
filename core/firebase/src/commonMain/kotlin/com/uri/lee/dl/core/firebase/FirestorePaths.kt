@@ -5,6 +5,9 @@ internal object FirestorePaths {
     const val HERBS = "herbs"
     const val NAME_SUGGESTIONS = "nameSuggestions"
     const val PHOTO_REPORTS = "photoReports"
+    const val SHARED_MODELS = "sharedModels"
+    const val MODEL_REPORTS = "modelReports"
+    const val CREATED_AT = "createdAt"
     const val USERS = "users"
 
     const val USER_FAVORITES = "favorite"
