@@ -2,6 +2,7 @@ package com.uri.lee.dl.feature.herbdetails
 
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.PhotoSource
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.ReportReason
@@ -38,7 +39,7 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
         override fun log(event: AnalyticsEvent) { events += event }
         override fun screen(name: String) = Unit
     }
-    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, analytics)
+    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, addresses = { if (it.latitude > 0) "Hà Nội" else null }, analytics = analytics)
 
     @Test
     fun `reporting follows the sign-in state`() {
@@ -161,5 +162,17 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
 
         viewModel.onAction(HerbDetailsAction.ViewPhoto(null))
         assertNull(viewModel.state.value.viewingPhoto)
+    }
+
+    @Test
+    fun `a pin shows its place with the address and a second tap closes it`() {
+        val viewModel = viewModel()
+        val hanoi = GeoLocation(21.03, 105.85)
+
+        viewModel.onAction(HerbDetailsAction.SelectPlace(hanoi))
+        assertEquals(SelectedPlace(hanoi, "Hà Nội"), viewModel.state.value.place)
+
+        viewModel.onAction(HerbDetailsAction.SelectPlace(hanoi))
+        assertNull(viewModel.state.value.place)
     }
 }

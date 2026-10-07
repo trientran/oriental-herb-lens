@@ -65,6 +65,7 @@ actual fun HerbMap(
     interactive: Boolean,
     onCenterChanged: ((LatLng) -> Unit)?,
     showMarkers: Boolean,
+    onPointClick: ((Int) -> Unit)?,
 ) {
     val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
     var centerX by remember { mutableDoubleStateOf(mercatorX(DefaultCenter.longitude)) }
@@ -135,15 +136,18 @@ actual fun HerbMap(
                     }
                 }
             }
-            if (showMarkers) points.forEach { point ->
+            if (showMarkers) points.forEachIndexed { index, point ->
                 val x = mercatorX(point.longitude) * world - left
                 val y = mercatorY(point.latitude) * world - top
+                // Bigger when it can be tapped
+                val size = if (onPointClick != null) MARKER_PX + 4 else MARKER_PX
                 Box(
                     Modifier
-                        .offset { IntOffset((x - MARKER_PX * density / 2).roundToInt(), (y - MARKER_PX * density / 2).roundToInt()) }
-                        .size(MARKER_PX.dp)
+                        .offset { IntOffset((x - size * density / 2).roundToInt(), (y - size * density / 2).roundToInt()) }
+                        .size(size.dp)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .border(2.dp, Color.White, CircleShape),
+                        .border(2.dp, Color.White, CircleShape)
+                        .then(if (onPointClick != null) Modifier.clickable { onPointClick(index) } else Modifier),
                 )
             }
         }

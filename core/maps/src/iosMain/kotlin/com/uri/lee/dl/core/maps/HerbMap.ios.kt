@@ -14,6 +14,8 @@ import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKCoordinateSpanMake
 import platform.MapKit.MKMapView
+import kotlin.math.abs
+import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKPointAnnotation
 import platform.darwin.NSObject
@@ -21,11 +23,21 @@ import platform.darwin.NSObject
 /** MapKit, with the same framing and centre reporting as the Android map. */
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolean, onCenterChanged: ((LatLng) -> Unit)?, showMarkers: Boolean) {
+actual fun HerbMap(
+    points: List<LatLng>,
+    modifier: Modifier,
+    interactive: Boolean,
+    onCenterChanged: ((LatLng) -> Unit)?,
+    showMarkers: Boolean,
+    onPointClick: ((Int) -> Unit)?,
+) {
     val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
+    val currentOnPointClick by rememberUpdatedState(onPointClick)
     // MKMapView holds its delegate weakly, so the composition keeps it
     val delegate = remember { MapDelegate() }
     delegate.onCenterChanged = { currentOnCenterChanged?.invoke(it) }
+    delegate.onPointClick = { currentOnPointClick?.invoke(it) }
+    delegate.points = points
     UIKitView(
         factory = {
             MKMapView().apply {
@@ -75,6 +87,8 @@ actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolea
 @OptIn(ExperimentalForeignApi::class)
 private class MapDelegate : NSObject(), MKMapViewDelegateProtocol {
     var onCenterChanged: (LatLng) -> Unit = {}
+    var onPointClick: (Int) -> Unit = {}
+    var points: List<LatLng> = emptyList()
     var framed = false
     var framedPoints: List<LatLng> = emptyList()
 
@@ -82,5 +96,16 @@ private class MapDelegate : NSObject(), MKMapViewDelegateProtocol {
     @ObjCSignatureOverride
     override fun mapView(mapView: MKMapView, regionDidChangeAnimated: Boolean) {
         mapView.centerCoordinate.useContents { onCenterChanged(LatLng(latitude, longitude)) }
+    }
+
+    /** A marker was tapped: which point it is, then unselected so the next tap reports again. */
+    @ObjCSignatureOverride
+    override fun mapView(mapView: MKMapView, didSelectAnnotationView: MKAnnotationView) {
+        val annotation = didSelectAnnotationView.annotation ?: return
+        val index = annotation.coordinate.useContents {
+            points.indexOfFirst { abs(it.latitude - latitude) < 1e-9 && abs(it.longitude - longitude) < 1e-9 }
+        }
+        mapView.deselectAnnotation(annotation, animated = false)
+        if (index >= 0) onPointClick(index)
     }
 }

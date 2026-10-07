@@ -30,7 +30,7 @@ import org.koin.core.module.Module
 import com.uri.lee.dl.core.location.AddressLookup
 import com.uri.lee.dl.feature.auth.authModule
 import com.uri.lee.dl.feature.browse.browseModule
-import com.uri.lee.dl.feature.contribute.AddressLine
+import com.uri.lee.dl.domain.location.AddressLine
 import com.uri.lee.dl.feature.contribute.contributeModule
 import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
 import com.uri.lee.dl.feature.profile.profileModule

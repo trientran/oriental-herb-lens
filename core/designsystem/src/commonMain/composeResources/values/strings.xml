@@ -181,6 +181,12 @@
     <string name="contribute_finished_partly">%1$d of %2$d photos uploaded. The others couldn’t be read.</string>
     <string name="contribute_done">Done</string>
     <string name="details_photo_map">Where photos were taken</string>
+    <string name="details_map_hint">Tap a pin to see the photos taken there.</string>
+    <string name="details_place_photo">Photo taken here</string>
+    <plurals name="details_place_photos">
+        <item quantity="one">%1$d photo taken here</item>
+        <item quantity="other">%1$d photos taken here</item>
+    </plurals>
     <string name="notify_uploads_channel">Photo uploads</string>
     <string name="notify_uploading">Uploading…</string>
     <string name="notify_model_shared_title">Model shared</string>
