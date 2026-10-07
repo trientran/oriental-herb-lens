@@ -24,6 +24,7 @@ import com.uri.lee.dl.domain.model.PhotoSource
 import com.uri.lee.dl.domain.model.RecognizedHerb
 import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.model.Species
+import com.uri.lee.dl.domain.model.Taxonomy
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.repository.SignInProvider
 import com.uri.lee.dl.domain.search.NameKind
@@ -41,6 +42,7 @@ import com.uri.lee.dl.feature.contribute.PhotoCheck
 import com.uri.lee.dl.feature.contribute.PickedLocation
 import com.uri.lee.dl.feature.contribute.UploadPhase
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsScreen
+import com.uri.lee.dl.feature.herbdetails.SpeciesInfoContent
 import com.uri.lee.dl.feature.herbdetails.HerbDetailsState
 import com.uri.lee.dl.feature.profile.ProfileActions
 import com.uri.lee.dl.feature.profile.ProfileScreen
@@ -96,6 +98,10 @@ class ScreenshotTest {
             HerbDetailsState(herbId = 3035652, species = Samples.dinhLang, referencePhotos = Samples.photos, isFavorite = true),
             onAction = {}, onBack = {}, onAddPhotos = {}, onSuggestName = {},
         )
+    }
+
+    @Test fun speciesInfo() = both("species_info") {
+        Surface { SpeciesInfoContent(Samples.dinhLang, onOpenGbif = {}) }
     }
 
     @Test fun detailsWithoutPhotos() = light("details_no_photos") {
@@ -270,6 +276,11 @@ private object Samples {
         genus = "Polyscias",
         vietnameseNames = listOf("Đinh lăng", "Cây gỏi cá", "Nam dương lâm"),
         englishNames = listOf("Ming aralia"),
+        taxonomy = Taxonomy(
+            kingdom = "Plantae", phylum = "Tracheophyta", className = "Magnoliopsida", order = "Apiales",
+            rank = "SPECIES", status = "ACCEPTED",
+            publishedIn = "Harms. (1894). In: Engl. & Prantl, Natürl. Pflanzenfam. 3: 45.", basionym = "Panax fruticosus L.",
+        ),
     )
     val catalog = listOf(
         dinhLang,

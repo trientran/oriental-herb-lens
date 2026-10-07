@@ -2,6 +2,7 @@ package com.uri.lee.dl.data.catalog
 
 import com.uri.lee.dl.core.common.text.TextNormalizer
 import com.uri.lee.dl.domain.model.Species
+import com.uri.lee.dl.domain.model.Taxonomy
 
 internal class CatalogFormatException(message: String) : Exception(message)
 
@@ -13,7 +14,8 @@ internal data class CatalogReadResult(
 
 /**
  * Reads the species catalog CSV (a GBIF species export plus a `vietnameseName` column).
- * Only the columns the app uses are read; any extra columns are ignored.
+ * Only the columns the app uses are read; any extra columns are ignored. The [Taxonomy] columns are
+ * optional: a catalog without them reads as before.
  */
 internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
 
@@ -35,6 +37,7 @@ internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
                 return@forEachIndexed
             }
             fun value(name: String) = clean(row[column.getValue(name)])
+            fun optional(name: String) = column[name]?.let { clean(row[it]) }.orEmpty()
             species += Species(
                 id = id,
                 scientificName = scientificName,
@@ -43,6 +46,16 @@ internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
                 genus = value(GENUS),
                 vietnameseNames = splitNames(value(VIETNAMESE_NAME)),
                 englishNames = splitNames(value(VERNACULAR_NAME)),
+                taxonomy = Taxonomy(
+                    kingdom = optional("kingdom"),
+                    phylum = optional("phylum"),
+                    className = optional("class"),
+                    order = optional("order"),
+                    rank = optional("rank"),
+                    status = optional("taxonomicStatus"),
+                    publishedIn = optional("publishedIn"),
+                    basionym = optional("basionym"),
+                ),
             )
         }
         return CatalogReadResult(species, skipped)

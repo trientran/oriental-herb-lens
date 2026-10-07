@@ -9,7 +9,16 @@ CREATE TABLE species (
     english_names TEXT NOT NULL,
     -- Folded preferred names, for diacritic-insensitive sorting
     sort_vietnamese TEXT NOT NULL,
-    sort_scientific TEXT NOT NULL
+    sort_scientific TEXT NOT NULL,
+    -- Taxonomy, added in schema 2 (1.sqm); new columns go last, as ALTER TABLE appends them
+    kingdom TEXT NOT NULL DEFAULT '',
+    phylum TEXT NOT NULL DEFAULT '',
+    class_name TEXT NOT NULL DEFAULT '',
+    order_name TEXT NOT NULL DEFAULT '',
+    rank TEXT NOT NULL DEFAULT '',
+    taxonomic_status TEXT NOT NULL DEFAULT '',
+    published_in TEXT NOT NULL DEFAULT '',
+    basionym TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX species_sort_vietnamese ON species(sort_vietnamese);

@@ -1,4 +1,4 @@
-// Herb Lens photo uploads: verifies the user's Firebase ID token and stores a JPEG in R2.
+// Herb Lens uploads: verifies the user's Firebase ID token and stores a JPEG or a shared model in R2.
 //
 //   POST /photos?speciesKey=<GBIF species key>
 //   Authorization: Bearer <Firebase ID token>
@@ -7,9 +7,18 @@
 //
 //   201 {"url": "<public URL of the stored photo>"}
 //
-// Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The app then adds the URL to
-// herbs/{speciesKey}.images in Firestore, where security rules also check bans. No R2
-// credentials ship in the app.
+//   POST /models                    a model shared with the community (the Train tab)
+//   Authorization: Bearer <Firebase ID token>
+//   <.tflite bytes, at most 25 MB>
+//
+//   201 {"id": "<uuid>", "url": "<public URL>", "size": <bytes>}
+//
+//   DELETE /models/<uuid>           by its uploader only: 204
+//
+// Too many requests get 429 (wrangler.toml [[ratelimits]]): per address before the token is
+// checked, then per account. Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The
+// app then lists the URL in Firestore (herbs/{speciesKey}.images, sharedModels/{id}), where the
+// security rules also check bans. No R2 credentials ship in the app.
 //
 // The web app calls it from the browser, so the origins in ALLOWED_ORIGINS get CORS headers
 // (the mobile apps send no Origin).
@@ -18,6 +27,20 @@ import { isBanned } from './bans.js';
 import { AuthError, verifyIdToken } from './firebase-auth.js';
 
 export const MAX_BYTES = 5 * 1024 * 1024; // the app sends ~100 KB (600 px, 70 % JPEG)
+export const MAX_MODEL_BYTES = 25 * 1024 * 1024; // a model with the large backbone is ~12 MB
+
+/** False when [limiter] (a Workers rate limiting binding) says [key] has had its share; true without one. */
+async function allowed(limiter, key) {
+  if (!limiter || !key) return true;
+  const { success } = await limiter.limit({ key });
+  return success;
+}
+
+function tooMany() {
+  const response = json(429, { error: 'Too many uploads; try again in a minute' });
+  response.headers.set('retry-after', '60');
+  return response;
+}
 
 function json(status, body) {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -33,7 +56,7 @@ function corsHeaders(request, env) {
   if (!origin || !allowed.includes(origin)) return {};
   return {
     'access-control-allow-origin': origin,
-    'access-control-allow-methods': 'POST',
+    'access-control-allow-methods': 'POST, DELETE',
     'access-control-allow-headers': 'authorization, content-type',
     'access-control-max-age': '86400',
     vary: 'origin',
@@ -43,15 +66,34 @@ function corsHeaders(request, env) {
 export async function handleRequest(request, env, verify = verifyIdToken, banned = isBanned) {
   const cors = corsHeaders(request, env);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
-  const response = await handleUpload(request, env, verify, banned);
+  const response = await route(request, env, verify, banned);
   for (const [name, value] of Object.entries(cors)) response.headers.set(name, value);
   return response;
 }
 
-async function handleUpload(request, env, verify, banned) {
+async function route(request, env, verify, banned) {
   const url = new URL(request.url);
-  if (url.pathname !== '/photos') return json(404, { error: 'Not found' });
-  if (request.method !== 'POST') return json(405, { error: 'Use POST' });
+  const model = /^\/models\/([0-9a-f-]{36})$/.exec(url.pathname)?.[1];
+  if (url.pathname === '/photos') {
+    if (request.method !== 'POST') return json(405, { error: 'Use POST' });
+    return withUser(request, env, verify, banned, (uid) => uploadPhoto(request, env, url, uid));
+  }
+  if (url.pathname === '/models') {
+    if (request.method !== 'POST') return json(405, { error: 'Use POST' });
+    return withUser(request, env, verify, banned, (uid) => uploadModel(request, env, uid));
+  }
+  if (model) {
+    if (request.method !== 'DELETE') return json(405, { error: 'Use DELETE' });
+    // A banned user may still take down their own models
+    return withUser(request, env, verify, async () => false, (uid) => deleteModel(env, model, uid));
+  }
+  return json(404, { error: 'Not found' });
+}
+
+/** Runs [handle] with the signed-in user's uid, after the rate limits, the token and the ban check. */
+async function withUser(request, env, verify, banned, handle) {
+  // Per address first, so a flood of bad tokens is turned away before any verification work
+  if (!(await allowed(env.UPLOADS_PER_ADDRESS, request.headers.get('cf-connecting-ip')))) return tooMany();
 
   const token = /^Bearer (.+)$/.exec(request.headers.get('authorization') ?? '')?.[1];
   let uid;
@@ -61,23 +103,31 @@ async function handleUpload(request, env, verify, banned) {
     if (error instanceof AuthError) return json(401, { error: 'Sign in again' });
     throw error;
   }
+  if (!(await allowed(env.UPLOADS_PER_USER, uid))) return tooMany();
   try {
-    if (await banned(uid, env)) return json(403, { error: 'This account can no longer share photos' });
+    if (await banned(uid, env)) return json(403, { error: 'This account can no longer share' });
   } catch (error) {
     // Firestore unreachable: let the upload through; the rules still refuse to list it for a banned user
     console.warn('Ban check failed', error);
   }
+  return handle(uid);
+}
 
+async function readBody(request, max) {
+  const declared = Number(request.headers.get('content-length') ?? '0');
+  if (declared > max) return null;
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  return bytes.length > max ? null : bytes;
+}
+
+async function uploadPhoto(request, env, url, uid) {
   const speciesKey = url.searchParams.get('speciesKey') ?? '';
   if (!/^\d{1,12}$/.test(speciesKey)) return json(400, { error: 'speciesKey must be a GBIF species key' });
   if ((request.headers.get('content-type') ?? '').split(';')[0].trim() !== 'image/jpeg') {
     return json(415, { error: 'Only image/jpeg is accepted' });
   }
-  const declared = Number(request.headers.get('content-length') ?? '0');
-  if (declared > MAX_BYTES) return json(413, { error: 'Photo too large' });
-
-  const bytes = new Uint8Array(await request.arrayBuffer());
-  if (bytes.length > MAX_BYTES) return json(413, { error: 'Photo too large' });
+  const bytes = await readBody(request, MAX_BYTES);
+  if (!bytes) return json(413, { error: 'Photo too large' });
   if (!isJpeg(bytes)) return json(415, { error: 'Not a JPEG' });
 
   const key = `photos/${speciesKey}/${crypto.randomUUID()}.jpg`;
@@ -86,6 +136,38 @@ async function handleUpload(request, env, verify, banned) {
     customMetadata: { uploader: uid, uploadedAt: new Date().toISOString() },
   });
   return json(201, { url: `${env.PUBLIC_BASE_URL.replace(/\/$/, '')}/${key}` });
+}
+
+/** A TensorFlow Lite flatbuffer: its file identifier "TFL3" sits at bytes 4 to 7. */
+function isTflite(bytes) {
+  return bytes.length > 8 && bytes[4] === 0x54 && bytes[5] === 0x46 && bytes[6] === 0x4c && bytes[7] === 0x33;
+}
+
+async function uploadModel(request, env, uid) {
+  const bytes = await readBody(request, MAX_MODEL_BYTES);
+  if (!bytes) return json(413, { error: 'Model too large' });
+  if (!isTflite(bytes)) return json(415, { error: 'Not a TensorFlow Lite model' });
+
+  const id = crypto.randomUUID();
+  const key = `models/${id}.tflite`;
+  await env.BUCKET.put(key, bytes, {
+    httpMetadata: {
+      contentType: 'application/octet-stream',
+      contentDisposition: `attachment; filename="${id}.tflite"`,
+      cacheControl: 'public, max-age=31536000, immutable',
+    },
+    customMetadata: { uploader: uid, uploadedAt: new Date().toISOString() },
+  });
+  return json(201, { id, url: `${env.PUBLIC_BASE_URL.replace(/\/$/, '')}/${key}`, size: bytes.length });
+}
+
+async function deleteModel(env, id, uid) {
+  const key = `models/${id}.tflite`;
+  const stored = await env.BUCKET.head(key);
+  if (!stored) return json(404, { error: 'No such model' });
+  if (stored.customMetadata?.uploader !== uid) return json(403, { error: 'Only its uploader can remove a model' });
+  await env.BUCKET.delete(key);
+  return new Response(null, { status: 204 });
 }
 
 export default {

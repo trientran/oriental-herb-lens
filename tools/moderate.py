@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Reviews what users send: reported photos, and Vietnamese name suggestions.
+"""Reviews what users send: reported photos and shared models, and Vietnamese name suggestions.
 
 Users report photos in the app (photoReports in Firestore, which only this kind of admin access
 can read). App Store guideline 1.2 expects objectionable content to be acted on within 24 hours;
 .github/workflows/moderation.yml opens a GitHub issue for each new report, so you get an email.
-It does the same for each name suggestion (nameSuggestions), which has no deadline.
+The same goes for shared models (modelReports; the models are sharedModels, with their files in
+R2). It does the same for each name suggestion (nameSuggestions), which has no deadline.
 
     pip install google-cloud-firestore
     export GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
@@ -12,6 +13,9 @@ It does the same for each name suggestion (nameSuggestions), which has no deadli
     tools/moderate.py reports                     open reports, newest first
     tools/moderate.py remove REPORT_ID [--ban]    delete the photo (Firestore and R2), close its reports
     tools/moderate.py dismiss REPORT_ID           close a report, keeping the photo
+    tools/moderate.py model-reports               open reports of shared models, newest first
+    tools/moderate.py remove-model REPORT_ID [--ban]   take the model down (Firestore and R2), close its reports
+    tools/moderate.py dismiss-model REPORT_ID     close a model report, keeping the model
     tools/moderate.py ban UID / unban UID         stop / allow an account contributing
     tools/moderate.py suggestions                 open name suggestions, with the current names
     tools/moderate.py dismiss-suggestion ID       close a suggestion (after adding the name, or not)
@@ -39,6 +43,8 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.field_path import FieldPath
 
 REPORTS = "photoReports"
+MODEL_REPORTS = "modelReports"
+SHARED_MODELS = "sharedModels"
 SUGGESTIONS = "nameSuggestions"
 CATALOG = "androidApp/assets/herb_catalog.csv"
 HERBS = "herbs"
@@ -99,7 +105,7 @@ def delete_from_r2(url):
 
 def ban(db, uid, reason):
     db.collection(BANNED).document(uid).set({"reason": reason, "bannedAt": firestore.SERVER_TIMESTAMP})
-    print("  banned %s: they can no longer share photos or suggest names" % uid)
+    print("  banned %s: they can no longer share photos or models, report, or suggest names" % uid)
 
 
 def cmd_remove(db, args):
@@ -129,6 +135,96 @@ def cmd_remove(db, args):
 def cmd_dismiss(db, args):
     report_or_fail(db, args.report_id).reference.delete()
     print("Dismissed %s; the photo stays." % args.report_id)
+
+
+def model_report_or_fail(db, report_id):
+    snapshot = db.collection(MODEL_REPORTS).document(report_id).get()
+    if not snapshot.exists:
+        fail("no model report %s" % report_id)
+    return snapshot
+
+
+def describe_model_report(db, snapshot):
+    r = snapshot.to_dict()
+    created = r.get("createdAt")
+    when = created.strftime("%Y-%m-%d %H:%M UTC") if created else "?"
+    model = db.collection(SHARED_MODELS).document(r.get("modelId", "-")).get()
+    m = model.to_dict() if model.exists else {}
+    species = m.get("species") or []
+    return "%s  %s  %-20s model %s\n    name      %s\n    species   %s\n    file      %s\n    uploader  %s   reporter %s" % (
+        snapshot.id, when, r.get("reason"), r.get("modelId"),
+        m.get("name", "(no longer shared)"), ", ".join(species[:10]) + (" …" if len(species) > 10 else ""),
+        m.get("url", "-"), r.get("uploaderId") or "-", r.get("reporterUid") or "-",
+    )
+
+
+def cmd_model_reports(db, args):
+    snapshots = sorted(db.collection(MODEL_REPORTS).stream(),
+                       key=lambda s: s.to_dict().get("createdAt") or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc),
+                       reverse=True)
+    if not snapshots:
+        print("No open model reports.")
+    for snapshot in snapshots:
+        print(describe_model_report(db, snapshot))
+
+
+def cmd_remove_model(db, args):
+    report = model_report_or_fail(db, args.report_id).to_dict()
+    model_id = report["modelId"]
+    listed = db.collection(SHARED_MODELS).document(model_id)
+    model = listed.get()
+    if model.exists:
+        url = model.to_dict().get("url")
+        listed.delete()
+        print("  removed sharedModels/%s" % model_id)
+        if url and not args.keep_file:
+            delete_from_r2(url)
+    else:
+        print("  the model isn't shared any more")
+    closed = 0
+    for snapshot in db.collection(MODEL_REPORTS).where(filter=firestore.FieldFilter("modelId", "==", model_id)).stream():
+        snapshot.reference.delete()
+        closed += 1
+    print("  closed %d report(s)" % closed)
+    if args.ban:
+        ban(db, report["uploaderId"], "model %s: %s" % (model_id, report.get("reason")))
+
+
+def cmd_dismiss_model(db, args):
+    model_report_or_fail(db, args.report_id).reference.delete()
+    print("Dismissed %s; the model stays shared." % args.report_id)
+
+
+def notify_model_reports(db, repo):
+    """Opens a GitHub issue for every model report not announced yet, then marks it announced."""
+    opened = 0
+    for snapshot in db.collection(MODEL_REPORTS).stream():
+        report = snapshot.to_dict()
+        if report.get("notifiedAt"):
+            continue
+        body = "\n".join([
+            "A shared model was reported in the app. Please review it within 24 hours.",
+            "",
+            "```",
+            describe_model_report(db, snapshot),
+            "```",
+            "",
+            "Then, with the service account set up (see tools/moderate.py):",
+            "",
+            "```",
+            "tools/moderate.py remove-model %s --ban   # objectionable: take it down and ban the uploader" % snapshot.id,
+            "tools/moderate.py remove-model %s         # take the model down only" % snapshot.id,
+            "tools/moderate.py dismiss-model %s        # nothing wrong: keep it" % snapshot.id,
+            "```",
+            "",
+            "Close this issue once done.",
+        ])
+        title = "Reported model: %s (%s)" % (report.get("reason"), report.get("modelId"))
+        subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
+                        "--label", "moderation"], check=True)
+        snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})
+        opened += 1
+    return opened
 
 
 def cmd_ban(db, args):
@@ -248,6 +344,7 @@ def cmd_notify(db, args):
         snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})
         opened += 1
     print("Opened %d issue(s) for reports." % opened)
+    print("Opened %d issue(s) for model reports." % notify_model_reports(db, args.repo))
     print("Opened %d issue(s) for name suggestions." % notify_suggestions(db, args.repo))
 
 
@@ -263,6 +360,15 @@ def main():
     dismiss = sub.add_parser("dismiss")
     dismiss.add_argument("report_id")
     dismiss.set_defaults(run=cmd_dismiss)
+    sub.add_parser("model-reports").set_defaults(run=cmd_model_reports)
+    remove_model = sub.add_parser("remove-model")
+    remove_model.add_argument("report_id")
+    remove_model.add_argument("--ban", action="store_true", help="also ban the uploader")
+    remove_model.add_argument("--keep-file", action="store_true", help="leave the file on R2 (e.g. as evidence)")
+    remove_model.set_defaults(run=cmd_remove_model)
+    dismiss_model = sub.add_parser("dismiss-model")
+    dismiss_model.add_argument("report_id")
+    dismiss_model.set_defaults(run=cmd_dismiss_model)
     ban_parser = sub.add_parser("ban")
     ban_parser.add_argument("uid")
     ban_parser.add_argument("--reason")

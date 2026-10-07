@@ -52,7 +52,9 @@ Search runs on the device, so check it in airplane mode too.
 1. Open a species from Browse, a search result and Saved. On a phone, back returns to the list.
 2. No dosing, caution or medicinal text anywhere.
 3. The screen shows the Vietnamese name, the scientific name in italics with its authorship, every
-   Vietnamese and English name, family and genus, and "View on GBIF" opens the species on gbif.org.
+   Vietnamese and English name, and family and genus. Full details opens a sheet with the rest of
+   GBIF's record (scientific name, first described as, rank, status, where published, kingdom to
+   genus, every name, the GBIF key); "View on GBIF" at its foot opens the species on gbif.org.
 4. Tap the heart, then again. Saved → Favourites updates without a restart.
 5. The species appears at the top of History.
 6. Photos: user photos first, then GBIF photos (online only); swipe through them. Each shows its
@@ -68,8 +70,11 @@ emulator. On a phone, use real plants or photos of them on another screen.
 
 1. Identify opens the camera straight away (allow the camera the first time). Denying shows an
    explanation with Allow camera; after a second denial, Open settings.
+   On a fresh install, a "research preview" note explains first that results are often wrong;
+   after I understand it doesn't show again, but "Learn more" under the results reopens it.
 2. Whole view: point at a herb. The most likely herbs appear in the panel at the bottom with their
-   confidence and update as you move. Nothing below the minimum confidence (Profile) is shown.
+   confidence and update as you move. Nothing below the minimum confidence (Profile; 30 % unless
+   changed) is shown.
 3. Pick a plant: boxes appear around the plants in view; the biggest is chosen and identified.
    Tap another box: its results replace the first.
 4. The mode is kept after leaving and reopening the app.
@@ -132,6 +137,19 @@ Upload photos you took yourself.
 1. Airplane mode, relaunch.
 2. Single image and live camera still recognise herbs (on-device model).
 3. Herbs viewed earlier still open (Firestore cache).
+
+## 12a. Shared models (Train tab)
+
+1. Train a model with two species. On its results, Share with everyone: signed out, it asks you to
+   sign in; signed in, the terms show once, then it uploads and says it's shared.
+2. Name a model with an email address or a link: sharing refuses and says why.
+3. Your models → Models shared by others lists it (newest first) with its species and size.
+   On its page, Stop sharing removes it for everyone.
+4. On a second account, open the model: Add to my models puts it in Your models, ready to try and
+   to train further. Report hides it at once; Hide this person's models hides their models and
+   photos.
+5. Firestore console: `sharedModels` and `modelReports` hold the entries; R2 holds
+   `models/<id>.tflite` until it's no longer shared.
 
 ## 13. Content update (model and catalog)
 

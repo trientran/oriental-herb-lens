@@ -14,4 +14,14 @@ interface SettingsRepository {
     val usageStatistics: Flow<Boolean>
 
     suspend fun setUsageStatistics(enabled: Boolean)
+
+    /** Whether the user has read Identify's note that the herb model is a research preview. */
+    val identifyNoticeSeen: Flow<Boolean>
+
+    suspend fun setIdentifyNoticeSeen()
+
+    /** Whether the user accepted the terms for sharing models with everyone (Train tab). */
+    val sharingTermsAccepted: Flow<Boolean>
+
+    suspend fun acceptSharingTerms()
 }

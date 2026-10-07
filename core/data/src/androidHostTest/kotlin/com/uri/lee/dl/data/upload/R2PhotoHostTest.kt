@@ -22,13 +22,17 @@ class R2PhotoHostTest {
     private var lastRequest: HttpRequestData? = null
     private var lastBody: ByteArray? = null
     private var status = HttpStatusCode.Created
+    /** Statuses answered before [status], one per request. */
+    private val first = ArrayDeque<HttpStatusCode>()
+    private var requests = 0
     private val engine = MockEngine { request ->
         lastRequest = request
         lastBody = request.body.toByteArray()
+        requests++
         respond(
             """{"url":"https://pub.r2.dev/photos/3035652/abc.jpg"}""",
-            status,
-            headersOf(HttpHeaders.ContentType, "application/json"),
+            first.removeFirstOrNull() ?: status,
+            headersOf(HttpHeaders.ContentType to listOf("application/json"), HttpHeaders.RetryAfter to listOf("60")),
         )
     }
     private val auth = FakeAuthRepository(uid = "u1")
@@ -63,5 +67,16 @@ class R2PhotoHostTest {
     @Test(expected = IOException::class)
     fun `a build without the Worker URL fails clearly`() = runTest {
         host(url = "").upload(1, jpeg)
+    }
+
+    @Test
+    fun `over the Worker's limit it waits and carries on rather than failing`() = runTest {
+        first += HttpStatusCode.TooManyRequests
+        first += HttpStatusCode.TooManyRequests
+
+        val url = host().upload(3035652, jpeg)
+
+        assertEquals("https://pub.r2.dev/photos/3035652/abc.jpg", url)
+        assertEquals(3, requests)
     }
 }

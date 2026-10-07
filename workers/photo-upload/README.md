@@ -16,6 +16,21 @@ The Worker checks the ID token against Google's signing keys (issuer and audienc
 uploader's uid as metadata. The app then adds the URL to `herbs/{speciesKey}.images` in
 Firestore; the security rules decide who may attach photos, including bans.
 
+It also stores models shared from the Train tab:
+
+```
+POST /models
+Authorization: Bearer <Firebase ID token>
+<.tflite bytes>
+
+201 {"id": "<uuid>", "url": "https://<public bucket URL>/models/<uuid>.tflite", "size": <bytes>}
+
+DELETE /models/<uuid>          (its uploader only) 204
+```
+
+Only TensorFlow Lite files (identifier `TFL3`) up to 25 MB; the app then lists the model in
+`sharedModels/{id}`, whose rules check the entry. The CORS headers allow POST and DELETE.
+
 ## Deploy
 
 From this directory, logged in with `wrangler login`:
@@ -45,10 +60,13 @@ step. Apply the bucket's rules once, and again whenever `r2-cors.json` changes:
 npx wrangler r2 bucket cors set herb-lens-content --file r2-cors.json
 ```
 
-## Recommended: rate limiting
+## Rate limiting
 
-In the Cloudflare dashboard → Security → WAF → Rate limiting rules, add a rule for this Worker's
-hostname, e.g. 20 requests per minute per IP, to blunt abuse by a signed-in account.
+Built in (`[[ratelimits]]` in `wrangler.toml`, Workers rate limiting, free): each address gets
+120 requests a minute before its token is checked, and each account 30 uploads a minute (one
+contribution sends at most 20). Over that, the Worker answers 429 with `Retry-After: 60`. The
+counts are kept per Cloudflare location, so they're approximate. Change the numbers there and
+deploy again.
 
 ## Test
 

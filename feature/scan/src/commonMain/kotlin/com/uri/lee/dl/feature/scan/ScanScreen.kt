@@ -32,6 +32,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Science
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
@@ -44,6 +47,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +76,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.ConfidenceChip
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.HerbCard
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
 import com.uri.lee.dl.core.designsystem.component.ScientificName
@@ -83,6 +88,11 @@ import com.uri.lee.dl.core.designsystem.resources.scan_again
 import com.uri.lee.dl.core.designsystem.resources.scan_back_to_camera
 import com.uri.lee.dl.core.designsystem.resources.scan_hold_steady
 import com.uri.lee.dl.core.designsystem.resources.scan_looking
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_body
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_line
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_more
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_ok
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_title
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
@@ -146,11 +156,51 @@ fun ScanScreen(
     Box(modifier.fillMaxSize()) {
         val source = state.source
         if (source is ScanSource.Photos) {
-            Batch(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, onOpenSpecies)
+            Batch(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, { onAction(ScanAction.ShowNotice) }, onOpenSpecies)
         } else {
             Single(state, source, onAction, onPickPhotos, onOpenSpecies, camera)
         }
         if (state.preparingPhotos > 0) Preparing(state.preparingPhotos)
+        if (state.showNotice) NoticeDialog { onAction(ScanAction.DismissNotice) }
+    }
+}
+
+/** Why results are often wrong: the herb model is a research preview, with too few photos yet. */
+@Composable
+private fun NoticeDialog(onDismiss: () -> Unit) {
+    DialogLayer {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = { Icon(Icons.Outlined.Science, contentDescription = null) },
+            title = { Text(stringResource(Res.string.scan_notice_title)) },
+            text = {
+                Text(
+                    stringResource(Res.string.scan_notice_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                )
+            },
+            confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.scan_notice_ok)) } },
+        )
+    }
+}
+
+/** A standing reminder under the results, opening [NoticeDialog]. */
+@Composable
+private fun NoticeLine(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).clickable(onClick = onClick).padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(Icons.Outlined.Info, contentDescription = null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            stringResource(Res.string.scan_notice_line),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f, fill = false),
+        )
+        Text(stringResource(Res.string.scan_notice_more), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -339,6 +389,7 @@ private fun ResultsPanel(state: ScanState, onAction: (ScanAction) -> Unit, onOpe
                     modifier = Modifier.fillMaxWidth().padding(8.dp),
                 )
             }
+            NoticeLine({ onAction(ScanAction.ShowNotice) })
         }
     }
 }
@@ -416,6 +467,7 @@ private fun Batch(
     source: ScanSource.Photos,
     onPickPhotos: () -> Unit,
     onBackToCamera: () -> Unit,
+    onShowNotice: () -> Unit,
     onOpenSpecies: (Long) -> Unit,
 ) {
     val spacing = HerbLensTheme.spacing
@@ -425,6 +477,7 @@ private fun Batch(
             contentPadding = PaddingValues(start = spacing.lg, end = spacing.lg, top = spacing.lg, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(spacing.md),
         ) {
+            item("notice") { NoticeLine(onShowNotice) }
             itemsIndexed(source.items, key = { index, item -> "$index:${item.uri}" }) { index, item ->
                 BatchCard(index, item, onOpenSpecies)
             }

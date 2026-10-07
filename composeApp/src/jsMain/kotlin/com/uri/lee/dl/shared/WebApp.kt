@@ -90,8 +90,7 @@ fun startWebApp(config: WebConfig) {
         onOpenStore = {},
         onExit = {},
         onShareApp = { share(config.siteUrl) },
-        trainingBenchmark = if (config.isDebug) ::benchmarkSources else null,
-        // Hidden until unlocked (tap the version on Profile 7 times)
+        // Research mode, listed in Profile in every build
         research = ::webResearch,
         files = webFileActions(),
     )
@@ -143,35 +142,6 @@ private fun pickPhotos(pick: PhotoPick) {
     input.click()
 }
 
-/**
- * Phase 7 spike on a developer's machine: labelled photos and backbones from the local test-photo
- * server (`cd test-images && python3 -m http.server 8767`, with CORS; see docs).
- */
-private suspend fun benchmarkSources(): BenchmarkSources {
-    val base = "http://127.0.0.1:8767"
-    suspend fun fetchBlob(url: String): Blob {
-        val response = window.asDynamic().fetch(url).unsafeCast<Promise<Response>>().await()
-        check(response.ok) { "HTTP ${response.status} for $url" }
-        return response.blob().await()
-    }
-    val credits = window.asDynamic().fetch("$base/training/credits.csv").unsafeCast<Promise<Response>>().await().text().await()
-    val rows = credits.lines().drop(1).filter { it.isNotBlank() }.map { it.split(',') }
-    val species = rows.map { it[1] }.distinct()
-    val photos = rows.map { row -> BenchmarkPhoto(species.indexOf(row[1]), WebLocalImage(fetchBlob("$base/training/${row[0]}"))) }
-    return BenchmarkSources(
-        photos,
-        mapOf(
-            "mobilenet_v3_small" to "$base/backbones/mobilenet_v3_small.tflite",
-            "mobilenet_v3_large" to "$base/backbones/mobilenet_v3_large.tflite",
-        ),
-        readModel = { url ->
-            val buffer = window.asDynamic().fetch(url).unsafeCast<Promise<Response>>().await().arrayBuffer().await()
-            Int8Array(buffer).unsafeCast<ByteArray>()
-        },
-        // A blob: URL the LiteRT loader can fetch like any other
-        saveModel = { _, bytes -> URL.createObjectURL(Blob(arrayOf(bytes))) },
-    )
-}
 
 /** The system share sheet where there is one (phones), otherwise the link goes to the clipboard. */
 private fun share(url: String) {

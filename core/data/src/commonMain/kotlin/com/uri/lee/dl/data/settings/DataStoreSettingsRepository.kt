@@ -35,10 +35,24 @@ internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore)
         dataStore.edit { it[USAGE_STATISTICS] = enabled }
     }
 
+    override val identifyNoticeSeen: Flow<Boolean> = dataStore.data.map { it[IDENTIFY_NOTICE_SEEN] ?: false }.distinctUntilChanged()
+
+    override suspend fun setIdentifyNoticeSeen() {
+        dataStore.edit { it[IDENTIFY_NOTICE_SEEN] = true }
+    }
+
+    override val sharingTermsAccepted: Flow<Boolean> = dataStore.data.map { it[SHARING_TERMS_ACCEPTED] ?: false }.distinctUntilChanged()
+
+    override suspend fun acceptSharingTerms() {
+        dataStore.edit { it[SHARING_TERMS_ACCEPTED] = true }
+    }
+
     companion object {
         // Persisted key names. Renaming one silently resets the user's setting.
         val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanKey("IS_OBJECTS_MODE")
         val CONFIDENCE_LEVEL = floatKey("CONFIDENCE_LEVEL")
         val USAGE_STATISTICS = booleanKey("usage_statistics")
+        val IDENTIFY_NOTICE_SEEN = booleanKey("identify_notice_seen")
+        val SHARING_TERMS_ACCEPTED = booleanKey("sharing_terms_accepted")
     }
 }

@@ -1,10 +1,13 @@
 package com.uri.lee.dl.feature.herbdetails
 
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.model.PhotoSource
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.testing.MainDispatcherTest
+import com.uri.lee.dl.testing.fakes.FakeAuthRepository
 import com.uri.lee.dl.testing.fakes.FakeModerationRepository
 import com.uri.lee.dl.testing.fakes.FakePhotoRepository
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
@@ -29,7 +32,35 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
     private val library = FakeUserLibraryRepository()
 
     private val moderation = FakeModerationRepository()
-    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation)
+    private val auth = FakeAuthRepository()
+    private val events = mutableListOf<AnalyticsEvent>()
+    private val analytics = object : Analytics {
+        override fun log(event: AnalyticsEvent) { events += event }
+        override fun screen(name: String) = Unit
+    }
+    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, analytics)
+
+    @Test
+    fun `reporting follows the sign-in state`() {
+        val viewModel = viewModel()
+        assertTrue(viewModel.state.value.isSignedIn)
+
+        auth.userId.value = null
+
+        assertFalse(viewModel.state.value.isSignedIn)
+    }
+
+    @Test
+    fun `opening the full details and then GBIF is counted`() {
+        val viewModel = viewModel()
+        events.clear()
+
+        viewModel.onAction(HerbDetailsAction.InfoOpened)
+        viewModel.onAction(HerbDetailsAction.GbifOpened)
+
+        assertEquals(listOf("view_species_info", "open_gbif"), events.map { it.name })
+        assertEquals(listOf(5L, 5L), events.map { it.parameters["species_id"] })
+    }
 
     @Test
     fun `shows the species from the catalog`() {

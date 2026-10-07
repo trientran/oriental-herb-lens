@@ -13,10 +13,11 @@ stays on ML Kit; only this feature uses LiteRT.
 | Backbone on iOS | LiteRT through `TensorFlowLiteSwift` 2.17.0 (`LiteRTEmbedder` in `MLKitBridge.swift`) |
 | Backbone on the web | LiteRT.js (`core:ml` jsMain) |
 
-## Spike benchmark (debug builds)
+## Test photos and backbones (development)
 
-Profile → **Training benchmark (Phase 7)** embeds a labelled photo set with each backbone, trains
-on 16 photos per class (and on 5) and tests on the other 8. Results show on screen and in the log.
+The spike's benchmark (embed a labelled photo set with each backbone, train on 16 photos per class
+and on 5, test on the other 8) gave the results below; it has since been removed, as Research mode
+does the same and more. The same photos and backbones still serve for development runs.
 
 **Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]:
 
@@ -30,7 +31,7 @@ shared or committed):
 
     tools/fetch_test_images.py --per-species 24 --out test-images/training
 
-**Web:** serve `test-images` with CORS on port 8767, run the dev server, open Profile:
+**Web:** serve `test-images` with CORS on port 8767, then run the dev server:
 
     cd test-images && python3 -c "import http.server as h
     class H(h.SimpleHTTPRequestHandler):
@@ -180,6 +181,17 @@ hidden layer is a setting and an ablation in the study.
   replaying its packed sample so it keeps the old species); any other .tflite with labels inside
   can be used to identify, not trained.
 - At least two species to train; the screen asks for 10 photos per species.
+- **Share with everyone** (a trained model's results): uploads the same file through the upload
+  Worker (`POST /models`, at most 25 MB) to R2, and lists it in Firestore (`sharedModels/{id}`:
+  name, species, backbone, size, the sharer's uid, licence CC-BY-4.0). It needs sign-in, the
+  sharing terms (accepted once) and names that pass `SharingRules`: 1–60 characters, 2–500
+  species, no email, link or phone number, no obvious abuse. Only models trained in the app can
+  be shared.
+- **Models shared by others** (Your models): newest 200, listened to only while the screen is
+  open. Add one (downloaded, then imported as above); report it (signed in; `modelReports`, and
+  hidden for the reporter at once); hide everything its sharer shared (models and photos, on this
+  device); or stop sharing your own (`DELETE /models/{id}` removes the file, uploader only). The
+  administrator removes reported models in the Firestore console and bans accounts as for photos.
 
 ## Research mode
 

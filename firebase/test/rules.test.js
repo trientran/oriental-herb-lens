@@ -1,7 +1,7 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
-import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 
 let env;
 
@@ -111,16 +111,54 @@ test('users delete only their own document, with their account', async () => {
   await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
 });
 
-test('anyone can report a photo; only well-formed reports, never read back', async () => {
+test('signed-in users can report a photo; only well-formed reports, never read back', async () => {
   const report = (reporterUid) => ({
     speciesKey: 3035652, url: photo('a'), uploaderId: 'bob', reason: 'SEXUAL_OR_VIOLENT', reporterUid, createdAt: serverTimestamp(),
   });
-  await assertSucceeds(addDoc(collection(as(null), 'photoReports'), report(null)));
+  await assertFails(addDoc(collection(as(null), 'photoReports'), report(null)));
   const created = await assertSucceeds(addDoc(collection(as('carol'), 'photoReports'), report('carol')));
   await assertFails(getDoc(created));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), report(null)));
   await assertFails(addDoc(collection(as('carol'), 'photoReports'), report('dave')));
-  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), reason: 'BORED' }));
-  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), extra: 1 }));
+  await assertFails(addDoc(collection(as('mallory'), 'photoReports'), report('mallory')));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), { ...report('carol'), reason: 'BORED' }));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), { ...report('carol'), extra: 1 }));
+});
+
+test('contributors share models as themselves; anyone browses; only the uploader removes', async () => {
+  const id = '0f8fad5b-d9cb-469f-a165-70867728950e';
+  const model = (uploaderId, extra = {}) => ({
+    name: 'Garden herbs', species: ['Mint', 'Basil'], backbone: 'mobilenet_v3_large', trainable: true,
+    url: `https://pub-abc.r2.dev/models/${id}.tflite`, size: 12000000, uploaderId, license: 'CC-BY-4.0',
+    createdAt: serverTimestamp(), ...extra,
+  });
+  const ref = (who) => doc(as(who), `sharedModels/${id}`);
+
+  await assertFails(setDoc(ref(null), model(null)));
+  await assertFails(setDoc(ref('carol'), model('dave')));
+  await assertFails(setDoc(ref('mallory'), model('mallory')));
+  await assertFails(setDoc(ref('carol'), model('carol', { url: 'https://evil.example/x.tflite' })));
+  await assertFails(setDoc(ref('carol'), model('carol', { size: 30000000 })));
+  await assertFails(setDoc(ref('carol'), model('carol', { species: ['Only one'] })));
+  await assertFails(setDoc(ref('carol'), model('carol', { license: 'proprietary' })));
+  await assertFails(setDoc(ref('carol'), model('carol', { extra: 1 })));
+  await assertFails(setDoc(doc(as('carol'), 'sharedModels/not-a-uuid'), model('carol')));
+  await assertSucceeds(setDoc(ref('carol'), model('carol')));
+
+  await assertSucceeds(getDoc(ref(null)));
+  await assertSucceeds(getDocs(collection(as(null), 'sharedModels')));
+  await assertFails(updateDoc(ref('carol'), { name: 'Renamed' }));
+  await assertFails(deleteDoc(ref('dave')));
+  await assertSucceeds(deleteDoc(ref('carol')));
+});
+
+test('signed-in users can report a shared model, never read back', async () => {
+  const report = (reporterUid) => ({ modelId: 'm1', uploaderId: 'bob', reason: 'OFFENSIVE', reporterUid, createdAt: serverTimestamp() });
+  await assertFails(addDoc(collection(as(null), 'modelReports'), report(null)));
+  const created = await assertSucceeds(addDoc(collection(as('carol'), 'modelReports'), report('carol')));
+  await assertFails(getDoc(created));
+  await assertFails(addDoc(collection(as('carol'), 'modelReports'), report('dave')));
+  await assertFails(addDoc(collection(as('carol'), 'modelReports'), { ...report('carol'), reason: 'BORED' }));
 });
 
 test('old app versions can still read config/mobile, nobody can write it', async () => {

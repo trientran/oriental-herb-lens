@@ -117,7 +117,6 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val navController = rememberNavController()
     val appInfo = koinInject<AppInfo>()
     val isDebug = appInfo.isDebug
-    var showBenchmark by remember { mutableStateOf(false) }
     var showResearch by remember { mutableStateOf(false) }
     LaunchedEffect(openHerbId) {
         if (openHerbId != null) navController.navigateTopLevel(BrowseDestination(openHerbId))
@@ -181,6 +180,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         pickModelFile = files?.pickModelFile,
                         saveFile = files?.saveFile ?: { _, _ -> },
                         camera = { onFrame, modifier -> CameraPreview(onFrame, modifier) },
+                        signIn = signIn,
                     ),
                     modifier = Modifier.statusBarsPadding(),
                 )
@@ -193,7 +193,6 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onOpenLanguageSettings = actions.onOpenLanguageSettings,
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
                         debugTools = listOfNotNull(
-                            actions.trainingBenchmark?.takeIf { isDebug }?.let { "Training benchmark (Phase 7)" to { showBenchmark = true } },
                             actions.research?.let { "Research mode" to { showResearch = true } },
                         ),
                     ),
@@ -222,18 +221,13 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
         }
     }
     StatusDialogs(actions)
-    val benchmarkSources = actions.trainingBenchmark
-    if (showBenchmark && benchmarkSources != null) {
-        val benchmark = TrainingBenchmark(koinInject(), koinInject(), getKoin().getOrNull())
-        TrainingBenchmarkDialog(benchmark, benchmarkSources) { showBenchmark = false }
-    }
     val research = actions.research
     if (showResearch && research != null) {
         val reader = koinInject<PhotoReader>()
         val embedders = koinInject<ImageEmbedderLoader>()
         val backbones = koinInject<Backbones>()
         // One for the app: a run carries on when the screen closes
-        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName) }
+        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName, analytics) }
         DialogLayer { ResearchDialog(controller) { showResearch = false } }
     }
 }

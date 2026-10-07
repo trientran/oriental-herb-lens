@@ -42,6 +42,59 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
     class NameSuggested(speciesId: Long) : AnalyticsEvent("suggest_name", mapOf("species_id" to speciesId))
 
     class PhotoReported(reason: String) : AnalyticsEvent("report_photo", mapOf("reason" to reason))
+
+    /** A species' full details were opened, and from there its GBIF page. */
+    class SpeciesInfoViewed(speciesId: Long) : AnalyticsEvent("view_species_info", mapOf("species_id" to speciesId))
+
+    class GbifOpened(speciesId: Long) : AnalyticsEvent("open_gbif", mapOf("species_id" to speciesId))
+
+    /** The user trained one of their own models: [update] is "full" or "add" (only what's new, with replay). */
+    class ModelTrained(quality: String, speciesCount: Int, photoCount: Int, update: String) : AnalyticsEvent(
+        "train_model",
+        mapOf("quality" to quality, "species_count" to speciesCount, "photo_count" to photoCount, "update" to update),
+    )
+
+    /** A model file was imported; [trainable] when it came from Herb Lens and can learn more. */
+    class ModelImported(trainable: Boolean, speciesCount: Int) : AnalyticsEvent(
+        "import_model",
+        mapOf("trainable" to trainable, "species_count" to speciesCount),
+    )
+
+    /** A model was shared: [to] is "file" (the share sheet) or "community" (everyone in the app). */
+    class ModelShared(speciesCount: Int, to: String) : AnalyticsEvent("share_model", mapOf("species_count" to speciesCount, "to" to to))
+
+    /** A model someone shared was added to the user's own. */
+    class CommunityModelAdded(speciesCount: Int, trainable: Boolean) : AnalyticsEvent(
+        "add_community_model",
+        mapOf("species_count" to speciesCount, "trainable" to trainable),
+    )
+
+    class ModelReported(reason: String) : AnalyticsEvent("report_model", mapOf("reason" to reason))
+
+    /** The user opened one of their own models to identify with it. */
+    class ModelTried(speciesCount: Int) : AnalyticsEvent("try_model", mapOf("species_count" to speciesCount))
+
+    /** A reference from Profile → How to cite was copied; [url] is its DOI or web link, if any. */
+    class CitationCopied(position: Int, url: String?) : AnalyticsEvent(
+        "copy_citation",
+        buildMap {
+            put("position", position)
+            url?.let { put("url", it.take(100)) }
+        },
+    )
+
+    /**
+     * Research mode, to count who runs studies with the app: the run's size only, never its results
+     * (those stay in the researcher's own files).
+     */
+    class ResearchStarted(resumed: Boolean, backbones: Int, runs: Int, speciesCount: Int, photoCount: Int) : AnalyticsEvent(
+        "research_start",
+        mapOf("resumed" to resumed, "backbones" to backbones, "runs" to runs, "species_count" to speciesCount, "photo_count" to photoCount),
+    )
+
+    class ResearchFinished(runs: Int, minutes: Long) : AnalyticsEvent("research_finish", mapOf("runs" to runs, "minutes" to minutes))
+
+    class ResearchSaved(runs: Int) : AnalyticsEvent("research_save", mapOf("runs" to runs))
 }
 
 /** For tests and previews. */

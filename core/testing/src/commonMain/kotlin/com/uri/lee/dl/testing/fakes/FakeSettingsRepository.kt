@@ -18,4 +18,16 @@ class FakeSettingsRepository(initial: ScanSettings = ScanSettings()) : SettingsR
     override suspend fun setUsageStatistics(enabled: Boolean) {
         usageStatistics.value = enabled
     }
+
+    override val identifyNoticeSeen = MutableStateFlow(false)
+
+    override suspend fun setIdentifyNoticeSeen() {
+        identifyNoticeSeen.value = true
+    }
+
+    override val sharingTermsAccepted = MutableStateFlow(false)
+
+    override suspend fun acceptSharingTerms() {
+        sharingTermsAccepted.value = true
+    }
 }

@@ -54,17 +54,51 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
     }
 
-    // Reports of shared photos (App Store guideline 1.2), read by the admin only. Anyone may
-    // report, signed in or not; a signed-in reporter is recorded as themselves.
+    // Reports of shared photos (App Store guideline 1.2), read by the admin only. Reporters sign
+    // in, so reports can be followed up and bots can't flood them; banned users can't report.
     match /photoReports/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['speciesKey', 'url', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
+      allow create: if contributor()
+        && request.resource.data.keys().hasOnly(['speciesKey', 'url', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
         && request.resource.data.speciesKey is int
         && request.resource.data.url is string && request.resource.data.url.size() <= 500
         && (request.resource.data.uploaderId == null
             || (request.resource.data.uploaderId is string && request.resource.data.uploaderId.size() <= 128))
         && request.resource.data.reason in ['NOT_A_PLANT', 'SEXUAL_OR_VIOLENT', 'SHOWS_A_PERSON', 'WRONG_SPECIES', 'OTHER']
-        && (request.resource.data.reporterUid == null
-            || (signedIn() && request.resource.data.reporterUid == request.auth.uid))
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // Models people shared from the Train tab, stored in R2 by the upload Worker. Anyone may browse
+    // them; contributors list their own, and remove them; the admin removes others in the console.
+    match /sharedModels/{id} {
+      allow get, list: if true;
+      allow create: if contributor()
+        && id.matches('^[0-9a-f-]{36}$')
+        && request.resource.data.keys().hasOnly(['name', 'species', 'backbone', 'trainable', 'url', 'size', 'uploaderId', 'license', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60
+        && request.resource.data.species is list
+        && request.resource.data.species.size() >= 2 && request.resource.data.species.size() <= 500
+        && request.resource.data.backbone is string && request.resource.data.backbone.size() <= 40
+        && request.resource.data.trainable is bool
+        && request.resource.data.url is string
+        && request.resource.data.url.matches('^https://[^/]+/models/' + id + '[.]tflite$')
+        && request.resource.data.size is int
+        && request.resource.data.size > 0 && request.resource.data.size <= 26214400
+        && request.resource.data.uploaderId == request.auth.uid
+        && request.resource.data.license == 'CC-BY-4.0'
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.uploaderId == request.auth.uid;
+    }
+
+    // Reports of shared models, read by the admin only; like photo reports, they need an account.
+    match /modelReports/{id} {
+      allow create: if contributor()
+        && request.resource.data.keys().hasOnly(['modelId', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
+        && request.resource.data.modelId is string && request.resource.data.modelId.size() <= 64
+        && request.resource.data.uploaderId is string && request.resource.data.uploaderId.size() <= 128
+        && request.resource.data.reason in ['OFFENSIVE', 'PERSONAL_INFORMATION', 'MISLEADING', 'SPAM', 'OTHER']
+        && request.resource.data.reporterUid == request.auth.uid
         && request.resource.data.createdAt == request.time;
     }
 

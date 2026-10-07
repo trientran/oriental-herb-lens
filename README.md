@@ -1,67 +1,115 @@
-# 🌿 Med Herb Lens
+# Med Herb Lens
 
-**Med Herb Lens** is an AI-powered Android application designed specifically for the identification of medicinal plants. Developed as a proof-of-concept, the app aims to bridge the gap between traditional herbal knowledge and modern deep learning technologies. It supports both offline and online modes, making it ideal for use in remote areas where medicinal flora are commonly found.
+English · [Tiếng Việt](README.vi.md)
 
-## 🚀 Features
+Identify medicinal herbs with your phone's camera, browse 4,799 plant species with their Vietnamese
+and English names, and train image classifiers of your own, all on your device. Med Herb Lens runs
+on Android, iOS and the web.
 
-- 📸 **Image-Based Recognition**
-  - Real-time plant recognition via the camera
-  - Static image analysis from the gallery
-  - Batch image processing
-  - On-device inference using TFLite for offline recognition
+> **A research preview.** Med Herb Lens is a research project. Its herb model is our own: it was
+> trained by our team, runs on your device and knows 2,721 species, but we don't have enough photos
+> yet for most of them, so its results are often wrong. No other company's identification service
+> is used. Never eat a plant or use it as medicine because of what the app says.
 
-- 🔍 **Text-Based Search**
-  - Find medicinal plants by entering Latin or Vietnamese names
-  - Search powered by Algolia for fast and relevant results
+## Get the app
 
-- 🧠 **AI-Powered Identification**
-  - EfficientNetB0 model trained on curated herb datasets
-  - Lightweight and fast inference (~300-400ms per image)
-  - Transfer learning and data augmentation for better accuracy
+- In your browser: [med-herb-lens.pages.dev/app](https://med-herb-lens.pages.dev/app/)
+- Android: [Google Play](https://play.google.com/store/apps/details?id=com.uri.lee.dl)
+- iPhone and iPad: [App Store](https://apps.apple.com/app/id6819173768)
 
-- 🌐 **Cloud-Hosted Knowledge Base**
-  - Plant profiles with scientific/common names, medicinal uses, and images
-  - Continuously updated by user contributions
-  - Synced with Firebase Firestore
+## What it does
 
-- 📡 **Offline Mode Support**
-  - Identification and contributions work offline
-  - Data synced automatically when connection is restored
+- **Identify.** Point the camera at a plant or pick photos; the app suggests which species it may
+  be, with its confidence. *Whole view* identifies everything in sight; *Pick a plant* finds each
+  plant and identifies one at a time. Identification happens on the device and works offline.
+- **Browse and search.** 4,799 species from the [GBIF](https://www.gbif.org) backbone taxonomy,
+  searchable by Vietnamese (with or without diacritics), English or scientific name. Each species
+  shows its names, classification and full GBIF record, with reference photos from GBIF and
+  iNaturalist contributors and photos shared by users.
+- **Saved.** Favourites and the herbs you viewed recently.
+- **Contribute.** Signed-in users share photos of herbs (with where they were taken) and suggest
+  Vietnamese names. Shared photos can be reported, and a contributor's photos hidden.
+- **Train your own model.** Collect photos of the plants you care about, train a classifier on the
+  device and try it with the camera. Share it as a standard `.tflite` file that carries its own
+  species list, so it works in any app that runs TensorFlow Lite models; imported into Med Herb
+  Lens on another device, it can go on learning there. You can also share a model with everyone
+  in the app.
+- **Research mode.** Run continual-learning experiments on the device: choose a dataset, scenarios,
+  strategies and seeds, leave the device running (even with the screen off), then save one archive
+  with every result, the device's measurements and the trained models.
+- **How to cite.** The papers behind the app, in Profile, ready to copy.
 
-- 🧑‍🤝‍🧑 **Community-Driven Contributions**
-  - Upload new images
-  - Review and verify AI predictions
-  - Improve the dataset and model over time
+## Privacy
 
-- 🔐 **User Management and Notifications**
-  - Firebase Authentication
-  - Cloud Messaging for updates and sync alerts
+Photos are identified on your device and leave it only when you choose to share them. The app sends
+anonymous usage statistics (such as which herbs are identified) for research, with no name, email,
+photo or place; you can turn them off in Profile. No ads, no tracking. Details in the
+[privacy policy](https://med-herb-lens.pages.dev/pages/privacy-policy.html).
 
-## 🛠 Tech Stack
+## Research and how to cite
 
-- Android (Kotlin, Jetpack Libraries, ViewModel, Navigation Component)
-- Firebase (Firestore, Cloud Functions, Auth, Cloud Messaging)
-- TensorFlow Lite (TFLite)
-- ML Kit
-- Algolia (Search)
+If you use Med Herb Lens, its data or its code in your work, please cite:
 
-## 📊 Model Performance
+Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2025). Med Herb Lens: A
+prototype AI app for medicinal plant identification. *Procedia Computer Science*, 270, 2603–2612.
+[https://doi.org/10.1016/j.procs.2025.09.382](https://doi.org/10.1016/j.procs.2025.09.382)
 
-- Initial training on 7 species: 100% accuracy on validation set
-- Model size optimized for mobile deployment
-- Example recognition confidence:
-  - *Cordyline fruticosa*: 68%
-  - *Polyscias fruticosa*: 88%
-  - *Stachytarpheta jamaicensis*: 98%
-  - *Piper sarmentosum*: 100%
+Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2026). Resource-efficient
+continual learning for medicinal plant identification: A periodic retraining approach for
+edge-deployed agricultural IoT applications. *IoT*, 7(3), 57.
+[https://doi.org/10.3390/iot7030057](https://doi.org/10.3390/iot7030057)
 
-## 📈 Future Work
+## Built with
 
-- Expand dataset with more plant species
-- Improve model generalization and reduce misidentification
-- Enhance UI/UX with user feedback
-- Explore integration with DNA-based bioinformatics tools
+- [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) and
+  [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/): one app for Android,
+  iOS and the web
+- [LiteRT](https://ai.google.dev/edge/litert) (TensorFlow Lite) for on-device identification, with
+  [MediaPipe](https://ai.google.dev/edge/mediapipe) image embedders as the backbones of
+  user-trained models; their final layers train in shared Kotlin
+- [Firebase](https://firebase.google.com): sign-in, shared photos and name suggestions, usage
+  statistics, remote settings and App Check
+- [Cloudflare](https://www.cloudflare.com): the website and web app (Pages), photo and model
+  storage (R2) and uploads (Workers)
+- [GBIF](https://www.gbif.org): the species catalog and reference photos
 
-## 📄 License
+## License
 
-This project is published under the [CC BY-NC-ND 4.0 License](http://creativecommons.org/licenses/by-nc-nd/4.0/).
+The code is licensed under the [Apache License 2.0](LICENSE). The herb identification model, the
+species catalog as compiled for the app, the documentation and website text, and images are
+licensed under the [Creative Commons Attribution 4.0 International licence (CC BY 4.0)](LICENSE-CC-BY-4.0):
+you may share and adapt them for any purpose, as long as you give credit (see *Research and how to
+cite*). [NOTICE](NOTICE) says which is which.
+
+Others' work the app includes keeps its own terms: the catalog draws on GBIF data, reference
+photos remain their creators' (each shown with its licence, many for non-commercial use only),
+the MediaPipe embedders are under Apache 2.0, and each library under its own licence. Models
+people share in the app are theirs, shared under CC BY 4.0.
+
+## Contact
+
+Trien Phat Tran, University of New England:
+[ttran72@myune.edu.au](mailto:ttran72@myune.edu.au) or [tptrien@gmail.com](mailto:tptrien@gmail.com)
+
+<!-- about:end (the website's About page shows everything above this line) -->
+
+## For developers
+
+The repository holds every platform: `androidApp`, `iosApp` (Xcode), `webApp`, the shared
+`composeApp`, `core/*` and `feature/*` modules, the Firebase rules (`firebase/`), the photo-upload
+Worker (`workers/photo-upload`) and the website (`website/`).
+
+```bash
+./gradlew :androidApp:installDebug              # Android, on a connected device
+./gradlew :webApp:jsBrowserDevelopmentRun       # the web app at http://localhost:8080
+./gradlew :webApp:site                          # the whole website, with this README as its About page
+```
+
+iOS: `cd iosApp && pod install`, then open `iosApp.xcworkspace` in Xcode.
+
+Secrets aren't in the repository: `local.properties`, `google-services.json`,
+`GoogleService-Info.plist` and `Secrets.xcconfig` come from the project's maintainers.
+
+More in `docs/`: the [release steps](docs/release.md), [publishing the herb model and catalog](docs/content-publishing.md),
+[user-trained models and Research mode](docs/user-trained-models.md), the
+[security and privacy measures](docs/security.md) and the [manual test script](docs/manual-test-script.md).
