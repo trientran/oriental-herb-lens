@@ -1,6 +1,7 @@
 package com.uri.lee.dl.data.catalog
 
 import com.uri.lee.dl.core.common.text.PlatformTextNormalizer
+import com.uri.lee.dl.domain.model.Taxonomy
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -23,6 +24,20 @@ class SpeciesCsvReaderTest {
         assertEquals("Polyscias", species.genus)
         assertEquals(listOf("Đinh lăng"), species.vietnameseNames)
         assertEquals(listOf("Ming Aralia"), species.englishNames)
+        assertEquals(Taxonomy(), species.taxonomy)
+    }
+
+    @Test
+    fun `GBIF's taxonomy columns are read when present`() {
+        val csv = "speciesKey,authorship,basionym,canonicalName,class,family,genus,kingdom,order,phylum,publishedIn,rank,taxonomicStatus,vernacularName,vietnameseName\n" +
+            "3035652,(L.) Harms,Panax fruticosus L.,Polyscias fruticosa,Magnoliopsida,Araliaceae,Polyscias,Plantae,Apiales,Tracheophyta,\"Harms, H. (1894). Nat. Pflanzenfam.\",SPECIES,ACCEPTED,Ming Aralia,Đinh lăng\n"
+
+        val species = reader.read(csv).species.single()
+
+        assertEquals(
+            Taxonomy("Plantae", "Tracheophyta", "Magnoliopsida", "Apiales", "SPECIES", "ACCEPTED", "Harms, H. (1894). Nat. Pflanzenfam.", "Panax fruticosus L."),
+            species.taxonomy,
+        )
     }
 
     @Test

@@ -31,8 +31,6 @@ data class PlatformActions(
     /** Asks once for permission to show notifications, e.g. when an upload finishes in the background. */
     val requestNotificationPermission: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
-    /** Phase 7 spike, debug builds: the labelled photos and backbones to benchmark; null hides it. */
-    val trainingBenchmark: (suspend () -> BenchmarkSources)? = null,
     /** User-trained models: dataset and model-file pickers, saving a model; null hides those buttons. */
     val files: FileActions? = null,
     /** Phase 7 research mode (debug builds for now): device readings, dataset pickers, saving results; null hides it. */

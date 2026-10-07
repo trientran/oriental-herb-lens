@@ -25,8 +25,6 @@ import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.feature.auth.GoogleCredential
 import com.uri.lee.dl.feature.contribute.ContributeViewModel
-import com.uri.lee.dl.shared.BenchmarkPhoto
-import com.uri.lee.dl.shared.BenchmarkSources
 import com.uri.lee.dl.shared.PlatformActions
 import java.io.File
 import kotlin.system.exitProcess
@@ -61,25 +59,8 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { onSpeech?.invoke(it) }
     }
 
-    /**
-     * Phase 7 spike (debug builds): photos and backbones copied by adb into the app's own folder,
-     * Android/data/com.uri.lee.dl/files/{training,backbones} (see docs/user-trained-models.md).
-     */
-    private suspend fun benchmarkSources(): BenchmarkSources = withContext(Dispatchers.IO) {
-        val root = requireNotNull(activity.getExternalFilesDir(null)) { "No app folder" }
-        val rows = File(root, "training/credits.csv").readLines().drop(1).filter { it.isNotBlank() }.map { it.split(',') }
-        val species = rows.map { it[1] }.distinct()
-        BenchmarkSources(
-            photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), UriImage(Uri.fromFile(File(root, "training/${it[0]}")))) },
-            backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { File(root, "backbones/$it.tflite").path },
-            readModel = { withContext(Dispatchers.IO) { File(it).readBytes() } },
-            saveModel = { name, bytes -> withContext(Dispatchers.IO) { File(activity.cacheDir, name).apply { writeBytes(bytes) }.path } },
-        )
-    }
-
     fun actions() = PlatformActions(
-        trainingBenchmark = if (BuildConfig.DEBUG) ::benchmarkSources else null,
-        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        // Research mode, listed in Profile in every build
         research = research::platform,
         files = research.fileActions(),
         requestGoogleSignIn = ::googleSignIn,

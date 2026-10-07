@@ -28,6 +28,10 @@ sealed interface HerbDetailsAction {
     data class ViewPhoto(val index: Int?) : HerbDetailsAction
     data object Retry : HerbDetailsAction
 
+    /** The full details sheet was opened, and from it the GBIF page (for usage statistics). */
+    data object InfoOpened : HerbDetailsAction
+    data object GbifOpened : HerbDetailsAction
+
     /** Reports a shared photo to the administrator; it's hidden for this user at once. */
     data class Report(val photo: SpeciesPhoto, val reason: ReportReason) : HerbDetailsAction
 
@@ -97,6 +101,8 @@ class HerbDetailsViewModel(
                 setState { copy(hasError = false) }
                 load()
             }
+            HerbDetailsAction.InfoOpened -> analytics.log(AnalyticsEvent.SpeciesInfoViewed(currentState.herbId))
+            HerbDetailsAction.GbifOpened -> analytics.log(AnalyticsEvent.GbifOpened(currentState.herbId))
             is HerbDetailsAction.Report -> moderate(ModerationNotice.REPORTED) {
                 analytics.log(AnalyticsEvent.PhotoReported(action.reason.name))
                 moderation.report(currentState.herbId, action.photo.url, action.photo.uploaderId, action.reason)

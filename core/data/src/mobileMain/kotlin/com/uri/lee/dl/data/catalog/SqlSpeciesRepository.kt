@@ -4,6 +4,7 @@ import com.uri.lee.dl.core.common.AppDispatchers
 import com.uri.lee.dl.core.common.text.VietnameseText
 import com.uri.lee.dl.data.db.HerbLensDatabase
 import com.uri.lee.dl.domain.model.Species
+import com.uri.lee.dl.domain.model.Taxonomy
 import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.search.SpeciesMatch
 import com.uri.lee.dl.domain.search.SpeciesSearchIndex
@@ -126,6 +127,14 @@ internal class SqlSpeciesRepository(
             english_names = englishNames.joinToString(NAME_SEPARATOR) { it.replace('\n', ' ') },
             sort_vietnamese = VietnameseText.normalizeQuery(preferredVietnameseName.orEmpty()),
             sort_scientific = VietnameseText.normalizeQuery(scientificName),
+            kingdom = taxonomy.kingdom,
+            phylum = taxonomy.phylum,
+            class_name = taxonomy.className,
+            order_name = taxonomy.order,
+            rank = taxonomy.rank,
+            taxonomic_status = taxonomy.status,
+            published_in = taxonomy.publishedIn,
+            basionym = taxonomy.basionym,
         )
 
         internal fun SpeciesRow.toDomain() = Species(
@@ -136,6 +145,7 @@ internal class SqlSpeciesRepository(
             genus = genus,
             vietnameseNames = vietnamese_names.split(NAME_SEPARATOR).filter { it.isNotEmpty() },
             englishNames = english_names.split(NAME_SEPARATOR).filter { it.isNotEmpty() },
+            taxonomy = Taxonomy(kingdom, phylum, class_name, order_name, rank, taxonomic_status, published_in, basionym),
         )
     }
 }

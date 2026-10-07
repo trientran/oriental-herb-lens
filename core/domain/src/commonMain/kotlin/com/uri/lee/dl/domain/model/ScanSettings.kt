@@ -10,6 +10,7 @@ data class ScanSettings(
     val detectObjectsInSingleImage: Boolean = false,
 ) {
     companion object {
-        const val DEFAULT_MIN_CONFIDENCE = 0.7f
+        // The lowest the slider allows: the herb model is still weak, so most right answers score low
+        const val DEFAULT_MIN_CONFIDENCE = 0.3f
     }
 }

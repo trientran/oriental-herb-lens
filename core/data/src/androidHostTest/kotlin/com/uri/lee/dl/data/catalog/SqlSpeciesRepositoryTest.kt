@@ -74,4 +74,19 @@ class SqlSpeciesRepositoryTest {
     fun `getAll leaves out unknown ids`() = scope.runTest {
         assertEquals(setOf(1L, 3L), repository.getAll(listOf(1, 3, 99)).keys)
     }
+
+    @Test
+    fun `a schema 1 database gains the taxonomy columns and imports the catalog again`() {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        driver.execute(null, "CREATE TABLE species (id INTEGER NOT NULL PRIMARY KEY, scientific_name TEXT NOT NULL, authorship TEXT NOT NULL, family TEXT NOT NULL, genus TEXT NOT NULL, vietnamese_names TEXT NOT NULL, english_names TEXT NOT NULL, sort_vietnamese TEXT NOT NULL, sort_scientific TEXT NOT NULL)", 0)
+        driver.execute(null, "CREATE TABLE catalog_meta (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL)", 0)
+        driver.execute(null, "INSERT INTO species VALUES (1, 'Mentha arvensis', '', 'Lamiaceae', 'Mentha', '', '', '', 'mentha arvensis')", 0)
+        driver.execute(null, "INSERT INTO catalog_meta VALUES ('source_sha256', 'old')", 0)
+
+        HerbLensDatabase.Schema.migrate(driver, 1, HerbLensDatabase.Schema.version)
+
+        val migrated = HerbLensDatabase(driver)
+        assertEquals("", migrated.speciesQueries.byId(1).executeAsOne().kingdom)
+        assertEquals(null, migrated.catalogMetaQueries.valueOf("source_sha256").executeAsOneOrNull())
+    }
 }

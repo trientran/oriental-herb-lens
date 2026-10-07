@@ -13,10 +13,11 @@ stays on ML Kit; only this feature uses LiteRT.
 | Backbone on iOS | LiteRT through `TensorFlowLiteSwift` 2.17.0 (`LiteRTEmbedder` in `MLKitBridge.swift`) |
 | Backbone on the web | LiteRT.js (`core:ml` jsMain) |
 
-## Spike benchmark (debug builds)
+## Test photos and backbones (development)
 
-Profile → **Training benchmark (Phase 7)** embeds a labelled photo set with each backbone, trains
-on 16 photos per class (and on 5) and tests on the other 8. Results show on screen and in the log.
+The spike's benchmark (embed a labelled photo set with each backbone, train on 16 photos per class
+and on 5, test on the other 8) gave the results below; it has since been removed, as Research mode
+does the same and more. The same photos and backbones still serve for development runs.
 
 **Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]:
 
@@ -30,7 +31,7 @@ shared or committed):
 
     tools/fetch_test_images.py --per-species 24 --out test-images/training
 
-**Web:** serve `test-images` with CORS on port 8767, run the dev server, open Profile:
+**Web:** serve `test-images` with CORS on port 8767, then run the dev server:
 
     cd test-images && python3 -c "import http.server as h
     class H(h.SimpleHTTPRequestHandler):
