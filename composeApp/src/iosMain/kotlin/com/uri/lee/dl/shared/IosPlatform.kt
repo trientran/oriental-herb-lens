@@ -74,35 +74,8 @@ internal class IosPlatform(
     private var location: LocationDelegate? = null
     private val research = IosResearch(::topController)
 
-    /**
-     * Phase 7 spike (debug builds): photos and backbones copied into the app's Documents folder
-     * (training/, backbones/) with devicectl (see docs/user-trained-models.md).
-     */
-    @OptIn(ExperimentalForeignApi::class)
-    private suspend fun benchmarkSources(): BenchmarkSources = withContext(Dispatchers.IO) {
-        val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true).first() as String
-        val csv = NSString.stringWithContentsOfFile("$documents/training/credits.csv", NSUTF8StringEncoding, null)
-            ?: error("No training/credits.csv in Documents")
-        val rows = csv.lines().drop(1).filter { it.isNotBlank() }.map { it.split(',') }
-        val species = rows.map { it[1] }.distinct()
-        BenchmarkSources(
-            photos = rows.map { BenchmarkPhoto(species.indexOf(it[1]), IosPickedImage("$documents/training/${it[0]}")) },
-            backbones = listOf("mobilenet_v3_small", "mobilenet_v3_large").associateWith { "$documents/backbones/$it.tflite" },
-            readModel = { path ->
-                val data = NSData.dataWithContentsOfFile(path) ?: error("Can't read $path")
-                ByteArray(data.length.toInt()).apply { usePinned { memcpy(it.addressOf(0), data.bytes, data.length) } }
-            },
-            saveModel = { name, bytes ->
-                val path = NSTemporaryDirectory() + name
-                bytes.usePinned { NSData.dataWithBytes(it.addressOf(0), bytes.size.toULong()) }.writeToFile(path, atomically = true)
-                path
-            },
-        )
-    }
-
     fun actions() = PlatformActions(
-        trainingBenchmark = if (KoinPlatform.getKoin().get<AppInfo>().isDebug) ::benchmarkSources else null,
-        // Hidden in release builds until unlocked (tap the version on Profile 7 times)
+        // Research mode, listed in Profile in every build
         research = research::platform,
         files = research.fileActions(),
         pickPhotos = ::pickPhotos,

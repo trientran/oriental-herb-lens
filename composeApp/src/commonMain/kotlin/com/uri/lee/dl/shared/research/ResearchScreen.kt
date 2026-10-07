@@ -52,7 +52,7 @@ private val STRATEGIES = listOf(
 )
 
 /**
- * Research mode (plan Phase 7; hidden: tap the version on Profile 7 times; for researchers, so not
+ * Research mode (plan Phase 7; in Profile; for researchers, so not
  * translated): choose a dataset and what to run, leave the device running, then save one zip with
  * every result and the models.
  */
