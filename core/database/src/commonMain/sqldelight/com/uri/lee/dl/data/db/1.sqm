@@ -1,0 +1,12 @@
+-- Schema 1 to 2: the species' taxonomy, for its full details.
+ALTER TABLE species ADD COLUMN kingdom TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN phylum TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN class_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN order_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN rank TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN taxonomic_status TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN published_in TEXT NOT NULL DEFAULT '';
+ALTER TABLE species ADD COLUMN basionym TEXT NOT NULL DEFAULT '';
+
+-- Import the catalog again, to fill them
+DELETE FROM catalog_meta WHERE key = 'source_sha256';

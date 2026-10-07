@@ -42,6 +42,28 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
     class NameSuggested(speciesId: Long) : AnalyticsEvent("suggest_name", mapOf("species_id" to speciesId))
 
     class PhotoReported(reason: String) : AnalyticsEvent("report_photo", mapOf("reason" to reason))
+
+    /** A species' full details were opened, and from there its GBIF page. */
+    class SpeciesInfoViewed(speciesId: Long) : AnalyticsEvent("view_species_info", mapOf("species_id" to speciesId))
+
+    class GbifOpened(speciesId: Long) : AnalyticsEvent("open_gbif", mapOf("species_id" to speciesId))
+
+    /** The user trained one of their own models: [update] is "full" or "add" (only what's new, with replay). */
+    class ModelTrained(quality: String, speciesCount: Int, photoCount: Int, update: String) : AnalyticsEvent(
+        "train_model",
+        mapOf("quality" to quality, "species_count" to speciesCount, "photo_count" to photoCount, "update" to update),
+    )
+
+    /** A model file was imported; [trainable] when it came from Herb Lens and can learn more. */
+    class ModelImported(trainable: Boolean, speciesCount: Int) : AnalyticsEvent(
+        "import_model",
+        mapOf("trainable" to trainable, "species_count" to speciesCount),
+    )
+
+    class ModelShared(speciesCount: Int) : AnalyticsEvent("share_model", mapOf("species_count" to speciesCount))
+
+    /** The user opened one of their own models to identify with it. */
+    class ModelTried(speciesCount: Int) : AnalyticsEvent("try_model", mapOf("species_count" to speciesCount))
 }
 
 /** For tests and previews. */

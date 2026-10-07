@@ -18,6 +18,7 @@ import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
 import com.uri.lee.dl.testing.fakes.species
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
@@ -64,6 +65,18 @@ class ScanViewModelTest : MainDispatcherTest() {
         analytics = analytics,
         time = clock,
     )
+
+    @Test
+    fun `the research-preview note shows the first time only`() = runTest {
+        val first = viewModel()
+        assertTrue(first.state.value.showNotice)
+
+        first.onAction(ScanAction.DismissNotice)
+
+        assertFalse(first.state.value.showNotice)
+        assertTrue(settings.identifyNoticeSeen.value)
+        assertFalse(viewModel().state.value.showNotice)
+    }
 
     @Test
     fun `whole view identifies each camera frame`() = runTest {

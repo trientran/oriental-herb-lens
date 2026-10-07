@@ -73,6 +73,10 @@ sealed interface ScanAction {
     data class PhotosPreparing(val count: Int) : ScanAction
     data class PhotosPicked(val photos: List<LocalImage>) : ScanAction
     data object BackToCamera : ScanAction
+
+    /** Opens the note that the herb model is a research preview. */
+    data object ShowNotice : ScanAction
+    data object DismissNotice : ScanAction
 }
 
 data class ScanState(
@@ -96,6 +100,8 @@ data class ScanState(
     val minConfidence: Float = ScanSettings.DEFAULT_MIN_CONFIDENCE,
     /** False where plants can't be picked out (no object detector in the browser): no mode switch. */
     val canPickPlants: Boolean = true,
+    /** The research-preview note: shown by itself the first time, and on request after that. */
+    val showNotice: Boolean = false,
 )
 
 /**
@@ -142,6 +148,10 @@ class ScanViewModel(
                 runCatching { settings.scanSettings.first().detectObjectsInSingleImage }.getOrDefault(false)
             setState { copy(mode = if (pick) ScanMode.PICK_PLANT else ScanMode.WHOLE_VIEW) }
         }
+        viewModelScope.launch {
+            val seen = runCatching { settings.identifyNoticeSeen.first() }.getOrDefault(true)
+            if (!seen) setState { copy(showNotice = true) }
+        }
     }
 
     override fun onAction(action: ScanAction) {
@@ -162,6 +172,11 @@ class ScanViewModel(
             is ScanAction.ViewAspect -> viewAspect = action.aspect
             is ScanAction.PhotosPreparing -> setState { copy(preparingPhotos = action.count) }
             is ScanAction.PhotosPicked -> photosPicked(action.photos)
+            ScanAction.ShowNotice -> setState { copy(showNotice = true) }
+            ScanAction.DismissNotice -> {
+                setState { copy(showNotice = false) }
+                viewModelScope.launch { runCatching { settings.setIdentifyNoticeSeen() } }
+            }
             ScanAction.BackToCamera -> {
                 photoJob?.cancel()
                 photo = null

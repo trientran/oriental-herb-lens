@@ -52,6 +52,19 @@
     <string name="details_family">Họ</string>
     <string name="details_genus">Chi</string>
     <string name="details_view_on_gbif">Xem trên GBIF</string>
+    <string name="details_full">Thông tin đầy đủ</string>
+    <string name="details_name">Tên</string>
+    <string name="details_scientific_name">Tên khoa học</string>
+    <string name="details_basionym">Tên mô tả đầu tiên</string>
+    <string name="details_rank">Bậc phân loại</string>
+    <string name="details_status">Tình trạng phân loại</string>
+    <string name="details_published_in">Công bố trong</string>
+    <string name="details_kingdom">Giới</string>
+    <string name="details_phylum">Ngành</string>
+    <string name="details_class">Lớp</string>
+    <string name="details_order">Bộ</string>
+    <string name="details_gbif_key">Mã loài GBIF</string>
+    <string name="details_source">Theo Hệ thống Thông tin Đa dạng sinh học Toàn cầu (GBIF), nơi có thêm thông tin về loài: ghi nhận phân bố, bản đồ và tài liệu.</string>
     <string name="details_suggest_name">Đề xuất tên tiếng Việt</string>
     <string name="photo_counter">%1$d / %2$d</string>
     <string name="photo_credit">© %1$s · %2$s</string>
@@ -88,6 +101,11 @@
     <string name="scan_photos">Ảnh</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Đang nhận dạng…</string>
+    <string name="scan_notice_title">Bản thử nghiệm nghiên cứu</string>
+    <string name="scan_notice_body">Med Herb Lens là một dự án nghiên cứu. Ứng dụng nhận dạng thảo dược bằng mô hình do nhóm chúng tôi tự huấn luyện, chạy ngay trên thiết bị của bạn; không dùng dịch vụ nhận dạng của bất kỳ công ty nào khác.\n\nChúng tôi chưa có đủ ảnh để huấn luyện tốt cho phần lớn các loài, nên kết quả thường bị sai. Hãy xem kết quả là gợi ý để kiểm tra lại, không phải câu trả lời.\n\nTuyệt đối không ăn hoặc dùng cây làm thuốc chỉ dựa vào kết quả của ứng dụng. Hãy hỏi ý kiến chuyên gia trước.\n\nBạn có thể giúp mô hình tốt hơn: thêm ảnh của bạn ở trang của từng loài thảo dược.</string>
+    <string name="scan_notice_ok">Tôi đã hiểu</string>
+    <string name="scan_notice_line">Bản thử nghiệm: kết quả thường bị sai.</string>
+    <string name="scan_notice_more">Tìm hiểu thêm</string>
     <plurals name="scan_preparing">
         <item quantity="other">Đang chuẩn bị %1$d ảnh…</item>
     </plurals>

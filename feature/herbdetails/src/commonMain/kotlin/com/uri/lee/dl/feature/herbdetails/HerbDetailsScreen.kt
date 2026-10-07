@@ -25,7 +25,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -79,6 +79,7 @@ import com.uri.lee.dl.core.designsystem.resources.details_add_photos
 import com.uri.lee.dl.core.designsystem.resources.details_classification
 import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
+import com.uri.lee.dl.core.designsystem.resources.details_full
 import com.uri.lee.dl.core.designsystem.resources.details_genus
 import com.uri.lee.dl.core.designsystem.resources.details_names
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
@@ -239,6 +240,17 @@ private fun DetailsContent(
 ) {
     val spacing = HerbLensTheme.spacing
     val uriHandler = LocalUriHandler.current
+    var showInfo by rememberSaveable(species.id) { mutableStateOf(false) }
+    if (showInfo) {
+        SpeciesInfoSheet(
+            species,
+            onOpenGbif = {
+                onAction(HerbDetailsAction.GbifOpened)
+                uriHandler.openUri("https://www.gbif.org/species/${species.id}")
+            },
+            onDismiss = { showInfo = false },
+        )
+    }
     LazyColumn(
         modifier = Modifier.widthIn(max = spacing.maxContentWidth).fillMaxWidth(),
         contentPadding = PaddingValues(spacing.lg),
@@ -298,9 +310,10 @@ private fun DetailsContent(
             SectionCard(stringResource(Res.string.details_classification)) {
                 if (species.family.isNotBlank()) LabeledValue(stringResource(Res.string.details_family), species.family)
                 if (species.genus.isNotBlank()) LabeledValue(stringResource(Res.string.details_genus), species.genus, italic = true)
-                TextButton(onClick = { uriHandler.openUri("https://www.gbif.org/species/${species.id}") }) {
-                    Text(stringResource(Res.string.details_view_on_gbif))
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, Modifier.padding(start = spacing.xs))
+                // The full record stays in the app; GBIF is one step further, from the sheet
+                TextButton(onClick = { showInfo = true; onAction(HerbDetailsAction.InfoOpened) }) {
+                    Text(stringResource(Res.string.details_full))
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, Modifier.padding(start = spacing.xs))
                 }
             }
         }

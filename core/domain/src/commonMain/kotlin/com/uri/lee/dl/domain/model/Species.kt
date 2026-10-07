@@ -18,6 +18,8 @@ data class Species(
     val vietnameseNames: List<String>,
     /** English common names, preferred name first; may be empty. */
     val englishNames: List<String>,
+    /** The rest of GBIF's record, shown in the species' full details; blank where unknown. */
+    val taxonomy: Taxonomy = Taxonomy(),
 ) {
     val preferredVietnameseName: String? get() = vietnameseNames.firstOrNull()
     val preferredEnglishName: String? get() = englishNames.firstOrNull()
@@ -33,3 +35,19 @@ data class Species(
     fun otherName(vietnameseFirst: Boolean): String? =
         if (vietnameseFirst) preferredEnglishName else preferredVietnameseName
 }
+
+/** GBIF's classification above the family, and the name's nomenclature. */
+data class Taxonomy(
+    val kingdom: String = "",
+    val phylum: String = "",
+    val className: String = "",
+    val order: String = "",
+    /** GBIF's rank, such as "SPECIES" or "VARIETY". */
+    val rank: String = "",
+    /** GBIF's taxonomic status, such as "ACCEPTED" or "DOUBTFUL". */
+    val status: String = "",
+    /** Where the name was first published. */
+    val publishedIn: String = "",
+    /** The name it was first described under, when it has since moved. */
+    val basionym: String = "",
+)

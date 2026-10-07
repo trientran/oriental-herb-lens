@@ -15,6 +15,9 @@ import com.uri.lee.dl.domain.ml.Region
 import com.uri.lee.dl.domain.training.Backbones
 import com.uri.lee.dl.domain.training.Dataset
 import kotlin.random.Random
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -95,6 +98,7 @@ class TrainingViewModel(
     private val reader: PhotoReader,
     private val embedders: ImageEmbedderLoader,
     private val cropper: ImageCropper,
+    private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<TrainingState, TrainingAction>(TrainingState()) {
 
     private val backStack = mutableListOf<TrainingScreen>()
@@ -109,7 +113,13 @@ class TrainingViewModel(
 
     override fun onAction(action: TrainingAction) {
         when (action) {
-            is TrainingAction.Open -> open(action.screen)
+            is TrainingAction.Open -> {
+                if (action.screen is TrainingScreen.Use) {
+                    val tried = currentState.model?.takeIf { it.id == action.screen.id } ?: currentState.models?.firstOrNull { it.id == action.screen.id }
+                    tried?.let { analytics.log(AnalyticsEvent.ModelTried(it.trainedClasses.size)) }
+                }
+                open(action.screen)
+            }
             TrainingAction.Back -> back()
             is TrainingAction.CreateModel -> create(action.name, action.quality, null)
             is TrainingAction.ImportDataset -> create(action.name, action.quality, action.dataset)
@@ -276,6 +286,14 @@ class TrainingViewModel(
                 extraFiles = SharedModel.pack(model, result.head, examples),
             )
             store.saveTrained(trained, result.head, tflite)
+            analytics.log(
+                AnalyticsEvent.ModelTrained(
+                    quality = model.settings.quality.name.lowercase(),
+                    speciesCount = model.classes.size,
+                    photoCount = model.photos,
+                    update = if (previous != null) "add" else "full",
+                ),
+            )
             classifier?.second?.close()
             classifier = null
             load(model.id)
@@ -332,6 +350,7 @@ class TrainingViewModel(
         launchWork {
             setState { copy(work = TrainingWork.Saving) }
             store.saveImported(model, bytes)
+            analytics.log(AnalyticsEvent.ModelImported(trainable = false, speciesCount = labels.size))
             val models = store.list()
             setState { copy(models = models) }
         }
@@ -358,6 +377,7 @@ class TrainingViewModel(
             store.save(model)
             store.addExamples(id, replay)
             store.saveTrained(model, pack.head, bytes)
+            analytics.log(AnalyticsEvent.ModelImported(trainable = true, speciesCount = model.classes.size))
             val models = store.list()
             setState { copy(models = models) }
         }
@@ -393,6 +413,7 @@ class TrainingViewModel(
     suspend fun export(): Pair<String, ByteArray>? {
         val model = currentState.model ?: return null
         val bytes = store.tflite(model.id) ?: return null
+        analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size))
         val name = model.name.filter { it.isLetterOrDigit() || it == ' ' || it == '-' }.trim().replace(' ', '_').ifEmpty { "model" }
         return "$name.tflite" to bytes
     }

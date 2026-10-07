@@ -14,4 +14,9 @@ interface SettingsRepository {
     val usageStatistics: Flow<Boolean>
 
     suspend fun setUsageStatistics(enabled: Boolean)
+
+    /** Whether the user has read Identify's note that the herb model is a research preview. */
+    val identifyNoticeSeen: Flow<Boolean>
+
+    suspend fun setIdentifyNoticeSeen()
 }
