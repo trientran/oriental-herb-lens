@@ -15,6 +15,8 @@ kotlin {
             implementation(projects.core.firebase)
             implementation(projects.core.ml)
             implementation(libs.kotlinx.serialization.json)
+            // SHA-256 of a shared model on every platform (the browser too), for Hugging Face
+            implementation(libs.okio)
             implementation(libs.kermit)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)

@@ -16,8 +16,8 @@ R2). It does the same for each name suggestion (nameSuggestions), which has no d
     tools/moderate.py model-reports               open reports of shared models, newest first
     tools/moderate.py remove-model REPORT_ID [--ban]   take the model down (Firestore and R2), close its reports
     tools/moderate.py dismiss-model REPORT_ID     close a model report, keeping the model
-    tools/moderate.py hf-requests                 shared models whose sharers asked for Hugging Face
-    tools/moderate.py publish-hf MODEL_ID         publish one in the Hugging Face organisation
+    tools/moderate.py hf-requests                 shared models asked for Hugging Face but not on it yet
+    tools/moderate.py publish-hf MODEL_ID         publish one there by hand (the Worker normally does it)
     tools/moderate.py decline-hf MODEL_ID         don't publish it (the sharer sees that in the app)
     tools/moderate.py ban UID / unban UID         stop / allow an account contributing
     tools/moderate.py suggestions                 open name suggestions, with the current names
@@ -29,8 +29,10 @@ androidApp/assets/herb_catalog.csv (names separated by "; ", the preferred one f
 the catalog (docs/content-publishing.md), then dismiss the suggestion.
 
 Removing the file from R2 needs Cloudflare's wrangler CLI, logged in (`npx wrangler login`).
-Publishing on Hugging Face needs `pip install huggingface_hub` and HF_TOKEN, a write token for the
-organisation (HF_ORG, by default med-herb-lens); keep it out of the repository.
+Models are published on Hugging Face by the upload Worker as they're shared (when the sharer
+leaves the box ticked). publish-hf, and removing a published model, need `pip install
+huggingface_hub` and HF_TOKEN, a write token for the organisation (HF_ORG, by default
+med-herb-lens); keep it out of the repository.
 The service account needs the "Cloud Datastore User" role; keep its key out of the repository.
 """
 
@@ -189,6 +191,9 @@ def cmd_remove_model(db, args):
     model = listed.get()
     if model.exists:
         url = model.to_dict().get("url")
+        hub_url = model.to_dict().get("huggingFaceUrl")
+        if hub_url:
+            unpublish_hf(hub_url)
         listed.delete()
         print("  removed sharedModels/%s" % model_id)
         if url and not args.keep_file:
@@ -342,6 +347,17 @@ def cmd_publish_hf(db, args):
     print("Published %s; the app now links to it." % url)
 
 
+def unpublish_hf(hub_url):
+    token = os.environ.get("HF_TOKEN")
+    if not token:
+        print("  HF_TOKEN not set: delete %s by hand" % hub_url)
+        return
+    from huggingface_hub import HfApi
+    repo_id = "/".join(urlparse(hub_url).path.strip("/").split("/")[:2])
+    HfApi(token=token).delete_repo(repo_id, repo_type="model", missing_ok=True)
+    print("  deleted Hugging Face repository %s" % repo_id)
+
+
 def cmd_decline_hf(db, args):
     shared_model_or_fail(db, args.model_id).reference.update({"huggingFace": "declined"})
     print("Declined; %s stays shared in the app only." % args.model_id)
@@ -354,13 +370,14 @@ def notify_hf_requests(db, repo):
         if snapshot.to_dict().get("hfNotifiedAt"):
             continue
         body = "\n".join([
-            "A user shared a model and asked for it to be published on Hugging Face (%s)." % HF_ORG,
+            "A shared model was meant to be published on Hugging Face (%s), but isn't yet: the Worker" % HF_ORG,
+            "couldn't publish it (Hugging Face unreachable, or HF_TOKEN not set on the Worker).",
             "",
             "```",
             describe_shared_model(snapshot),
             "```",
             "",
-            "Check its name and species are fine to publish, then:",
+            "If its name and species are fine to publish:",
             "",
             "```",
             "tools/moderate.py publish-hf %s   # publish it" % snapshot.id,

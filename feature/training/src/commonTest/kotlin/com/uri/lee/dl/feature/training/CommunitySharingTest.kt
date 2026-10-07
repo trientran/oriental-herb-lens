@@ -76,7 +76,8 @@ class CommunitySharingTest : MainDispatcherTest() {
         viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = true))
 
         assertNull(viewModel.state.value.sharing)
-        assertEquals(TrainingMessage.SHARED_HUGGING_FACE, viewModel.state.value.message)
+        // The fake doesn't publish, as when Hugging Face is down: shared here, published later
+        assertEquals(TrainingMessage.SHARED_HUGGING_FACE_LATER, viewModel.state.value.message)
         val shared = community.shared.value.single()
         assertEquals(listOf("Mint", "Basil"), shared.species)
         assertEquals("user-1", shared.uploaderId)

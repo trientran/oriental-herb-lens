@@ -91,10 +91,11 @@ To meet App Store guideline 1.2 and Google Play's user-generated content policy:
   `tools/moderate.py` removes content (from Firestore and R2) and bans accounts.
 - **Terms** that forbid objectionable content and explain removal and bans
   (`website/pages/terms-of-service.html`).
-- **Hugging Face:** nothing is published there without the sharer opting in and the
-  administrator reviewing it. The write token stays on the administrator's computer
-  (`tools/moderate.py publish-hf`), never in an app or the Worker; clients can only ask for
-  publishing, not mark a model published (Firestore rules).
+- **Hugging Face:** a shared model is published there only if its sharer leaves the box ticked,
+  by the upload Worker, which checks the request comes from the sharer and checks the names again
+  on the server. The write token is a Worker secret (`HF_TOKEN`), never in an app; clients can
+  only ask for publishing, not mark a model published (Firestore rules). Taking a model down
+  (by its sharer or the administrator) deletes its Hugging Face repository too.
 
 ## 6. Privacy
 

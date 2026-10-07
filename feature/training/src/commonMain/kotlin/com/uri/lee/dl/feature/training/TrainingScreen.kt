@@ -172,6 +172,7 @@ private val TrainingMessage.text: StringResource
     get() = when (this) {
         TrainingMessage.SHARED -> Res.string.train_msg_shared
         TrainingMessage.SHARED_HUGGING_FACE -> Res.string.train_msg_shared_hf
+        TrainingMessage.SHARED_HUGGING_FACE_LATER -> Res.string.train_msg_shared_hf_later
         TrainingMessage.ADDED -> Res.string.train_msg_added
         TrainingMessage.REPORTED -> Res.string.train_msg_reported
         TrainingMessage.HIDDEN -> Res.string.train_msg_hidden
@@ -216,10 +217,11 @@ private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit,
     }
 }
 
-/** The last step before sharing, with the offer to publish on Hugging Face too (opt-in). */
+/** The last step before sharing, with publishing on Hugging Face too (ticked, can be unticked). */
 @Composable
 private fun ConfirmShareDialog(onDismiss: () -> Unit, onShare: (offerToHuggingFace: Boolean) -> Unit) {
-    var huggingFace by remember { mutableStateOf(false) }
+    // On by default (the model is public under CC BY 4.0 either way); the sharer can untick it
+    var huggingFace by remember { mutableStateOf(true) }
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Filled.Public, contentDescription = null) },

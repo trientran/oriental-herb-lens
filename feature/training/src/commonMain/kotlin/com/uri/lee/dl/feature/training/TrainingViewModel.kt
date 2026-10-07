@@ -22,6 +22,7 @@ import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.sharing.SharingRules
@@ -73,7 +74,7 @@ sealed interface SharingStep {
 }
 
 /** Something done, said once. */
-enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, ADDED, REPORTED, HIDDEN, REMOVED }
+enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, SHARED_HUGGING_FACE_LATER, ADDED, REPORTED, HIDDEN, REMOVED }
 
 data class TrainingState(
     val screen: TrainingScreen = TrainingScreen.Models,
@@ -273,7 +274,11 @@ class TrainingViewModel(
             setState {
                 copy(
                     model = if (this.model?.id == model.id) updated else this.model,
-                    message = if (offerToHuggingFace) TrainingMessage.SHARED_HUGGING_FACE else TrainingMessage.SHARED,
+                    message = when {
+                        shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
+                        offerToHuggingFace -> TrainingMessage.SHARED_HUGGING_FACE_LATER
+                        else -> TrainingMessage.SHARED
+                    },
                 )
             }
         }

@@ -25,6 +25,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import okio.ByteString.Companion.toByteString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -47,6 +48,12 @@ internal class DefaultCommunityModelRepository(
 
     @Serializable
     private data class Uploaded(val id: String, val url: String, val size: Int)
+
+    @Serializable
+    private data class Published(val url: String)
+
+    @Serializable
+    private data class PublishRequest(val sha256: String)
 
     override fun observe(): Flow<List<CommunityModel>> =
         combine(firestore.observeSharedModels(LIMIT), prefs.data) { records, stored ->
@@ -86,14 +93,42 @@ internal class DefaultCommunityModelRepository(
             if (e !is CancellationException) runCatching { deleteFile(uploaded.id, token) }
             throw e
         }
-        return record.toModel()
+        val shared = record.toModel()
+        return if (offerToHuggingFace) publishToHuggingFace(shared, file, token) else shared
+    }
+
+    /**
+     * Asks the Worker to publish the model on Hugging Face (it holds the token). If that fails, the
+     * model stays shared here and asked for; the administrator can publish it later.
+     */
+    private suspend fun publishToHuggingFace(model: CommunityModel, file: ByteArray, token: String): CommunityModel = try {
+        val response = sendWithinRateLimit {
+            client.post("${workerUrl.trimEnd('/')}/models/${model.id}/huggingface") {
+                bearerAuth(token)
+                contentType(ContentType.Application.Json)
+                // Hashed here: the Worker has little computing time, and Hugging Face checks the upload
+                setBody(PublishRequest(file.toByteString().sha256().hex()))
+            }
+        }
+        if (response.status.isSuccess()) {
+            model.copy(huggingFace = HuggingFaceStatus.PUBLISHED, huggingFaceUrl = response.body<Published>().url)
+        } else {
+            log.w { "Not published on Hugging Face: HTTP ${response.status.value}" }
+            model
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        log.w(e) { "Not published on Hugging Face" }
+        model
     }
 
     override suspend fun remove(model: CommunityModel) {
         val token = auth.idToken() ?: throw NotSignedInException()
-        firestore.deleteSharedModel(model.id)
-        // Off the list is what matters; a file left behind is only storage
+        // The Worker removes the file, its Hugging Face copy and the listing; the listing goes here
+        // too in case it couldn't (off the list is what matters most)
         runCatching { deleteFile(model.id, token) }.onFailure { log.w(it) { "Shared model file not removed" } }
+        firestore.deleteSharedModel(model.id)
     }
 
     override suspend fun download(model: CommunityModel): ByteArray {
