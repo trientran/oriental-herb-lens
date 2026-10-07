@@ -129,8 +129,11 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), onClick = it) }
                 LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) { uriHandler.openUri(HERB_LIST_URL) }
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
-                // The address too: without a mail app set up, a mailto link does nothing
-                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAIL) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
+                // The addresses too: without a mail app set up, a mailto link does nothing. One email to both,
+                // the university's first
+                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAILS.joinToString("\n")) {
+                    uriHandler.openUri("mailto:" + CONTACT_EMAILS.joinToString(","))
+                }
                 // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
                 val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(about) }
@@ -266,4 +269,4 @@ private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null
 }
 
 private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private const val CONTACT_EMAIL = "tptrien@gmail.com"
+private val CONTACT_EMAILS = listOf("ttran72@myune.edu.au", "tptrien@gmail.com")

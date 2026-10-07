@@ -68,12 +68,17 @@ actual fun HerbMap(points: List<LatLng>, modifier: Modifier, interactive: Boolea
             state.framedPoints = points
             if (!frame) return@AndroidView
             val geo = points.map { Point.fromLngLat(it.longitude, it.latitude) }
-            val camera = when (geo.size) {
-                0 -> CameraOptions.Builder().center(Point.fromLngLat(DefaultCenter.longitude, DefaultCenter.latitude)).zoom(DEFAULT_ZOOM).build()
-                1 -> CameraOptions.Builder().center(geo.single()).zoom(SINGLE_POINT_ZOOM).build()
-                else -> map.mapboxMap.cameraForCoordinates(geo, CameraOptions.Builder().build(), EdgeInsets(64.0, 64.0, 64.0, 64.0), null, null)
+            when (geo.size) {
+                0 -> map.mapboxMap.setCamera(
+                    CameraOptions.Builder().center(Point.fromLngLat(DefaultCenter.longitude, DefaultCenter.latitude)).zoom(DEFAULT_ZOOM).build(),
+                )
+                1 -> map.mapboxMap.setCamera(CameraOptions.Builder().center(geo.single()).zoom(SINGLE_POINT_ZOOM).build())
+                // Fitting points needs the map's size, which it doesn't have before its first layout: this
+                // form waits for it (the immediate one gave the whole globe, zoom 0)
+                else -> map.mapboxMap.cameraForCoordinates(
+                    geo, CameraOptions.Builder().build(), EdgeInsets(64.0, 64.0, 64.0, 64.0), SINGLE_POINT_ZOOM, null,
+                ) { camera -> map.mapboxMap.setCamera(camera) }
             }
-            map.mapboxMap.setCamera(camera)
         },
     )
 }
