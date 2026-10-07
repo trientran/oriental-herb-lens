@@ -64,6 +64,28 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
 
     /** The user opened one of their own models to identify with it. */
     class ModelTried(speciesCount: Int) : AnalyticsEvent("try_model", mapOf("species_count" to speciesCount))
+
+    /** A reference from Profile → How to cite was copied; [url] is its DOI or web link, if any. */
+    class CitationCopied(position: Int, url: String?) : AnalyticsEvent(
+        "copy_citation",
+        buildMap {
+            put("position", position)
+            url?.let { put("url", it.take(100)) }
+        },
+    )
+
+    /**
+     * Research mode, to count who runs studies with the app: the run's size only, never its results
+     * (those stay in the researcher's own files).
+     */
+    class ResearchStarted(resumed: Boolean, backbones: Int, runs: Int, speciesCount: Int, photoCount: Int) : AnalyticsEvent(
+        "research_start",
+        mapOf("resumed" to resumed, "backbones" to backbones, "runs" to runs, "species_count" to speciesCount, "photo_count" to photoCount),
+    )
+
+    class ResearchFinished(runs: Int, minutes: Long) : AnalyticsEvent("research_finish", mapOf("runs" to runs, "minutes" to minutes))
+
+    class ResearchSaved(runs: Int) : AnalyticsEvent("research_save", mapOf("runs" to runs))
 }
 
 /** For tests and previews. */

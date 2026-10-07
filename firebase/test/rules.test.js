@@ -111,16 +111,18 @@ test('users delete only their own document, with their account', async () => {
   await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
 });
 
-test('anyone can report a photo; only well-formed reports, never read back', async () => {
+test('signed-in users can report a photo; only well-formed reports, never read back', async () => {
   const report = (reporterUid) => ({
     speciesKey: 3035652, url: photo('a'), uploaderId: 'bob', reason: 'SEXUAL_OR_VIOLENT', reporterUid, createdAt: serverTimestamp(),
   });
-  await assertSucceeds(addDoc(collection(as(null), 'photoReports'), report(null)));
+  await assertFails(addDoc(collection(as(null), 'photoReports'), report(null)));
   const created = await assertSucceeds(addDoc(collection(as('carol'), 'photoReports'), report('carol')));
   await assertFails(getDoc(created));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), report(null)));
   await assertFails(addDoc(collection(as('carol'), 'photoReports'), report('dave')));
-  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), reason: 'BORED' }));
-  await assertFails(addDoc(collection(as(null), 'photoReports'), { ...report(null), extra: 1 }));
+  await assertFails(addDoc(collection(as('mallory'), 'photoReports'), report('mallory')));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), { ...report('carol'), reason: 'BORED' }));
+  await assertFails(addDoc(collection(as('carol'), 'photoReports'), { ...report('carol'), extra: 1 }));
 });
 
 test('old app versions can still read config/mobile, nobody can write it', async () => {

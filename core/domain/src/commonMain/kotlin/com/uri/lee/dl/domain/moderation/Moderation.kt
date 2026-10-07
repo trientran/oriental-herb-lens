@@ -18,7 +18,7 @@ data class HiddenContent(val photoUrls: Set<String> = emptySet(), val contributo
 interface ModerationRepository {
     fun observeHidden(): Flow<HiddenContent>
 
-    /** Reports a shared photo to the administrator and hides it for this user. */
+    /** Reports a shared photo to the administrator and hides it for this user. Needs a signed-in user. */
     suspend fun report(speciesId: Long, photoUrl: String, uploaderId: String?, reason: ReportReason)
 
     /** Hides every photo this contributor shared, for this user. */

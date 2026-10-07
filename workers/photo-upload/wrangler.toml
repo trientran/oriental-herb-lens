@@ -12,3 +12,16 @@ FIREBASE_PROJECT_ID = "oriental-herb-lens-41d17"
 PUBLIC_BASE_URL = "https://pub-394936ea0f444a64a542ff743b102f1f.r2.dev"
 # Browser origins allowed to upload (the web app, and its dev server)
 ALLOWED_ORIGINS = "https://med-herb-lens.pages.dev,http://localhost:8080"
+
+# Rate limits (Workers rate limiting; periods of 10 or 60 seconds only). One contribution sends
+# at most 20 photos, so 30 a minute per account leaves room; per address it's looser, as people
+# may share one network. Counts are kept per Cloudflare location, so they're approximate.
+[[ratelimits]]
+name = "UPLOADS_PER_USER"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
+
+[[ratelimits]]
+name = "UPLOADS_PER_ADDRESS"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }

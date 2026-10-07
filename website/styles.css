@@ -28,3 +28,5 @@ th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom
 footer { color: var(--muted); font-size: 14px; margin-top: 48px; }
 .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
 .button { background: var(--primary); color: var(--bg); padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 600; }
+blockquote { background: var(--surface); border-radius: 16px; padding: 4px 20px; margin: 16px 0; }
+pre { background: var(--surface); border-radius: 12px; padding: 12px 16px; overflow-x: auto; font-size: 14px; }

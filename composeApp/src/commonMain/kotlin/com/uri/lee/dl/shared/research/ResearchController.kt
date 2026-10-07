@@ -1,6 +1,9 @@
 package com.uri.lee.dl.shared.research
 
 import co.touchlab.kermit.Logger
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.core.training.EmbeddedDataset
 import com.uri.lee.dl.core.training.Example
 import com.uri.lee.dl.core.training.ModelPack
@@ -69,6 +72,7 @@ class ResearchController(
     private val embedders: ImageEmbedderLoader,
     private val backbones: Backbones,
     private val appVersion: String,
+    private val analytics: Analytics = NoAnalytics,
 ) {
     private val _state = MutableStateFlow(ResearchState())
     val state: StateFlow<ResearchState> = _state.asStateFlow()
@@ -132,6 +136,7 @@ class ResearchController(
             log("Device: ${platform.device}; app $appVersion")
             log("Dataset ${dataset.name}: ${dataset.images.size} photos, ${dataset.classes.size} classes")
             log("Plan: ${plan.describe()}")
+            analytics.log(AnalyticsEvent.ResearchStarted(false, backbones.size, (plan.runsPerBackbone + 1) * backbones.size, dataset.classes.size, dataset.images.size))
             execute(meta, plan, dataset)
         }
     }
@@ -145,6 +150,7 @@ class ResearchController(
         }
         _state.update { it.copy(log = files.read(LOG)?.decodeToString()?.lines()?.filter { l -> l.isNotEmpty() }.orEmpty()) }
         log("Resumed on ${platform.device}")
+        analytics.log(AnalyticsEvent.ResearchStarted(true, meta.backbones.size, (plan.runsPerBackbone + 1) * meta.backbones.size, meta.classes.size, meta.classes.sumOf { it.second }))
         execute(meta, plan, state.value.dataset?.takeIf { it.classes == meta.classes.map { c -> c.first } })
     }
 
@@ -225,6 +231,7 @@ class ResearchController(
         }
         files.write(FINISHED, byteArrayOf())
         log("Finished; this session took ${duration(started.elapsedNow().inWholeSeconds)}")
+        analytics.log(AnalyticsEvent.ResearchFinished(session.totalJobs, started.elapsedNow().inWholeMinutes))
         _state.update { it.copy(status = "Done", progress = 1f) }
     }
 
@@ -295,6 +302,7 @@ class ResearchController(
         }.getOrElse { e -> _state.update { it.copy(status = "", error = e.message ?: e.toString()) }; return }
         val stamp = Clock.System.now().toString().take(19).replace(":", "").replace("-", "")
         platform.saveArchive("herblens-research-${platform.platform}-$stamp.zip", archive)
+        analytics.log(AnalyticsEvent.ResearchSaved(doneKeys().size))
         _state.update { it.copy(status = "Saved") }
     }
 
@@ -414,7 +422,14 @@ class ResearchController(
         private var shared: ResearchController? = null
 
         /** The app's one controller, so a run outlives the screen (and, on Android, the activity). */
-        fun shared(platform: ResearchPlatform, reader: PhotoReader, embedders: ImageEmbedderLoader, backbones: Backbones, appVersion: String): ResearchController =
-            shared?.also { it.attach(platform) } ?: ResearchController(platform, reader, embedders, backbones, appVersion).also { shared = it }
+        fun shared(
+            platform: ResearchPlatform,
+            reader: PhotoReader,
+            embedders: ImageEmbedderLoader,
+            backbones: Backbones,
+            appVersion: String,
+            analytics: Analytics,
+        ): ResearchController =
+            shared?.also { it.attach(platform) } ?: ResearchController(platform, reader, embedders, backbones, appVersion, analytics).also { shared = it }
     }
 }

@@ -196,6 +196,7 @@
     <string name="report_reason_wrong_species">Sai loài</string>
     <string name="report_reason_other">Lý do khác</string>
     <string name="report_send">Báo cáo</string>
+    <string name="report_sign_in">Hãy đăng nhập để gửi báo cáo, để chúng tôi có thể xử lý và ngăn chặn lạm dụng. Nếu chỉ muốn không thấy ảnh của người này nữa, hãy chọn Ẩn ảnh của người đóng góp này.</string>
     <string name="hide_contributor">Ẩn ảnh của người đóng góp này</string>
     <string name="hide_contributor_title">Ẩn ảnh của người đóng góp này?</string>
     <string name="hide_contributor_body">Bạn sẽ không thấy ảnh nào họ đã chia sẻ, ở mọi loài. Thiết lập này chỉ lưu trên thiết bị này.</string>

@@ -199,6 +199,7 @@
     <string name="report_reason_wrong_species">Wrong species</string>
     <string name="report_reason_other">Something else</string>
     <string name="report_send">Report</string>
+    <string name="report_sign_in">Sign in to send a report, so we can follow it up and stop abuse. To stop seeing their photos now, choose Hide this contributor’s photos instead.</string>
     <string name="hide_contributor">Hide this contributor’s photos</string>
     <string name="hide_contributor_title">Hide this contributor’s photos?</string>
     <string name="hide_contributor_body">You won’t see any photo they shared, on any species. This stays on this device.</string>

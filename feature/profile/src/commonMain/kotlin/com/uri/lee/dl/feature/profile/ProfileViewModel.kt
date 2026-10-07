@@ -4,6 +4,9 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
+import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.model.Citation
 import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.repository.AuthRepository
@@ -18,6 +21,9 @@ sealed interface ProfileAction {
     data class SetMinConfidence(val value: Float) : ProfileAction
     data object SignOut : ProfileAction
     data class SetUsageStatistics(val enabled: Boolean) : ProfileAction
+
+    /** The user copied the citation at [index] in How to cite (for usage statistics). */
+    data class CitationCopied(val index: Int) : ProfileAction
 }
 
 data class ProfileState(
@@ -36,6 +42,7 @@ class ProfileViewModel(
     private val settings: SettingsRepository,
     private val citations: CitationRepository,
     app: AppInfo,
+    private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<ProfileState, ProfileAction>(ProfileState(versionName = app.versionName)) {
 
     init {
@@ -59,6 +66,9 @@ class ProfileViewModel(
             is ProfileAction.SetMinConfidence -> save { settings.setMinConfidence(action.value.coerceIn(MIN_CONFIDENCE, MAX_CONFIDENCE)) }
             ProfileAction.SignOut -> save { auth.signOut() }
             is ProfileAction.SetUsageStatistics -> save { settings.setUsageStatistics(action.enabled) }
+            is ProfileAction.CitationCopied -> currentState.citations.getOrNull(action.index)?.let {
+                analytics.log(AnalyticsEvent.CitationCopied(action.index + 1, it.url))
+            }
         }
     }
 

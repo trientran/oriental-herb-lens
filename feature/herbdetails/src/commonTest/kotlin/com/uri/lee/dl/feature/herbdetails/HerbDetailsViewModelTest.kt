@@ -7,6 +7,7 @@ import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.testing.MainDispatcherTest
+import com.uri.lee.dl.testing.fakes.FakeAuthRepository
 import com.uri.lee.dl.testing.fakes.FakeModerationRepository
 import com.uri.lee.dl.testing.fakes.FakePhotoRepository
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
@@ -31,12 +32,23 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
     private val library = FakeUserLibraryRepository()
 
     private val moderation = FakeModerationRepository()
+    private val auth = FakeAuthRepository()
     private val events = mutableListOf<AnalyticsEvent>()
     private val analytics = object : Analytics {
         override fun log(event: AnalyticsEvent) { events += event }
         override fun screen(name: String) = Unit
     }
-    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, analytics)
+    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, analytics)
+
+    @Test
+    fun `reporting follows the sign-in state`() {
+        val viewModel = viewModel()
+        assertTrue(viewModel.state.value.isSignedIn)
+
+        auth.userId.value = null
+
+        assertFalse(viewModel.state.value.isSignedIn)
+    }
 
     @Test
     fun `opening the full details and then GBIF is counted`() {

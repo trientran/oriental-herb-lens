@@ -7,7 +7,8 @@
 //
 //   201 {"url": "<public URL of the stored photo>"}
 //
-// Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The app then adds the URL to
+// Too many requests get 429 (wrangler.toml [[ratelimits]]): per address before the token is
+// checked, then per account. Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The app then adds the URL to
 // herbs/{speciesKey}.images in Firestore, where security rules also check bans. No R2
 // credentials ship in the app.
 //
@@ -18,6 +19,19 @@ import { isBanned } from './bans.js';
 import { AuthError, verifyIdToken } from './firebase-auth.js';
 
 export const MAX_BYTES = 5 * 1024 * 1024; // the app sends ~100 KB (600 px, 70 % JPEG)
+
+/** False when [limiter] (a Workers rate limiting binding) says [key] has had its share; true without one. */
+async function allowed(limiter, key) {
+  if (!limiter || !key) return true;
+  const { success } = await limiter.limit({ key });
+  return success;
+}
+
+function tooMany() {
+  const response = json(429, { error: 'Too many uploads; try again in a minute' });
+  response.headers.set('retry-after', '60');
+  return response;
+}
 
 function json(status, body) {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -53,6 +67,9 @@ async function handleUpload(request, env, verify, banned) {
   if (url.pathname !== '/photos') return json(404, { error: 'Not found' });
   if (request.method !== 'POST') return json(405, { error: 'Use POST' });
 
+  // Per address first, so a flood of bad tokens is turned away before any verification work
+  if (!(await allowed(env.UPLOADS_PER_ADDRESS, request.headers.get('cf-connecting-ip')))) return tooMany();
+
   const token = /^Bearer (.+)$/.exec(request.headers.get('authorization') ?? '')?.[1];
   let uid;
   try {
@@ -61,6 +78,7 @@ async function handleUpload(request, env, verify, banned) {
     if (error instanceof AuthError) return json(401, { error: 'Sign in again' });
     throw error;
   }
+  if (!(await allowed(env.UPLOADS_PER_USER, uid))) return tooMany();
   try {
     if (await banned(uid, env)) return json(403, { error: 'This account can no longer share photos' });
   } catch (error) {

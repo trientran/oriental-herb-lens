@@ -18,9 +18,15 @@ function fakeEnv() {
 
 const verify = (token, project) => verifyIdToken(token, project, { getKeys });
 
-async function upload({ token, speciesKey = '3035652', body = JPEG, type = 'image/jpeg', method = 'POST', path = '/photos', banned = async () => false } = {}) {
-  const env = fakeEnv();
+/** A rate limiter that allows [limit] calls per key. */
+function limiter(limit) {
+  const counts = new Map();
+  return { limit: async ({ key }) => { counts.set(key, (counts.get(key) ?? 0) + 1); return { success: counts.get(key) <= limit }; } };
+}
+
+async function upload({ token, speciesKey = '3035652', body = JPEG, type = 'image/jpeg', method = 'POST', path = '/photos', banned = async () => false, env = fakeEnv(), ip } = {}) {
   const headers = { 'content-type': type };
+  if (ip) headers['cf-connecting-ip'] = ip;
   if (token !== null) headers.authorization = `Bearer ${token ?? (await signToken())}`;
   const request = new Request(`https://worker.example${path}?speciesKey=${speciesKey}`, {
     method,
@@ -99,3 +105,29 @@ test('adds CORS headers to responses for an allowed origin', async () => {
   assert.equal(response.status, 201);
   assert.equal(response.headers.get('access-control-allow-origin'), 'http://localhost:8080');
 });
+
+test('an account sending too many photos at once is asked to wait', async () => {
+  const env = { ...fakeEnv(), UPLOADS_PER_USER: limiter(2) };
+
+  assert.equal((await upload({ env })).response.status, 201);
+  assert.equal((await upload({ env })).response.status, 201);
+  const { response } = await upload({ env });
+
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get('retry-after'), '60');
+  assert.equal(env.stored.size, 2);
+});
+
+test('one address is limited before its tokens are checked', async () => {
+  const env = { ...fakeEnv(), UPLOADS_PER_ADDRESS: limiter(1) };
+  let verified = 0;
+  const counting = async (token, project) => { verified++; return verify(token, project); };
+  const request = () => new Request('https://worker.example/photos?speciesKey=1', {
+    method: 'POST', headers: { 'content-type': 'image/jpeg', 'cf-connecting-ip': '203.0.113.9', authorization: 'Bearer bad' }, body: JPEG,
+  });
+
+  assert.equal((await handleRequest(request(), env, counting, async () => false)).status, 401);
+  assert.equal((await handleRequest(request(), env, counting, async () => false)).status, 429);
+  assert.equal(verified, 1);
+});
+

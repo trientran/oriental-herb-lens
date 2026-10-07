@@ -67,6 +67,8 @@ import com.uri.lee.dl.core.designsystem.resources.report_reason_person
 import com.uri.lee.dl.core.designsystem.resources.report_reason_sexual_violent
 import com.uri.lee.dl.core.designsystem.resources.report_reason_wrong_species
 import com.uri.lee.dl.core.designsystem.resources.report_send
+import com.uri.lee.dl.core.designsystem.resources.report_sign_in
+import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.report_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.model.PhotoSource
@@ -86,6 +88,8 @@ internal fun PhotoViewer(
     onDismiss: () -> Unit,
     onReport: (SpeciesPhoto, ReportReason) -> Unit = { _, _ -> },
     onHideContributor: (String) -> Unit = {},
+    /** Set while signed out: Report asks the user to sign in first. */
+    onSignInToReport: (() -> Unit)? = null,
 ) {
     DialogLayer {
         Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -98,7 +102,7 @@ internal fun PhotoViewer(
                 PagerArrows(pager)
                 Row(Modifier.safeDrawingPadding().align(Alignment.TopEnd)) {
                     val current = photos.getOrNull(pager.currentPage)
-                    if (current?.source == PhotoSource.USER) ModerationMenu(current, onReport, onHideContributor)
+                    if (current?.source == PhotoSource.USER) ModerationMenu(current, onReport, onHideContributor, onSignInToReport)
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close), tint = Color.White)
                     }
@@ -148,7 +152,12 @@ private fun ZoomablePhoto(photo: SpeciesPhoto, contentDescription: String) {
 
 /** Report the photo, or hide everything its contributor shared (App Store guideline 1.2). */
 @Composable
-private fun ModerationMenu(photo: SpeciesPhoto, onReport: (SpeciesPhoto, ReportReason) -> Unit, onHideContributor: (String) -> Unit) {
+private fun ModerationMenu(
+    photo: SpeciesPhoto,
+    onReport: (SpeciesPhoto, ReportReason) -> Unit,
+    onHideContributor: (String) -> Unit,
+    onSignInToReport: (() -> Unit)?,
+) {
     var menu by remember { mutableStateOf(false) }
     var reporting by remember { mutableStateOf(false) }
     var hiding by remember { mutableStateOf(false) }
@@ -171,7 +180,18 @@ private fun ModerationMenu(photo: SpeciesPhoto, onReport: (SpeciesPhoto, ReportR
             }
         }
     }
-    if (reporting) ReportDialog(onDismiss = { reporting = false }) { reason -> reporting = false; onReport(photo, reason) }
+    if (reporting && onSignInToReport != null) {
+        // Hiding the contributor needs no account; sending a report does
+        AlertDialog(
+            onDismissRequest = { reporting = false },
+            title = { Text(stringResource(Res.string.report_title)) },
+            text = { Text(stringResource(Res.string.report_sign_in)) },
+            confirmButton = { TextButton(onClick = { reporting = false; onSignInToReport() }) { Text(stringResource(Res.string.profile_sign_in)) } },
+            dismissButton = { TextButton(onClick = { reporting = false }) { Text(stringResource(Res.string.cancel)) } },
+        )
+    } else if (reporting) {
+        ReportDialog(onDismiss = { reporting = false }) { reason -> reporting = false; onReport(photo, reason) }
+    }
     val uploader = photo.uploaderId
     if (hiding && uploader != null) {
         AlertDialog(
