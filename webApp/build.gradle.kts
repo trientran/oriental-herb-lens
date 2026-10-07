@@ -1,4 +1,10 @@
 import java.util.Properties
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
+
+buildscript {
+    dependencies { classpath(libs.commonmark) }
+}
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -74,9 +80,30 @@ kotlin {
     }
 }
 
-// The whole site: the home page and legal pages (website/), with the app at /app/
+val REPOSITORY = "https://github.com/trientran/oriental-herb-lens"
+
+// The About page, made from the repository's README so the two can't differ: everything above its
+// "about:end" marker, in the site's header and footer (website/about.template.html). Links to
+// files in the repository point at GitHub.
+val aboutPage by tasks.registering {
+    val readme = rootProject.layout.projectDirectory.file("README.md")
+    val template = rootProject.layout.projectDirectory.file("website/about.template.html")
+    val out = layout.buildDirectory.dir("generated/about")
+    inputs.files(readme, template)
+    outputs.dir(out)
+    doLast {
+        val markdown = readme.asFile.readText().substringBefore("<!-- about:end")
+        val body = HtmlRenderer.builder().build().render(Parser.builder().build().parse(markdown))
+            .replace(Regex("href=\"(?!https?:|mailto:|#)([^\"]+)\""), "href=\"$REPOSITORY/blob/master/$1\"")
+        val page = template.asFile.readText().replace("{{content}}", body.trim())
+        out.get().file("about.html").asFile.apply { parentFile.mkdirs() }.writeText(page)
+    }
+}
+
+// The whole site: the home page and legal pages (website/), the About page, with the app at /app/
 val site by tasks.registering(Sync::class) {
-    from(rootProject.file("website")) { exclude("README.md") }
+    from(rootProject.file("website")) { exclude("README.md", "about.template.html") }
+    from(aboutPage)
     from(tasks.named("jsBrowserDistribution")) {
         into("app")
         // Webpack bundles Skiko into herblens.js and loads its hashed .wasm: these copies are unused

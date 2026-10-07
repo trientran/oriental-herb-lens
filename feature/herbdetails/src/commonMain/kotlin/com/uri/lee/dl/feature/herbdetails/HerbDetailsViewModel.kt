@@ -11,6 +11,7 @@ import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.HiddenContent
 import com.uri.lee.dl.domain.moderation.ModerationRepository
 import com.uri.lee.dl.domain.moderation.ReportReason
+import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.PhotoRepository
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
@@ -61,6 +62,8 @@ data class HerbDetailsState(
     /** Photos and contributors this user hid or reported. */
     val hidden: HiddenContent = HiddenContent(),
     val notice: ModerationNotice? = null,
+    /** Reporting a photo needs an account, so reports can be followed up and abuse stopped. */
+    val isSignedIn: Boolean = false,
 ) {
     /** User contributions first, then GBIF photos, without the ones this user hid. */
     val photos: List<SpeciesPhoto> get() = (userPhotos + referencePhotos).filterNot { hidden.hides(it.url, it.uploaderId) }
@@ -74,6 +77,7 @@ class HerbDetailsViewModel(
     private val referencePhotos: ReferencePhotoRepository,
     private val library: UserLibraryRepository,
     private val moderation: ModerationRepository,
+    private val auth: AuthRepository,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(HerbDetailsState(herbId)) {
 
@@ -86,6 +90,10 @@ class HerbDetailsViewModel(
         moderation.observeHidden()
             .onEach { setState { copy(hidden = it) } }
             .catch { log.w(it) { "Hidden photos unavailable" } }
+            .launchIn(viewModelScope)
+        auth.observeUserId()
+            .onEach { setState { copy(isSignedIn = it != null) } }
+            .catch { log.w(it) { "Sign-in state unavailable" } }
             .launchIn(viewModelScope)
         library.observeFavorites()
             .onEach { favorites -> setState { copy(isFavorite = herbId in favorites) } }

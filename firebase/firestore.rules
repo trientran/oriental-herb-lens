@@ -54,17 +54,17 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
     }
 
-    // Reports of shared photos (App Store guideline 1.2), read by the admin only. Anyone may
-    // report, signed in or not; a signed-in reporter is recorded as themselves.
+    // Reports of shared photos (App Store guideline 1.2), read by the admin only. Reporters sign
+    // in, so reports can be followed up and bots can't flood them; banned users can't report.
     match /photoReports/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['speciesKey', 'url', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
+      allow create: if contributor()
+        && request.resource.data.keys().hasOnly(['speciesKey', 'url', 'uploaderId', 'reason', 'reporterUid', 'createdAt'])
         && request.resource.data.speciesKey is int
         && request.resource.data.url is string && request.resource.data.url.size() <= 500
         && (request.resource.data.uploaderId == null
             || (request.resource.data.uploaderId is string && request.resource.data.uploaderId.size() <= 128))
         && request.resource.data.reason in ['NOT_A_PLANT', 'SEXUAL_OR_VIOLENT', 'SHOWS_A_PERSON', 'WRONG_SPECIES', 'OTHER']
-        && (request.resource.data.reporterUid == null
-            || (signedIn() && request.resource.data.reporterUid == request.auth.uid))
+        && request.resource.data.reporterUid == request.auth.uid
         && request.resource.data.createdAt == request.time;
     }
 

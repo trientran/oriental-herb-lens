@@ -24,7 +24,9 @@ internal class DefaultModerationRepository(
     override suspend fun report(speciesId: Long, photoUrl: String, uploaderId: String?, reason: ReportReason) {
         // Hidden first: the user sees the effect even if the report can't be sent (offline)
         prefs.edit { it[HIDDEN_PHOTOS] = it[HIDDEN_PHOTOS].orEmpty() + photoUrl }
-        firestore.addPhotoReport(speciesId, photoUrl, uploaderId, reason.name, auth.currentUserId)
+        // Reports need an account (Firestore rules): the screen asks a signed-out user to sign in first
+        val reporter = checkNotNull(auth.currentUserId) { "Sign in to report" }
+        firestore.addPhotoReport(speciesId, photoUrl, uploaderId, reason.name, reporter)
     }
 
     override suspend fun hideContributor(uploaderId: String) {

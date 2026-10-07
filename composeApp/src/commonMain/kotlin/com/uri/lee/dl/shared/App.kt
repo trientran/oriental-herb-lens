@@ -226,7 +226,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
         val embedders = koinInject<ImageEmbedderLoader>()
         val backbones = koinInject<Backbones>()
         // One for the app: a run carries on when the screen closes
-        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName) }
+        val controller = remember { ResearchController.shared(research(), reader, embedders, backbones, appInfo.versionName, analytics) }
         DialogLayer { ResearchDialog(controller) { showResearch = false } }
     }
 }

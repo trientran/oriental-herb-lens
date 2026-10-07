@@ -145,6 +145,12 @@ fun HerbDetailsRoute(
             onDismiss = { viewModel.onAction(HerbDetailsAction.ViewPhoto(null)) },
             onReport = { photo, reason -> viewModel.onAction(HerbDetailsAction.Report(photo, reason)) },
             onHideContributor = { viewModel.onAction(HerbDetailsAction.HideContributor(it)) },
+            onSignInToReport = if (state.isSignedIn) null else {
+                {
+                    viewModel.onAction(HerbDetailsAction.ViewPhoto(null))
+                    onSignIn()
+                }
+            },
         )
     }
 }
