@@ -192,6 +192,16 @@ hidden layer is a setting and an ablation in the study.
   hidden for the reporter at once); hide everything its sharer shared (models and photos, on this
   device); or stop sharing your own (`DELETE /models/{id}` removes the file, uploader only). The
   administrator removes reported models in the Firestore console and bans accounts as for photos.
+- **Hugging Face (curated):** when sharing, the sharer can tick *Also publish it on Hugging Face*
+  (off by default); the entry then has `huggingFace: "requested"`. The hourly moderation workflow
+  opens an issue (label `hugging-face`); the administrator reviews the names and runs
+  `tools/moderate.py publish-hf <id>`, which creates `<HF_ORG>/<name>-<id>` with the file and a
+  model card (licence, species, how to use it, caution, credit to "a Med Herb Lens user" and the
+  papers to cite), then sets `published` and `huggingFaceUrl`, so the app links to it. `decline-hf`
+  keeps it in the app only. The Hugging Face token stays on the administrator's computer.
+- **Encouraging sharing:** the training screen mentions that the model can be shared when it's
+  done, and a trained model's results show an invitation to share until it is (the model then
+  remembers its shared id).
 
 ## Research mode
 

@@ -9,6 +9,7 @@ import com.uri.lee.dl.data.upload.sendWithinRateLimit
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingRules
 import com.uri.lee.dl.domain.usecase.NotSignedInException
@@ -54,7 +55,14 @@ internal class DefaultCommunityModelRepository(
             records.filter { it.id !in hiddenModels && it.uploaderId !in hiddenPeople }.map { it.toModel() }
         }
 
-    override suspend fun share(name: String, species: List<String>, backbone: String, trainable: Boolean, file: ByteArray): CommunityModel {
+    override suspend fun share(
+        name: String,
+        species: List<String>,
+        backbone: String,
+        trainable: Boolean,
+        file: ByteArray,
+        offerToHuggingFace: Boolean,
+    ): CommunityModel {
         if (workerUrl.isBlank()) throw IOException("PHOTO_UPLOAD_URL isn't configured for this build")
         val uid = auth.currentUserId ?: throw NotSignedInException()
         val token = auth.idToken() ?: throw NotSignedInException()
@@ -67,7 +75,10 @@ internal class DefaultCommunityModelRepository(
         }
         if (!response.status.isSuccess()) throw IOException("Model upload failed: HTTP ${response.status.value}")
         val uploaded = response.body<Uploaded>()
-        val record = SharedModelRecord(uploaded.id, name, species, backbone, trainable, uploaded.url, uploaded.size, uid, SharingRules.LICENSE)
+        val record = SharedModelRecord(
+            uploaded.id, name, species, backbone, trainable, uploaded.url, uploaded.size, uid, SharingRules.LICENSE,
+            huggingFace = if (offerToHuggingFace) "requested" else "none",
+        )
         try {
             firestore.addSharedModel(record)
         } catch (e: Exception) {
@@ -109,7 +120,16 @@ internal class DefaultCommunityModelRepository(
         }
     }
 
-    private fun SharedModelRecord.toModel() = CommunityModel(id, name, species, backbone, trainable, url, size, uploaderId)
+    private fun SharedModelRecord.toModel() = CommunityModel(
+        id, name, species, backbone, trainable, url, size, uploaderId,
+        huggingFace = when (huggingFace) {
+            "requested" -> HuggingFaceStatus.REQUESTED
+            "published" -> HuggingFaceStatus.PUBLISHED
+            "declined" -> HuggingFaceStatus.DECLINED
+            else -> HuggingFaceStatus.NONE
+        },
+        huggingFaceUrl = huggingFaceUrl?.takeIf { it.startsWith("https://huggingface.co/") },
+    )
 
     private companion object {
         const val LIMIT = 200

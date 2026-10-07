@@ -16,6 +16,9 @@ R2). It does the same for each name suggestion (nameSuggestions), which has no d
     tools/moderate.py model-reports               open reports of shared models, newest first
     tools/moderate.py remove-model REPORT_ID [--ban]   take the model down (Firestore and R2), close its reports
     tools/moderate.py dismiss-model REPORT_ID     close a model report, keeping the model
+    tools/moderate.py hf-requests                 shared models whose sharers asked for Hugging Face
+    tools/moderate.py publish-hf MODEL_ID         publish one in the Hugging Face organisation
+    tools/moderate.py decline-hf MODEL_ID         don't publish it (the sharer sees that in the app)
     tools/moderate.py ban UID / unban UID         stop / allow an account contributing
     tools/moderate.py suggestions                 open name suggestions, with the current names
     tools/moderate.py dismiss-suggestion ID       close a suggestion (after adding the name, or not)
@@ -26,6 +29,8 @@ androidApp/assets/herb_catalog.csv (names separated by "; ", the preferred one f
 the catalog (docs/content-publishing.md), then dismiss the suggestion.
 
 Removing the file from R2 needs Cloudflare's wrangler CLI, logged in (`npx wrangler login`).
+Publishing on Hugging Face needs `pip install huggingface_hub` and HF_TOKEN, a write token for the
+organisation (HF_ORG, by default med-herb-lens); keep it out of the repository.
 The service account needs the "Cloud Datastore User" role; keep its key out of the repository.
 """
 
@@ -49,6 +54,15 @@ SUGGESTIONS = "nameSuggestions"
 CATALOG = "androidApp/assets/herb_catalog.csv"
 HERBS = "herbs"
 BANNED = "bannedUsers"
+HF_ORG = os.environ.get("HF_ORG", "med-herb-lens")
+CITATIONS = [
+    "Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2025). Med Herb Lens: A prototype AI "
+    "app for medicinal plant identification. *Procedia Computer Science*, 270, 2603–2612. "
+    "https://doi.org/10.1016/j.procs.2025.09.382",
+    "Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2026). Resource-efficient continual "
+    "learning for medicinal plant identification: A periodic retraining approach for edge-deployed agricultural "
+    "IoT applications. *IoT*, 7(3), 57. https://doi.org/10.3390/iot7030057",
+]
 # Where the photo-upload Worker stores photos (workers/photo-upload/wrangler.toml)
 R2_BUCKET = "herb-lens-content"
 R2_PUBLIC_HOST = "pub-394936ea0f444a64a542ff743b102f1f.r2.dev"
@@ -227,6 +241,142 @@ def notify_model_reports(db, repo):
     return opened
 
 
+def shared_model_or_fail(db, model_id):
+    snapshot = db.collection(SHARED_MODELS).document(model_id).get()
+    if not snapshot.exists:
+        fail("no shared model %s" % model_id)
+    return snapshot
+
+
+def describe_shared_model(snapshot):
+    m = snapshot.to_dict()
+    species = m.get("species") or []
+    return "%s  %s (%d species, %.1f MB, %s)\n    species   %s\n    file      %s\n    sharer    %s" % (
+        snapshot.id, m.get("name"), len(species), (m.get("size") or 0) / 1048576, m.get("backbone"),
+        ", ".join(species[:12]) + (" …" if len(species) > 12 else ""), m.get("url"), m.get("uploaderId"),
+    )
+
+
+def cmd_hf_requests(db, args):
+    requested = list(db.collection(SHARED_MODELS).where(filter=firestore.FieldFilter("huggingFace", "==", "requested")).stream())
+    if not requested:
+        print("No models waiting for Hugging Face.")
+    for snapshot in requested:
+        print(describe_shared_model(snapshot))
+
+
+def model_card(model_id, m):
+    species = sorted(m.get("species") or [], key=str.lower)
+    lines = [
+        "---",
+        "license: cc-by-4.0",
+        "library_name: tflite",
+        "pipeline_tag: image-classification",
+        "tags:",
+        "- med-herb-lens",
+        "- plants",
+        "- medicinal-plants",
+        "- on-device",
+        "- tflite",
+        "---",
+        "",
+        "# %s" % m.get("name"),
+        "",
+        "An image classifier trained by a [Med Herb Lens](https://med-herb-lens.pages.dev/about.html) user on their "
+        "own device, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).",
+        "",
+        "## What it identifies (%d species)" % len(species),
+        "",
+    ] + ["- %s" % name for name in species] + [
+        "",
+        "## How to use it",
+        "",
+        "- **In Med Herb Lens:** download `model.tflite`, then Train → Import a model.%s" % (
+            " Made in Med Herb Lens, it can go on learning there: add species or photos and train again." if m.get("trainable") else ""),
+        "- **Anywhere TensorFlow Lite runs:** a 224 × 224 RGB image with values from 0 to 1 in; one probability per "
+        "species out. The species list is inside the file (`labels.txt` in its metadata).",
+        "",
+        "## How it was made",
+        "",
+        "A final layer trained in Med Herb Lens, on the device, on top of the `%s` MediaPipe image embedder "
+        "(Apache 2.0)." % m.get("backbone"),
+        "",
+        "## Caution",
+        "",
+        "Like any model, it can be wrong, and its species names were typed by its sharer. Never eat a plant or use "
+        "it as medicine because of what a model says.",
+        "",
+        "## Credit and citation",
+        "",
+        "Shared by a Med Herb Lens user (shared model `%s`). If you use it, please cite:" % model_id,
+        "",
+    ] + ["%s\n" % c for c in CITATIONS]
+    return "\n".join(lines)
+
+
+def slug(text):
+    """A Hugging Face repository name: ASCII letters, digits and dashes ("Rau Hà Nội" -> "rau-ha-noi")."""
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D")).encode("ascii", "ignore").decode()
+    cleaned = "".join(c.lower() if c.isalnum() else "-" for c in folded)
+    return "-".join(part for part in cleaned.split("-") if part)[:60] or "model"
+
+
+def cmd_publish_hf(db, args):
+    snapshot = shared_model_or_fail(db, args.model_id)
+    m = snapshot.to_dict()
+    token = os.environ.get("HF_TOKEN") or fail("set HF_TOKEN to a write token for the %s organisation" % HF_ORG)
+    from huggingface_hub import HfApi
+    import urllib.request
+    api = HfApi(token=token)
+    repo_id = "%s/%s-%s" % (HF_ORG, slug(m.get("name", "model")), args.model_id[:8])
+    with urllib.request.urlopen(m["url"]) as response:
+        model_bytes = response.read()
+    api.create_repo(repo_id, repo_type="model", exist_ok=True)
+    api.upload_file(path_or_fileobj=model_bytes, path_in_repo="model.tflite", repo_id=repo_id,
+                    commit_message="Model shared in Med Herb Lens (%s)" % args.model_id)
+    api.upload_file(path_or_fileobj=model_card(args.model_id, m).encode("utf-8"), path_in_repo="README.md",
+                    repo_id=repo_id, commit_message="Model card")
+    url = "https://huggingface.co/%s" % repo_id
+    snapshot.reference.update({"huggingFace": "published", "huggingFaceUrl": url})
+    print("Published %s; the app now links to it." % url)
+
+
+def cmd_decline_hf(db, args):
+    shared_model_or_fail(db, args.model_id).reference.update({"huggingFace": "declined"})
+    print("Declined; %s stays shared in the app only." % args.model_id)
+
+
+def notify_hf_requests(db, repo):
+    """Opens a GitHub issue for every new request to publish a shared model on Hugging Face."""
+    opened = 0
+    for snapshot in db.collection(SHARED_MODELS).where(filter=firestore.FieldFilter("huggingFace", "==", "requested")).stream():
+        if snapshot.to_dict().get("hfNotifiedAt"):
+            continue
+        body = "\n".join([
+            "A user shared a model and asked for it to be published on Hugging Face (%s)." % HF_ORG,
+            "",
+            "```",
+            describe_shared_model(snapshot),
+            "```",
+            "",
+            "Check its name and species are fine to publish, then:",
+            "",
+            "```",
+            "tools/moderate.py publish-hf %s   # publish it" % snapshot.id,
+            "tools/moderate.py decline-hf %s   # keep it in the app only" % snapshot.id,
+            "```",
+            "",
+            "Close this issue once done.",
+        ])
+        title = "Hugging Face request: %s" % snapshot.to_dict().get("name")
+        subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
+                        "--label", "hugging-face"], check=True)
+        snapshot.reference.update({"hfNotifiedAt": firestore.SERVER_TIMESTAMP})
+        opened += 1
+    return opened
+
+
 def cmd_ban(db, args):
     ban(db, args.uid, args.reason or "banned by the admin")
 
@@ -345,6 +495,7 @@ def cmd_notify(db, args):
         opened += 1
     print("Opened %d issue(s) for reports." % opened)
     print("Opened %d issue(s) for model reports." % notify_model_reports(db, args.repo))
+    print("Opened %d issue(s) for Hugging Face requests." % notify_hf_requests(db, args.repo))
     print("Opened %d issue(s) for name suggestions." % notify_suggestions(db, args.repo))
 
 
@@ -369,6 +520,13 @@ def main():
     dismiss_model = sub.add_parser("dismiss-model")
     dismiss_model.add_argument("report_id")
     dismiss_model.set_defaults(run=cmd_dismiss_model)
+    sub.add_parser("hf-requests").set_defaults(run=cmd_hf_requests)
+    publish_hf = sub.add_parser("publish-hf")
+    publish_hf.add_argument("model_id")
+    publish_hf.set_defaults(run=cmd_publish_hf)
+    decline_hf = sub.add_parser("decline-hf")
+    decline_hf.add_argument("model_id")
+    decline_hf.set_defaults(run=cmd_decline_hf)
     ban_parser = sub.add_parser("ban")
     ban_parser.add_argument("uid")
     ban_parser.add_argument("--reason")

@@ -91,6 +91,10 @@ To meet App Store guideline 1.2 and Google Play's user-generated content policy:
   `tools/moderate.py` removes content (from Firestore and R2) and bans accounts.
 - **Terms** that forbid objectionable content and explain removal and bans
   (`website/pages/terms-of-service.html`).
+- **Hugging Face:** nothing is published there without the sharer opting in and the
+  administrator reviewing it. The write token stays on the administrator's computer
+  (`tools/moderate.py publish-hf`), never in an app or the Worker; clients can only ask for
+  publishing, not mark a model published (Firestore rules).
 
 ## 6. Privacy
 

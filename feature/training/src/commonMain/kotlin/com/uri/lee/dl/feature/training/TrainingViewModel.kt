@@ -66,11 +66,14 @@ enum class TrainingError { READ_PHOTOS, DOWNLOAD, TRAIN, NO_LABELS, IMPORT, TOO_
 sealed interface SharingStep {
     data object SignIn : SharingStep
     data object Terms : SharingStep
+
+    /** Ready: share, and say whether to offer it to Hugging Face too. */
+    data object Confirm : SharingStep
     data class Problem(val problem: SharingProblem) : SharingStep
 }
 
 /** Something done, said once. */
-enum class TrainingMessage { SHARED, ADDED, REPORTED, HIDDEN, REMOVED }
+enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, ADDED, REPORTED, HIDDEN, REMOVED }
 
 data class TrainingState(
     val screen: TrainingScreen = TrainingScreen.Models,
@@ -120,7 +123,11 @@ sealed interface TrainingAction {
 
     /** Shares the trained model on screen with everyone (after sign-in, the terms and the name checks). */
     data object ShareWithEveryone : TrainingAction
+
+    /** The same for a model in the list, without opening it. */
+    data class ShareModel(val id: String) : TrainingAction
     data object AcceptSharingTerms : TrainingAction
+    data class ConfirmShare(val offerToHuggingFace: Boolean) : TrainingAction
     data object DismissSharing : TrainingAction
     data class AddCommunityModel(val id: String) : TrainingAction
     data class ReportCommunityModel(val id: String, val reason: ModelReportReason) : TrainingAction
@@ -195,10 +202,15 @@ class TrainingViewModel(
             TrainingAction.BackToCamera -> setState { copy(photo = null, predictions = emptyList()) }
             TrainingAction.DismissError -> setState { copy(error = null) }
             TrainingAction.ShareWithEveryone -> shareWithEveryone(termsAccepted = false)
+            is TrainingAction.ShareModel -> viewModelScope.launch {
+                if (currentState.model?.id != action.id) load(action.id)
+                shareWithEveryone(termsAccepted = false)
+            }
             TrainingAction.AcceptSharingTerms -> {
                 viewModelScope.launch { runCatching { settings.acceptSharingTerms() } }
                 shareWithEveryone(termsAccepted = true)
             }
+            is TrainingAction.ConfirmShare -> upload(action.offerToHuggingFace)
             TrainingAction.DismissSharing -> setState { copy(sharing = null) }
             is TrainingAction.AddCommunityModel -> addCommunityModel(action.id)
             is TrainingAction.ReportCommunityModel -> reportCommunityModel(action.id, action.reason)
@@ -211,6 +223,8 @@ class TrainingViewModel(
                 val shared = sharedModel(action.id) ?: return
                 launchWork(TrainingError.COMMUNITY) {
                     community.remove(shared)
+                    // The model it came from can be shared again
+                    store.list().filter { it.sharedId == shared.id }.forEach { store.save(it.copy(sharedId = null)) }
                     back()
                     setState { copy(message = TrainingMessage.REMOVED) }
                 }
@@ -241,13 +255,26 @@ class TrainingViewModel(
                 setState { copy(sharing = SharingStep.Problem(it)) }
                 return@launch
             }
-            setState { copy(sharing = null) }
-            launchWork(TrainingError.SHARE) {
-                setState { copy(work = TrainingWork.Uploading) }
-                // Trained here, so the file carries what's needed to go on learning
-                community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file)
-                analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community"))
-                setState { copy(message = TrainingMessage.SHARED) }
+            setState { copy(sharing = SharingStep.Confirm) }
+        }
+    }
+
+    private fun upload(offerToHuggingFace: Boolean) {
+        val model = currentState.model ?: return
+        setState { copy(sharing = null) }
+        launchWork(TrainingError.SHARE) {
+            val file = store.tflite(model.id) ?: error("No model file")
+            setState { copy(work = TrainingWork.Uploading) }
+            // Trained here, so the file carries what's needed to go on learning
+            val shared = community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file, offerToHuggingFace = offerToHuggingFace)
+            val updated = model.copy(sharedId = shared.id)
+            store.save(updated)
+            analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community", huggingFace = offerToHuggingFace))
+            setState {
+                copy(
+                    model = if (this.model?.id == model.id) updated else this.model,
+                    message = if (offerToHuggingFace) TrainingMessage.SHARED_HUGGING_FACE else TrainingMessage.SHARED,
+                )
             }
         }
     }

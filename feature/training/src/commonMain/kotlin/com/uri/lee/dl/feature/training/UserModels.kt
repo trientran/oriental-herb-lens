@@ -100,6 +100,8 @@ data class UserModel(
     val report: ModelReport? = null,
     /** Imported from a model shared by Herb Lens, which can go on learning here. */
     val importedTrainable: Boolean = false,
+    /** Its id among the shared models, once the user shared it with everyone; null otherwise. */
+    val sharedId: String? = null,
 ) {
     val backbone: String get() = settings.quality.backbone
     val isTrained: Boolean get() = imported || trainedClasses.isNotEmpty()
@@ -133,6 +135,7 @@ class UserModelStore(private val files: AppFiles) {
             trainedClasses = meta["trainedClasses"]?.split(SEPARATOR)?.filter { it.isNotEmpty() }.orEmpty(),
             report = files.read("$ROOT/$id/report.txt")?.decodeToString()?.let(::decodeReport),
             importedTrainable = meta["importedTrainable"] == "true",
+            sharedId = meta["sharedId"]?.takeIf { it.isNotEmpty() },
         )
     }
 
@@ -175,6 +178,7 @@ class UserModelStore(private val files: AppFiles) {
         appendLine("name=${model.name.replace('\n', ' ')}")
         appendLine("imported=${model.imported}")
         appendLine("importedTrainable=${model.importedTrainable}")
+        appendLine("sharedId=${model.sharedId.orEmpty()}")
         appendLine("trainedThrough=${model.trainedThrough}")
         appendLine("trainedClasses=${model.trainedClasses.joinToString(SEPARATOR)}")
         val s = model.settings

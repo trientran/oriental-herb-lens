@@ -2,6 +2,7 @@ package com.uri.lee.dl.feature.training
 
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.sharing.CommunityModel
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.training.AppFiles
@@ -69,13 +70,32 @@ class CommunitySharingTest : MainDispatcherTest() {
         assertEquals(SharingStep.Terms, viewModel.state.value.sharing)
 
         viewModel.onAction(TrainingAction.AcceptSharingTerms)
+        assertEquals(SharingStep.Confirm, viewModel.state.value.sharing)
+        assertTrue(settings.sharingTermsAccepted.value)
+
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = true))
 
         assertNull(viewModel.state.value.sharing)
-        assertEquals(TrainingMessage.SHARED, viewModel.state.value.message)
-        assertTrue(settings.sharingTermsAccepted.value)
+        assertEquals(TrainingMessage.SHARED_HUGGING_FACE, viewModel.state.value.message)
         val shared = community.shared.value.single()
         assertEquals(listOf("Mint", "Basil"), shared.species)
         assertEquals("user-1", shared.uploaderId)
+        assertEquals(HuggingFaceStatus.REQUESTED, shared.huggingFace)
+        // Remembered, so the results screen stops asking
+        assertEquals(shared.id, viewModel.state.value.model?.sharedId)
+        assertEquals(shared.id, store.load("m1")?.sharedId)
+    }
+
+    @Test
+    fun `a second share skips the terms`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        val viewModel = opened()
+
+        viewModel.onAction(TrainingAction.ShareWithEveryone)
+        assertEquals(SharingStep.Confirm, viewModel.state.value.sharing)
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        assertEquals(HuggingFaceStatus.NONE, community.shared.value.single().huggingFace)
     }
 
     @Test
@@ -125,5 +145,18 @@ class CommunitySharingTest : MainDispatcherTest() {
         viewModel.onAction(TrainingAction.Back)
 
         assertNull(viewModel.state.value.community)
+    }
+
+    @Test
+    fun `a model in the list can be shared without opening it`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        store.saveImported(UserModel("m2", "Weeds", listOf("Lantana", "Mimosa"), trainedClasses = listOf("Lantana", "Mimosa")), ByteArray(10))
+        val viewModel = viewModel()
+
+        viewModel.onAction(TrainingAction.ShareModel("m2"))
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        assertEquals("Weeds", community.shared.value.single().name)
+        assertEquals(community.shared.value.single().id, store.load("m2")?.sharedId)
     }
 }
