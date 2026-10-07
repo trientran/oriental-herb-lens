@@ -7,7 +7,8 @@
 //
 //   201 {"url": "<public URL of the stored photo>"}
 //
-//   POST /models                    a model shared with the community (the Train tab)
+//   POST /models[?id=<uuid>]        a model shared with the community (the Train tab); with an id,
+//                                   a retry by the same user replaces the same file
 //   Authorization: Bearer <Firebase ID token>
 //   <.tflite bytes, at most 25 MB>
 //
@@ -85,7 +86,7 @@ async function route(request, env, verify, banned, fetchFn) {
   }
   if (url.pathname === '/models') {
     if (request.method !== 'POST') return json(405, { error: 'Use POST' });
-    return withUser(request, env, verify, banned, (uid) => uploadModel(request, env, uid));
+    return withUser(request, env, verify, banned, (uid) => uploadModel(request, env, url, uid));
   }
   if (model) {
     if (request.method !== 'DELETE') return json(405, { error: 'Use DELETE' });
@@ -152,13 +153,20 @@ function isTflite(bytes) {
   return bytes.length > 8 && bytes[4] === 0x54 && bytes[5] === 0x46 && bytes[6] === 0x4c && bytes[7] === 0x33;
 }
 
-async function uploadModel(request, env, uid) {
+async function uploadModel(request, env, url, uid) {
+  // The app names the share (?id=<uuid>), so a retry after the app was closed reuses the same file
+  const requested = url.searchParams.get('id');
+  if (requested !== null && !/^[0-9a-f-]{36}$/.test(requested)) return json(400, { error: 'id must be a UUID' });
+  const id = requested ?? crypto.randomUUID();
+  const key = `models/${id}.tflite`;
+  if (requested !== null) {
+    const existing = await env.BUCKET.head(key);
+    if (existing && existing.customMetadata?.uploader !== uid) return json(409, { error: 'That id is taken' });
+  }
   const bytes = await readBody(request, MAX_MODEL_BYTES);
   if (!bytes) return json(413, { error: 'Model too large' });
   if (!isTflite(bytes)) return json(415, { error: 'Not a TensorFlow Lite model' });
 
-  const id = crypto.randomUUID();
-  const key = `models/${id}.tflite`;
   await env.BUCKET.put(key, bytes, {
     httpMetadata: {
       contentType: 'application/octet-stream',

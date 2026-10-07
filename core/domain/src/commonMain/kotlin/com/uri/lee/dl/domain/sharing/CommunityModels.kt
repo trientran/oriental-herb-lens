@@ -39,10 +39,12 @@ interface CommunityModelRepository {
     fun observe(): Flow<List<CommunityModel>>
 
     /**
-     * Uploads [file] (a .tflite of at most [SharingRules.MAX_BYTES]) and lists it; [offerToHuggingFace]
-     * asks for it to be published on Hugging Face too, after review. Needs a signed-in user.
+     * Uploads [file] (a .tflite of at most [SharingRules.MAX_BYTES]) as the shared model [id] (a UUID
+     * the app picks) and lists it; [offerToHuggingFace] publishes it on Hugging Face too. Safe to
+     * repeat with the same [id] after a failure: steps already done are kept. Needs a signed-in user.
      */
     suspend fun share(
+        id: String,
         name: String,
         species: List<String>,
         backbone: String,

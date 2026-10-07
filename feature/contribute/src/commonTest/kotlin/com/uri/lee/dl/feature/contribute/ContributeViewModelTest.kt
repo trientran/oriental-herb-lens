@@ -1,10 +1,14 @@
 package com.uri.lee.dl.feature.contribute
 
 import com.uri.lee.dl.core.common.ApplicationScope
+import kotlinx.coroutines.launch
+import com.uri.lee.dl.domain.notification.UploadNotifier
+import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.testing.fakes.MemoryAppFiles
+import com.uri.lee.dl.domain.upload.PhotoUploadQueue
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.NamePreference
-import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
 import com.uri.lee.dl.testing.MainDispatcherTest
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
 import com.uri.lee.dl.testing.fakes.FakeContributionRepository
@@ -23,21 +27,30 @@ class ContributeViewModelTest : MainDispatcherTest() {
     private val auth = FakeAuthRepository()
     private val contributions = FakeContributionRepository()
     private val unreadable = mutableSetOf<String>()
-    private val submit = SubmitImagesUseCase(
-        compressor = { image -> image.uri.takeUnless { it in unreadable }?.encodeToByteArray() },
-        host = { id, jpeg -> "https://r2/$id/${jpeg.decodeToString()}" },
-        contributions = contributions,
-        auth = auth,
-    )
+    private val appScope by lazy { ApplicationScope(CoroutineScope(testDispatcher)) }
+    private val queue by lazy {
+        PhotoUploadQueue(
+            files = MemoryAppFiles(),
+            compressor = { image -> image.uri.takeUnless { it in unreadable }?.encodeToByteArray() },
+            host = { id, jpeg -> "https://r2/$id/${jpeg.decodeToString()}" },
+            contributions = contributions,
+            auth = auth,
+            notifier = notifier,
+            analytics = NoAnalytics,
+        )
+    }
+    private val notifier = UploadNotifier { id, name, uploaded, failed -> notified += Notified(id, name, uploaded, failed) }
 
     private fun viewModel(vietnameseFirst: Boolean = true) = ContributeViewModel(
         herbId = 5,
         catalog = FakeSpeciesRepository(listOf(species(5, "Polyscias fruticosa", vi = listOf("Đinh lăng")))),
         auth = auth,
-        submitImages = submit,
+        queue = queue,
+        // As in the browser and on iOS: right away, in the app's scope
+        scheduler = { appScope.launch { queue.runPending() } },
         addresses = { "Hà Nội" },
-        appScope = ApplicationScope(CoroutineScope(testDispatcher)),
-        notifier = { id, name, uploaded, failed -> notified += Notified(id, name, uploaded, failed) },
+        appScope = appScope,
+        notifier = notifier,
         plantCheck = { photo -> photo.uri !in notPlants },
         names = NamePreference { vietnameseFirst },
     )

@@ -173,6 +173,7 @@ private val TrainingMessage.text: StringResource
         TrainingMessage.SHARED -> Res.string.train_msg_shared
         TrainingMessage.SHARED_HUGGING_FACE -> Res.string.train_msg_shared_hf
         TrainingMessage.SHARED_HUGGING_FACE_LATER -> Res.string.train_msg_shared_hf_later
+        TrainingMessage.SHARE_LATER -> Res.string.train_msg_share_later
         TrainingMessage.ADDED -> Res.string.train_msg_added
         TrainingMessage.REPORTED -> Res.string.train_msg_reported
         TrainingMessage.HIDDEN -> Res.string.train_msg_hidden

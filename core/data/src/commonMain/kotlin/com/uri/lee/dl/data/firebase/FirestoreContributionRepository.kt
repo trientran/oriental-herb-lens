@@ -4,7 +4,7 @@ import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.UploadedImage
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 
 /**
  * The app's only two Firestore writes:

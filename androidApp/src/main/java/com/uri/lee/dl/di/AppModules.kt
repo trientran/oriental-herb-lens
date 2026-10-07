@@ -14,6 +14,9 @@ import com.uri.lee.dl.shared.training.LocalBackbones
 import java.io.File
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.dsl.workerOf
+import com.uri.lee.dl.PendingUploadsWorker
+import com.uri.lee.dl.WorkManagerUploadScheduler
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import org.koin.dsl.module
 
 val appInfo = AppInfo(
@@ -29,6 +32,8 @@ val androidModule = module {
     single { LegacyCleanup(androidContext()) }
     single<UploadNotifier> { AndroidUploadNotifier(androidContext(), get()) }
     workerOf(::ContentSyncWorker)
+    workerOf(::PendingUploadsWorker)
+    single<UploadScheduler> { WorkManagerUploadScheduler(androidContext()) }
     single<AppFiles> { AndroidAppFiles(File(androidContext().filesDir, "app")) }
     if (BuildConfig.DEBUG) single<LocalBackbones> { AndroidLocalBackbones(androidContext()) }
 }

@@ -101,6 +101,8 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         )
     }
 
+    suspend fun sharedModelExists(id: String): Boolean = db.collection(SHARED_MODELS).document(id).get().exists
+
     suspend fun deleteSharedModel(id: String) {
         db.collection(SHARED_MODELS).document(id).delete()
     }
