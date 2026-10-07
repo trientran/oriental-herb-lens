@@ -7,6 +7,8 @@ import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
 import com.uri.lee.dl.data.firebase.RemoteConfigCitationRepository
+import com.uri.lee.dl.data.sharing.DefaultCommunityModelRepository
+import com.uri.lee.dl.domain.sharing.CommunityModelRepository
 import com.uri.lee.dl.data.analytics.FirebaseAnalyticsLogger
 import com.uri.lee.dl.data.analytics.UsageStatisticsSync
 import com.uri.lee.dl.data.firebase.FirebaseAuthRepository
@@ -59,6 +61,9 @@ val dataModule: Module = module {
         DefaultAppStatusRepository(get(), versionCode = app.versionCode, platform = app.platform)
     }
     single<CitationRepository> { RemoteConfigCitationRepository(get()) }
+    single<CommunityModelRepository> {
+        DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl)
+    }
     singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
     single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = get<AppInfo>().photoUploadUrl) }
 

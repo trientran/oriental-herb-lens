@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { verifyIdToken } from '../src/firebase-auth.js';
-import { MAX_BYTES, handleRequest } from '../src/index.js';
+import { MAX_BYTES, MAX_MODEL_BYTES, handleRequest } from '../src/index.js';
 import { PROJECT, getKeys, signToken } from './helpers.js';
 
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4]);
@@ -12,7 +12,11 @@ function fakeEnv() {
     stored,
     FIREBASE_PROJECT_ID: PROJECT,
     PUBLIC_BASE_URL: 'https://pub-abc.r2.dev/',
-    BUCKET: { put: async (key, value, options) => stored.set(key, { value, options }) },
+    BUCKET: {
+      put: async (key, value, options) => stored.set(key, { value, options }),
+      head: async (key) => (stored.has(key) ? { customMetadata: stored.get(key).options.customMetadata } : null),
+      delete: async (key) => stored.delete(key),
+    },
   };
 }
 
@@ -129,5 +133,47 @@ test('one address is limited before its tokens are checked', async () => {
   assert.equal((await handleRequest(request(), env, counting, async () => false)).status, 401);
   assert.equal((await handleRequest(request(), env, counting, async () => false)).status, 429);
   assert.equal(verified, 1);
+});
+
+const TFLITE = new Uint8Array([0x1c, 0, 0, 0, 0x54, 0x46, 0x4c, 0x33, 9, 9, 9]);
+
+async function send(env, { method = 'POST', path = '/models', body = TFLITE, sub = 'uid-123', token } = {}) {
+  const request = new Request(`https://worker.example${path}`, {
+    method,
+    headers: { authorization: `Bearer ${token ?? (await signToken({ sub }))}`, 'content-type': 'application/octet-stream' },
+    body: method === 'POST' ? body : undefined,
+  });
+  return handleRequest(request, env, verify, async () => false);
+}
+
+test('a shared model is stored under its own id, with its uploader', async () => {
+  const env = fakeEnv();
+  const response = await send(env);
+  const json = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.match(json.id, /^[0-9a-f-]{36}$/);
+  assert.equal(json.url, `https://pub-abc.r2.dev/models/${json.id}.tflite`);
+  assert.equal(json.size, TFLITE.length);
+  assert.equal(env.stored.get(`models/${json.id}.tflite`).options.customMetadata.uploader, 'uid-123');
+});
+
+test('only TensorFlow Lite files within the size limit are accepted as models', async () => {
+  const env = fakeEnv();
+  assert.equal((await send(env, { body: JPEG })).status, 415);
+  const big = new Uint8Array(MAX_MODEL_BYTES + 1);
+  big.set(TFLITE);
+  assert.equal((await send(env, { body: big })).status, 413);
+  assert.equal(env.stored.size, 0);
+});
+
+test('only its uploader can remove a shared model', async () => {
+  const env = fakeEnv();
+  const { id } = await (await send(env)).json();
+
+  assert.equal((await send(env, { method: 'DELETE', path: `/models/${id}`, sub: 'someone-else' })).status, 403);
+  assert.equal((await send(env, { method: 'DELETE', path: `/models/${id}` })).status, 204);
+  assert.equal(env.stored.size, 0);
+  assert.equal((await send(env, { method: 'DELETE', path: `/models/${id}` })).status, 404);
 });
 

@@ -181,6 +181,17 @@ hidden layer is a setting and an ablation in the study.
   replaying its packed sample so it keeps the old species); any other .tflite with labels inside
   can be used to identify, not trained.
 - At least two species to train; the screen asks for 10 photos per species.
+- **Share with everyone** (a trained model's results): uploads the same file through the upload
+  Worker (`POST /models`, at most 25 MB) to R2, and lists it in Firestore (`sharedModels/{id}`:
+  name, species, backbone, size, the sharer's uid, licence CC-BY-4.0). It needs sign-in, the
+  sharing terms (accepted once) and names that pass `SharingRules`: 1–60 characters, 2–500
+  species, no email, link or phone number, no obvious abuse. Only models trained in the app can
+  be shared.
+- **Models shared by others** (Your models): newest 200, listened to only while the screen is
+  open. Add one (downloaded, then imported as above); report it (signed in; `modelReports`, and
+  hidden for the reporter at once); hide everything its sharer shared (models and photos, on this
+  device); or stop sharing your own (`DELETE /models/{id}` removes the file, uploader only). The
+  administrator removes reported models in the Firestore console and bans accounts as for photos.
 
 ## Research mode
 

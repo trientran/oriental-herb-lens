@@ -180,6 +180,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         pickModelFile = files?.pickModelFile,
                         saveFile = files?.saveFile ?: { _, _ -> },
                         camera = { onFrame, modifier -> CameraPreview(onFrame, modifier) },
+                        signIn = signIn,
                     ),
                     modifier = Modifier.statusBarsPadding(),
                 )

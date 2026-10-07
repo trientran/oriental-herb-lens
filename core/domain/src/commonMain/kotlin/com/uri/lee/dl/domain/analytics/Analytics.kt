@@ -60,7 +60,16 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
         mapOf("trainable" to trainable, "species_count" to speciesCount),
     )
 
-    class ModelShared(speciesCount: Int) : AnalyticsEvent("share_model", mapOf("species_count" to speciesCount))
+    /** A model was shared: [to] is "file" (the share sheet) or "community" (everyone in the app). */
+    class ModelShared(speciesCount: Int, to: String) : AnalyticsEvent("share_model", mapOf("species_count" to speciesCount, "to" to to))
+
+    /** A model someone shared was added to the user's own. */
+    class CommunityModelAdded(speciesCount: Int, trainable: Boolean) : AnalyticsEvent(
+        "add_community_model",
+        mapOf("species_count" to speciesCount, "trainable" to trainable),
+    )
+
+    class ModelReported(reason: String) : AnalyticsEvent("report_model", mapOf("reason" to reason))
 
     /** The user opened one of their own models to identify with it. */
     class ModelTried(speciesCount: Int) : AnalyticsEvent("try_model", mapOf("species_count" to speciesCount))

@@ -1,9 +1,12 @@
 package com.uri.lee.dl.core.firebase
 
+import com.uri.lee.dl.core.firebase.FirestorePaths.CREATED_AT
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERBS
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERB_IMAGES
+import com.uri.lee.dl.core.firebase.FirestorePaths.MODEL_REPORTS
 import com.uri.lee.dl.core.firebase.FirestorePaths.NAME_SUGGESTIONS
 import com.uri.lee.dl.core.firebase.FirestorePaths.PHOTO_REPORTS
+import com.uri.lee.dl.core.firebase.FirestorePaths.SHARED_MODELS
 import com.uri.lee.dl.core.firebase.FirestorePaths.USERS
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_EMAIL
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_FAVORITES
@@ -11,12 +14,26 @@ import com.uri.lee.dl.core.firebase.FirestorePaths.USER_HISTORY
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_NAME
 import com.uri.lee.dl.core.firebase.FirestorePaths.USER_UID
 import dev.gitlive.firebase.firestore.BaseTimestamp
+import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import dev.gitlive.firebase.firestore.Timestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+
+/** A model shared from the Train tab, as `sharedModels/{id}` stores it (the files are in R2). */
+data class SharedModelRecord(
+    val id: String,
+    val name: String,
+    val species: List<String>,
+    val backbone: String,
+    val trainable: Boolean,
+    val url: String,
+    val size: Int,
+    val uploaderId: String,
+    val license: String,
+)
 
 /** Favourites and history as earlier versions stored them on `users/{uid}`, oldest first. */
 data class LegacyUserLibrary(val favorites: List<Long>, val history: List<Long>)
@@ -66,6 +83,27 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(PHOTO_REPORTS).add(PhotoReport(speciesKey.asStoredKey(), url, uploaderId, reason, reporterUid))
     }
 
+    /** The newest shared models; documents that don't read as one are skipped. */
+    fun observeSharedModels(limit: Int): Flow<List<SharedModelRecord>> =
+        db.collection(SHARED_MODELS).orderBy(CREATED_AT, Direction.DESCENDING).limit(limit).snapshots
+            .map { snapshot -> snapshot.documents.mapNotNull { runCatching { it.sharedModel() }.getOrNull() } }
+
+    /** Lists a model the Worker stored; the rules check it's the user's own and well formed. */
+    suspend fun addSharedModel(record: SharedModelRecord) {
+        db.collection(SHARED_MODELS).document(record.id).set(
+            SharedModelDocument(record.name, record.species, record.backbone, record.trainable, record.url, record.size, record.uploaderId, record.license),
+        )
+    }
+
+    suspend fun deleteSharedModel(id: String) {
+        db.collection(SHARED_MODELS).document(id).delete()
+    }
+
+    /** A report of a shared model, for the administrator (`modelReports`, create-only). */
+    suspend fun addModelReport(modelId: String, uploaderId: String, reason: String, reporterUid: String) {
+        db.collection(MODEL_REPORTS).add(ModelReport(modelId, uploaderId, reason, reporterUid))
+    }
+
     /** Removes `users/{uid}`, where old app versions kept the user's name and email. */
     suspend fun deleteUserDocument(uid: String) {
         db.collection(USERS).document(uid).delete()
@@ -88,6 +126,41 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         val reason: String,
         val reporterUid: String?,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
+    )
+
+    @Serializable
+    private data class SharedModelDocument(
+        val name: String,
+        val species: List<String>,
+        val backbone: String,
+        val trainable: Boolean,
+        val url: String,
+        val size: Int,
+        val uploaderId: String,
+        val license: String,
+        val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
+    )
+
+    @Serializable
+    private data class ModelReport(
+        val modelId: String,
+        val uploaderId: String,
+        val reason: String,
+        val reporterUid: String,
+        val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
+    )
+
+    private fun DocumentSnapshot.sharedModel() = SharedModelRecord(
+        id = id,
+        name = get<String>("name"),
+        species = get<List<String>>("species"),
+        backbone = get<String?>("backbone").orEmpty(),
+        trainable = get<Boolean?>("trainable") ?: false,
+        url = get<String>("url"),
+        // A whole number arrives as a Long on Android and iOS, and as a JS number on the web
+        size = runCatching { get<Long>("size").toInt() }.getOrElse { get<Double>("size").toInt() },
+        uploaderId = get<String>("uploaderId"),
+        license = get<String?>("license").orEmpty(),
     )
 
     @Serializable

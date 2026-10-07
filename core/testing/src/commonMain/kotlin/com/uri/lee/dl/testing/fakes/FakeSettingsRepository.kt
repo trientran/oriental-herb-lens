@@ -24,4 +24,10 @@ class FakeSettingsRepository(initial: ScanSettings = ScanSettings()) : SettingsR
     override suspend fun setIdentifyNoticeSeen() {
         identifyNoticeSeen.value = true
     }
+
+    override val sharingTermsAccepted = MutableStateFlow(false)
+
+    override suspend fun acceptSharingTerms() {
+        sharingTermsAccepted.value = true
+    }
 }

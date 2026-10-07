@@ -11,25 +11,31 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -45,6 +51,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -66,16 +74,19 @@ import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.LoadingState
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
-import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.*
+import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.sharing.ModelReportReason
+import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.training.Dataset
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -92,6 +103,8 @@ class TrainingPlatform(
     val saveFile: suspend (name: String, bytes: ByteArray) -> Unit,
     /** The live camera; each frame goes to onFrame with its aspect ratio. */
     val camera: (@Composable (onFrame: suspend (ClassifierImage, Float) -> Unit, modifier: Modifier) -> Unit)? = null,
+    /** Opens sign-in, which sharing with everyone and reporting need. */
+    val signIn: () -> Unit = {},
 )
 
 /** Fewer than this many photos of a species and the screen asks for more. */
@@ -123,6 +136,8 @@ internal fun TrainingScreen(
                 is TrainingScreen.Result -> ResultScreen(state, onAction, platform, viewModel)
                 is TrainingScreen.Settings -> SettingsScreen(state, onAction)
                 is TrainingScreen.Use -> UseScreen(state, onAction, platform, viewModel)
+                TrainingScreen.Community -> CommunityScreen(state, onAction)
+                is TrainingScreen.CommunityModel -> CommunityModelScreen(state, screen.id, onAction)
             }
         }
     }
@@ -135,7 +150,72 @@ internal fun TrainingScreen(
             )
         }
     }
+    state.sharing?.let { SharingDialog(it, onAction, platform) }
+    state.message?.let { message ->
+        DialogLayer {
+            AlertDialog(
+                onDismissRequest = { onAction(TrainingAction.DismissMessage) },
+                confirmButton = { TextButton(onClick = { onAction(TrainingAction.DismissMessage) }) { Text(stringResource(Res.string.train_ok)) } },
+                text = { Text(stringResource(message.text)) },
+            )
+        }
+    }
 }
+
+private val TrainingMessage.text: StringResource
+    get() = when (this) {
+        TrainingMessage.SHARED -> Res.string.train_msg_shared
+        TrainingMessage.ADDED -> Res.string.train_msg_added
+        TrainingMessage.REPORTED -> Res.string.train_msg_reported
+        TrainingMessage.HIDDEN -> Res.string.train_msg_hidden
+        TrainingMessage.REMOVED -> Res.string.train_msg_removed
+    }
+
+/** What sharing with everyone asks of the user first: to sign in, to accept the terms, or to fix a name. */
+@Composable
+private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit, platform: TrainingPlatform) {
+    val dismiss = { onAction(TrainingAction.DismissSharing) }
+    DialogLayer {
+        when (step) {
+            SharingStep.SignIn -> AlertDialog(
+                onDismissRequest = dismiss,
+                title = { Text(stringResource(Res.string.train_share_everyone)) },
+                text = { Text(stringResource(Res.string.train_share_sign_in)) },
+                confirmButton = { TextButton(onClick = { dismiss(); platform.signIn() }) { Text(stringResource(Res.string.profile_sign_in)) } },
+                dismissButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.cancel)) } },
+            )
+            SharingStep.Terms -> AlertDialog(
+                onDismissRequest = dismiss,
+                icon = { Icon(Icons.Filled.Public, contentDescription = null) },
+                title = { Text(stringResource(Res.string.train_share_terms_title)) },
+                text = {
+                    Text(
+                        stringResource(Res.string.train_share_terms_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                    )
+                },
+                confirmButton = { TextButton(onClick = { onAction(TrainingAction.AcceptSharingTerms) }) { Text(stringResource(Res.string.train_share_accept)) } },
+                dismissButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.cancel)) } },
+            )
+            is SharingStep.Problem -> AlertDialog(
+                onDismissRequest = dismiss,
+                title = { Text(stringResource(Res.string.train_share_everyone)) },
+                text = { Text(stringResource(step.problem.text)) },
+                confirmButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.train_ok)) } },
+            )
+        }
+    }
+}
+
+private val SharingProblem.text: StringResource
+    get() = when (this) {
+        SharingProblem.NAME_LENGTH -> Res.string.train_share_problem_name
+        SharingProblem.TOO_FEW_SPECIES -> Res.string.train_share_problem_species
+        SharingProblem.CONTACT_DETAILS -> Res.string.train_share_problem_contact
+        SharingProblem.OFFENSIVE_WORDS -> Res.string.train_share_problem_words
+        SharingProblem.TOO_LARGE -> Res.string.train_share_problem_size
+    }
 
 private val TrainingError.message: StringResource
     get() = when (this) {
@@ -146,6 +226,8 @@ private val TrainingError.message: StringResource
         TrainingError.IMPORT -> Res.string.train_error_import
         TrainingError.TOO_FEW_SPECIES -> Res.string.train_error_species
         TrainingError.OPEN_MODEL -> Res.string.train_error_open
+        TrainingError.SHARE -> Res.string.train_error_share
+        TrainingError.COMMUNITY -> Res.string.train_error_community
     }
 
 @Composable
@@ -175,6 +257,7 @@ private fun Work(work: TrainingWork?) {
         is TrainingWork.Reading -> Progress(stringResource(Res.string.train_reading, work.done, work.total), work.done.toFloat() / work.total.coerceAtLeast(1))
         is TrainingWork.Learning -> Progress(stringResource(Res.string.train_epoch, work.epoch), null)
         TrainingWork.Saving -> Progress(stringResource(Res.string.train_saving), null)
+        TrainingWork.Uploading -> Progress(stringResource(Res.string.train_sharing), null)
     }
 }
 
@@ -253,7 +336,151 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                 Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
             }
         }
+        OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Community)) }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Public, contentDescription = null)
+            Text(stringResource(Res.string.train_community), Modifier.padding(start = HerbLensTheme.spacing.sm))
+        }
     }
+}
+
+/** Models others shared; each opens [CommunityModelScreen]. */
+@Composable
+private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> Unit) {
+    Page(stringResource(Res.string.train_community_title), onBack = { onAction(TrainingAction.Back) }) {
+        Text(
+            stringResource(Res.string.train_community_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        val models = state.community
+        when {
+            models == null -> LoadingState()
+            models.isEmpty() -> EmptyState(
+                icon = Icons.Filled.Public,
+                title = stringResource(Res.string.train_community_empty_title),
+                body = stringResource(Res.string.train_community_empty_body),
+            )
+            else -> models.forEach { model ->
+                val preview = model.species.take(3).joinToString(", ") + if (model.species.size > 3) "…" else ""
+                ChoiceRow(
+                    Icons.Filled.Psychology,
+                    model.name,
+                    supporting = pluralStringResource(Res.plurals.train_species_count, model.species.size, model.species.size) + ": " + preview +
+                        " · " + stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)),
+                ) { onAction(TrainingAction.Open(TrainingScreen.CommunityModel(model.id))) }
+            }
+        }
+    }
+}
+
+/** One shared model: add it, see what it can identify; report it or hide its sharer, or stop sharing your own. */
+@Composable
+private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (TrainingAction) -> Unit) {
+    val model = state.community?.firstOrNull { it.id == id } ?: return LoadingState()
+    val spacing = HerbLensTheme.spacing
+    var reporting by remember { mutableStateOf(false) }
+    var hiding by remember { mutableStateOf(false) }
+    var removing by remember { mutableStateOf(false) }
+    Page(model.name, onBack = { onAction(TrainingAction.Back) }) {
+        Text(
+            listOfNotNull(
+                pluralStringResource(Res.plurals.train_species_count, model.species.size, model.species.size),
+                stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)),
+                if (model.trainable) stringResource(Res.string.train_can_learn) else null,
+            ).joinToString(" · "),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Work(state.work)
+        Button(onClick = { onAction(TrainingAction.AddCommunityModel(model.id)) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Download, contentDescription = null)
+            Text(stringResource(Res.string.train_community_add), Modifier.padding(start = spacing.sm))
+        }
+        model.species.sortedBy { it.lowercase() }.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        if (model.uploaderId == state.userId) {
+            OutlinedButton(onClick = { removing = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_community_remove)) }
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                TextButton(onClick = { reporting = true }) {
+                    Icon(Icons.Filled.Flag, contentDescription = null)
+                    Text(stringResource(Res.string.train_community_report), Modifier.padding(start = spacing.xs))
+                }
+                TextButton(onClick = { hiding = true }) {
+                    Icon(Icons.Filled.Block, contentDescription = null)
+                    Text(stringResource(Res.string.train_community_hide), Modifier.padding(start = spacing.xs))
+                }
+            }
+        }
+    }
+    if (reporting) ReportModelDialog(onDismiss = { reporting = false }) { reporting = false; onAction(TrainingAction.ReportCommunityModel(model.id, it)) }
+    if (hiding) {
+        ConfirmDialog(Res.string.train_community_hide_title, Res.string.train_community_hide_body, Res.string.hide, onDismiss = { hiding = false }) {
+            hiding = false
+            onAction(TrainingAction.HideSharer(model.uploaderId))
+        }
+    }
+    if (removing) {
+        ConfirmDialog(Res.string.train_community_remove_title, Res.string.train_community_remove_body, Res.string.train_community_remove, onDismiss = { removing = false }) {
+            removing = false
+            onAction(TrainingAction.RemoveCommunityModel(model.id))
+        }
+    }
+}
+
+@Composable
+private fun ConfirmDialog(title: StringResource, body: StringResource, confirm: StringResource, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    DialogLayer {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(title)) },
+            text = { Text(stringResource(body)) },
+            confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(confirm)) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun ReportModelDialog(onDismiss: () -> Unit, onReport: (ModelReportReason) -> Unit) {
+    var reason by remember { mutableStateOf<ModelReportReason?>(null) }
+    DialogLayer {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(Res.string.train_community_report_title)) },
+            text = {
+                Column(Modifier.selectableGroup()) {
+                    Text(stringResource(Res.string.train_community_report_body), style = MaterialTheme.typography.bodyMedium)
+                    ModelReportReason.entries.forEach { entry ->
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .selectable(selected = reason == entry, onClick = { reason = entry }, role = Role.RadioButton),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = reason == entry, onClick = null)
+                            Text(stringResource(entry.label), Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { reason?.let(onReport) }, enabled = reason != null) { Text(stringResource(Res.string.train_community_report)) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+        )
+    }
+}
+
+private val ModelReportReason.label: StringResource
+    get() = when (this) {
+        ModelReportReason.OFFENSIVE -> Res.string.train_report_offensive
+        ModelReportReason.PERSONAL_INFORMATION -> Res.string.train_report_personal
+        ModelReportReason.MISLEADING -> Res.string.train_report_misleading
+        ModelReportReason.SPAM -> Res.string.train_report_spam
+        ModelReportReason.OTHER -> Res.string.train_report_other
+    }
+
+/** "12.3": one decimal, without platform number formatting (not on every target). */
+private fun megabytes(bytes: Int): String {
+    val tenths = (bytes / 104_857.6).roundToInt()
+    return "${tenths / 10}.${tenths % 10}"
 }
 
 /** A model in the list: opens it, and a menu to rename or delete it. */
@@ -535,6 +762,11 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                 onClick = { scope.launch { viewModel?.export()?.let { (name, bytes) -> platform.saveFile(name, bytes) } } },
                 modifier = Modifier.weight(1f),
             ) { Text(stringResource(Res.string.train_share)) }
+        }
+        Work(state.work)
+        Button(onClick = { onAction(TrainingAction.ShareWithEveryone) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Public, contentDescription = null)
+            Text(stringResource(Res.string.train_share_everyone), Modifier.padding(start = spacing.sm))
         }
         UnderTheHood(report)
         TextButton(onClick = { confirmDelete = true }) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) }
