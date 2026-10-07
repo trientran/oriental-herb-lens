@@ -1,5 +1,6 @@
 package com.uri.lee.dl.feature.training
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,11 +19,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.ChevronRight
@@ -39,6 +42,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -66,6 +70,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -80,6 +85,7 @@ import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.training.Dataset
@@ -165,6 +171,8 @@ internal fun TrainingScreen(
 private val TrainingMessage.text: StringResource
     get() = when (this) {
         TrainingMessage.SHARED -> Res.string.train_msg_shared
+        TrainingMessage.SHARED_HUGGING_FACE -> Res.string.train_msg_shared_hf
+        TrainingMessage.SHARED_HUGGING_FACE_LATER -> Res.string.train_msg_shared_hf_later
         TrainingMessage.ADDED -> Res.string.train_msg_added
         TrainingMessage.REPORTED -> Res.string.train_msg_reported
         TrainingMessage.HIDDEN -> Res.string.train_msg_hidden
@@ -198,6 +206,7 @@ private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit,
                 confirmButton = { TextButton(onClick = { onAction(TrainingAction.AcceptSharingTerms) }) { Text(stringResource(Res.string.train_share_accept)) } },
                 dismissButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.cancel)) } },
             )
+            SharingStep.Confirm -> ConfirmShareDialog(onDismiss = dismiss) { onAction(TrainingAction.ConfirmShare(it)) }
             is SharingStep.Problem -> AlertDialog(
                 onDismissRequest = dismiss,
                 title = { Text(stringResource(Res.string.train_share_everyone)) },
@@ -206,6 +215,40 @@ private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit,
             )
         }
     }
+}
+
+/** The last step before sharing, with publishing on Hugging Face too (ticked, can be unticked). */
+@Composable
+private fun ConfirmShareDialog(onDismiss: () -> Unit, onShare: (offerToHuggingFace: Boolean) -> Unit) {
+    // On by default (the model is public under CC BY 4.0 either way); the sharer can untick it
+    var huggingFace by remember { mutableStateOf(true) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Filled.Public, contentDescription = null) },
+        title = { Text(stringResource(Res.string.train_share_confirm_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.md)) {
+                Text(stringResource(Res.string.train_share_confirm_body), style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .toggleable(value = huggingFace, role = Role.Checkbox, onValueChange = { huggingFace = it }),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Checkbox(checked = huggingFace, onCheckedChange = null)
+                    Column(Modifier.padding(start = HerbLensTheme.spacing.md)) {
+                        Text(stringResource(Res.string.train_share_hf), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            stringResource(Res.string.train_share_hf_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onShare(huggingFace) }) { Text(stringResource(Res.string.train_share_button)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    )
 }
 
 private val SharingProblem.text: StringResource
@@ -318,6 +361,12 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                     model = model,
                     supporting = stringResource(Res.string.train_model_summary, model.classes.size, status),
                     onOpen = { onAction(TrainingAction.Open(if (model.imported) TrainingScreen.Use(model.id) else TrainingScreen.Edit(model.id))) },
+                    // Only models trained here, not yet shared
+                    onShare = if (model.report != null && model.sharedId == null) {
+                        { onAction(TrainingAction.ShareModel(model.id)) }
+                    } else {
+                        null
+                    },
                     onRename = { renaming = model },
                     onDelete = { deleting = model },
                 )
@@ -339,6 +388,31 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Community)) }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Public, contentDescription = null)
             Text(stringResource(Res.string.train_community), Modifier.padding(start = HerbLensTheme.spacing.sm))
+        }
+    }
+}
+
+/** Asks, on a trained model's results, to share it: others can use it, and it helps the research. */
+@Composable
+private fun ShareInvite(enabled: Boolean, onShare: () -> Unit) {
+    val spacing = HerbLensTheme.spacing
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondaryContainer).padding(spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        Text(
+            stringResource(Res.string.train_share_invite_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        Text(
+            stringResource(Res.string.train_share_invite_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        Button(onClick = onShare, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Public, contentDescription = null)
+            Text(stringResource(Res.string.train_share_everyone), Modifier.padding(start = spacing.sm))
         }
     }
 }
@@ -366,7 +440,8 @@ private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> 
                     Icons.Filled.Psychology,
                     model.name,
                     supporting = pluralStringResource(Res.plurals.train_species_count, model.species.size, model.species.size) + ": " + preview +
-                        " · " + stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)),
+                        " · " + stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)) +
+                        if (model.huggingFace == HuggingFaceStatus.PUBLISHED) " · Hugging Face" else "",
                 ) { onAction(TrainingAction.Open(TrainingScreen.CommunityModel(model.id))) }
             }
         }
@@ -378,6 +453,7 @@ private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> 
 private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (TrainingAction) -> Unit) {
     val model = state.community?.firstOrNull { it.id == id } ?: return LoadingState()
     val spacing = HerbLensTheme.spacing
+    val uriHandler = LocalUriHandler.current
     var reporting by remember { mutableStateOf(false) }
     var hiding by remember { mutableStateOf(false) }
     var removing by remember { mutableStateOf(false) }
@@ -396,8 +472,21 @@ private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (Tr
             Icon(Icons.Filled.Download, contentDescription = null)
             Text(stringResource(Res.string.train_community_add), Modifier.padding(start = spacing.sm))
         }
+        val own = model.uploaderId == state.userId
+        val huggingFaceUrl = model.huggingFaceUrl
+        when {
+            model.huggingFace == HuggingFaceStatus.PUBLISHED && huggingFaceUrl != null ->
+                OutlinedButton(onClick = { uriHandler.openUri(huggingFaceUrl) }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Text(stringResource(Res.string.train_hf_open), Modifier.padding(start = spacing.sm))
+                }
+            own && model.huggingFace == HuggingFaceStatus.REQUESTED ->
+                Text(stringResource(Res.string.train_hf_requested), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            own && model.huggingFace == HuggingFaceStatus.DECLINED ->
+                Text(stringResource(Res.string.train_hf_declined), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         model.species.sortedBy { it.lowercase() }.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        if (model.uploaderId == state.userId) {
+        if (own) {
             OutlinedButton(onClick = { removing = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_community_remove)) }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
@@ -485,7 +574,7 @@ private fun megabytes(bytes: Int): String {
 
 /** A model in the list: opens it, and a menu to rename or delete it. */
 @Composable
-private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, onRename: () -> Unit, onDelete: () -> Unit) {
+private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, onShare: (() -> Unit)?, onRename: () -> Unit, onDelete: () -> Unit) {
     var menu by remember { mutableStateOf(false) }
     ListItem(
         headlineContent = { Text(model.name) },
@@ -497,6 +586,13 @@ private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, o
                 // A popup: kept out of the web page's text selection, like dialogs
                 DialogLayer {
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        onShare?.let { share ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.train_share_everyone)) },
+                                leadingIcon = { Icon(Icons.Filled.Public, contentDescription = null) },
+                                onClick = { menu = false; share() },
+                            )
+                        }
                         DropdownMenuItem(text = { Text(stringResource(Res.string.train_rename)) }, onClick = { menu = false; onRename() })
                         DropdownMenuItem(
                             text = { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) },
@@ -654,6 +750,10 @@ private fun EditScreen(state: TrainingState, onAction: (TrainingAction) -> Unit,
                 Text(stringResource(Res.string.train_try_it))
             }
         }
+        // Trained here (it has results) and not shared yet: the same invitation as on the results
+        if (model.report != null && model.sharedId == null) {
+            ShareInvite(enabled = state.work == null) { onAction(TrainingAction.ShareWithEveryone) }
+        }
     }
     if (adding) AddSpeciesDialog(onDismiss = { adding = false }) { onAction(TrainingAction.AddSpecies(it)); adding = false }
 }
@@ -686,6 +786,14 @@ private fun TrainingProgressScreen(state: TrainingState, onAction: (TrainingActi
             Work(state.work)
         }
         AccuracyChart(state.history)
+        // Planted while they wait: the results screen then offers to share
+        if (state.model?.sharedId == null) {
+            Text(
+                stringResource(Res.string.train_training_share_note),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         OutlinedButton(onClick = { onAction(TrainingAction.StopTraining) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_stop)) }
     }
 }
@@ -764,9 +872,13 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
             ) { Text(stringResource(Res.string.train_share)) }
         }
         Work(state.work)
-        Button(onClick = { onAction(TrainingAction.ShareWithEveryone) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Public, contentDescription = null)
-            Text(stringResource(Res.string.train_share_everyone), Modifier.padding(start = spacing.sm))
+        if (model.sharedId == null) {
+            ShareInvite(enabled = state.work == null) { onAction(TrainingAction.ShareWithEveryone) }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                Icon(Icons.Filled.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(stringResource(Res.string.train_shared_already), style = MaterialTheme.typography.bodyMedium)
+            }
         }
         UnderTheHood(report)
         TextButton(onClick = { confirmDelete = true }) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) }

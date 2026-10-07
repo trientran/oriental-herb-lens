@@ -33,6 +33,9 @@ data class SharedModelRecord(
     val size: Int,
     val uploaderId: String,
     val license: String,
+    /** "none" or "requested" when shared; the administrator sets "published" (with [huggingFaceUrl]) or "declined". */
+    val huggingFace: String = "none",
+    val huggingFaceUrl: String? = null,
 )
 
 /** Favourites and history as earlier versions stored them on `users/{uid}`, oldest first. */
@@ -91,7 +94,10 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     /** Lists a model the Worker stored; the rules check it's the user's own and well formed. */
     suspend fun addSharedModel(record: SharedModelRecord) {
         db.collection(SHARED_MODELS).document(record.id).set(
-            SharedModelDocument(record.name, record.species, record.backbone, record.trainable, record.url, record.size, record.uploaderId, record.license),
+            SharedModelDocument(
+                record.name, record.species, record.backbone, record.trainable, record.url, record.size,
+                record.uploaderId, record.license, record.huggingFace,
+            ),
         )
     }
 
@@ -138,6 +144,7 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         val size: Int,
         val uploaderId: String,
         val license: String,
+        val huggingFace: String,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )
 
@@ -161,6 +168,8 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         size = runCatching { get<Long>("size").toInt() }.getOrElse { get<Double>("size").toInt() },
         uploaderId = get<String>("uploaderId"),
         license = get<String?>("license").orEmpty(),
+        huggingFace = runCatching { get<String?>("huggingFace") }.getOrNull() ?: "none",
+        huggingFaceUrl = runCatching { get<String?>("huggingFaceUrl") }.getOrNull(),
     )
 
     @Serializable

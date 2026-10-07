@@ -143,7 +143,8 @@ test('contributors share models as themselves; anyone browses; only the uploader
   await assertFails(setDoc(ref('carol'), model('carol', { license: 'proprietary' })));
   await assertFails(setDoc(ref('carol'), model('carol', { extra: 1 })));
   await assertFails(setDoc(doc(as('carol'), 'sharedModels/not-a-uuid'), model('carol')));
-  await assertSucceeds(setDoc(ref('carol'), model('carol')));
+  await assertFails(setDoc(ref('carol'), model('carol', { huggingFace: 'published' })));
+  await assertSucceeds(setDoc(ref('carol'), model('carol', { huggingFace: 'requested' })));
 
   await assertSucceeds(getDoc(ref(null)));
   await assertSucceeds(getDocs(collection(as(null), 'sharedModels')));

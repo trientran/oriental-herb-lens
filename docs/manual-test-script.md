@@ -150,6 +150,11 @@ Upload photos you took yourself.
    photos.
 5. Firestore console: `sharedModels` and `modelReports` hold the entries; R2 holds
    `models/<id>.tflite` until it's no longer shared.
+6. While training, the screen says the model can be shared; on the results, the invitation shows
+   until the model is shared, then "Shared with everyone".
+7. Share with *Also publish it on Hugging Face (recommended)* left ticked: it says it's shared in
+   the app and on Hugging Face, and the model's page shows *On Hugging Face*, opening the model
+   card. Stop sharing: the Hugging Face repository is gone too.
 
 ## 13. Content update (model and catalog)
 
