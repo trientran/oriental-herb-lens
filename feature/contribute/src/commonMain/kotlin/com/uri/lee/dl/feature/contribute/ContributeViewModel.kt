@@ -14,8 +14,11 @@ import com.uri.lee.dl.domain.moderation.PlantCheck
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SpeciesRepository
-import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
-import com.uri.lee.dl.domain.usecase.SubmitProgress
+import com.uri.lee.dl.domain.upload.PhotoUploadQueue
+import com.uri.lee.dl.domain.upload.SubmitProgress
+import com.uri.lee.dl.domain.upload.UploadScheduler
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -64,13 +67,15 @@ data class ContributeState(
 
 /**
  * Photos of a species, with the place they were taken, uploaded to R2 and listed on the species. The
- * upload runs in the app scope, so it finishes even if the user leaves the screen.
+ * photos are saved first ([PhotoUploadQueue]) and uploaded by the [UploadScheduler], so they get
+ * there even if the user leaves the screen or closes the app; the screen follows the progress.
  */
 class ContributeViewModel(
     herbId: Long,
     catalog: SpeciesRepository,
     auth: AuthRepository,
-    private val submitImages: SubmitImagesUseCase,
+    private val queue: PhotoUploadQueue,
+    private val scheduler: UploadScheduler,
     private val addresses: AddressLine,
     private val appScope: ApplicationScope,
     private val notifier: UploadNotifier,
@@ -138,21 +143,25 @@ class ContributeViewModel(
         val location = state.location?.location ?: return
         setState { copy(phase = UploadPhase.Uploading(0, plantPhotos.size)) }
         notifier.uploadStarted()
+        // Saving the photos must finish even if the screen goes; following them only while it's here
         appScope.launch {
             try {
-                submitImages(state.herbId, state.plantPhotos, location).collect { progress ->
-                    if (progress is SubmitProgress.Finished) {
-                        if (progress.uploaded > 0) analytics.log(AnalyticsEvent.PhotosShared(state.herbId, progress.uploaded))
-                        notifier.uploadFinished(state.herbId, state.speciesName, progress.uploaded, progress.failed)
-                    }
-                    setState {
-                        copy(
-                            phase = when (progress) {
-                                is SubmitProgress.Uploading -> UploadPhase.Uploading(progress.uploaded, progress.total)
-                                is SubmitProgress.Finished -> UploadPhase.Finished(progress.uploaded, progress.failed)
-                            },
-                        )
-                    }
+                val job = queue.enqueue(state.herbId, state.speciesName, state.plantPhotos, location)
+                scheduler.schedule()
+                viewModelScope.launch {
+                    queue.progress.mapNotNull { it[job] }
+                        .transformWhile { emit(it); it !is SubmitProgress.Finished }
+                        .collect { progress ->
+                            setState {
+                                copy(
+                                    phase = when (progress) {
+                                        is SubmitProgress.Uploading -> UploadPhase.Uploading(progress.uploaded, progress.total)
+                                        is SubmitProgress.Finished -> UploadPhase.Finished(progress.uploaded, progress.failed)
+                                    },
+                                )
+                            }
+                            if (progress is SubmitProgress.Finished) queue.acknowledge(job)
+                        }
                 }
             } catch (e: CancellationException) {
                 throw e

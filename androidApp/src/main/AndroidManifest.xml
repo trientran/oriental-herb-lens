@@ -49,6 +49,11 @@
         </activity>
 
         <!-- Research mode: processing an imported dataset on the device (local file processing) -->
+        <!-- WorkManager's foreground service, for saved uploads running as expedited work on Android 11 and older -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
         <service
             android:name=".ResearchService"
             android:exported="false"

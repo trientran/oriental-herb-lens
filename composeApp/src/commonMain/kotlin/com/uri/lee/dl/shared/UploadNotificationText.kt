@@ -2,6 +2,7 @@ package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.notify_upload_done
+import com.uri.lee.dl.core.designsystem.resources.notify_uploading
 import com.uri.lee.dl.core.designsystem.resources.notify_model_share_failed
 import com.uri.lee.dl.core.designsystem.resources.notify_model_share_failed_title
 import com.uri.lee.dl.core.designsystem.resources.notify_model_shared
@@ -33,6 +34,9 @@ suspend fun modelShareNotificationText(modelName: String, shared: Boolean): Noti
     } else {
         NotificationText(getString(Res.string.notify_model_share_failed_title), getString(Res.string.notify_model_share_failed, modelName))
     }
+
+/** Shown while saved uploads run in the background on older Android (WorkManager needs one). */
+suspend fun uploadingNotificationText(): String = getString(Res.string.notify_uploading)
 
 /** The name of Android's notification channel for uploads. */
 suspend fun uploadsChannelName(): String = getString(Res.string.notify_uploads_channel)

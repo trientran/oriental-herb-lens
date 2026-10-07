@@ -201,6 +201,11 @@ hidden layer is a setting and an ablation in the study.
   Worker secret `HF_TOKEN`. If publishing fails, the entry stays `requested`: the hourly moderation
   workflow opens an issue and `tools/moderate.py publish-hf <id>` does it by hand. Stopping sharing,
   or the administrator removing a reported model, deletes the Hugging Face repository too.
+- **Sharing that finishes:** the request is saved first (`ModelShareQueue`, under the app's
+  `uploads/models/`), with the share's id, then run by the `UploadScheduler`: WorkManager on Android
+  (it carries on after the app is swiped away, and waits for a connection), the app's scope on iOS
+  (with background time) and the web, and again at every launch. Each step is safe to repeat. If it
+  can't finish, the screen says it'll be shared when there's a connection; after 8 tries it gives up.
 - **Encouraging sharing:** the training screen mentions that the model can be shared when it's
   done, and a trained model's results show an invitation to share until it is (the model then
   remembers its shared id).

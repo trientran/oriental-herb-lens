@@ -177,3 +177,16 @@ test('only its uploader can remove a shared model', async () => {
   assert.equal((await send(env, { method: 'DELETE', path: `/models/${id}` })).status, 404);
 });
 
+test('a share named by the app can be retried by its sharer, not taken by someone else', async () => {
+  const env = fakeEnv();
+  const id = '7d444840-9dc0-11d1-b245-5ffdce74fad2';
+  const first = await (await send(env, { path: `/models?id=${id}` })).json();
+  const again = await send(env, { path: `/models?id=${id}` });
+
+  assert.equal(first.id, id);
+  assert.equal(again.status, 201);
+  assert.equal(env.stored.size, 1);
+  assert.equal((await send(env, { path: `/models?id=${id}`, sub: 'someone-else' })).status, 409);
+  assert.equal((await send(env, { path: '/models?id=not-a-uuid' })).status, 400);
+});
+

@@ -5,6 +5,7 @@ import com.uri.lee.dl.data.firebase.UserProfileSync
 import com.uri.lee.dl.data.library.LibraryMigration
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -16,8 +17,11 @@ class StartupTasks internal constructor(
     private val profile: UserProfileSync,
     private val settings: SettingsRepository,
     private val usageStatistics: UsageStatisticsSync,
+    private val uploads: UploadScheduler,
 ) {
     fun launchIn(scope: CoroutineScope) {
+        // Uploads saved but not finished last time (the app was closed, or offline)
+        uploads.schedule()
         // Analytics follows the user's choice in Profile
         scope.launch { settings.usageStatistics.collect(usageStatistics::apply) }
         scope.launch {

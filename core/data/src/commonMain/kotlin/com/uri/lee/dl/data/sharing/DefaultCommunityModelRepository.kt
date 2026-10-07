@@ -12,12 +12,13 @@ import com.uri.lee.dl.domain.sharing.CommunityModelRepository
 import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingRules
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.readRawBytes
@@ -63,6 +64,7 @@ internal class DefaultCommunityModelRepository(
         }
 
     override suspend fun share(
+        id: String,
         name: String,
         species: List<String>,
         backbone: String,
@@ -75,6 +77,7 @@ internal class DefaultCommunityModelRepository(
         val token = auth.idToken() ?: throw NotSignedInException()
         val response = sendWithinRateLimit {
             client.post("${workerUrl.trimEnd('/')}/models") {
+                parameter("id", id)
                 bearerAuth(token)
                 contentType(ContentType.Application.OctetStream)
                 setBody(file)
@@ -87,7 +90,8 @@ internal class DefaultCommunityModelRepository(
             huggingFace = if (offerToHuggingFace) "requested" else "none",
         )
         try {
-            firestore.addSharedModel(record)
+            // Listed by an earlier try that didn't get to finish: keep that entry (the rules don't allow rewriting it)
+            if (!firestore.sharedModelExists(record.id)) firestore.addSharedModel(record)
         } catch (e: Exception) {
             // Not listed: don't leave the file behind
             if (e !is CancellationException) runCatching { deleteFile(uploaded.id, token) }

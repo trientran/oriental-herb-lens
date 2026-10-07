@@ -2,7 +2,7 @@ package com.uri.lee.dl.data.upload
 
 import com.uri.lee.dl.domain.media.ImageHost
 import com.uri.lee.dl.domain.repository.AuthRepository
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth

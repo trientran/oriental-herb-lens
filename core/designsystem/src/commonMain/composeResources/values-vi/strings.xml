@@ -180,6 +180,7 @@
     <string name="contribute_done">Xong</string>
     <string name="details_photo_map">Nơi chụp ảnh</string>
     <string name="notify_uploads_channel">Tải ảnh lên</string>
+    <string name="notify_uploading">Đang tải lên…</string>
     <string name="notify_model_shared_title">Đã chia sẻ mô hình</string>
     <string name="notify_model_shared">“%1$s” đã được chia sẻ với mọi người.</string>
     <string name="notify_model_share_failed_title">Chưa chia sẻ được mô hình</string>
@@ -341,6 +342,7 @@
     <string name="train_share_button">Chia sẻ</string>
     <string name="train_msg_shared_hf">Đã chia sẻ, trong ứng dụng và trên Hugging Face.</string>
     <string name="train_msg_shared_hf_later">Đã chia sẻ. Mô hình sẽ sớm có trên Hugging Face.</string>
+    <string name="train_msg_share_later">Mô hình chưa được chia sẻ: sẽ được chia sẻ ngay khi có kết nối, kể cả khi bạn đóng ứng dụng.</string>
     <string name="train_share_invite_title">Giúp người khác nhận dạng những cây này</string>
     <string name="train_share_invite_body">Hãy chia sẻ mô hình với mọi người: người khác có thể thêm vào mô hình của họ, và điều này giúp ích cho nghiên cứu đằng sau ứng dụng. Bạn cũng có thể để mô hình được đăng lên Hugging Face.</string>
     <string name="train_shared_already">Đã chia sẻ với mọi người</string>

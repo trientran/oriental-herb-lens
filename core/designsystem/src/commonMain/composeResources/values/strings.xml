@@ -182,6 +182,7 @@
     <string name="contribute_done">Done</string>
     <string name="details_photo_map">Where photos were taken</string>
     <string name="notify_uploads_channel">Photo uploads</string>
+    <string name="notify_uploading">Uploading…</string>
     <string name="notify_model_shared_title">Model shared</string>
     <string name="notify_model_shared">“%1$s” is shared with everyone.</string>
     <string name="notify_model_share_failed_title">Model not shared</string>
@@ -344,6 +345,7 @@
     <string name="train_share_button">Share</string>
     <string name="train_msg_shared_hf">Shared, in the app and on Hugging Face.</string>
     <string name="train_msg_shared_hf_later">Shared. It’ll be on Hugging Face shortly.</string>
+    <string name="train_msg_share_later">It isn’t shared yet: it will be as soon as there’s a connection, even if you close the app.</string>
     <string name="train_share_invite_title">Help others identify these plants</string>
     <string name="train_share_invite_body">Share your model with everyone: others can add it to their models, and it helps the research behind the app. You can also have it published on Hugging Face.</string>
     <string name="train_shared_already">Shared with everyone</string>

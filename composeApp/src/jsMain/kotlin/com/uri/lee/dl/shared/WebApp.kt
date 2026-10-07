@@ -17,6 +17,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
@@ -77,6 +78,7 @@ fun startWebApp(config: WebConfig) {
             sharedModules(app) + module {
                 single<UploadNotifier> { WebUploadNotifier() }
                 single<AppFiles> { WebAppFiles() }
+                single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
                 if (config.isDebug) single<LocalBackbones> { WebLocalBackbones() }
             },
         )

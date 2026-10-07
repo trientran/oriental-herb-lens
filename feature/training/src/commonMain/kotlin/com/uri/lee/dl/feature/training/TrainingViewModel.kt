@@ -20,6 +20,7 @@ import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.core.common.ApplicationScope
 import com.uri.lee.dl.domain.notification.UploadNotifier
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
@@ -76,7 +77,7 @@ sealed interface SharingStep {
 }
 
 /** Something done, said once. */
-enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, SHARED_HUGGING_FACE_LATER, ADDED, REPORTED, HIDDEN, REMOVED }
+enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, SHARED_HUGGING_FACE_LATER, SHARE_LATER, ADDED, REPORTED, HIDDEN, REMOVED }
 
 data class TrainingState(
     val screen: TrainingScreen = TrainingScreen.Models,
@@ -155,6 +156,8 @@ class TrainingViewModel(
     private val settings: SettingsRepository,
     private val appScope: ApplicationScope,
     private val notifier: UploadNotifier,
+    private val shareQueue: ModelShareQueue,
+    private val scheduler: UploadScheduler,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<TrainingState, TrainingAction>(TrainingState()) {
 
@@ -167,6 +170,7 @@ class TrainingViewModel(
 
     init {
         refresh()
+        followShares()
         auth.observeUserId()
             .onEach { setState { copy(userId = it) } }
             .catch { log.w(it) { "Sign-in state unavailable" } }
@@ -265,9 +269,9 @@ class TrainingViewModel(
     }
 
     /**
-     * Runs in the app's scope, not the screen's: sharing carries on when the user leaves the tab or
-     * the app (iOS gives it background time), and a notification says how it ended if the app isn't
-     * on screen. The screen shows the outcome if it's still there.
+     * Saves the request and has it run ([ModelShareQueue], [UploadScheduler]): sharing carries on when
+     * the user leaves the tab or the app, and is retried later if it can't finish (Android's
+     * WorkManager even after the app is swiped away). The screen shows the outcome if it's open.
      */
     private fun upload(offerToHuggingFace: Boolean) {
         val model = currentState.model ?: return
@@ -275,32 +279,51 @@ class TrainingViewModel(
         notifier.uploadStarted()
         appScope.launch {
             try {
-                val file = store.tflite(model.id) ?: error("No model file")
-                // Trained here, so the file carries what's needed to go on learning
-                val shared = community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file, offerToHuggingFace = offerToHuggingFace)
-                val updated = model.copy(sharedId = shared.id)
-                store.save(updated)
-                analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community", huggingFace = offerToHuggingFace))
-                notifier.modelShareFinished(model.name, shared = true)
-                setState {
-                    copy(
-                        work = null,
-                        model = if (this.model?.id == model.id) updated else this.model,
-                        message = when {
-                            shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
-                            offerToHuggingFace -> TrainingMessage.SHARED_HUGGING_FACE_LATER
-                            else -> TrainingMessage.SHARED
-                        },
-                    )
-                }
+                shareQueue.enqueue(model.id, offerToHuggingFace)
+                scheduler.schedule()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                log.e(e) { "Sharing failed" }
-                notifier.modelShareFinished(model.name, shared = false)
+                log.e(e) { "Sharing not saved" }
                 setState { copy(work = null, error = TrainingError.SHARE) }
             }
         }
+    }
+
+    /** Shares that ended, here or in the background: says how, and updates the model on screen. */
+    private fun followShares() {
+        shareQueue.progress.onEach { shares ->
+            for ((modelId, progress) in shares) {
+                val onScreen = currentState.model?.id == modelId
+                when (progress) {
+                    ShareProgress.Sharing -> if (onScreen) setState { copy(work = TrainingWork.Uploading) }
+                    ShareProgress.Waiting -> {
+                        setState { copy(work = if (onScreen) null else work, message = TrainingMessage.SHARE_LATER) }
+                        shareQueue.acknowledge(modelId)
+                    }
+                    is ShareProgress.Done -> {
+                        val shared = progress.shared
+                        setState {
+                            copy(
+                                work = if (onScreen) null else work,
+                                model = if (onScreen) model?.copy(sharedId = shared.id) else model,
+                                message = when {
+                                    shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
+                                    shared.huggingFace == HuggingFaceStatus.REQUESTED -> TrainingMessage.SHARED_HUGGING_FACE_LATER
+                                    else -> TrainingMessage.SHARED
+                                },
+                            )
+                        }
+                        shareQueue.acknowledge(modelId)
+                        refresh()
+                    }
+                    ShareProgress.Failed -> {
+                        setState { copy(work = if (onScreen) null else work, error = TrainingError.SHARE) }
+                        shareQueue.acknowledge(modelId)
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun addCommunityModel(id: String) {
