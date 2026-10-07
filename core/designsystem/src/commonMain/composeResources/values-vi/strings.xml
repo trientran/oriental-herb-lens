@@ -180,6 +180,10 @@
     <string name="contribute_done">Xong</string>
     <string name="details_photo_map">Nơi chụp ảnh</string>
     <string name="notify_uploads_channel">Tải ảnh lên</string>
+    <string name="notify_model_shared_title">Đã chia sẻ mô hình</string>
+    <string name="notify_model_shared">“%1$s” đã được chia sẻ với mọi người.</string>
+    <string name="notify_model_share_failed_title">Chưa chia sẻ được mô hình</string>
+    <string name="notify_model_share_failed">Không chia sẻ được “%1$s”. Hãy mở ứng dụng để thử lại.</string>
     <string name="notify_upload_done_title">Đã chia sẻ ảnh</string>
     <plurals name="notify_upload_done">
         <item quantity="other">%1$d ảnh %2$s của bạn đã có trên trang của cây.</item>

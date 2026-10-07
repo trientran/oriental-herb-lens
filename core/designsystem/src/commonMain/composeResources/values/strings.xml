@@ -182,6 +182,10 @@
     <string name="contribute_done">Done</string>
     <string name="details_photo_map">Where photos were taken</string>
     <string name="notify_uploads_channel">Photo uploads</string>
+    <string name="notify_model_shared_title">Model shared</string>
+    <string name="notify_model_shared">“%1$s” is shared with everyone.</string>
+    <string name="notify_model_share_failed_title">Model not shared</string>
+    <string name="notify_model_share_failed">“%1$s” couldn’t be shared. Open the app to try again.</string>
     <string name="notify_upload_done_title">Photos shared</string>
     <plurals name="notify_upload_done">
         <item quantity="one">Your photo of %2$s is now on its page.</item>
