@@ -62,7 +62,7 @@ class CommunitySharingTest : MainDispatcherTest() {
     }
 
     @Test
-    fun `the terms come first, once, then the model is shared`() = runTest {
+    fun `the terms come first and once and then the model is shared`() = runTest {
         val viewModel = opened()
 
         viewModel.onAction(TrainingAction.ShareWithEveryone)
@@ -90,7 +90,7 @@ class CommunitySharingTest : MainDispatcherTest() {
     }
 
     @Test
-    fun `others' models can be reported or their sharer hidden, your own removed`() = runTest {
+    fun `others' models can be reported or their sharer hidden and your own removed`() = runTest {
         community.shared.value = listOf(
             CommunityModel("a", "Weeds", listOf("Lantana", "Mimosa"), "mobilenet_v3_large", true, "https://r2/a", 10, "someone"),
             CommunityModel("b", "Weeds 2", listOf("Lantana", "Mimosa"), "mobilenet_v3_large", true, "https://r2/b", 10, "someone"),

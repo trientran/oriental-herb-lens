@@ -22,14 +22,14 @@ class SharingRulesTest {
     }
 
     @Test
-    fun `contact details are refused, in the name or a species`() {
+    fun `contact details are refused in the name or a species`() {
         assertEquals(SharingProblem.CONTACT_DETAILS, SharingRules.problem("Ask me: me@example.com", species, 1))
         assertEquals(SharingProblem.CONTACT_DETAILS, SharingRules.problem("Herbs", species + "see www.shop.vn", 1))
         assertEquals(SharingProblem.CONTACT_DETAILS, SharingRules.problem("Call 0912 345 678", species, 1))
     }
 
     @Test
-    fun `obvious abuse is refused, but ordinary words that fold to it are not`() {
+    fun `obvious abuse is refused but ordinary words that fold to it are not`() {
         assertEquals(SharingProblem.OFFENSIVE_WORDS, SharingRules.problem("shit plants", species, 1))
         assertEquals(SharingProblem.OFFENSIVE_WORDS, SharingRules.problem("Cây", species + "đéo biết", 1))
         // "các" and "lon" fold to Vietnamese abuse without their diacritics
