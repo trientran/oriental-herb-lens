@@ -1,0 +1,22 @@
+Med Herb Lens
+Copyright (c) 2026 Trien Phat Tran, Fareed Ud Din, Ljiljana Brankovic, Cesar Sanin, and Susan M. Hester
+
+This repository is released under two licences:
+
+1. Source code — everything not listed in 2, including the apps, the shared Kotlin modules,
+   build scripts, the Cloudflare Worker, Firebase rules and tools — is licensed under the
+   Apache License, Version 2.0 (LICENSE).
+
+2. The following are licensed under the Creative Commons Attribution 4.0 International
+   licence (LICENSE-CC-BY-4.0):
+   - the herb identification model (androidApp/assets/herb_model.tflite);
+   - the species catalog as compiled for the app (androidApp/assets/herb_catalog.csv);
+   - documentation and text: README.md, docs/ and website/, and the website's About page
+     made from README.md;
+   - images and screenshots in this repository.
+   Credit it as described in README.md (Research and how to cite).
+
+Third-party material keeps its own terms: GBIF data in the species catalog (its source
+datasets' licences), reference photos shown in the app (each with its creator and licence),
+the MediaPipe image embedders (Apache License 2.0) and the libraries the app uses, each under
+its own licence. Models people share from the app are theirs, shared under CC BY 4.0.

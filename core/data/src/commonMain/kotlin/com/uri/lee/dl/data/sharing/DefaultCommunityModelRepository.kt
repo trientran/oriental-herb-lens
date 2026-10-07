@@ -5,6 +5,7 @@ import com.uri.lee.dl.core.datastore.KeyValueStore
 import com.uri.lee.dl.core.datastore.stringSetKey
 import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.core.firebase.SharedModelRecord
+import com.uri.lee.dl.data.upload.sendWithinRateLimit
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
@@ -57,10 +58,12 @@ internal class DefaultCommunityModelRepository(
         if (workerUrl.isBlank()) throw IOException("PHOTO_UPLOAD_URL isn't configured for this build")
         val uid = auth.currentUserId ?: throw NotSignedInException()
         val token = auth.idToken() ?: throw NotSignedInException()
-        val response = client.post("${workerUrl.trimEnd('/')}/models") {
-            bearerAuth(token)
-            contentType(ContentType.Application.OctetStream)
-            setBody(file)
+        val response = sendWithinRateLimit {
+            client.post("${workerUrl.trimEnd('/')}/models") {
+                bearerAuth(token)
+                contentType(ContentType.Application.OctetStream)
+                setBody(file)
+            }
         }
         if (!response.status.isSuccess()) throw IOException("Model upload failed: HTTP ${response.status.value}")
         val uploaded = response.body<Uploaded>()

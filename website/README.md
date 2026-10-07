@@ -1,7 +1,7 @@
 # Website
 
 The site at `https://med-herb-lens.pages.dev`: this home page, the About page, the privacy policy
-and the terms of service, with the web app (`:webApp`) at `/app/`. The About page (`about.html`)
+and the terms of service, with the web app (`:webApp`) at `/app/`. The About pages (`about.html`, and `about-vi.html` from README.vi.md)
 is made from the repository's README.md at build time (`about.template.html` holds its header and
 footer), so edit the README, not the page; it shows everything above the README's `about:end`
 marker. The home page stays plain HTML: search

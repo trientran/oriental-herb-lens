@@ -9,6 +9,9 @@ object LegalLinks {
 
     /** Made from the repository's README.md when the site is built (webApp: aboutPage). */
     const val ABOUT = "https://med-herb-lens.pages.dev/about.html"
+
+    /** The same in Vietnamese, from README.vi.md. */
+    const val ABOUT_VI = "https://med-herb-lens.pages.dev/about-vi.html"
     const val PRIVACY_POLICY = "https://med-herb-lens.pages.dev/pages/privacy-policy.html"
     const val TERMS_OF_SERVICE = "https://med-herb-lens.pages.dev/pages/terms-of-service.html"
 }
