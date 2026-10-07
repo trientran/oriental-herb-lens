@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -80,7 +81,8 @@ actual fun HerbMap(
         // A map the user moves is framed once; a preview follows its points
         if (framedPoints == null || (!interactive && framedPoints != points)) {
             framedPoints = points
-            val (x, y, z) = frame(points, width / density, height / density)
+            // Where most photos were taken, not every far-off one
+            val (x, y, z) = frame(mainCluster(points), width / density, height / density)
             centerX = x
             centerY = y
             zoom = z
@@ -131,6 +133,9 @@ actual fun HerbMap(
                             contentDescription = null,
                             modifier = Modifier
                                 .offset { IntOffset((tx * tileSize - left).roundToInt(), (ty * tileSize - top).roundToInt()) }
+                                // A tile is usually taller than the map: laid out from its top-left corner, not
+                                // centred in the map's height (which shifted the whole map against the markers)
+                                .wrapContentSize(Alignment.TopStart, unbounded = true)
                                 .requiredSize(tileDp),
                         )
                     }

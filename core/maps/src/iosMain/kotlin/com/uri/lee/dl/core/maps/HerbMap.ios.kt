@@ -14,6 +14,9 @@ import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKCoordinateSpanMake
 import platform.MapKit.MKMapView
+import platform.MapKit.MKFeatureDisplayPriorityRequired
+import platform.MapKit.MKMarkerAnnotationView
+import platform.MapKit.MKAnnotationProtocol
 import kotlin.math.abs
 import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKMapViewDelegateProtocol
@@ -59,12 +62,14 @@ actual fun HerbMap(
             delegate.framed = true
             delegate.framedPoints = points
             if (!frame) return@UIKitView
-            if (points.size > 1) {
+            // Where most photos were taken, not every far-off one
+            val framing = mainCluster(points)
+            if (framing.size > 1) {
                 // Fit them all, with a margin, as Android does
-                val minLat = points.minOf { it.latitude }
-                val maxLat = points.maxOf { it.latitude }
-                val minLon = points.minOf { it.longitude }
-                val maxLon = points.maxOf { it.longitude }
+                val minLat = framing.minOf { it.latitude }
+                val maxLat = framing.maxOf { it.latitude }
+                val minLon = framing.minOf { it.longitude }
+                val maxLon = framing.maxOf { it.longitude }
                 map.setRegion(
                     MKCoordinateRegionMake(
                         CLLocationCoordinate2DMake((minLat + maxLat) / 2, (minLon + maxLon) / 2),
@@ -74,8 +79,8 @@ actual fun HerbMap(
                 )
                 return@UIKitView
             }
-            val center = points.firstOrNull() ?: DefaultCenter
-            val metres = if (points.isEmpty()) 1_500_000.0 else 20_000.0
+            val center = framing.firstOrNull() ?: DefaultCenter
+            val metres = if (framing.isEmpty()) 1_500_000.0 else 20_000.0
             map.setRegion(
                 MKCoordinateRegionMakeWithDistance(CLLocationCoordinate2DMake(center.latitude, center.longitude), metres, metres),
                 animated = false,
@@ -98,6 +103,19 @@ private class MapDelegate : NSObject(), MKMapViewDelegateProtocol {
         mapView.centerCoordinate.useContents { onCenterChanged(LatLng(latitude, longitude)) }
     }
 
+    /**
+     * Every point's marker, always shown: by default MapKit hides markers that overlap (photos taken a
+     * few kilometres apart), showing one for a group, where the other platforms draw them all.
+     */
+    @ObjCSignatureOverride
+    override fun mapView(mapView: MKMapView, viewForAnnotation: MKAnnotationProtocol): MKAnnotationView? {
+        val view = mapView.dequeueReusableAnnotationViewWithIdentifier(PIN) as? MKMarkerAnnotationView
+            ?: MKMarkerAnnotationView(annotation = viewForAnnotation, reuseIdentifier = PIN)
+        view.annotation = viewForAnnotation
+        view.displayPriority = MKFeatureDisplayPriorityRequired
+        return view
+    }
+
     /** A marker was tapped: which point it is, then unselected so the next tap reports again. */
     @ObjCSignatureOverride
     override fun mapView(mapView: MKMapView, didSelectAnnotationView: MKAnnotationView) {
@@ -109,3 +127,5 @@ private class MapDelegate : NSObject(), MKMapViewDelegateProtocol {
         if (index >= 0) onPointClick(index)
     }
 }
+
+private const val PIN = "pin"

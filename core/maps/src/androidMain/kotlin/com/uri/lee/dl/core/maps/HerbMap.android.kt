@@ -83,17 +83,20 @@ actual fun HerbMap(
             state.framed = true
             state.framedPoints = points
             if (!frame) return@AndroidView
-            val geo = points.map { Point.fromLngLat(it.longitude, it.latitude) }
-            when (geo.size) {
-                0 -> map.mapboxMap.setCamera(
-                    CameraOptions.Builder().center(Point.fromLngLat(DefaultCenter.longitude, DefaultCenter.latitude)).zoom(DEFAULT_ZOOM).build(),
-                )
-                1 -> map.mapboxMap.setCamera(CameraOptions.Builder().center(geo.single()).zoom(SINGLE_POINT_ZOOM).build())
-                // Fitting points needs the map's size, which it doesn't have before its first layout: this
-                // form waits for it (the immediate one gave the whole globe, zoom 0)
-                else -> map.mapboxMap.cameraForCoordinates(
-                    geo, CameraOptions.Builder().build(), EdgeInsets(64.0, 64.0, 64.0, 64.0), SINGLE_POINT_ZOOM, null,
-                ) { camera -> map.mapboxMap.setCamera(camera) }
+            val geo = mainCluster(points).map { Point.fromLngLat(it.longitude, it.latitude) }
+            // After the style has loaded: loading it applies the style's own camera (the whole globe),
+            // which would replace one set earlier
+            map.mapboxMap.getStyle {
+                when (geo.size) {
+                    0 -> map.mapboxMap.setCamera(
+                        CameraOptions.Builder().center(Point.fromLngLat(DefaultCenter.longitude, DefaultCenter.latitude)).zoom(DEFAULT_ZOOM).build(),
+                    )
+                    1 -> map.mapboxMap.setCamera(CameraOptions.Builder().center(geo.single()).zoom(SINGLE_POINT_ZOOM).build())
+                    // Fitting points also needs the map's size: this form waits for it
+                    else -> map.mapboxMap.cameraForCoordinates(
+                        geo, CameraOptions.Builder().build(), EdgeInsets(64.0, 64.0, 64.0, 64.0), SINGLE_POINT_ZOOM, null,
+                    ) { camera -> map.mapboxMap.setCamera(camera) }
+                }
             }
         },
     )
