@@ -18,6 +18,8 @@ import kotlin.random.Random
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
@@ -151,6 +153,8 @@ class TrainingViewModel(
     private val community: CommunityModelRepository,
     private val auth: AuthRepository,
     private val settings: SettingsRepository,
+    private val appScope: ApplicationScope,
+    private val notifier: UploadNotifier,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<TrainingState, TrainingAction>(TrainingState()) {
 
@@ -260,26 +264,41 @@ class TrainingViewModel(
         }
     }
 
+    /**
+     * Runs in the app's scope, not the screen's: sharing carries on when the user leaves the tab or
+     * the app (iOS gives it background time), and a notification says how it ended if the app isn't
+     * on screen. The screen shows the outcome if it's still there.
+     */
     private fun upload(offerToHuggingFace: Boolean) {
         val model = currentState.model ?: return
-        setState { copy(sharing = null) }
-        launchWork(TrainingError.SHARE) {
-            val file = store.tflite(model.id) ?: error("No model file")
-            setState { copy(work = TrainingWork.Uploading) }
-            // Trained here, so the file carries what's needed to go on learning
-            val shared = community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file, offerToHuggingFace = offerToHuggingFace)
-            val updated = model.copy(sharedId = shared.id)
-            store.save(updated)
-            analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community", huggingFace = offerToHuggingFace))
-            setState {
-                copy(
-                    model = if (this.model?.id == model.id) updated else this.model,
-                    message = when {
-                        shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
-                        offerToHuggingFace -> TrainingMessage.SHARED_HUGGING_FACE_LATER
-                        else -> TrainingMessage.SHARED
-                    },
-                )
+        setState { copy(sharing = null, work = TrainingWork.Uploading) }
+        notifier.uploadStarted()
+        appScope.launch {
+            try {
+                val file = store.tflite(model.id) ?: error("No model file")
+                // Trained here, so the file carries what's needed to go on learning
+                val shared = community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file, offerToHuggingFace = offerToHuggingFace)
+                val updated = model.copy(sharedId = shared.id)
+                store.save(updated)
+                analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community", huggingFace = offerToHuggingFace))
+                notifier.modelShareFinished(model.name, shared = true)
+                setState {
+                    copy(
+                        work = null,
+                        model = if (this.model?.id == model.id) updated else this.model,
+                        message = when {
+                            shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
+                            offerToHuggingFace -> TrainingMessage.SHARED_HUGGING_FACE_LATER
+                            else -> TrainingMessage.SHARED
+                        },
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.e(e) { "Sharing failed" }
+                notifier.modelShareFinished(model.name, shared = false)
+                setState { copy(work = null, error = TrainingError.SHARE) }
             }
         }
     }

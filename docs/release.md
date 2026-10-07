@@ -44,7 +44,12 @@ ready meanwhile; the secrets are set.
 6. **Web:** the same workflow publishes the site (choose `all` or `web`). Check
    `https://med-herb-lens.pages.dev` links to the app and that `/app/` loads, signs in and
    identifies a photo.
-7. **Google Analytics:** data retention 14 months, Google signals off.
+7. **Google Analytics:** data retention 14 months, Google signals off; turn on the BigQuery export
+   to keep the raw data longer.
+8. **Google Play Data safety:** match the App Privacy table below (shared models are user content,
+   shared publicly).
+9. **Console safety nets:** a Google Cloud budget alert; API keys restricted to the apps and the
+   website (docs/security.md, section 8).
 
 ## Running a release
 
@@ -164,14 +169,18 @@ Paste into App Store Connect → the version → App Review Information → Note
 
 > Med Herb Lens identifies medicinal herbs with an on-device model; browsing and identification
 > need no account. Signing in (Google or Sign in with Apple) is only needed to share photos or
-> suggest names.
+> models, report, or suggest names.
 >
 > Account deletion: Profile → Delete account (the user signs in again to confirm).
 >
 > User-generated content (guideline 1.2): photos are checked on the device and only uploaded
 > if a plant is found; any shared photo can be reported or its contributor hidden (open a photo
 > on a species page → ⋮); reports reach the administrator within the hour and are acted on
-> within 24 hours; offending photos are removed and their uploaders banned. Users must be 18+.
+> within 24 hours; offending photos are removed and their uploaders banned. The same applies to
+> image classifiers users train and share (Train tab → a trained model → Share with everyone): names
+> are checked on the device and the server before sharing; any shared model can be reported or its
+> sharer hidden (Train → Models shared by others → a model); reported models are removed within
+> 24 hours, together with their public copy on Hugging Face. Users must be 18+.
 
 ## App Store privacy answers (App Store Connect → App Privacy)
 
@@ -185,7 +194,7 @@ Keep these in step with the app; they can be edited at any time. Tracking: **No*
 | Identifiers → User ID | Yes | App Functionality |
 | User Content → Photos or Videos | Yes | App Functionality, Other Purposes (research, model training) |
 | Location → Precise Location (place of each shared photo) | Yes | App Functionality, Other Purposes (research) |
-| User Content → Other User Content (name suggestions, photo reports) | Yes | App Functionality |
+| User Content → Other User Content (name suggestions, reports, shared models) | Yes | App Functionality, Other Purposes (research) |
 | Identifiers → Device ID (Analytics app instance ID) | No | Analytics |
 | Usage Data → Product Interaction | No | Analytics |
 | Location → Coarse Location (Analytics, from the IP address) | No | Analytics |

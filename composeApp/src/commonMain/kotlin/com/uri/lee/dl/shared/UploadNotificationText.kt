@@ -2,6 +2,10 @@ package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.notify_upload_done
+import com.uri.lee.dl.core.designsystem.resources.notify_model_share_failed
+import com.uri.lee.dl.core.designsystem.resources.notify_model_share_failed_title
+import com.uri.lee.dl.core.designsystem.resources.notify_model_shared
+import com.uri.lee.dl.core.designsystem.resources.notify_model_shared_title
 import com.uri.lee.dl.core.designsystem.resources.notify_upload_done_title
 import com.uri.lee.dl.core.designsystem.resources.notify_upload_failed
 import com.uri.lee.dl.core.designsystem.resources.notify_upload_failed_title
@@ -21,6 +25,14 @@ suspend fun uploadNotificationText(speciesId: Long, speciesName: String?, upload
         NotificationText(getString(Res.string.notify_upload_failed_title), getString(Res.string.notify_upload_failed, name))
     }
 }
+
+/** The notification when sharing a model ends while the app is in the background. */
+suspend fun modelShareNotificationText(modelName: String, shared: Boolean): NotificationText =
+    if (shared) {
+        NotificationText(getString(Res.string.notify_model_shared_title), getString(Res.string.notify_model_shared, modelName))
+    } else {
+        NotificationText(getString(Res.string.notify_model_share_failed_title), getString(Res.string.notify_model_share_failed, modelName))
+    }
 
 /** The name of Android's notification channel for uploads. */
 suspend fun uploadsChannelName(): String = getString(Res.string.notify_uploads_channel)
