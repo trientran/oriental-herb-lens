@@ -1,4 +1,4 @@
-# Every hour, opens a GitHub issue for each photo reported in the app, so the admin gets an
+# Every hour, opens a GitHub issue for each photo or shared model reported in the app, so the admin gets an
 # email and can act within 24 hours (App Store guideline 1.2), and one for each Vietnamese name
 # suggestion. Act with tools/moderate.py.
 # Needs the FIREBASE_SERVICE_ACCOUNT_JSON secret (docs/release.md).

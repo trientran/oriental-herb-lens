@@ -31,11 +31,13 @@ internal class R2PhotoHost(
     override suspend fun upload(speciesId: Long, jpeg: ByteArray): String {
         if (workerUrl.isBlank()) throw IOException("PHOTO_UPLOAD_URL isn't configured for this build")
         val token = auth.idToken() ?: throw NotSignedInException()
-        val response = client.post("${workerUrl.trimEnd('/')}/photos") {
-            parameter("speciesKey", speciesId)
-            bearerAuth(token)
-            contentType(ContentType.Image.JPEG)
-            setBody(jpeg)
+        val response = sendWithinRateLimit {
+            client.post("${workerUrl.trimEnd('/')}/photos") {
+                parameter("speciesKey", speciesId)
+                bearerAuth(token)
+                contentType(ContentType.Image.JPEG)
+                setBody(jpeg)
+            }
         }
         if (!response.status.isSuccess()) throw IOException("Photo upload failed: HTTP ${response.status.value}")
         return response.body<Uploaded>().url

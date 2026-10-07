@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.component.SectionCard
@@ -130,7 +131,9 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
                 // The address too: without a mail app set up, a mailto link does nothing
                 LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAIL) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
-                LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(ABOUT_URL) }
+                // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
+                val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
+                LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(about) }
                 LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
                 actions.debugTools.forEach { (name, run) -> LinkRow(Icons.Filled.Build, name, onClick = run) }
             }
@@ -263,5 +266,4 @@ private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null
 }
 
 private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private const val ABOUT_URL = LegalLinks.ABOUT
 private const val CONTACT_EMAIL = "tptrien@gmail.com"

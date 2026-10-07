@@ -1,5 +1,7 @@
 # Med Herb Lens
 
+English · [Tiếng Việt](README.vi.md)
+
 Identify medicinal herbs with your phone's camera, browse 4,799 plant species with their Vietnamese
 and English names, and train image classifiers of your own, all on your device. Med Herb Lens runs
 on Android, iOS and the web.
@@ -30,7 +32,8 @@ on Android, iOS and the web.
 - **Train your own model.** Collect photos of the plants you care about, train a classifier on the
   device and try it with the camera. Share it as a standard `.tflite` file that carries its own
   species list, so it works in any app that runs TensorFlow Lite models; imported into Med Herb
-  Lens on another device, it can go on learning there.
+  Lens on another device, it can go on learning there. You can also share a model with everyone
+  in the app.
 - **Research mode.** Run continual-learning experiments on the device: choose a dataset, scenarios,
   strategies and seeds, leave the device running (even with the screen off), then save one archive
   with every result, the device's measurements and the trained models.
@@ -72,19 +75,20 @@ edge-deployed agricultural IoT applications. *IoT*, 7(3), 57.
 
 ## License
 
-Med Herb Lens is released under the
-[Creative Commons Attribution 4.0 International licence (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/):
-you may share and adapt it for any purpose, as long as you give appropriate credit (see *Research
-and how to cite*), link to the licence and say what you changed.
+The code is licensed under the [Apache License 2.0](LICENSE). The herb identification model, the
+species catalog as compiled for the app, the documentation and website text, and images are
+licensed under the [Creative Commons Attribution 4.0 International licence (CC BY 4.0)](LICENSE-CC-BY-4.0):
+you may share and adapt them for any purpose, as long as you give credit (see *Research and how to
+cite*). [NOTICE](NOTICE) says which is which.
 
-This covers the app's own work. Others' work it includes keeps its own terms: the catalog draws on
-GBIF data, reference photos remain their creators' (each shown with its licence, many for
-non-commercial use only), the MediaPipe embedders are under Apache 2.0, and each library under
-its own licence.
+Others' work the app includes keeps its own terms: the catalog draws on GBIF data, reference
+photos remain their creators' (each shown with its licence, many for non-commercial use only),
+the MediaPipe embedders are under Apache 2.0, and each library under its own licence. Models
+people share in the app are theirs, shared under CC BY 4.0.
 
 ## Contact
 
-Trien P. Tran, University of New England:
+Trien Phat Tran, University of New England:
 [ttran72@myune.edu.au](mailto:ttran72@myune.edu.au) or [tptrien@gmail.com](mailto:tptrien@gmail.com)
 
 <!-- about:end (the website's About page shows everything above this line) -->
@@ -107,5 +111,5 @@ Secrets aren't in the repository: `local.properties`, `google-services.json`,
 `GoogleService-Info.plist` and `Secrets.xcconfig` come from the project's maintainers.
 
 More in `docs/`: the [release steps](docs/release.md), [publishing the herb model and catalog](docs/content-publishing.md),
-[user-trained models and Research mode](docs/user-trained-models.md) and the
-[manual test script](docs/manual-test-script.md).
+[user-trained models and Research mode](docs/user-trained-models.md), the
+[security and privacy measures](docs/security.md) and the [manual test script](docs/manual-test-script.md).

@@ -82,21 +82,56 @@ kotlin {
 
 val REPOSITORY = "https://github.com/trientran/oriental-herb-lens"
 
-// The About page, made from the repository's README so the two can't differ: everything above its
-// "about:end" marker, in the site's header and footer (website/about.template.html). Links to
-// files in the repository point at GitHub.
+// The About pages, made from the repository's READMEs so they can't differ: everything above the
+// "about:end" marker, in the site's header and footer (website/about.template.html); about.html from
+// README.md and about-vi.html from README.vi.md. Links to files in the repository point at GitHub.
+// The build fails if the two READMEs have different sections or links, so neither falls behind.
 val aboutPage by tasks.registering {
-    val readme = rootProject.layout.projectDirectory.file("README.md")
-    val template = rootProject.layout.projectDirectory.file("website/about.template.html")
+    val root = rootProject.layout.projectDirectory
+    val english = root.file("README.md")
+    val vietnamese = root.file("README.vi.md")
+    val template = root.file("website/about.template.html")
     val out = layout.buildDirectory.dir("generated/about")
-    inputs.files(readme, template)
+    inputs.files(english, vietnamese, template)
     outputs.dir(out)
     doLast {
-        val markdown = readme.asFile.readText().substringBefore("<!-- about:end")
-        val body = HtmlRenderer.builder().build().render(Parser.builder().build().parse(markdown))
-            .replace(Regex("href=\"(?!https?:|mailto:|#)([^\"]+)\""), "href=\"$REPOSITORY/blob/master/$1\"")
-        val page = template.asFile.readText().replace("{{content}}", body.trim())
-        out.get().file("about.html").asFile.apply { parentFile.mkdirs() }.writeText(page)
+        fun intro(file: RegularFile) = file.asFile.readText().substringBefore("<!-- about:end")
+        fun sections(markdown: String) = markdown.lines().count { it.startsWith("## ") }
+        fun links(markdown: String) = Regex("""\]\(([^)]+)\)""").findAll(markdown).map { it.groupValues[1] }
+            .filterNot { it.startsWith("README") }.toSortedSet()
+        val en = intro(english)
+        val vi = intro(vietnamese)
+        check(sections(en) == sections(vi) && links(en) == links(vi)) {
+            "README.md and README.vi.md differ above about:end (sections ${sections(en)} vs ${sections(vi)}; " +
+                "links only in one: ${(links(en) - links(vi)) + (links(vi) - links(en))}). Update both."
+        }
+        val parser = Parser.builder().build()
+        val renderer = HtmlRenderer.builder().build()
+        fun page(markdown: String, lang: String, title: String, description: String, footer: String): String {
+            val body = renderer.render(parser.parse(markdown))
+                .replace("href=\"README.vi.md\"", "href=\"about-vi.html\"")
+                .replace("href=\"README.md\"", "href=\"about.html\"")
+                .replace(Regex("href=\"(?!https?:|mailto:|#|about)([^\"]+)\""), "href=\"$REPOSITORY/blob/master/$1\"")
+            return template.asFile.readText()
+                .replace("{{lang}}", lang).replace("{{title}}", title).replace("{{description}}", description)
+                .replace("{{footer}}", footer).replace("{{content}}", body.trim())
+        }
+        val contact = """<a href="mailto:ttran72@myune.edu.au">ttran72@myune.edu.au</a> · <a href="mailto:tptrien@gmail.com">tptrien@gmail.com</a>"""
+        val dir = out.get().asFile.apply { mkdirs() }
+        dir.resolve("about.html").writeText(
+            page(
+                en, "en", "About Med Herb Lens",
+                "Med Herb Lens: identify medicinal herbs with your camera, browse 4,799 species and train your own models, on Android, iOS and the web. A research project.",
+                """<a href="about-vi.html">Tiếng Việt</a> · <a href="pages/privacy-policy.html">Privacy Policy</a> · <a href="pages/terms-of-service.html">Terms of Service</a> · Contact: $contact""",
+            ),
+        )
+        dir.resolve("about-vi.html").writeText(
+            page(
+                vi, "vi", "Giới thiệu Med Herb Lens",
+                "Med Herb Lens: nhận dạng cây thuốc bằng camera, tra cứu 4.799 loài và tự huấn luyện mô hình, trên Android, iOS và web. Một dự án nghiên cứu.",
+                """<a href="about.html">English</a> · <a href="pages/privacy-policy.html">Chính sách quyền riêng tư</a> · <a href="pages/terms-of-service.html">Điều khoản dịch vụ</a> (tiếng Anh) · Liên hệ: $contact""",
+            ),
+        )
     }
 }
 
