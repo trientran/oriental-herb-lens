@@ -20,6 +20,8 @@ expect fun HerbMap(
     onCenterChanged: ((LatLng) -> Unit)? = null,
     /** False frames [points] without drawing them, e.g. to start a place picker where it was. */
     showMarkers: Boolean = true,
+    /** A marker was tapped: its index in [points]. Works on a map that isn't [interactive] too. */
+    onPointClick: ((Int) -> Unit)? = null,
 )
 
 /** Shown when there are no points: Vietnam. */

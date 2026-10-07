@@ -7,6 +7,7 @@ import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.domain.location.AddressLine
 import com.uri.lee.dl.domain.media.LocalImage
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.NamePreference
@@ -180,7 +181,3 @@ class ContributeViewModel(
     }
 }
 
-/** Reverse geocoding, injected so the feature doesn't depend on core:location. */
-fun interface AddressLine {
-    suspend operator fun invoke(location: GeoLocation): String?
-}

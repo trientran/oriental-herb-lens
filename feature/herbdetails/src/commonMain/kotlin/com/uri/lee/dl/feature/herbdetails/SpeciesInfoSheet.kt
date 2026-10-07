@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -51,7 +52,9 @@ import org.jetbrains.compose.resources.stringResource
 internal fun SpeciesInfoSheet(species: Species, onOpenGbif: () -> Unit, onDismiss: () -> Unit) {
     DialogLayer {
         ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-            SpeciesInfoContent(species, onOpenGbif)
+            // Its own selection, inside the dialog layer (the app's doesn't reach into dialogs), so the
+            // names and references can be copied
+            SelectionContainer { SpeciesInfoContent(species, onOpenGbif) }
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -73,6 +75,7 @@ import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_add_favorite
 import com.uri.lee.dl.core.designsystem.resources.cd_back
+import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.cd_photo
 import com.uri.lee.dl.core.designsystem.resources.cd_remove_favorite
 import com.uri.lee.dl.core.designsystem.resources.details_add_photos
@@ -81,11 +84,14 @@ import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
 import com.uri.lee.dl.core.designsystem.resources.details_full
 import com.uri.lee.dl.core.designsystem.resources.details_genus
+import com.uri.lee.dl.core.designsystem.resources.details_map_hint
 import com.uri.lee.dl.core.designsystem.resources.details_names
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
 import com.uri.lee.dl.core.designsystem.resources.details_photo_map
 import com.uri.lee.dl.core.designsystem.resources.details_photos_loading
+import com.uri.lee.dl.core.designsystem.resources.details_place_photo
+import com.uri.lee.dl.core.designsystem.resources.details_place_photos
 import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
 import com.uri.lee.dl.core.designsystem.resources.details_vietnamese_names
 import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
@@ -98,8 +104,10 @@ import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.core.maps.HerbMap
 import com.uri.lee.dl.core.maps.LatLng
+import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -229,7 +237,7 @@ fun HerbDetailsScreen(
                 )
                 state.notFound -> EmptyState(Icons.Filled.SearchOff, stringResource(Res.string.details_not_found))
                 species == null -> LoadingState()
-                else -> DetailsContent(species, state.photos, state.photosLoading, onAction, onAddPhotos, onSuggestName)
+                else -> DetailsContent(species, state.photos, state.photosLoading, state.place, onAction, onAddPhotos, onSuggestName)
             }
         }
     }
@@ -240,6 +248,7 @@ private fun DetailsContent(
     species: Species,
     photos: List<SpeciesPhoto>,
     photosLoading: Boolean,
+    place: SelectedPlace?,
     onAction: (HerbDetailsAction) -> Unit,
     onAddPhotos: (() -> Unit)?,
     onSuggestName: () -> Unit,
@@ -308,7 +317,23 @@ private fun DetailsContent(
         if (photoPlaces.isNotEmpty()) {
             item("map") {
                 SectionCard(stringResource(Res.string.details_photo_map)) {
-                    HerbMap(photoPlaces, Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium))
+                    HerbMap(
+                        photoPlaces,
+                        Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium),
+                        onPointClick = { index ->
+                            val point = photoPlaces[index]
+                            onAction(HerbDetailsAction.SelectPlace(GeoLocation(point.latitude, point.longitude)))
+                        },
+                    )
+                    if (place != null) {
+                        PlaceCard(place, photos, onOpen = { onAction(HerbDetailsAction.ViewPhoto(it)) }, onClose = { onAction(HerbDetailsAction.SelectPlace(null)) })
+                    } else {
+                        Text(
+                            stringResource(Res.string.details_map_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
@@ -324,6 +349,48 @@ private fun DetailsContent(
             }
         }
     }
+}
+
+/** A pin's photos and address; tapping it opens the first of its photos. */
+@Composable
+private fun PlaceCard(place: SelectedPlace, photos: List<SpeciesPhoto>, onOpen: (Int) -> Unit, onClose: () -> Unit) {
+    val spacing = HerbLensTheme.spacing
+    val here = photos.withIndex().filter { (_, photo) -> photo.location == place.location }
+    val first = here.firstOrNull() ?: return
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable { onOpen(first.index) }
+            .padding(spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        RemoteImage(
+            first.value.thumbnailUrl,
+            stringResource(Res.string.details_place_photo),
+            Modifier.size(64.dp).clip(MaterialTheme.shapes.small),
+        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                place.address ?: formatCoordinates(place.location),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                pluralStringResource(Res.plurals.details_place_photos, here.size, here.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = onClose) { Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close)) }
+    }
+}
+
+/** "10.7769, 106.7009": a place without an address yet. */
+private fun formatCoordinates(location: GeoLocation): String {
+    fun four(value: Double) = (kotlin.math.round(value * 10_000) / 10_000).toString()
+    return "${four(location.latitude)}, ${four(location.longitude)}"
 }
 
 @Composable
