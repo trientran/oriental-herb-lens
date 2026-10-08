@@ -103,7 +103,9 @@
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Identifying…</string>
     <string name="scan_notice_title">A research preview</string>
-    <string name="scan_notice_body">Med Herb Lens is a research project. It identifies herbs with our own model, trained by our team and running on your device; no other company’s identification service is involved.\n\nWe don’t have enough photos yet to train it well for most herbs, so results are often wrong. Treat a result as a lead to check, not an answer.\n\nNever eat a plant or use it as medicine because of what the app says. Ask a qualified expert first.\n\nYou can help it improve: add your own photos on a herb’s page.</string>
+    <string name="scan_notice_body">Med Herb Lens is a research project. It identifies herbs with our own model, trained by our team and running on your device; no other company’s identification service is involved.\n\nWe don’t have enough photos yet to train it well for most herbs, so results are often wrong. Treat a result as a lead to check, not an answer.\n\nNever eat a plant or use it as medicine because of what the app says. Ask a qualified expert first.</string>
+    <string name="scan_notice_help">You can help it improve: add your own photos on a herb’s page.</string>
+    <string name="scan_notice_help_in_apps">You can help it improve: share photos of herbs from the Med Herb Lens app on Android or iPhone.</string>
     <string name="scan_notice_ok">I understand</string>
     <string name="scan_notice_line">Research preview: results are often wrong.</string>
     <string name="scan_notice_more">Learn more</string>

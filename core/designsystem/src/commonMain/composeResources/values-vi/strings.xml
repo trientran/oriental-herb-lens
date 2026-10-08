@@ -103,7 +103,9 @@
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Đang nhận dạng…</string>
     <string name="scan_notice_title">Bản thử nghiệm nghiên cứu</string>
-    <string name="scan_notice_body">Med Herb Lens là một dự án nghiên cứu. Ứng dụng nhận dạng thảo dược bằng mô hình do nhóm chúng tôi tự huấn luyện, chạy ngay trên thiết bị của bạn; không dùng dịch vụ nhận dạng của bất kỳ công ty nào khác.\n\nChúng tôi chưa có đủ ảnh để huấn luyện tốt cho phần lớn các loài, nên kết quả thường bị sai. Hãy xem kết quả là gợi ý để kiểm tra lại, không phải câu trả lời.\n\nTuyệt đối không ăn hoặc dùng cây làm thuốc chỉ dựa vào kết quả của ứng dụng. Hãy hỏi ý kiến chuyên gia trước.\n\nBạn có thể giúp mô hình tốt hơn: thêm ảnh của bạn ở trang của từng loài thảo dược.</string>
+    <string name="scan_notice_body">Med Herb Lens là một dự án nghiên cứu. Ứng dụng nhận dạng thảo dược bằng mô hình do nhóm chúng tôi tự huấn luyện, chạy ngay trên thiết bị của bạn; không dùng dịch vụ nhận dạng của bất kỳ công ty nào khác.\n\nChúng tôi chưa có đủ ảnh để huấn luyện tốt cho phần lớn các loài, nên kết quả thường bị sai. Hãy xem kết quả là gợi ý để kiểm tra lại, không phải câu trả lời.\n\nTuyệt đối không ăn hoặc dùng cây làm thuốc chỉ dựa vào kết quả của ứng dụng. Hãy hỏi ý kiến chuyên gia trước.</string>
+    <string name="scan_notice_help">Bạn có thể giúp mô hình tốt hơn: thêm ảnh của bạn ở trang của từng loài thảo dược.</string>
+    <string name="scan_notice_help_in_apps">Bạn có thể giúp mô hình tốt hơn: chia sẻ ảnh thảo dược từ ứng dụng Med Herb Lens trên Android hoặc iPhone.</string>
     <string name="scan_notice_ok">Tôi đã hiểu</string>
     <string name="scan_notice_line">Bản thử nghiệm: kết quả thường bị sai.</string>
     <string name="scan_notice_more">Tìm hiểu thêm</string>

@@ -150,7 +150,11 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     ) {
         NavHost(navController, startDestination = BrowseDestination(), modifier = Modifier.fillMaxSize()) {
             composable<IdentifyDestination> {
-                ScanRoute(pickPhotos = actions.pickPhotos, onOpenSpecies = { navController.navigate(SpeciesDestination(it)) })
+                ScanRoute(
+                    pickPhotos = actions.pickPhotos,
+                    onOpenSpecies = { navController.navigate(SpeciesDestination(it)) },
+                    canSharePhotos = actions.sharePhotos,
+                )
             }
             composable<SpeciesDestination> { entry ->
                 HerbDetailsRoute(
