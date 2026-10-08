@@ -99,6 +99,7 @@
     <string name="scan_photo_none">Không nhận ra cây thuốc nào trong ảnh này.</string>
     <string name="scan_photo_none_pick">Không tìm thấy cây riêng lẻ nào trong ảnh này. Hãy thử Toàn cảnh.</string>
     <string name="scan_photo_failed">Không đọc được ảnh này.</string>
+    <string name="scan_identify_failed">Không nhận dạng được ảnh này. Hãy thử lại hoặc chọn ảnh khác.</string>
     <string name="scan_photos">Ảnh</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Đang nhận dạng…</string>
