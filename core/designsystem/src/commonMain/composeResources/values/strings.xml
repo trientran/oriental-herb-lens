@@ -435,5 +435,5 @@
     <string name="train_intro_body">Train makes your own AI model that tells apart plants you choose, learned from your own photos: the herbs in your garden, say, or species the app doesn’t know yet. Training runs on this device.
 
 For now it makes image classification models only: a model that says which of your species a photo shows.</string>
-    <string name="train_intro_steps">Name a model, add each species with its photos, train it, then try it with the camera.</string>
+    <string name="train_intro_steps">Name a model, add each category with its photos, train it, then try it with the camera.</string>
 </resources>
