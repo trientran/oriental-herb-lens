@@ -40,11 +40,32 @@ internal fun newCanvas(width: Int, height: Int): HTMLCanvasElement =
 internal val HTMLCanvasElement.context2d: CanvasRenderingContext2D
     get() = getContext("2d", json("willReadFrequently" to true)) as CanvasRenderingContext2D
 
-/** Draws [source] (an image, video or canvas) onto a new canvas of the given size. */
+/** Draws [source] (an image, video or canvas) onto a new canvas of the given size, smoothed as well as the browser can. */
 internal fun drawn(source: dynamic, sx: Double, sy: Double, sw: Double, sh: Double, width: Int, height: Int): HTMLCanvasElement {
     val canvas = newCanvas(width, height)
-    canvas.context2d.asDynamic().drawImage(source, sx, sy, sw, sh, 0.0, 0.0, width.toDouble(), height.toDouble())
+    val context = canvas.context2d.asDynamic()
+    context.imageSmoothingEnabled = true
+    context.imageSmoothingQuality = "high"
+    context.drawImage(source, sx, sy, sw, sh, 0.0, 0.0, width.toDouble(), height.toDouble())
     return canvas
+}
+
+/**
+ * [source] at [size] × [size], the models' input. A large step down in one draw samples only a
+ * few of the pixels it covers, and browsers do it differently (WebKit, on every iPhone browser,
+ * worst), so fine detail such as leaf veins comes out noisy and results differ by browser. Halving
+ * at a time averages every pixel, close to the phones' resizing.
+ */
+internal fun modelInput(source: HTMLCanvasElement, size: Int): HTMLCanvasElement {
+    var current = source
+    var width = source.width
+    var height = source.height
+    while (width / 2 >= size && height / 2 >= size) {
+        width /= 2
+        height /= 2
+        current = drawn(current, 0.0, 0.0, current.width.toDouble(), current.height.toDouble(), width, height)
+    }
+    return drawn(current, 0.0, 0.0, current.width.toDouble(), current.height.toDouble(), size, size)
 }
 
 /**

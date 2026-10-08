@@ -20,7 +20,7 @@ internal class LiteRtEmbedder(private val model: dynamic) : ImageEmbedder {
 
     override suspend fun embed(image: ClassifierImage): FloatArray = jsErrorsAsExceptions {
         val canvas = (image as WebClassifierImage).canvas
-        val pixels = drawn(canvas, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble(), SIZE, SIZE)
+        val pixels = modelInput(canvas, SIZE)
             .context2d.getImageData(0.0, 0.0, SIZE.toDouble(), SIZE.toDouble()).data
         val input = Float32Array(SIZE * SIZE * 3)
         var j = 0
