@@ -45,6 +45,7 @@
     <string name="details_no_photos">Chưa có ảnh. Hãy là người đầu tiên đóng góp.</string>
     <string name="details_photos_loading">Đang tải ảnh</string>
     <string name="details_add_photos">Thêm ảnh</string>
+    <string name="details_share_in_apps">Để chia sẻ ảnh loài này, hãy dùng ứng dụng Med Herb Lens trên Android hoặc iPhone.</string>
     <string name="details_names">Tên gọi</string>
     <string name="details_vietnamese_names">Tiếng Việt</string>
     <string name="details_english_names">Tiếng Anh</string>
