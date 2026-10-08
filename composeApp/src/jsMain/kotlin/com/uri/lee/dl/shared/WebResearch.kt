@@ -17,7 +17,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.HTMLAnchorElement
-import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.url.URL
 import org.w3c.fetch.Response
 import org.w3c.files.Blob
@@ -70,12 +69,7 @@ internal fun webFileActions() = FileActions(
 /** A .tflite chosen in the browser's file chooser. */
 private suspend fun pickModelFile(): PickedFile? {
     val result = CompletableDeferred<org.w3c.files.File?>()
-    val input = document.createElement("input") as HTMLInputElement
-    input.type = "file"
-    input.accept = ".tflite"
-    input.onchange = { result.complete(input.files?.item(0)) }
-    input.addEventListener("cancel", { result.complete(null) })
-    input.click()
+    chooseFiles({ accept = ".tflite" }) { result.complete(it.firstOrNull()) }
     val file = result.await() ?: return null
     val buffer = file.asDynamic().arrayBuffer().unsafeCast<Promise<org.khronos.webgl.ArrayBuffer>>().await()
     return PickedFile(file.name, Int8Array(buffer).unsafeCast<ByteArray>())
@@ -112,17 +106,11 @@ private suspend fun fetch(url: String, init: dynamic = js("({})")): Response =
 /** A folder chooser: every file inside comes with its path, e.g. "weeds/Lantana camara/001.jpg". */
 private suspend fun pickFolder(): Dataset? {
     val result = CompletableDeferred<Dataset?>()
-    val input = document.createElement("input") as HTMLInputElement
-    input.type = "file"
-    input.asDynamic().webkitdirectory = true
-    input.onchange = {
-        val files = input.files
-        val list = (0 until (files?.length ?: 0)).mapNotNull { files?.item(it) }
-        val name = list.firstOrNull()?.asDynamic()?.webkitRelativePath?.unsafeCast<String>()?.substringBefore('/') ?: "dataset"
-        result.complete(Dataset.fromPaths(name, list.map { (it.asDynamic().webkitRelativePath as String) to WebLocalImage(it) }))
+    chooseFiles({ asDynamic().webkitdirectory = true }) { list ->
+        val paths = list.map { (it.asDynamic().webkitRelativePath as String) to WebLocalImage(it) }
+        val name = paths.firstOrNull()?.first?.substringBefore('/')
+        result.complete(name?.let { Dataset.fromPaths(it, paths) })
     }
-    input.addEventListener("cancel", { result.complete(null) })
-    input.click()
     return result.await()
 }
 
