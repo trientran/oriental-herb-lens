@@ -36,10 +36,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.touchlab.kermit.Logger
+import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.sign_in_apple
 import com.uri.lee.dl.core.designsystem.resources.sign_in_body
+import com.uri.lee.dl.core.designsystem.resources.sign_in_body_no_photos
 import com.uri.lee.dl.core.designsystem.resources.sign_in_error
 import com.uri.lee.dl.core.designsystem.resources.sign_in_window_blocked
 import com.uri.lee.dl.core.designsystem.resources.sign_in_google
@@ -149,7 +151,7 @@ fun SignInScreen(
                 Icon(Icons.Filled.Spa, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
                 Text(stringResource(Res.string.sign_in_title), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
                 Text(
-                    stringResource(Res.string.sign_in_body),
+                    stringResource(if (LocalSharesPhotos.current) Res.string.sign_in_body else Res.string.sign_in_body_no_photos),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

@@ -36,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
+import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -108,7 +109,9 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
 fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val vietnameseFirst = koinInject<NamePreference>().vietnameseFirst()
     HerbLensTheme {
-        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst) { AppContent(actions, openHerbId) }
+        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst, LocalSharesPhotos provides actions.sharePhotos) {
+            AppContent(actions, openHerbId)
+        }
     }
 }
 

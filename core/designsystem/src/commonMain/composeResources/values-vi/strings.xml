@@ -120,6 +120,7 @@
     <!-- Profile -->
     <string name="profile_sign_in">Đăng nhập</string>
     <string name="profile_sign_in_body">Đăng nhập để thêm ảnh và đề xuất tên. Không cần tài khoản để tra cứu.</string>
+    <string name="profile_sign_in_body_no_photos">Đăng nhập để đề xuất tên và chia sẻ mô hình. Không cần tài khoản để tra cứu.</string>
     <string name="profile_signed_in">Đã đăng nhập</string>
     <string name="profile_sign_out">Đăng xuất</string>
     <string name="profile_delete_account">Xoá tài khoản</string>
@@ -148,6 +149,7 @@
     <!-- Sign in -->
     <string name="sign_in_title">Đăng nhập để đóng góp</string>
     <string name="sign_in_body">Không cần tài khoản để tra cứu và nhận dạng cây thuốc. Đăng nhập để chia sẻ ảnh và đề xuất tên.</string>
+    <string name="sign_in_body_no_photos">Không cần tài khoản để tra cứu và nhận dạng cây thuốc. Đăng nhập để đề xuất tên và chia sẻ mô hình.</string>
     <string name="sign_in_google">Tiếp tục với Google</string>
     <string name="sign_in_apple">Tiếp tục với Apple</string>
     <string name="sign_in_error">Không đăng nhập được. Hãy kiểm tra kết nối và thử lại.</string>

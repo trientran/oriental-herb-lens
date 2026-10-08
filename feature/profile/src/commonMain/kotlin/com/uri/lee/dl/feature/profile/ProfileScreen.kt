@@ -56,6 +56,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
+import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
@@ -77,6 +78,7 @@ import com.uri.lee.dl.core.designsystem.resources.profile_privacy
 import com.uri.lee.dl.core.designsystem.resources.profile_share
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body
+import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body_no_photos
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_out
 import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
@@ -176,7 +178,7 @@ private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: (
                 }
             }
             false -> {
-                Text(stringResource(Res.string.profile_sign_in_body), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(if (LocalSharesPhotos.current) Res.string.profile_sign_in_body else Res.string.profile_sign_in_body_no_photos), style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onSignIn) {
                     Icon(Icons.Filled.AccountCircle, contentDescription = null)
                     Text(stringResource(Res.string.profile_sign_in), Modifier.padding(start = spacing.sm))

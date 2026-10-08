@@ -1,6 +1,5 @@
 package com.uri.lee.dl.shared
 
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalUriHandler
@@ -99,10 +98,9 @@ fun startWebApp(config: WebConfig) {
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
-            // On the web any text can be selected and copied, e.g. a name to search elsewhere
-            SelectionContainer { App(actions) }
-        }
+        // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
+        // a selectable label in a button takes the click as the start of a selection
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions) }
     }
 }
 
