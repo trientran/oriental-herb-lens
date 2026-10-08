@@ -89,6 +89,8 @@ import com.uri.lee.dl.core.designsystem.resources.scan_back_to_camera
 import com.uri.lee.dl.core.designsystem.resources.scan_hold_steady
 import com.uri.lee.dl.core.designsystem.resources.scan_looking
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_body
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_help
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_help_in_apps
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_line
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_more
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_ok
@@ -122,6 +124,7 @@ fun ScanRoute(
     pickPhotos: PickPhotos,
     onOpenSpecies: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    canSharePhotos: Boolean = true,
 ) {
     val viewModel = koinViewModel<ScanViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -140,6 +143,7 @@ fun ScanRoute(
             onOpenSpecies(id)
         },
         modifier = modifier,
+        canSharePhotos = canSharePhotos,
         camera = { CameraPreview(onFrame = viewModel::analyzeFrame, modifier = Modifier.fillMaxSize()) },
     )
 }
@@ -151,6 +155,8 @@ fun ScanScreen(
     onPickPhotos: () -> Unit,
     onOpenSpecies: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    /** Whether this platform shares photos; where it doesn't (the web), the notice points to the apps. */
+    canSharePhotos: Boolean = true,
     camera: @Composable () -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
@@ -161,21 +167,22 @@ fun ScanScreen(
             Single(state, source, onAction, onPickPhotos, onOpenSpecies, camera)
         }
         if (state.preparingPhotos > 0) Preparing(state.preparingPhotos)
-        if (state.showNotice) NoticeDialog { onAction(ScanAction.DismissNotice) }
+        if (state.showNotice) NoticeDialog(canSharePhotos) { onAction(ScanAction.DismissNotice) }
     }
 }
 
 /** Why results are often wrong: the herb model is a research preview, with too few photos yet. */
 @Composable
-private fun NoticeDialog(onDismiss: () -> Unit) {
+private fun NoticeDialog(canSharePhotos: Boolean, onDismiss: () -> Unit) {
     DialogLayer {
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = { Icon(Icons.Outlined.Science, contentDescription = null) },
             title = { Text(stringResource(Res.string.scan_notice_title)) },
             text = {
+                val help = stringResource(if (canSharePhotos) Res.string.scan_notice_help else Res.string.scan_notice_help_in_apps)
                 Text(
-                    stringResource(Res.string.scan_notice_body),
+                    stringResource(Res.string.scan_notice_body) + "\n\n" + help,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                 )
