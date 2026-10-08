@@ -125,7 +125,14 @@ jobs:
       # Built here, where its progress shows, rather than hidden inside xcodebuild; the archive's
       # build phase (embedAndSignAppleFrameworkForXcode) then finds the framework up to date
       - name: Build the shared Kotlin framework (release)
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64
+        # The optimising link runs out of a 4 GB heap (GC overhead limit; on the hosted Mac it
+        # thrashes for hours instead). It runs in its own process with most of the runner's 7 GB,
+        # beside a small Gradle daemon
+        run: |
+          ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
+            -Dorg.gradle.jvmargs="-Xmx1g -XX:+UseParallelGC" \
+            -Pkotlin.native.disableCompilerDaemon=true \
+            -Pkotlin.native.jvmArgs="-Xmx5g"
 
       - name: Archive
         working-directory: iosApp
