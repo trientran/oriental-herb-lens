@@ -98,6 +98,9 @@ the app uses Play App Signing). These are the same values as `RELEASE_*` in your
 3. Play Console → **Users and permissions → Invite new users**: the service account's email. Under
    **App permissions** add Med Herb Lens with **Release apps to testing tracks** (and **Release to
    production** if you want to promote from the workflow later). Send the invitation.
+4. In the same Google Cloud project, **APIs & Services → Library → Google Play Android Developer
+   API → Enable**. Without it the upload fails with "Google Play Android Developer API has not been
+   used in project … or it is disabled"; after enabling, wait a few minutes before re-running.
 
 ### iOS
 
