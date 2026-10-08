@@ -432,5 +432,5 @@
     <string name="train_intro_body">Huấn luyện tạo mô hình AI của riêng bạn để phân biệt những cây bạn chọn, học từ chính ảnh của bạn: ví dụ các loài thảo dược trong vườn, hoặc những loài ứng dụng chưa biết. Việc huấn luyện diễn ra ngay trên thiết bị này.
 
 Hiện tại chỉ tạo được mô hình phân loại ảnh: mô hình cho biết ảnh là loài nào trong số các loài của bạn.</string>
-    <string name="train_intro_steps">Đặt tên mô hình, thêm từng loài kèm ảnh, huấn luyện, rồi dùng thử với camera.</string>
+    <string name="train_intro_steps">Đặt tên mô hình, thêm từng loại kèm ảnh, huấn luyện, rồi dùng thử với camera.</string>
 </resources>
