@@ -19,6 +19,9 @@ sealed interface SignInAction {
     /** The picker itself failed (no Google account, no Play services, offline). */
     data object GoogleFailed : SignInAction
 
+    /** The browser blocked the sign-in window (the web). */
+    data object WindowBlocked : SignInAction
+
     /** Apple's sheet closed: with a credential, or null when the user backed out. */
     data class AppleFinished(val credential: AppleCredential?) : SignInAction
 }
@@ -36,6 +39,8 @@ data class SignInState(
     val isSignedIn: Boolean = false,
     val isWorking: Boolean = false,
     val hasError: Boolean = false,
+    /** The error is a blocked sign-in window, which the user can allow. */
+    val windowBlocked: Boolean = false,
 )
 
 class SignInViewModel(private val auth: AuthRepository) : MviViewModel<SignInState, SignInAction>(SignInState()) {
@@ -46,8 +51,9 @@ class SignInViewModel(private val auth: AuthRepository) : MviViewModel<SignInSta
 
     override fun onAction(action: SignInAction) {
         when (action) {
-            SignInAction.GoogleStarted -> setState { copy(isWorking = true, hasError = false) }
+            SignInAction.GoogleStarted -> setState { copy(isWorking = true, hasError = false, windowBlocked = false) }
             SignInAction.GoogleFailed -> setState { copy(isWorking = false, hasError = true) }
+            SignInAction.WindowBlocked -> setState { copy(isWorking = false, hasError = true, windowBlocked = true) }
             is SignInAction.GoogleFinished -> {
                 val credential = action.credential ?: return setState { copy(isWorking = false) }
                 signIn { auth.signInWithGoogle(credential.idToken, credential.accessToken) }

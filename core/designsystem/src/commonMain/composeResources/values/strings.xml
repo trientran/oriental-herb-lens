@@ -154,6 +154,7 @@
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_apple">Continue with Apple</string>
     <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
+    <string name="sign_in_window_blocked">Your browser blocked the sign-in window. Allow pop-ups for this site, then try again.</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="terms_of_service">Terms of service</string>
 

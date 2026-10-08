@@ -153,6 +153,7 @@
     <string name="sign_in_google">Tiếp tục với Google</string>
     <string name="sign_in_apple">Tiếp tục với Apple</string>
     <string name="sign_in_error">Không đăng nhập được. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="sign_in_window_blocked">Trình duyệt đã chặn cửa sổ đăng nhập. Hãy cho phép cửa sổ bật lên (pop-up) cho trang này rồi thử lại.</string>
     <string name="privacy_policy">Chính sách quyền riêng tư</string>
     <string name="terms_of_service">Điều khoản dịch vụ</string>
 
