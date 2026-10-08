@@ -41,7 +41,7 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
     private suspend fun run(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> {
         val model = model()
         val canvas = (image as WebClassifierImage).canvas
-        val pixels = drawn(canvas, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble(), SIZE, SIZE)
+        val pixels = modelInput(canvas, SIZE)
             .context2d.getImageData(0.0, 0.0, SIZE.toDouble(), SIZE.toDouble()).data
         val input = Float32Array(SIZE * SIZE * 3)
         var j = 0
