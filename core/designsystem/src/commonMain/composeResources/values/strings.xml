@@ -45,6 +45,7 @@
     <string name="details_no_photos">No photos yet. Be the first to add one.</string>
     <string name="details_photos_loading">Loading photos</string>
     <string name="details_add_photos">Add photos</string>
+    <string name="details_share_in_apps">To share photos of this herb, use the Med Herb Lens app on Android or iPhone.</string>
     <string name="details_names">Names</string>
     <string name="details_vietnamese_names">Vietnamese</string>
     <string name="details_english_names">English</string>

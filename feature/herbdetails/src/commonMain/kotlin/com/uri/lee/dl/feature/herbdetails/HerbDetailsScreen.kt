@@ -65,6 +65,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
@@ -92,6 +93,7 @@ import com.uri.lee.dl.core.designsystem.resources.details_photo_map
 import com.uri.lee.dl.core.designsystem.resources.details_photos_loading
 import com.uri.lee.dl.core.designsystem.resources.details_place_photo
 import com.uri.lee.dl.core.designsystem.resources.details_place_photos
+import com.uri.lee.dl.core.designsystem.resources.details_share_in_apps
 import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
 import com.uri.lee.dl.core.designsystem.resources.details_vietnamese_names
 import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
@@ -305,6 +307,8 @@ private fun DetailsContent(
                 }
             }
         }
+        // Where photos can't be shared (the web), where they can
+        if (onAddPhotos == null) item("share-in-apps") { ShareInApps() }
         if (species.vietnameseNames.size > 1 || species.englishNames.isNotEmpty()) {
             item("names") {
                 SectionCard(stringResource(Res.string.details_names)) {
@@ -457,6 +461,24 @@ private fun PhotosLoading() {
         contentAlignment = Alignment.Center,
     ) {
         Icon(Icons.Filled.Image, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+    }
+}
+
+/** Points to the apps, which share photos, with links to their store pages. */
+@Composable
+private fun ShareInApps() {
+    val uriHandler = LocalUriHandler.current
+    Column {
+        Text(
+            stringResource(Res.string.details_share_in_apps),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow {
+            // Store names, the same in every language
+            TextButton(onClick = { uriHandler.openUri(LegalLinks.GOOGLE_PLAY) }) { Text("Google Play") }
+            TextButton(onClick = { uriHandler.openUri(LegalLinks.APP_STORE) }) { Text("App Store") }
+        }
     }
 }
 
