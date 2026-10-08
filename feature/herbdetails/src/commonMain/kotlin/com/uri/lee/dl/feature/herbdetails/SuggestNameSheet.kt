@@ -20,10 +20,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -103,9 +108,16 @@ internal fun SuggestNameContent(
                     }
                 }
                 val listed = state.listedInLanguage
+                // The text and cursor live in the field: typed text that went through the view
+                // model and back reached it a frame late, and iOS then put the cursor back at the start
+                var field by remember { mutableStateOf(TextFieldValue(state.draft, TextRange(state.draft.length))) }
                 OutlinedTextField(
-                    value = state.draft,
-                    onValueChange = { onAction(SuggestNameAction.DraftChanged(it)) },
+                    value = field,
+                    onValueChange = {
+                        val changed = it.text != field.text
+                        field = it
+                        if (changed) onAction(SuggestNameAction.DraftChanged(it.text))
+                    },
                     label = { Text(stringResource(Res.string.suggest_name_label, languageName(state.language))) },
                     singleLine = true,
                     isError = state.hasError,
