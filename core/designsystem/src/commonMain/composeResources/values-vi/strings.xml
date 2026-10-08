@@ -381,4 +381,56 @@
     </plurals>
     <string name="train_knows_hint">Mô hình chỉ gọi tên được các loài này. Cây không thuộc danh sách vẫn được gán loài gần nhất, nên hãy xem tỉ lệ phần trăm.</string>
     <string name="train_use_only">Mô hình này nhận dạng được nhưng không học thêm được ở đây: nó không được chia sẻ từ Herb Lens, hoặc từ phiên bản cũ. Mô hình chia sẻ từ Herb Lens mới nhất có thể học thêm loài và ảnh mới.</string>
+
+    <!-- Tips on AI terms (InfoTip): a title and a plain explanation each -->
+    <string name="term_ai_model">Mô hình AI</string>
+    <string name="term_ai_model_body">Một chương trình đã học từ nhiều ảnh mẫu để nhận ra các đặc điểm. Med Herb Lens dùng mô hình để gọi tên cây trong ảnh. Mô hình chỉ biết những gì nó đã được huấn luyện, và có thể sai.</string>
+    <string name="term_image_classification">Phân loại ảnh</string>
+    <string name="term_image_classification_body">Một loại AI nhìn cả bức ảnh và chọn tên phù hợp nhất trong một danh sách cố định, kèm tỉ lệ phần trăm cho biết nó chắc đến mức nào. Nó không gọi tên được thứ ngoài danh sách, không chỉ ra vị trí của vật trong ảnh và không mô tả bức ảnh.</string>
+    <string name="term_confidence">Độ tin cậy (%)</string>
+    <string name="term_confidence_body">Mô hình chắc chắn đến mức nào về một cái tên, từ 0 đến 100%. Đây là ước lượng của chính mô hình, không phải sự bảo đảm: mô hình có thể rất chắc mà vẫn sai, nhất là với những cây nó chưa được huấn luyện. Kết quả thấp hơn độ tin cậy tối thiểu đặt trong mục Hồ sơ sẽ không được hiển thị.</string>
+    <string name="term_identify_modes">Toàn cảnh và Chọn cây</string>
+    <string name="term_identify_modes_body">Toàn cảnh nhận dạng cả khung hình cùng lúc. Chọn cây trước hết tìm từng cây riêng trong khung hình (phát hiện đối tượng) và đánh dấu bằng một chấm, rồi chỉ nhận dạng cây đó. Cách này hữu ích khi có nhiều cây trong khung hình.</string>
+    <string name="term_base_model">Chất lượng: nền tảng của mô hình</string>
+    <string name="term_base_model_body">Mô hình của bạn được xây trên một mô hình ảnh có sẵn (MobileNet, từ MediaPipe của Google) vốn đã nhận ra hình dạng, màu sắc và kết cấu nói chung. Chỉ bước cuối, phân biệt các loài của bạn, được học từ ảnh của bạn, nên chỉ cần vài chục ảnh. Nhanh dùng mô hình nền nhỏ: huấn luyện và chạy nhanh. Cân bằng dùng mô hình lớn hơn, chính xác hơn. Tốt nhất còn học thêm từ hai bản cắt của mỗi ảnh: chậm hơn, thường tốt hơn một chút.</string>
+    <string name="term_training">Huấn luyện</string>
+    <string name="term_training_body">Dạy mô hình bằng các ví dụ. Bạn đưa cho nó ảnh đã được xếp theo loài; qua từng vòng, nó tự điều chỉnh cho đến khi phân biệt được các loài. Ở đây mọi việc diễn ra trên thiết bị của bạn, và ảnh của bạn không được tải lên.</string>
+    <string name="term_round">Vòng (epoch)</string>
+    <string name="term_round_body">Một lượt học qua tất cả ảnh huấn luyện. Sau mỗi vòng, mô hình được thử trên các ảnh kiểm tra. Việc huấn luyện dừng khi mô hình không còn tiến bộ, hoặc khi đạt số vòng tối đa.</string>
+    <string name="term_checking_photos">Ảnh kiểm tra (validation)</string>
+    <string name="term_checking_photos_body">Một phần ảnh của bạn được để riêng và không bao giờ dùng để học. Sau mỗi vòng, mô hình được thử trên các ảnh này để xem nó làm tốt thế nào với ảnh chưa từng thấy, và để quyết định khi nào dừng.</string>
+    <string name="term_test_accuracy">Độ chính xác trên ảnh chưa thấy</string>
+    <string name="term_test_accuracy_body">Tỉ lệ ảnh đánh giá (được để riêng, không dùng để học) mà mô hình hoàn chỉnh gọi tên đúng. Đây là chỉ dấu tốt nhất về cách mô hình làm việc với ảnh mới, miễn là chúng giống ảnh bạn đã dùng để huấn luyện.</string>
+    <string name="term_loss">Sai số (loss)</string>
+    <string name="term_loss_body">Con số cho biết câu trả lời của mô hình sai đến mức nào, có tính đến việc nó chắc chắn ra sao. Càng thấp càng tốt. Nếu sai số trên ảnh học tiếp tục giảm trong khi sai số trên ảnh kiểm tra tăng lên, mô hình đang học thuộc lòng ảnh thay vì học thật (quá khớp).</string>
+    <string name="term_confusion">Ma trận nhầm lẫn</string>
+    <string name="term_confusion_body">Một bảng về các ảnh đánh giá. Mỗi hàng là loài thực sự có trong ảnh; mỗi cột là loài mà mô hình đoán. Các số trên đường chéo là câu trả lời đúng; các số còn lại cho thấy mô hình hay nhầm những loài nào.</string>
+    <string name="term_continual">Giữ các loài cũ (ôn lại) hay Huấn luyện lại tất cả</string>
+    <string name="term_continual_body">Khi bạn thêm loài hoặc ảnh sau này, Giữ các loài cũ sẽ học ảnh mới cùng một phần ảnh cũ, nên nhanh và không quên những gì đã biết (học liên tục). Huấn luyện lại tất cả học lại từ đầu với mọi ảnh: chậm hơn, đôi khi chính xác hơn một chút.</string>
+    <string name="term_learning_rate">Tốc độ học</string>
+    <string name="term_learning_rate_body">Mức điều chỉnh mỗi lần mô hình tự sửa sai. Quá cao thì nó dao động mà không ổn định; quá thấp thì nó học rất chậm.</string>
+    <string name="term_batch_size">Kích thước lô</string>
+    <string name="term_batch_size_body">Số ảnh mô hình xem trước mỗi lần tự sửa sai. Lô lớn cho các bước ổn định hơn; lô nhỏ có thể học được nhiều hơn từ ít ảnh.</string>
+    <string name="term_early_stopping">Dừng sớm</string>
+    <string name="term_early_stopping_body">Việc huấn luyện dừng khi kết quả trên ảnh kiểm tra không cải thiện trong số vòng này, và vòng tốt nhất được giữ lại. Điều này giúp mô hình không học thuộc lòng ảnh.</string>
+    <string name="term_weight_decay">Suy giảm trọng số (L2)</string>
+    <string name="term_weight_decay_body">Một lực kéo nhẹ giữ cho các con số của mô hình nhỏ, để nó dựa vào đặc điểm chung thay vì những nét riêng của vài bức ảnh. Giá trị cao hơn giúp tránh học thuộc lòng tốt hơn.</string>
+    <string name="term_seed">Hạt giống ngẫu nhiên</string>
+    <string name="term_seed_body">Con số khởi đầu cho các lựa chọn ngẫu nhiên khi huấn luyện, chẳng hạn ảnh nào được để riêng. Cùng hạt giống và cùng ảnh sẽ cho cùng một mô hình, nên kết quả có thể lặp lại.</string>
+    <string name="term_hidden_layer">Lớp ẩn</string>
+    <string name="term_hidden_layer_body">Một lớp đơn vị bổ sung giữa mô hình nền và câu trả lời, giúp mô hình học được những khác biệt phức tạp hơn. 0 là không có: đơn giản hơn, nhanh hơn và thường là đủ.</string>
+    <string name="term_class_balance">Cân bằng các loài</string>
+    <string name="term_class_balance_body">Khi một số loài có ít ảnh hơn nhiều, mô hình có xu hướng thiên về các loài khác. Cân bằng sẽ tính mỗi ảnh của loài ít ảnh nặng hơn, để mọi loài có trọng lượng như nhau.</string>
+    <string name="term_tflite">Tệp TensorFlow Lite (.tflite)</string>
+    <string name="term_tflite_body">Định dạng tệp chuẩn cho các mô hình AI chạy trên điện thoại và thiết bị nhỏ. Mô hình được lưu theo cách này, kèm danh sách loài bên trong, dùng được trong các ứng dụng khác chạy mô hình TensorFlow Lite, không chỉ trong Med Herb Lens.</string>
+    <string name="term_hugging_face">Hugging Face</string>
+    <string name="term_hugging_face_body">Một trang web công khai nơi các nhà nghiên cứu và lập trình viên chia sẻ mô hình AI. Đăng ở đó giúp người khác tìm, tải về và trích dẫn mô hình của bạn.</string>
+    <string name="tip_open">Đây là gì: %1$s?</string>
+    <string name="tip_got_it">Đã hiểu</string>
+    <string name="details_map_note">Vị trí ảnh do người chia sẻ ảnh cung cấp và chưa được kiểm chứng, nên có thể không chính xác.</string>
+    <string name="train_intro_title">Huấn luyện dùng để làm gì?</string>
+    <string name="train_intro_body">Huấn luyện tạo mô hình AI của riêng bạn để phân biệt những cây bạn chọn, học từ chính ảnh của bạn: ví dụ các loài thảo dược trong vườn, hoặc những loài ứng dụng chưa biết. Việc huấn luyện diễn ra ngay trên thiết bị này.
+
+Hiện tại chỉ tạo được mô hình phân loại ảnh: mô hình cho biết ảnh là loài nào trong số các loài của bạn.</string>
+    <string name="train_intro_steps">Đặt tên mô hình, thêm từng loài kèm ảnh, huấn luyện, rồi dùng thử với camera.</string>
 </resources>

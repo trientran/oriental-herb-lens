@@ -72,13 +72,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.EmptyState
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.LoadingState
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
+import com.uri.lee.dl.core.designsystem.component.TermChip
 import com.uri.lee.dl.core.designsystem.resources.*
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
@@ -237,7 +241,10 @@ private fun ConfirmShareDialog(onDismiss: () -> Unit, onShare: (offerToHuggingFa
                 ) {
                     Checkbox(checked = huggingFace, onCheckedChange = null)
                     Column(Modifier.padding(start = HerbLensTheme.spacing.md)) {
-                        Text(stringResource(Res.string.train_share_hf), style = MaterialTheme.typography.bodyLarge)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(Res.string.train_share_hf), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f, fill = false))
+                            InfoTip(AiTerm.HUGGING_FACE)
+                        }
                         Text(
                             stringResource(Res.string.train_share_hf_body),
                             style = MaterialTheme.typography.bodySmall,
@@ -343,6 +350,7 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         }
     }
     Page(stringResource(Res.string.train_models_title), onBack = null) {
+        TrainIntro()
         val models = state.models
         when {
             models == null -> LoadingState()
@@ -378,18 +386,61 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
             Text(stringResource(Res.string.train_new_model))
         }
         platform.pickModelFile?.let { pick ->
-            OutlinedButton(
-                onClick = { scope.launch { pick()?.let { onAction(TrainingAction.ImportModel(it.name, it.bytes)) } } },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Filled.FileOpen, contentDescription = null)
-                Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(
+                    onClick = { scope.launch { pick()?.let { onAction(TrainingAction.ImportModel(it.name, it.bytes)) } } },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.FileOpen, contentDescription = null)
+                    Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
+                }
+                InfoTip(AiTerm.TFLITE)
             }
         }
         OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Community)) }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Public, contentDescription = null)
             Text(stringResource(Res.string.train_community), Modifier.padding(start = HerbLensTheme.spacing.sm))
         }
+    }
+}
+
+/**
+ * What the Train tab is for, at its top: a new user can't tell otherwise what it trains, or that
+ * it's image classification only. The terms it uses explain themselves.
+ */
+@Composable
+private fun TrainIntro() {
+    val spacing = HerbLensTheme.spacing
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        Text(stringResource(Res.string.train_intro_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(Res.string.train_intro_body), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(Res.string.train_intro_steps), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            TermChip(AiTerm.AI_MODEL)
+            TermChip(AiTerm.IMAGE_CLASSIFICATION)
+            TermChip(AiTerm.TRAINING)
+        }
+    }
+}
+
+/** A setting's or section's heading, with a tip on the term it names. */
+@Composable
+private fun TermHeading(text: String, term: AiTerm) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = MaterialTheme.typography.titleSmall)
+        InfoTip(term)
+    }
+}
+
+/** A caption under a chart or result, with a tip on the term it relies on. */
+@Composable
+private fun TermCaption(text: String, term: AiTerm, style: TextStyle = MaterialTheme.typography.bodySmall) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = style, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        InfoTip(term)
     }
 }
 
@@ -667,7 +718,7 @@ private fun NewModelScreen(onAction: (TrainingAction) -> Unit, platform: Trainin
     val chosenName = { name.ifBlank { placeholder } }
     Page(stringResource(Res.string.train_new_title), onBack = { onAction(TrainingAction.Back) }) {
         OutlinedTextField(name, { name = it }, label = { Text(stringResource(Res.string.train_name)) }, placeholder = { Text(placeholder) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Text(stringResource(Res.string.train_quality), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_quality), AiTerm.BASE_MODEL)
         QualityChips(quality) { quality = it }
         Text(stringResource(Res.string.train_how_photos), style = MaterialTheme.typography.titleSmall)
         ChoiceRow(Icons.Filled.PhotoCamera, stringResource(Res.string.train_collect), stringResource(Res.string.train_collect_body)) {
@@ -778,10 +829,14 @@ private fun TrainingProgressScreen(state: TrainingState, onAction: (TrainingActi
     Page(stringResource(Res.string.train_training_title), onBack = null) {
         val last = state.history.lastOrNull()
         if (last != null && state.work is TrainingWork.Learning) {
-            Text(
-                stringResource(Res.string.train_progress_accuracy, last.epoch, percent(last.validationAccuracy)),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(Res.string.train_progress_accuracy, last.epoch, percent(last.validationAccuracy)),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                InfoTip(AiTerm.ROUND)
+            }
             LinearProgressIndicator(Modifier.fillMaxWidth())
         } else {
             Work(state.work)
@@ -813,7 +868,7 @@ private fun AccuracyChart(history: List<com.uri.lee.dl.core.training.EpochStats>
         format = { "${(it * 100).roundToInt()}" },
         modifier = Modifier.fillMaxWidth(),
     )
-    Text(stringResource(Res.string.train_accuracy_caption), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    TermCaption(stringResource(Res.string.train_accuracy_caption), AiTerm.CHECKING_PHOTOS)
 }
 
 /** Both losses by round, and the round that was kept (lowest checking loss). */
@@ -830,7 +885,7 @@ private fun LossChart(history: List<com.uri.lee.dl.core.training.EpochStats>) {
         marker = kept,
         modifier = Modifier.fillMaxWidth(),
     )
-    Text(stringResource(Res.string.train_curve_legend), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    TermCaption(stringResource(Res.string.train_curve_legend), AiTerm.LOSS)
 }
 
 @Composable
@@ -842,10 +897,10 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
     var confirmDelete by remember { mutableStateOf(false) }
     Page(stringResource(Res.string.train_ready, model.name), onBack = { onAction(TrainingAction.Back) }) {
         Text(percent(report.accuracy), style = MaterialTheme.typography.displaySmall)
-        Text(
+        TermCaption(
             stringResource(if (report.heldOut) Res.string.train_right_on_unseen else Res.string.train_right_on_checking, report.testPhotos),
+            AiTerm.TEST_ACCURACY,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         report.perClass.forEach { (species, accuracy) ->
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
@@ -871,6 +926,7 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                 onClick = { scope.launch { viewModel?.export()?.let { (name, bytes) -> platform.saveFile(name, bytes) } } },
                 modifier = Modifier.weight(1f),
             ) { Text(stringResource(Res.string.train_share)) }
+            InfoTip(AiTerm.TFLITE, Modifier.align(Alignment.CenterVertically))
         }
         Work(state.work)
         if (model.sharedId == null) {
@@ -898,7 +954,7 @@ private fun UnderTheHood(report: ModelReport) {
         LossChart(report.history)
     }
     if (report.confusion.isNotEmpty()) {
-        Text(stringResource(Res.string.train_confusion), style = MaterialTheme.typography.bodySmall)
+        TermCaption(stringResource(Res.string.train_confusion), AiTerm.CONFUSION)
         Column {
             report.confusion.forEach { row ->
                 Row {
@@ -923,11 +979,11 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
     var advanced by remember { mutableStateOf(false) }
     val spacing = HerbLensTheme.spacing
     Page(stringResource(Res.string.train_settings), onBack = { onAction(TrainingAction.Back) }) {
-        Text(stringResource(Res.string.train_quality), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_quality), AiTerm.BASE_MODEL)
         val fixed = model.photos > 0
         QualityChips(settings.quality, enabled = !fixed) { settings = settings.copy(quality = it) }
         if (fixed) Text(stringResource(Res.string.train_quality_fixed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(Res.string.train_when_adding), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_when_adding), AiTerm.CONTINUAL)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
             FilterChip(settings.update == UpdateMode.REPLAY, { settings = settings.copy(update = UpdateMode.REPLAY) }, label = { Text(stringResource(Res.string.train_update_replay)) })
             FilterChip(settings.update == UpdateMode.RETRAIN_ALL, { settings = settings.copy(update = UpdateMode.RETRAIN_ALL) }, label = { Text(stringResource(Res.string.train_update_retrain)) })
@@ -936,18 +992,19 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
         if (advanced) {
             val e = settings.expert
             fun set(expert: ExpertSettings) { settings = settings.copy(expert = expert) }
-            NumberField(Res.string.train_learning_rate, e.learningRate.toString()) { it.toFloatOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(learningRate = v)) } }
-            NumberField(Res.string.train_batch_size, e.batchSize.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(batchSize = v)) } }
-            NumberField(Res.string.train_max_epochs, e.maxEpochs.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(maxEpochs = v)) } }
-            NumberField(Res.string.train_patience, e.patience.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(patience = v)) } }
-            NumberField(Res.string.train_l2, e.l2.toString()) { it.toFloatOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(l2 = v)) } }
-            NumberField(Res.string.train_validation_share, e.validationShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(validationShare = v)) } }
-            NumberField(Res.string.train_test_share, e.testShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(testShare = v)) } }
-            NumberField(Res.string.train_seed, e.seed.toString()) { it.toIntOrNull()?.let { v -> set(e.copy(seed = v)) } }
-            NumberField(Res.string.train_hidden_units, e.hiddenUnits.toString()) { it.toIntOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(hiddenUnits = v)) } }
-            NumberField(Res.string.train_replay_per_class, e.replayPerClass.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(replayPerClass = v)) } }
+            NumberField(Res.string.train_learning_rate, AiTerm.LEARNING_RATE, e.learningRate.toString()) { it.toFloatOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(learningRate = v)) } }
+            NumberField(Res.string.train_batch_size, AiTerm.BATCH_SIZE, e.batchSize.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(batchSize = v)) } }
+            NumberField(Res.string.train_max_epochs, AiTerm.ROUND, e.maxEpochs.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(maxEpochs = v)) } }
+            NumberField(Res.string.train_patience, AiTerm.EARLY_STOPPING, e.patience.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(patience = v)) } }
+            NumberField(Res.string.train_l2, AiTerm.WEIGHT_DECAY, e.l2.toString()) { it.toFloatOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(l2 = v)) } }
+            NumberField(Res.string.train_validation_share, AiTerm.CHECKING_PHOTOS, e.validationShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(validationShare = v)) } }
+            NumberField(Res.string.train_test_share, AiTerm.TEST_ACCURACY, e.testShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(testShare = v)) } }
+            NumberField(Res.string.train_seed, AiTerm.SEED, e.seed.toString()) { it.toIntOrNull()?.let { v -> set(e.copy(seed = v)) } }
+            NumberField(Res.string.train_hidden_units, AiTerm.HIDDEN_LAYER, e.hiddenUnits.toString()) { it.toIntOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(hiddenUnits = v)) } }
+            NumberField(Res.string.train_replay_per_class, AiTerm.CONTINUAL, e.replayPerClass.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(replayPerClass = v)) } }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(Res.string.train_class_balanced), Modifier.weight(1f))
+                InfoTip(AiTerm.CLASS_BALANCE)
                 Switch(e.classBalanced, { set(e.copy(classBalanced = it)) })
             }
         }
@@ -957,12 +1014,13 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
 
 /** A number setting; [onValue] gets the text when it changes and decides if it's valid. */
 @Composable
-private fun NumberField(label: StringResource, initial: String, onValue: (String) -> Unit) {
+private fun NumberField(label: StringResource, term: AiTerm, initial: String, onValue: (String) -> Unit) {
     var text by remember { mutableStateOf(initial) }
     OutlinedTextField(
         text,
         { text = it; onValue(it) },
         label = { Text(stringResource(label)) },
+        trailingIcon = { InfoTip(term) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth(),

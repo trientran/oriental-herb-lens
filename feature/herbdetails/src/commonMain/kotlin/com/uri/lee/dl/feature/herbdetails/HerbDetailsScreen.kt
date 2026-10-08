@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -87,6 +88,7 @@ import com.uri.lee.dl.core.designsystem.resources.details_family
 import com.uri.lee.dl.core.designsystem.resources.details_full
 import com.uri.lee.dl.core.designsystem.resources.details_genus
 import com.uri.lee.dl.core.designsystem.resources.details_map_hint
+import com.uri.lee.dl.core.designsystem.resources.details_map_note
 import com.uri.lee.dl.core.designsystem.resources.details_names
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
@@ -342,6 +344,15 @@ private fun DetailsContent(
                     } else {
                         Text(
                             stringResource(Res.string.details_map_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    // Places come from contributors' phones or pins, and nobody checks them
+                    Row(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            stringResource(Res.string.details_map_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

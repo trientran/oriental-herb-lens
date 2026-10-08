@@ -75,7 +75,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.ConfidenceChip
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.HerbCard
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
@@ -209,6 +211,8 @@ private fun NoticeLine(onClick: () -> Unit, modifier: Modifier = Modifier) {
             modifier = Modifier.weight(1f, fill = false),
         )
         Text(stringResource(Res.string.scan_notice_more), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        // What the percentages mean
+        InfoTip(AiTerm.CONFIDENCE)
     }
 }
 
@@ -259,19 +263,22 @@ private fun Single(
 @Composable
 private fun ModeSwitch(mode: ScanMode, onChange: (ScanMode) -> Unit, modifier: Modifier = Modifier) {
     Surface(modifier, shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)) {
-        // Fixed width: the labels need it, and it fits a 360dp phone
-        SingleChoiceSegmentedButtonRow(Modifier.padding(4.dp).width(300.dp)) {
-            ScanMode.entries.forEachIndexed { i, entry ->
-                SegmentedButton(
-                    selected = mode == entry,
-                    onClick = { onChange(entry) },
-                    shape = SegmentedButtonDefaults.itemShape(i, ScanMode.entries.size),
-                    // The filled segment shows the choice; a tick would squeeze the labels
-                    icon = {},
-                ) {
-                    Text(stringResource(if (entry == ScanMode.WHOLE_VIEW) Res.string.scan_whole_view else Res.string.scan_pick_plant), maxLines = 1, softWrap = false)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Fixed width: the labels need it, and with the tip it fits a 360dp phone
+            SingleChoiceSegmentedButtonRow(Modifier.padding(start = 4.dp, top = 4.dp, bottom = 4.dp).width(268.dp)) {
+                ScanMode.entries.forEachIndexed { i, entry ->
+                    SegmentedButton(
+                        selected = mode == entry,
+                        onClick = { onChange(entry) },
+                        shape = SegmentedButtonDefaults.itemShape(i, ScanMode.entries.size),
+                        // The filled segment shows the choice; a tick would squeeze the labels
+                        icon = {},
+                    ) {
+                        Text(stringResource(if (entry == ScanMode.WHOLE_VIEW) Res.string.scan_whole_view else Res.string.scan_pick_plant), maxLines = 1, softWrap = false)
+                    }
                 }
             }
+            InfoTip(AiTerm.IDENTIFY_MODES, Modifier.padding(end = 4.dp))
         }
     }
 }

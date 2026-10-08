@@ -384,4 +384,56 @@
     </plurals>
     <string name="train_knows_hint">It can only name these species. A plant that isn’t one of them still gets the closest match, so check the percentage.</string>
     <string name="train_use_only">This model can identify, but not learn more here: it wasn’t shared from Herb Lens, or from an older version. Models shared from the latest Herb Lens can be given new species and photos.</string>
+
+    <!-- Tips on AI terms (InfoTip): a title and a plain explanation each -->
+    <string name="term_ai_model">AI model</string>
+    <string name="term_ai_model_body">A program that has learned, from many example photos, to recognise patterns. Med Herb Lens uses models to name the plant in a photo. A model only knows what it was trained on, and it can be wrong.</string>
+    <string name="term_image_classification">Image classification</string>
+    <string name="term_image_classification_body">A kind of AI that looks at a whole photo and picks which name from a fixed list it shows best, with a percentage for how sure it is. It can’t name anything outside its list, show where things are in the photo, or describe the photo.</string>
+    <string name="term_confidence">Confidence (%)</string>
+    <string name="term_confidence_body">How sure the model is about a name, from 0 to 100%. It’s the model’s own estimate, not a guarantee: a model can be very sure and still wrong, especially for plants it wasn’t trained on. Results below the minimum confidence set in Profile aren’t shown.</string>
+    <string name="term_identify_modes">Whole view and Pick a plant</string>
+    <string name="term_identify_modes_body">Whole view identifies the whole picture at once. Pick a plant first finds each separate plant in the picture (object detection) and marks it with a dot, then identifies just that plant. It helps when several plants are in view.</string>
+    <string name="term_base_model">Quality: what your model builds on</string>
+    <string name="term_base_model_body">Your model builds on a ready-made image model (MobileNet, from Google’s MediaPipe) that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Fast uses a small base model: quick to train and run. Balanced uses a larger, more accurate one. Best also learns from two cropped copies of each photo: slower, often a little better.</string>
+    <string name="term_training">Training</string>
+    <string name="term_training_body">Teaching a model from examples. You give it photos sorted by species; round by round, it adjusts itself until it can tell them apart. Here it all happens on your device, and your photos aren’t uploaded.</string>
+    <string name="term_round">Round (epoch)</string>
+    <string name="term_round_body">One pass through all the training photos. After each round the model is checked on the checking photos. Training stops when it stops improving, or at the maximum number of rounds.</string>
+    <string name="term_checking_photos">Checking photos (validation)</string>
+    <string name="term_checking_photos_body">A share of your photos set aside and never learned from. After each round the model is tried on them, to see how it does on photos it hasn’t seen and to decide when to stop.</string>
+    <string name="term_test_accuracy">Accuracy on unseen photos</string>
+    <string name="term_test_accuracy_body">The share of test photos, set aside and never learned from, that the finished model names correctly. It’s the best guide to how it will do on new photos, as long as they’re like the ones you trained with.</string>
+    <string name="term_loss">Error (loss)</string>
+    <string name="term_loss_body">A number for how wrong the model’s answers are, counting how sure it was. Lower is better. If the error on the photos it learns from keeps falling while the error on the checking photos rises, the model is memorising its photos rather than learning (overfitting).</string>
+    <string name="term_confusion">Confusion matrix</string>
+    <string name="term_confusion_body">A table of the test photos. Each row is the species a photo really shows; each column is the species the model said. Numbers on the diagonal are right answers; the others show which species it mixes up.</string>
+    <string name="term_continual">Keep old ones (replay) or Retrain all</string>
+    <string name="term_continual_body">When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
+    <string name="term_learning_rate">Learning rate</string>
+    <string name="term_learning_rate_body">How big a step the model takes each time it corrects itself. Too high and it jumps around without settling; too low and it learns very slowly.</string>
+    <string name="term_batch_size">Batch size</string>
+    <string name="term_batch_size_body">How many photos the model looks at before each correction. Larger batches give steadier steps; smaller ones can learn more from few photos.</string>
+    <string name="term_early_stopping">Early stopping</string>
+    <string name="term_early_stopping_body">Training stops once the checking photos haven’t improved for this many rounds, and the best round is kept. This stops the model memorising its photos.</string>
+    <string name="term_weight_decay">Weight decay (L2)</string>
+    <string name="term_weight_decay_body">A gentle pull that keeps the model’s numbers small, so it relies on general patterns rather than the quirks of a few photos. Higher values guard more against memorising.</string>
+    <string name="term_seed">Seed</string>
+    <string name="term_seed_body">A starting number for the random choices in training, such as which photos are set aside. The same seed and the same photos give the same model, so a result can be repeated.</string>
+    <string name="term_hidden_layer">Hidden layer</string>
+    <string name="term_hidden_layer_body">An extra layer of units between the base model and the answer, which lets the model learn more complex differences. 0 means none: simpler, faster and usually enough.</string>
+    <string name="term_class_balance">Balancing species</string>
+    <string name="term_class_balance_body">When some species have far fewer photos, the model tends to favour the others. Balancing counts each photo of a rarer species more, so every species weighs the same.</string>
+    <string name="term_tflite">TensorFlow Lite file (.tflite)</string>
+    <string name="term_tflite_body">The standard file format for AI models that run on phones and other small devices. A model saved this way, with its species list inside, works in other apps that run TensorFlow Lite models, not only in Med Herb Lens.</string>
+    <string name="term_hugging_face">Hugging Face</string>
+    <string name="term_hugging_face_body">A public website where researchers and developers share AI models. Publishing there lets others find, download and cite your model.</string>
+    <string name="tip_open">What’s this: %1$s?</string>
+    <string name="tip_got_it">Got it</string>
+    <string name="details_map_note">Photo locations come from the people who shared the photos and haven’t been checked, so they may not be accurate.</string>
+    <string name="train_intro_title">What is Train for?</string>
+    <string name="train_intro_body">Train makes your own AI model that tells apart plants you choose, learned from your own photos: the herbs in your garden, say, or species the app doesn’t know yet. Training runs on this device.
+
+For now it makes image classification models only: a model that says which of your species a photo shows.</string>
+    <string name="train_intro_steps">Name a model, add each species with its photos, train it, then try it with the camera.</string>
 </resources>

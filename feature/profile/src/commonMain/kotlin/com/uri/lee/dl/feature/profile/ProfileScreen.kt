@@ -57,6 +57,8 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
+import com.uri.lee.dl.core.designsystem.component.AiTerm
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
@@ -194,7 +196,10 @@ private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: (
 private fun ConfidenceSetting(value: Float, onChange: (Float) -> Unit) {
     var dragging by remember(value) { mutableFloatStateOf(value) }
     Column {
-        Text(stringResource(Res.string.profile_min_confidence, (dragging * 100).roundToInt()), style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(Res.string.profile_min_confidence, (dragging * 100).roundToInt()), style = MaterialTheme.typography.bodyLarge)
+            InfoTip(AiTerm.CONFIDENCE)
+        }
         Text(
             stringResource(Res.string.profile_min_confidence_body),
             style = MaterialTheme.typography.bodyMedium,
