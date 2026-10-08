@@ -1,0 +1,15 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://med-herb-lens.pages.dev",
+          "https://review.med-herb-lens.pages.dev",
+          "http://localhost:8080"
+        ],
+        "methods": ["GET", "HEAD"]
+      },
+      "maxAgeSeconds": 86400
+    }
+  ]
+}

@@ -23,6 +23,16 @@ file, checks it, and replaces the old one under the same name.
    To move from r2.dev to a custom domain later, connect the domain and set
    `HERB_CONTENT_BASE_URL` to it. Then republish and update Remote Config with the new values.
    Keep the r2.dev URL enabled until no device is still using the old URLs.
+   **Which sites may load it (CORS).** The web app downloads the model and catalog from the
+   bucket, so the bucket must allow each site address the app runs on: the live site, the
+   `review` preview and local development, listed in [r2-cors.json](r2-cors.json). Without it, a
+   browser refuses the download: the web app then falls back to the copies served with the site,
+   which may be older. After changing the list:
+
+   ```bash
+   npx wrangler r2 bucket cors set herb-lens-content --file docs/r2-cors.json
+   ```
+
 3. Install and log in to wrangler on the machine you publish from:
 
    ```bash
