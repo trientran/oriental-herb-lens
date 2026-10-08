@@ -436,8 +436,6 @@
     <string name="tip_got_it">Got it</string>
     <string name="details_map_note">Photo locations come from the people who shared the photos and haven’t been checked, so they may not be accurate.</string>
     <string name="train_intro_title">What is Train for?</string>
-    <string name="train_intro_body">Train makes your own AI model that tells apart plants you choose, learned from your own photos: the herbs in your garden, say, or species the app doesn’t know yet. Training runs on this device.
-
-For now it makes image classification models only: a model that says which of your species a photo shows.</string>
+    <string name="train_intro_body">Train makes your own AI model that tells apart things you choose, learned from your own photos. It isn’t only for herbs: it works in any field where photos can tell things apart, such as agriculture and farming (grading the quality of harvested tomatoes, say), forestry, biosecurity (spotting pests, diseases or weeds), or teaching and research in medicine. Training runs on this device.\n\nFor now it makes image classification models only: a model that says which of your categories (species, grades, conditions) a photo shows. Models you train are for learning and research: don’t rely on them alone for decisions that need an expert, such as a diagnosis or whether food is safe.</string>
     <string name="train_intro_steps">Name a model, add each category with its photos, train it, then try it with the camera.</string>
 </resources>

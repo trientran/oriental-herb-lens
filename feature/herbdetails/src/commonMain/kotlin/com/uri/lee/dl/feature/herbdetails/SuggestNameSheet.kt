@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,8 @@ internal fun SuggestNameSheet(
 ) {
     val viewModel = koinViewModel<SuggestNameViewModel>(key = "suggest-$herbId") { parametersOf(herbId, listed, language) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // The view model outlives the sheet (it's kept per herb): each opening starts afresh after a send
+    LaunchedEffect(viewModel) { viewModel.onAction(SuggestNameAction.Opened) }
     DialogLayer {
         ModalBottomSheet(onDismissRequest = onDismiss) {
             SuggestNameContent(state, viewModel::onAction, onSignIn, onDismiss)

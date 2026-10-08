@@ -18,6 +18,9 @@ sealed interface SuggestNameAction {
     data class LanguageChanged(val language: String) : SuggestNameAction
     data class DraftChanged(val text: String) : SuggestNameAction
     data object Submit : SuggestNameAction
+
+    /** The sheet opened again: after a name was sent, start a new suggestion. */
+    data object Opened : SuggestNameAction
 }
 
 data class SuggestNameState(
@@ -73,6 +76,7 @@ class SuggestNameViewModel(
                 if (action.language in NameLanguages.ENABLED) setState { copy(language = action.language, hasError = false) }
             is SuggestNameAction.DraftChanged -> setState { copy(draft = action.text, hasError = false) }
             SuggestNameAction.Submit -> submit()
+            SuggestNameAction.Opened -> if (currentState.isSubmitted) setState { copy(draft = "", isSubmitted = false, hasError = false) }
         }
     }
 

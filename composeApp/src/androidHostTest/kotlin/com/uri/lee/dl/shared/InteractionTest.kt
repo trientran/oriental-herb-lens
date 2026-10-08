@@ -171,6 +171,13 @@ class InteractionTest {
 
         compose.onNodeWithText("Thank you! Your suggestion has been sent.").assertExists()
         assertEquals(listOf(Triple(HERB, "vi", "Cây đinh lăng")), contributions.names)
+
+        // Another one: the sheet starts afresh rather than thanking again
+        compose.onNodeWithText("OK").performClick()
+        compose.onNodeWithText("Suggest a vernacular name").performClick()
+        compose.onNode(hasSetTextAction()).performTextReplacement("Polyscias")
+        compose.onNodeWithText("Send").performClick()
+        assertEquals(2, contributions.names.size)
     }
 
     @Test

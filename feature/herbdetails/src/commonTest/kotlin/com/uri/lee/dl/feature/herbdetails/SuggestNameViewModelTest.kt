@@ -63,6 +63,29 @@ class SuggestNameViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `opening the sheet again after a send starts a new suggestion`() {
+        viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi cá"))
+        viewModel.onAction(SuggestNameAction.Submit)
+
+        viewModel.onAction(SuggestNameAction.Opened)
+
+        assertFalse(viewModel.state.value.isSubmitted)
+        assertEquals("", viewModel.state.value.draft)
+        viewModel.onAction(SuggestNameAction.DraftChanged("Nam dương lâm"))
+        viewModel.onAction(SuggestNameAction.Submit)
+        assertEquals(listOf("Cây gỏi cá", "Nam dương lâm"), contributions.names.map { it.third })
+    }
+
+    @Test
+    fun `opening the sheet keeps a draft that wasn't sent`() {
+        viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi"))
+
+        viewModel.onAction(SuggestNameAction.Opened)
+
+        assertEquals("Cây gỏi", viewModel.state.value.draft)
+    }
+
+    @Test
     fun `a failed submission is reported and can be retried`() {
         contributions.fail = true
         viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi cá"))
