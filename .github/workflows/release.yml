@@ -21,10 +21,6 @@ on:
         options: [all, android-and-ios, android, ios, web]
         default: all
 
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 env:
   VERSION_NAME: ${{ inputs.version_name }}
   BUILD_NUMBER: ${{ github.run_number }}0
@@ -32,6 +28,10 @@ env:
 jobs:
   android:
     if: contains(fromJSON('["all", "android-and-ios", "android"]'), inputs.platforms)
+    # One release per platform at a time, queued not cancelled; the platforms don't wait for each other
+    concurrency:
+      group: release-android
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -87,6 +87,9 @@ jobs:
 
   ios:
     if: contains(fromJSON('["all", "android-and-ios", "ios"]'), inputs.platforms)
+    concurrency:
+      group: release-ios
+      cancel-in-progress: false
     runs-on: macos-latest
     # An optimised Kotlin/Native release link alone takes most of an hour on a hosted runner
     timeout-minutes: 150
@@ -157,6 +160,9 @@ jobs:
 
   web:
     if: contains(fromJSON('["all", "web"]'), inputs.platforms)
+    concurrency:
+      group: release-web
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
