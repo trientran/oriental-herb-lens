@@ -47,19 +47,50 @@ internal fun drawn(source: dynamic, sx: Double, sy: Double, sw: Double, sh: Doub
     return canvas
 }
 
-/** Decodes [file] upright (EXIF orientation applied), at most [maxSide] pixels on its longer side. */
+/**
+ * Decodes [file] upright (EXIF orientation applied), at most [maxSide] pixels on its longer side.
+ * Browsers differ: some reject createImageBitmap's orientation option, and some can't make a
+ * bitmap from every format they can show (Safari and HEIC). So it tries, in turn, a bitmap with
+ * the option, one without (most now apply the orientation anyway), then an image element, which
+ * shows whatever the browser can show, upright.
+ */
 internal suspend fun decode(file: Blob, maxSide: Int): HTMLCanvasElement? {
-    val bitmap: dynamic = try {
-        window.asDynamic().createImageBitmap(file, json("imageOrientation" to "from-image")).unsafeCast<Promise<dynamic>>().await()
-    } catch (e: Throwable) {
-        return null
+    val createImageBitmap = window.asDynamic().createImageBitmap
+    if (createImageBitmap != undefined) {
+        for (options in listOf(json("imageOrientation" to "from-image"), null)) {
+            val bitmap: dynamic = try {
+                val promise = if (options != null) window.asDynamic().createImageBitmap(file, options) else window.asDynamic().createImageBitmap(file)
+                promise.unsafeCast<Promise<dynamic>>().await()
+            } catch (e: Throwable) {
+                continue
+            }
+            val canvas = scaled(bitmap, bitmap.width as Int, bitmap.height as Int, maxSide)
+            bitmap.close()
+            return canvas
+        }
     }
-    val width = bitmap.width as Int
-    val height = bitmap.height as Int
+    return decodeWithImage(file, maxSide)
+}
+
+private suspend fun decodeWithImage(file: Blob, maxSide: Int): HTMLCanvasElement? {
+    val url = URL.createObjectURL(file)
+    return try {
+        val image = document.createElement("img").asDynamic()
+        image.src = url
+        image.decode().unsafeCast<Promise<Any?>>().await()
+        val width = image.naturalWidth as Int
+        val height = image.naturalHeight as Int
+        if (width < 1 || height < 1) null else scaled(image, width, height, maxSide)
+    } catch (e: Throwable) {
+        null
+    } finally {
+        URL.revokeObjectURL(url)
+    }
+}
+
+private fun scaled(source: dynamic, width: Int, height: Int, maxSide: Int): HTMLCanvasElement {
     val scale = minOf(1.0, maxSide.toDouble() / max(width, height))
-    val canvas = drawn(bitmap, 0.0, 0.0, width.toDouble(), height.toDouble(), (width * scale).roundToInt(), (height * scale).roundToInt())
-    bitmap.close()
-    return canvas
+    return drawn(source, 0.0, 0.0, width.toDouble(), height.toDouble(), (width * scale).roundToInt(), (height * scale).roundToInt())
 }
 
 internal class WebPhotoReader : PhotoReader {

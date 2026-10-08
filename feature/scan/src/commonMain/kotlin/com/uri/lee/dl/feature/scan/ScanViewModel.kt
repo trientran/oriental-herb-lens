@@ -96,7 +96,10 @@ data class ScanState(
     val isWorking: Boolean = false,
     /** How many picked photos are still being handed over by the picker; 0 when none. */
     val preparingPhotos: Int = 0,
+    /** The picked photo couldn't be read (decoded). */
     val hasError: Boolean = false,
+    /** The photo was read, but identifying it failed. */
+    val identifyFailed: Boolean = false,
     val minConfidence: Float = ScanSettings.DEFAULT_MIN_CONFIDENCE,
     /** False where plants can't be picked out (no object detector in the browser): no mode switch. */
     val canPickPlants: Boolean = true,
@@ -184,7 +187,7 @@ class ScanViewModel(
                 setState {
                     copy(
                         source = ScanSource.Camera, objects = emptyList(), steadyId = null, picked = null,
-                        results = emptyList(), isWorking = false, hasError = false,
+                        results = emptyList(), isWorking = false, hasError = false, identifyFailed = false,
                     )
                 }
             }
@@ -333,7 +336,7 @@ class ScanViewModel(
             setState {
                 copy(
                     source = (source as? ScanSource.Photo)?.copy(aspect = read.width.toFloat() / read.height) ?: source,
-                    isWorking = true, hasError = false, objects = emptyList(), picked = null, results = emptyList(),
+                    isWorking = true, hasError = false, identifyFailed = false, objects = emptyList(), picked = null, results = emptyList(),
                 )
             }
             try {
@@ -359,9 +362,10 @@ class ScanViewModel(
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
+                // Throwable: on the web, the model runtime's errors aren't Exceptions
                 log.e(e) { "Photo not identified" }
-                setState { copy(isWorking = false, hasError = true) }
+                setState { copy(isWorking = false, identifyFailed = true) }
             }
         }
     }
@@ -375,7 +379,7 @@ class ScanViewModel(
                 else BatchItem(picked.uri, herbs = recognizeHerbs(read.image, minConfidence, MAX_RESULTS).also { analytics.log(it.identified(WHOLE_VIEW, PHOTOS)) })
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 log.e(e) { "Photo not identified" }
                 BatchItem(picked.uri, failed = true)
             }

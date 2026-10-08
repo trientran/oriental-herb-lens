@@ -99,6 +99,7 @@
     <string name="scan_photo_none">No herb recognised in this photo.</string>
     <string name="scan_photo_none_pick">No separate plants found in this photo. Try Whole view.</string>
     <string name="scan_photo_failed">This photo couldn’t be read.</string>
+    <string name="scan_identify_failed">This photo couldn’t be identified. Try again, or pick another photo.</string>
     <string name="scan_photos">Photos</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Identifying…</string>

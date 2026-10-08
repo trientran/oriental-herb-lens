@@ -36,6 +36,8 @@ class ScanViewModelTest : MainDispatcherTest() {
             when ((image as Image).name) {
                 "dinh lang", "big plant" -> listOf(Classification("1", 0.9f))
                 "small plant" -> listOf(Classification("2", 0.8f))
+                // Not an Exception, as the model runtime's errors aren't on the web
+                "model error" -> throw Error("runtime failed")
                 else -> emptyList()
             }
     }
@@ -209,6 +211,20 @@ class ScanViewModelTest : MainDispatcherTest() {
         assertEquals(listOf("1"), items[0].herbs?.map { it.label })
         assertEquals(emptyList(), items[1].herbs)
         assertTrue(items[2].failed)
+    }
+
+    @Test
+    fun `a photo that can't be read and one that can't be identified are told apart`() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.onAction(ScanAction.PhotosPicked(listOf(Picked("broken"))))
+        assertTrue(viewModel.state.value.hasError)
+        assertFalse(viewModel.state.value.identifyFailed)
+
+        viewModel.onAction(ScanAction.PhotosPicked(listOf(Picked("model error"))))
+        assertFalse(viewModel.state.value.hasError)
+        assertTrue(viewModel.state.value.identifyFailed)
+        assertFalse(viewModel.state.value.isWorking)
     }
 
     @Test

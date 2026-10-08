@@ -95,6 +95,7 @@ import com.uri.lee.dl.core.designsystem.resources.scan_notice_line
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_more
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_ok
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_title
+import com.uri.lee.dl.core.designsystem.resources.scan_identify_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
@@ -448,6 +449,7 @@ private fun Picked(picked: PickedPlant, fromCamera: Boolean, onAction: (ScanActi
 @Composable
 private fun hintFor(state: ScanState): String = when {
     state.hasError -> stringResource(Res.string.scan_photo_failed)
+    state.identifyFailed -> stringResource(Res.string.scan_identify_failed)
     state.source is ScanSource.Photo && state.mode == ScanMode.PICK_PLANT ->
         stringResource(if (state.objects.isEmpty()) Res.string.scan_photo_none_pick else Res.string.scan_tap_plant)
     state.source is ScanSource.Photo -> stringResource(Res.string.scan_photo_none)
