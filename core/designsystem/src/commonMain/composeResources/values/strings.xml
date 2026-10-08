@@ -66,7 +66,7 @@
     <string name="details_order">Order</string>
     <string name="details_gbif_key">GBIF species key</string>
     <string name="details_source">From the Global Biodiversity Information Facility (GBIF), which has more on the species: occurrences, maps and literature.</string>
-    <string name="details_suggest_name">Suggest a Vietnamese name</string>
+    <string name="details_suggest_name">Suggest a vernacular name</string>
     <string name="photo_counter">%1$d of %2$d</string>
     <string name="photo_credit">© %1$s · %2$s</string>
     <string name="photo_credit_publisher">via %1$s and GBIF</string>
@@ -78,12 +78,16 @@
     <string name="cd_close">Close</string>
 
     <!-- Suggest a name -->
-    <string name="suggest_name_title">Suggest a Vietnamese name</string>
-    <string name="suggest_name_label">Vietnamese name</string>
-    <string name="suggest_name_body">We review suggestions before updating the catalog.</string>
+    <string name="suggest_name_title">Suggest a vernacular name</string>
+    <string name="suggest_name_label">Name (%1$s)</string>
+    <string name="suggest_name_body">A common name for this species, as people call it where you live. We review suggestions before adding them to the catalog.</string>
     <string name="suggest_name_submit">Send</string>
     <string name="suggest_name_sent">Thank you! Your suggestion has been sent.</string>
     <string name="suggest_name_sign_in">Sign in to suggest a name.</string>
+    <string name="suggest_name_language">Language</string>
+    <string name="suggest_name_listed">Already listed: %1$s</string>
+    <string name="details_names_unverified">Names not checked by experts</string>
+    <string name="details_names_unverified_body">Common names come from GBIF and from people using the app, and experts haven’t checked them. A name may be regional, rarely used or wrong: use the scientific name to be sure which plant is meant.</string>
 
     <!-- Identify -->
     <string name="scan_whole_view">Whole view</string>

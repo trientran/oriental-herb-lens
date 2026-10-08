@@ -56,8 +56,8 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(HERBS).document(speciesKey.toString()).set(mapOf(HERB_IMAGES to images), merge = true)
     }
 
-    suspend fun addNameSuggestion(speciesKey: Long, vietnameseName: String, uid: String) {
-        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey.asStoredKey(), vietnameseName, uid))
+    suspend fun addNameSuggestion(speciesKey: Long, language: String, name: String, uid: String) {
+        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey.asStoredKey(), language, name, uid))
     }
 
     suspend fun legacyUserLibrary(uid: String): LegacyUserLibrary {
@@ -175,9 +175,11 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     )
 
     @Serializable
+    /** Before vernacular names, suggestions were Vietnamese only, in a `viName` field; the rules still accept those. */
     private data class NameSuggestion(
         val speciesKey: Int,
-        val viName: String,
+        val language: String,
+        val name: String,
         val uid: String,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )

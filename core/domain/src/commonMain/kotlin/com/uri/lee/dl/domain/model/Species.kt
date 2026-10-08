@@ -20,7 +20,16 @@ data class Species(
     val englishNames: List<String>,
     /** The rest of GBIF's record, shown in the species' full details; blank where unknown. */
     val taxonomy: Taxonomy = Taxonomy(),
+    /** Common names in other languages, by ISO 639-1 code, preferred first; see [NameLanguages]. */
+    val otherNames: Map<String, List<String>> = emptyMap(),
 ) {
+    /** Its common names in [language] (an ISO 639-1 code), preferred first. */
+    fun names(language: String): List<String> = when (language) {
+        NameLanguages.VIETNAMESE -> vietnameseNames
+        NameLanguages.ENGLISH -> englishNames
+        else -> otherNames[language].orEmpty()
+    }
+
     val preferredVietnameseName: String? get() = vietnameseNames.firstOrNull()
     val preferredEnglishName: String? get() = englishNames.firstOrNull()
 
@@ -34,6 +43,19 @@ data class Species(
     /** The common name in the other language, shown under [displayName]; null when there's none. */
     fun otherName(vietnameseFirst: Boolean): String? =
         if (vietnameseFirst) preferredEnglishName else preferredVietnameseName
+}
+
+/** The languages of species' common (vernacular) names, by ISO 639-1 code. */
+object NameLanguages {
+    const val VIETNAMESE = "vi"
+    const val ENGLISH = "en"
+
+    /**
+     * The languages the app shows names in and takes suggestions for. The catalog may hold names in
+     * others (`vernacularName_<code>` columns); they're kept but not shown until the research ethics
+     * approval for them comes. A language added here must be added to the Firestore rules too.
+     */
+    val ENABLED: List<String> = listOf(VIETNAMESE, ENGLISH)
 }
 
 /** GBIF's classification above the family, and the name's nomenclature. */

@@ -39,7 +39,7 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
 
     class PhotosShared(speciesId: Long, count: Int) : AnalyticsEvent("share_photos", mapOf("species_id" to speciesId, "count" to count))
 
-    class NameSuggested(speciesId: Long) : AnalyticsEvent("suggest_name", mapOf("species_id" to speciesId))
+    class NameSuggested(speciesId: Long, language: String) : AnalyticsEvent("suggest_name", mapOf("species_id" to speciesId, "language" to language))
 
     class PhotoReported(reason: String) : AnalyticsEvent("report_photo", mapOf("reason" to reason))
 

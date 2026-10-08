@@ -41,6 +41,16 @@ class SqlSpeciesRepositoryTest {
     }
 
     @Test
+    fun `names in other languages round-trip through the database`() = scope.runTest {
+        csv = csv.replace(header, "$header,vernacularName_zh")
+            .replace("Ming Aralia,Đinh lăng", "Ming Aralia,Đinh lăng,南洋参; 福禄桐")
+            .lines().joinToString("\n") { if (it.count { c -> c == ',' } == 6) "$it," else it }
+
+        assertEquals(mapOf("zh" to listOf("南洋参", "福禄桐")), repository.get(3)!!.otherNames)
+        assertEquals(emptyMap<String, List<String>>(), repository.get(1)!!.otherNames)
+    }
+
+    @Test
     fun `Vietnamese order ignores diacritics and puts unnamed species last`() = scope.runTest {
         assertEquals(listOf(1L, 3L, 2L), repository.page(0, 10, sortByVietnameseName = true).map { it.id })
         assertEquals(listOf(2L, 1L, 3L), repository.page(0, 10, sortByVietnameseName = false).map { it.id })

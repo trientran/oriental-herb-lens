@@ -9,7 +9,7 @@
 
 From Phase 2 on, the app reads Firestore only for a species' user photos (`herbs/{speciesKey}`)
 and each user's own document once, to copy old favourites and history to the device. It writes
-photo URLs, Vietnamese name suggestions, photo reports, and each contributor's uid, name and
+photo URLs, name suggestions, photo reports, and each contributor's uid, name and
 email on their own `users/{uid}` document. `firebase/firestore.rules` locks everything
 else down, but **installed older versions still write names, reviews and favourites**, so the
 order of the steps matters.

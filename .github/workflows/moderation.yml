@@ -1,5 +1,5 @@
 # Every hour, opens a GitHub issue for each photo or shared model reported in the app, so the admin gets an
-# email and can act within 24 hours (App Store guideline 1.2), and one for each Vietnamese name
+# email and can act within 24 hours (App Store guideline 1.2), and one for each common name
 # suggestion. Act with tools/moderate.py.
 # Needs the FIREBASE_SERVICE_ACCOUNT_JSON secret (docs/release.md).
 name: Moderation
@@ -38,7 +38,7 @@ jobs:
           gh label create moderation --repo "$GITHUB_REPOSITORY" --color B60205 \
             --description "A photo or shared model reported in the app" 2>/dev/null || true
           gh label create name-suggestion --repo "$GITHUB_REPOSITORY" --color 0E8A16 \
-            --description "A Vietnamese name suggested in the app" 2>/dev/null || true
+            --description "A common name suggested in the app" 2>/dev/null || true
           gh label create hugging-face --repo "$GITHUB_REPOSITORY" --color FFD21E \
             --description "A shared model to review for Hugging Face" 2>/dev/null || true
           python3 tools/moderate.py notify --repo "$GITHUB_REPOSITORY"

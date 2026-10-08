@@ -66,7 +66,7 @@
     <string name="details_order">Bộ</string>
     <string name="details_gbif_key">Mã loài GBIF</string>
     <string name="details_source">Theo Hệ thống Thông tin Đa dạng sinh học Toàn cầu (GBIF), nơi có thêm thông tin về loài: ghi nhận phân bố, bản đồ và tài liệu.</string>
-    <string name="details_suggest_name">Đề xuất tên tiếng Việt</string>
+    <string name="details_suggest_name">Đề xuất tên thông dụng</string>
     <string name="photo_counter">%1$d / %2$d</string>
     <string name="photo_credit">© %1$s · %2$s</string>
     <string name="photo_credit_publisher">qua %1$s và GBIF</string>
@@ -78,12 +78,16 @@
     <string name="cd_close">Đóng</string>
 
     <!-- Suggest a name -->
-    <string name="suggest_name_title">Đề xuất tên tiếng Việt</string>
-    <string name="suggest_name_label">Tên tiếng Việt</string>
-    <string name="suggest_name_body">Chúng tôi sẽ xem xét đề xuất trước khi cập nhật danh mục.</string>
+    <string name="suggest_name_title">Đề xuất tên thông dụng</string>
+    <string name="suggest_name_label">Tên (%1$s)</string>
+    <string name="suggest_name_body">Tên thông dụng của loài này, theo cách người dân nơi bạn sống gọi. Chúng tôi sẽ xem xét đề xuất trước khi thêm vào danh mục.</string>
     <string name="suggest_name_submit">Gửi</string>
     <string name="suggest_name_sent">Cảm ơn bạn! Đề xuất đã được gửi.</string>
     <string name="suggest_name_sign_in">Đăng nhập để đề xuất tên.</string>
+    <string name="suggest_name_language">Ngôn ngữ</string>
+    <string name="suggest_name_listed">Đã có: %1$s</string>
+    <string name="details_names_unverified">Tên gọi chưa được chuyên gia kiểm chứng</string>
+    <string name="details_names_unverified_body">Tên thông dụng lấy từ GBIF và do người dùng ứng dụng đề xuất, chưa được chuyên gia kiểm chứng. Một tên gọi có thể chỉ dùng ở một vùng, ít dùng hoặc sai: hãy dùng tên khoa học để biết chắc đó là cây nào.</string>
 
     <!-- Identify -->
     <string name="scan_whole_view">Toàn cảnh</string>

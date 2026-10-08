@@ -6,6 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -149,7 +151,7 @@ class InteractionTest {
         var signIn = false
         show { HerbDetailsRoute(HERB, onBack = {}, onAddPhotos = {}, onSignIn = { signIn = true }) }
 
-        compose.onNodeWithText("Suggest a Vietnamese name").performClick()
+        compose.onNodeWithText("Suggest a vernacular name").performClick()
         compose.onNodeWithText("Sign in to suggest a name.").assertExists()
         compose.onNodeWithText("Sign in").performClick()
 
@@ -157,16 +159,18 @@ class InteractionTest {
     }
 
     @Test
-    fun `signed in a suggested name is sent`() {
+    fun `signed in a suggested name is sent with its language`() {
         auth.userId.value = "user-1"
         show { HerbDetailsRoute(HERB, onBack = {}, onAddPhotos = {}, onSignIn = {}) }
 
-        compose.onNodeWithText("Suggest a Vietnamese name").performClick()
+        compose.onNodeWithText("Suggest a vernacular name").performClick()
+        // The language chip, not the Names card's label
+        compose.onAllNodesWithText("Vietnamese").filterToOne(hasClickAction()).performClick()
         compose.onNode(hasSetTextAction()).performTextReplacement("Cây đinh lăng")
         compose.onNodeWithText("Send").performClick()
 
         compose.onNodeWithText("Thank you! Your suggestion has been sent.").assertExists()
-        assertEquals(listOf(HERB to "Cây đinh lăng"), contributions.names)
+        assertEquals(listOf(Triple(HERB, "vi", "Cây đinh lăng")), contributions.names)
     }
 
     @Test
