@@ -28,8 +28,8 @@ internal actual val platformDataModule: Module = module {
     single {
         val releases = get<ReleaseSource>()
         WebModelSource {
-            // The published model (on R2), else the copy served with the site
-            runCatching { releases.latest()[ContentKind.MODEL]?.url }.getOrNull() ?: BUNDLED_MODEL
+            // The published model (on R2), then the copy served with the site
+            listOfNotNull(runCatching { releases.latest()[ContentKind.MODEL]?.url }.getOrNull(), BUNDLED_MODEL).distinct()
         }
     }
 }
