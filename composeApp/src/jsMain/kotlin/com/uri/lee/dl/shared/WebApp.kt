@@ -26,6 +26,7 @@ import org.w3c.fetch.Response
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
+import org.w3c.files.File
 
 /** The web build's settings, from the webApp module. */
 class WebConfig(
@@ -130,17 +131,32 @@ private fun ignoreCancelledRequests() {
 
 /** The browser's file chooser, for images; on phones it also offers the camera. */
 private fun pickPhotos(pick: PhotoPick) {
+    chooseFiles({
+        accept = "image/*"
+        multiple = true
+    }) { files -> pick.onPicked(files.take(MAX_PHOTOS).map(::WebLocalImage)) }
+}
+
+/**
+ * Opens the browser's file chooser; [onChosen] gets the files, or none when it's cancelled (Chrome
+ * and Safari report that). The input stays in the page until then: iOS Safari drops the choice
+ * made in a chooser whose input isn't in the page.
+ */
+internal fun chooseFiles(configure: HTMLInputElement.() -> Unit, onChosen: (List<File>) -> Unit) {
     val input = document.createElement("input") as HTMLInputElement
     input.type = "file"
-    input.accept = "image/*"
-    input.multiple = true
+    input.style.display = "none"
+    input.configure()
+    fun done(files: List<File>) {
+        input.remove()
+        onChosen(files)
+    }
     input.onchange = {
         val files = input.files
-        val photos = (0 until (files?.length ?: 0)).mapNotNull { files?.item(it) }.take(MAX_PHOTOS).map(::WebLocalImage)
-        pick.onPicked(photos)
+        done((0 until (files?.length ?: 0)).mapNotNull { files?.item(it) })
     }
-    // Chrome and Safari report a cancelled chooser
-    input.addEventListener("cancel", { pick.onPicked(emptyList()) })
+    input.addEventListener("cancel", { done(emptyList()) })
+    document.body?.appendChild(input)
     input.click()
 }
 
