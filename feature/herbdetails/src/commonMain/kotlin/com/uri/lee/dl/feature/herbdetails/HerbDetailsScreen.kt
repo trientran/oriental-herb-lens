@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -281,16 +282,19 @@ private fun DetailsContent(
                 else -> NoPhotos(onAddPhotos)
             }
         }
+        // Names and classification can be selected and copied, e.g. to search elsewhere
         item("title") {
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                val commonName = species.displayName(LocalVietnameseFirst.current).takeIf { it != species.scientificName }
-                commonName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
-                ScientificName(
-                    species.scientificName,
-                    authorship = species.authorship,
-                    style = if (commonName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            SelectionContainer {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    val commonName = species.displayName(LocalVietnameseFirst.current).takeIf { it != species.scientificName }
+                    commonName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
+                    ScientificName(
+                        species.scientificName,
+                        authorship = species.authorship,
+                        style = if (commonName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
         item("actions") {
@@ -312,8 +316,12 @@ private fun DetailsContent(
         if (species.vietnameseNames.size > 1 || species.englishNames.isNotEmpty()) {
             item("names") {
                 SectionCard(stringResource(Res.string.details_names)) {
-                    NameList(stringResource(Res.string.details_vietnamese_names), species.vietnameseNames)
-                    NameList(stringResource(Res.string.details_english_names), species.englishNames)
+                    SelectionContainer {
+                        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                            NameList(stringResource(Res.string.details_vietnamese_names), species.vietnameseNames)
+                            NameList(stringResource(Res.string.details_english_names), species.englishNames)
+                        }
+                    }
                 }
             }
         }
@@ -343,8 +351,12 @@ private fun DetailsContent(
         }
         item("classification") {
             SectionCard(stringResource(Res.string.details_classification)) {
-                if (species.family.isNotBlank()) LabeledValue(stringResource(Res.string.details_family), species.family)
-                if (species.genus.isNotBlank()) LabeledValue(stringResource(Res.string.details_genus), species.genus, italic = true)
+                SelectionContainer {
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                        if (species.family.isNotBlank()) LabeledValue(stringResource(Res.string.details_family), species.family)
+                        if (species.genus.isNotBlank()) LabeledValue(stringResource(Res.string.details_genus), species.genus, italic = true)
+                    }
+                }
                 // The full record stays in the app; GBIF is one step further, from the sheet
                 TextButton(onClick = { showInfo = true; onAction(HerbDetailsAction.InfoOpened) }) {
                     Text(stringResource(Res.string.details_full))

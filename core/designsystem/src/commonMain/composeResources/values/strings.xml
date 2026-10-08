@@ -123,6 +123,7 @@
     <!-- Profile -->
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_sign_in_body">Sign in to add photos and suggest names. Browsing works without an account.</string>
+    <string name="profile_sign_in_body_no_photos">Sign in to suggest names and share models. Browsing works without an account.</string>
     <string name="profile_signed_in">Signed in</string>
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_delete_account">Delete account</string>
@@ -151,6 +152,7 @@
     <!-- Sign in -->
     <string name="sign_in_title">Sign in to contribute</string>
     <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
+    <string name="sign_in_body_no_photos">Browsing and identifying herbs work without an account. Sign in to suggest names and share models.</string>
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_apple">Continue with Apple</string>
     <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
