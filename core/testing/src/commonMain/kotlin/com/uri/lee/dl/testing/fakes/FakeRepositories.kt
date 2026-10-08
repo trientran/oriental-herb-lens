@@ -84,7 +84,8 @@ class FakeUserLibraryRepository : UserLibraryRepository {
 
 class FakeContributionRepository : ContributionRepository {
     val images = mutableListOf<Pair<Long, List<UploadedImage>>>()
-    val names = mutableListOf<Pair<Long, String>>()
+    /** Herb, language and name of each suggestion. */
+    val names = mutableListOf<Triple<Long, String, String>>()
     var fail = false
 
     override suspend fun addImages(herbId: Long, images: List<UploadedImage>) {
@@ -92,9 +93,9 @@ class FakeContributionRepository : ContributionRepository {
         this.images += herbId to images
     }
 
-    override suspend fun suggestVietnameseName(herbId: Long, name: String) {
+    override suspend fun suggestName(herbId: Long, language: String, name: String) {
         if (fail) error("offline")
-        names += herbId to name
+        names += Triple(herbId, language, name)
     }
 }
 

@@ -118,12 +118,17 @@ Upload photos you took yourself.
    where the photos now appear first, and "Where photos were taken" shows the place on a map.
 6. Airplane mode, then Upload: an error appears and Upload can be tried again.
 
-## 10. Suggest a Vietnamese name
+## 10. Suggest a vernacular name
 
-1. On a species, tap "Suggest a Vietnamese name". A sheet opens with the current name.
-2. Send is disabled until the text differs from the current name.
-3. Send. The sheet thanks you; the displayed name doesn't change (the admin reviews suggestions).
+1. On a species, tap "Suggest a vernacular name". A sheet opens with Vietnamese and English to
+   choose from (Vietnamese chosen in Vietnamese, English otherwise), an empty name field, and the
+   names already listed in that language under it.
+2. Send is disabled while the name is empty or already listed in that language (any case).
+3. Send. The sheet thanks you; the displayed names don't change (the admin reviews suggestions).
+   A GitHub issue opens within the hour, saying the language.
 4. Signed out, the sheet offers to sign in instead.
+5. The Names card lists every Vietnamese and English name, with a warning icon beside "Names":
+   tapping it explains that experts haven't checked the names.
 
 ## 11. Profile and settings
 

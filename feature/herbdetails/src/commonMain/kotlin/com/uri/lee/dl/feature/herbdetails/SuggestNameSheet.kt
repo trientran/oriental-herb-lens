@@ -2,6 +2,7 @@ package com.uri.lee.dl.feature.herbdetails
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -10,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -29,7 +31,9 @@ import com.uri.lee.dl.core.designsystem.resources.generic_error
 import com.uri.lee.dl.core.designsystem.resources.ok
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.suggest_name_body
+import com.uri.lee.dl.core.designsystem.resources.suggest_name_language
 import com.uri.lee.dl.core.designsystem.resources.suggest_name_label
+import com.uri.lee.dl.core.designsystem.resources.suggest_name_listed
 import com.uri.lee.dl.core.designsystem.resources.suggest_name_sent
 import com.uri.lee.dl.core.designsystem.resources.suggest_name_sign_in
 import com.uri.lee.dl.core.designsystem.resources.suggest_name_submit
@@ -41,8 +45,14 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun SuggestNameSheet(herbId: Long, currentName: String, onSignIn: () -> Unit, onDismiss: () -> Unit) {
-    val viewModel = koinViewModel<SuggestNameViewModel>(key = "suggest-$herbId") { parametersOf(herbId, currentName) }
+internal fun SuggestNameSheet(
+    herbId: Long,
+    listed: Map<String, List<String>>,
+    language: String,
+    onSignIn: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val viewModel = koinViewModel<SuggestNameViewModel>(key = "suggest-$herbId") { parametersOf(herbId, listed, language) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     DialogLayer {
         ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -79,16 +89,32 @@ internal fun SuggestNameContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(stringResource(Res.string.suggest_name_language), style = MaterialTheme.typography.labelLarge)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    state.languages.forEach { code ->
+                        FilterChip(
+                            selected = code == state.language,
+                            onClick = { onAction(SuggestNameAction.LanguageChanged(code)) },
+                            label = { Text(languageName(code)) },
+                        )
+                    }
+                }
+                val listed = state.listedInLanguage
                 OutlinedTextField(
                     value = state.draft,
                     onValueChange = { onAction(SuggestNameAction.DraftChanged(it)) },
-                    label = { Text(stringResource(Res.string.suggest_name_label)) },
+                    label = { Text(stringResource(Res.string.suggest_name_label, languageName(state.language))) },
                     singleLine = true,
                     isError = state.hasError,
-                    supportingText = if (state.hasError) {
-                        { Text(stringResource(Res.string.generic_error)) }
-                    } else {
-                        null
+                    supportingText = when {
+                        state.hasError -> {
+                            { Text(stringResource(Res.string.generic_error)) }
+                        }
+                        // What's there already, so it isn't suggested again
+                        listed.isNotEmpty() -> {
+                            { Text(stringResource(Res.string.suggest_name_listed, listed.joinToString(" · "))) }
+                        }
+                        else -> null
                     },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = { onAction(SuggestNameAction.Submit) }),

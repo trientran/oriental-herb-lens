@@ -15,7 +15,8 @@ internal data class CatalogReadResult(
 /**
  * Reads the species catalog CSV (a GBIF species export plus a `vietnameseName` column).
  * Only the columns the app uses are read; any extra columns are ignored. The [Taxonomy] columns are
- * optional: a catalog without them reads as before.
+ * optional: a catalog without them reads as before. So are names in other languages, one
+ * `vernacularName_<code>` column each (an ISO 639-1 code, e.g. `vernacularName_zh`).
  */
 internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
 
@@ -26,6 +27,9 @@ internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
         val missing = REQUIRED_COLUMNS - header.toSet()
         if (missing.isNotEmpty()) throw CatalogFormatException("Catalog is missing columns: $missing")
         val column = header.withIndex().associate { (index, name) -> name to index }
+        // Language code to its column's name
+        val otherLanguages = header.filter { it.startsWith(OTHER_NAMES_PREFIX) && it.length > OTHER_NAMES_PREFIX.length }
+            .associateBy { it.removePrefix(OTHER_NAMES_PREFIX).lowercase() }
 
         val species = mutableListOf<Species>()
         val skipped = mutableListOf<Int>()
@@ -56,6 +60,7 @@ internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
                     publishedIn = optional("publishedIn"),
                     basionym = optional("basionym"),
                 ),
+                otherNames = otherLanguages.mapValues { (_, name) -> splitNames(optional(name)) }.filterValues { it.isNotEmpty() },
             )
         }
         return CatalogReadResult(species, skipped)
@@ -71,6 +76,7 @@ internal class SpeciesCsvReader(private val normalizer: TextNormalizer) {
         const val GENUS = "genus"
         const val VIETNAMESE_NAME = "vietnameseName"
         const val VERNACULAR_NAME = "vernacularName"
+        const val OTHER_NAMES_PREFIX = "vernacularName_"
 
         val REQUIRED_COLUMNS = setOf(
             SPECIES_KEY, CANONICAL_NAME, AUTHORSHIP, FAMILY, GENUS, VIETNAMESE_NAME, VERNACULAR_NAME,

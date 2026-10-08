@@ -18,7 +18,9 @@ CREATE TABLE species (
     rank TEXT NOT NULL DEFAULT '',
     taxonomic_status TEXT NOT NULL DEFAULT '',
     published_in TEXT NOT NULL DEFAULT '',
-    basionym TEXT NOT NULL DEFAULT ''
+    basionym TEXT NOT NULL DEFAULT '',
+    -- Common names in other languages, added in schema 3 (2.sqm): one "code<TAB>name" per line
+    other_names TEXT NOT NULL DEFAULT ''
 );
 
 CREATE INDEX species_sort_vietnamese ON species(sort_vietnamese);

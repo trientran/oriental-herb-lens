@@ -42,16 +42,26 @@ service cloud.firestore {
         && onlyAddsPhotos(request.resource.data.images, resource.data.get('images', {}));
     }
 
-    // Read in the console by the admin only.
+    // A common name in one of the app's languages, read by the admin only. Only the languages the
+    // app offers (NameLanguages.ENABLED): others wait for the research ethics approval.
     match /nameSuggestions/{id} {
       allow create: if contributor()
-        && request.resource.data.keys().hasOnly(['speciesKey', 'viName', 'uid', 'createdAt'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.speciesKey is int
-        && request.resource.data.viName is string
-        && request.resource.data.viName.size() > 0
-        && request.resource.data.viName.size() <= 100
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && (vernacularName(request.resource.data) || legacyVietnameseName(request.resource.data));
+    }
+
+    function vernacularName(d) {
+      return d.keys().hasOnly(['speciesKey', 'language', 'name', 'uid', 'createdAt'])
+        && d.language in ['vi', 'en']
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 100;
+    }
+
+    // Builds before vernacular names suggested Vietnamese names only
+    function legacyVietnameseName(d) {
+      return d.keys().hasOnly(['speciesKey', 'viName', 'uid', 'createdAt'])
+        && d.viName is string && d.viName.size() > 0 && d.viName.size() <= 100;
     }
 
     // Reports of shared photos (App Store guideline 1.2), read by the admin only. Reporters sign

@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -69,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.LoadingState
@@ -90,6 +93,8 @@ import com.uri.lee.dl.core.designsystem.resources.details_genus
 import com.uri.lee.dl.core.designsystem.resources.details_map_hint
 import com.uri.lee.dl.core.designsystem.resources.details_map_note
 import com.uri.lee.dl.core.designsystem.resources.details_names
+import com.uri.lee.dl.core.designsystem.resources.details_names_unverified
+import com.uri.lee.dl.core.designsystem.resources.details_names_unverified_body
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
 import com.uri.lee.dl.core.designsystem.resources.details_photo_map
@@ -104,12 +109,14 @@ import com.uri.lee.dl.core.designsystem.resources.generic_error
 import com.uri.lee.dl.core.designsystem.resources.notice_contributor_hidden
 import com.uri.lee.dl.core.designsystem.resources.notice_failed
 import com.uri.lee.dl.core.designsystem.resources.notice_reported
+import com.uri.lee.dl.core.designsystem.resources.ok
 import com.uri.lee.dl.core.designsystem.resources.photo_counter
 import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.core.maps.HerbMap
 import com.uri.lee.dl.core.maps.LatLng
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.model.NameLanguages
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import org.jetbrains.compose.resources.pluralStringResource
@@ -145,7 +152,8 @@ fun HerbDetailsRoute(
     if (suggesting && species != null) {
         SuggestNameSheet(
             herbId = herbId,
-            currentName = species.preferredVietnameseName.orEmpty(),
+            listed = NameLanguages.ENABLED.associateWith { species.names(it) },
+            language = if (LocalVietnameseFirst.current) NameLanguages.VIETNAMESE else NameLanguages.ENGLISH,
             onSignIn = { suggesting = false; onSignIn() },
             onDismiss = { suggesting = false },
         )
@@ -315,13 +323,13 @@ private fun DetailsContent(
         }
         // Where photos can't be shared (the web), where they can
         if (onAddPhotos == null) item("share-in-apps") { ShareInApps() }
-        if (species.vietnameseNames.size > 1 || species.englishNames.isNotEmpty()) {
+        // Every common name in the languages the app shows, with a warning that nobody checked them
+        if (NameLanguages.ENABLED.any { species.names(it).isNotEmpty() }) {
             item("names") {
-                SectionCard(stringResource(Res.string.details_names)) {
+                SectionCard(stringResource(Res.string.details_names), titleAction = { UnverifiedNames() }) {
                     SelectionContainer {
                         Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                            NameList(stringResource(Res.string.details_vietnamese_names), species.vietnameseNames)
-                            NameList(stringResource(Res.string.details_english_names), species.englishNames)
+                            NameLanguages.ENABLED.forEach { language -> NameList(languageName(language), species.names(language)) }
                         }
                     }
                 }
@@ -424,6 +432,35 @@ private fun formatCoordinates(location: GeoLocation): String {
 private fun NameList(label: String, names: List<String>) {
     if (names.isEmpty()) return
     LabeledValue(label, names.joinToString(" · "))
+}
+
+/** A language's name, from its ISO 639-1 code. */
+@Composable
+internal fun languageName(code: String): String = when (code) {
+    NameLanguages.VIETNAMESE -> stringResource(Res.string.details_vietnamese_names)
+    NameLanguages.ENGLISH -> stringResource(Res.string.details_english_names)
+    else -> code.uppercase()
+}
+
+/** A warning beside "Names": common names come from GBIF and users, and experts haven't checked them. */
+@Composable
+private fun UnverifiedNames() {
+    var open by remember { mutableStateOf(false) }
+    val title = stringResource(Res.string.details_names_unverified)
+    IconButton(onClick = { open = true }, modifier = Modifier.size(32.dp)) {
+        Icon(Icons.Outlined.WarningAmber, contentDescription = title, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+    }
+    if (open) {
+        DialogLayer {
+            AlertDialog(
+                onDismissRequest = { open = false },
+                icon = { Icon(Icons.Outlined.WarningAmber, contentDescription = null) },
+                title = { Text(title) },
+                text = { Text(stringResource(Res.string.details_names_unverified_body)) },
+                confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(Res.string.ok)) } },
+            )
+        }
+    }
 }
 
 @Composable

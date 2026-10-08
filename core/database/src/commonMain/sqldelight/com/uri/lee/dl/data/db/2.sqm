@@ -1,0 +1,5 @@
+-- Schema 2 to 3: common names in languages other than Vietnamese and English.
+ALTER TABLE species ADD COLUMN other_names TEXT NOT NULL DEFAULT '';
+
+-- Import the catalog again, to fill it
+DELETE FROM catalog_meta WHERE key = 'source_sha256';

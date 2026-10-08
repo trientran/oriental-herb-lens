@@ -68,6 +68,16 @@ While a URL or checksum is empty, the app keeps using its bundled copy. The old 
 parameter (a `gs://` Firebase Storage path) is no longer read by new app versions. Keep it until
 nobody runs an older version, then delete it along with the Firebase Storage file.
 
+## Common names in the catalog
+
+Each species' common names are in the catalog CSV, names separated by `; `, the preferred one
+first: `vietnameseName` for Vietnamese and `vernacularName` for English. Names in other languages
+go in a column per language, `vernacularName_<code>` with an ISO 639-1 code (e.g.
+`vernacularName_zh`). The app reads them all, but shows, and takes suggestions in, only the
+languages in `NameLanguages.ENABLED` (Vietnamese and English), until the research ethics approval
+for others. Accepted user suggestions (`tools/moderate.py suggestions`) go in the column for their
+language.
+
 ## Publishing a new version
 
 Always publish the catalog first when a new model adds species. The app won't activate a model

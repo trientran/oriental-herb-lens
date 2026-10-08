@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reviews what users send: reported photos and shared models, and Vietnamese name suggestions.
+"""Reviews what users send: reported photos and shared models, and common-name suggestions.
 
 Users report photos in the app (photoReports in Firestore, which only this kind of admin access
 can read). App Store guideline 1.2 expects objectionable content to be acted on within 24 hours;
@@ -24,9 +24,10 @@ R2). It does the same for each name suggestion (nameSuggestions), which has no d
     tools/moderate.py dismiss-suggestion ID       close a suggestion (after adding the name, or not)
     tools/moderate.py notify --repo OWNER/REPO    (CI) open an issue per new report and suggestion
 
-To accept a suggestion, add the name to the species' vietnameseName in
-androidApp/assets/herb_catalog.csv (names separated by "; ", the preferred one first), publish
-the catalog (docs/content-publishing.md), then dismiss the suggestion.
+To accept a suggestion, add the name to the species' column for its language in
+androidApp/assets/herb_catalog.csv: vietnameseName (vi), vernacularName (en), or
+vernacularName_<code> for others (names separated by "; ", the preferred one first). Publish the
+catalog (docs/content-publishing.md), then dismiss the suggestion.
 
 Removing the file from R2 needs Cloudflare's wrangler CLI, logged in (`npx wrangler login`).
 Models are published on Hugging Face by the upload Worker as they're shared (when the sharer
@@ -403,14 +404,29 @@ def cmd_unban(db, args):
     print("Unbanned %s." % args.uid)
 
 
-def catalog_names(species_key):
-    """(scientific name, current Vietnamese names) from the catalog CSV, if it has the species."""
+LANGUAGE_NAMES = {"vi": "Vietnamese", "en": "English"}
+
+
+def name_column(language):
+    """The catalog column that holds names in a language (an ISO 639-1 code)."""
+    return {"vi": "vietnameseName", "en": "vernacularName"}.get(language, "vernacularName_%s" % language)
+
+
+def suggested(suggestion):
+    """(language, name) of a suggestion; earlier builds sent Vietnamese names only, as viName."""
+    if suggestion.get("viName"):
+        return "vi", suggestion.get("viName")
+    return suggestion.get("language") or "?", suggestion.get("name")
+
+
+def catalog_names(species_key, language="vi"):
+    """(scientific name, its current names in the language) from the catalog CSV, if it has the species."""
     path = os.path.join(os.path.dirname(__file__), "..", CATALOG)
     try:
         with open(path, encoding="utf-8", newline="") as f:
             for row in csv.DictReader(f):
                 if row.get("speciesKey") == str(species_key):
-                    return row.get("canonicalName") or row.get("scientificName"), row.get("vietnameseName") or ""
+                    return row.get("canonicalName") or row.get("scientificName"), row.get(name_column(language)) or ""
     except OSError:
         pass
     return None, None
@@ -420,10 +436,11 @@ def describe_suggestion(snapshot):
     s = snapshot.to_dict()
     created = s.get("createdAt")
     when = created.strftime("%Y-%m-%d %H:%M UTC") if created else "?"
-    scientific, current = catalog_names(s.get("speciesKey"))
-    return "%s  %s  species %s (%s)\n    suggested %s\n    current   %s\n    by        %s" % (
-        snapshot.id, when, s.get("speciesKey"), scientific or "not in the catalog", s.get("viName"),
-        current or "-", s.get("uid"),
+    language, name = suggested(s)
+    scientific, current = catalog_names(s.get("speciesKey"), language)
+    return "%s  %s  species %s (%s)\n    suggested %s (%s)\n    current   %s\n    by        %s" % (
+        snapshot.id, when, s.get("speciesKey"), scientific or "not in the catalog", name,
+        LANGUAGE_NAMES.get(language, language), current or "-", s.get("uid"),
     )
 
 
@@ -453,18 +470,20 @@ def notify_suggestions(db, repo):
         if suggestion.get("notifiedAt"):
             continue
         key = suggestion.get("speciesKey")
-        name = suggestion.get("viName")
-        scientific, current = catalog_names(key)
+        language, name = suggested(suggestion)
+        language_name = LANGUAGE_NAMES.get(language, language)
+        scientific, current = catalog_names(key, language)
         body = "\n".join([
-            "A user suggested a Vietnamese name.",
+            "A user suggested a common name in %s." % language_name,
             "",
             "- Suggested: **%s**" % name,
+            "- Language: %s (`%s`)" % (language_name, language),
             "- Species: %s, %s (https://www.gbif.org/species/%s)" % (scientific or "not in the catalog", key, key),
-            "- Current Vietnamese names: %s" % (current or "none"),
+            "- Current %s names: %s" % (language_name, current or "none"),
             "- By: `%s`" % suggestion.get("uid"),
             "",
-            "If it's right, add it to the species' `vietnameseName` in `%s` (names separated by `; `, "
-            "the preferred one first) and publish the catalog (docs/content-publishing.md). Either way, then:" % CATALOG,
+            "If it's right, add it to the species' `%s` in `%s` (names separated by `; `, "
+            "the preferred one first) and publish the catalog (docs/content-publishing.md). Either way, then:" % (name_column(language), CATALOG),
             "",
             "```",
             "tools/moderate.py dismiss-suggestion %s" % snapshot.id,
@@ -472,7 +491,7 @@ def notify_suggestions(db, repo):
             "",
             "Close this issue once done.",
         ])
-        title = "Name suggestion: %s for %s" % (name, scientific or "species %s" % key)
+        title = "Name suggestion (%s): %s for %s" % (language_name, name, scientific or "species %s" % key)
         subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
                         "--label", "name-suggestion"], check=True)
         snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})

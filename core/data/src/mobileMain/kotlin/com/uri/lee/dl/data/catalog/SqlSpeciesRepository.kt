@@ -135,6 +135,8 @@ internal class SqlSpeciesRepository(
             taxonomic_status = taxonomy.status,
             published_in = taxonomy.publishedIn,
             basionym = taxonomy.basionym,
+            other_names = otherNames.flatMap { (language, names) -> names.map { "$language\t${it.replace('\n', ' ').replace('\t', ' ')}" } }
+                .joinToString(NAME_SEPARATOR),
         )
 
         internal fun SpeciesRow.toDomain() = Species(
@@ -146,6 +148,8 @@ internal class SqlSpeciesRepository(
             vietnameseNames = vietnamese_names.split(NAME_SEPARATOR).filter { it.isNotEmpty() },
             englishNames = english_names.split(NAME_SEPARATOR).filter { it.isNotEmpty() },
             taxonomy = Taxonomy(kingdom, phylum, class_name, order_name, rank, taxonomic_status, published_in, basionym),
+            otherNames = other_names.split(NAME_SEPARATOR).filter { '\t' in it }
+                .groupBy({ it.substringBefore('\t') }, { it.substringAfter('\t') }),
         )
     }
 }
