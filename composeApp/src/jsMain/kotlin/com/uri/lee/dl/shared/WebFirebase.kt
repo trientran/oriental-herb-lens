@@ -1,6 +1,7 @@
 package com.uri.lee.dl.shared
 
 import com.uri.lee.dl.feature.auth.GoogleCredential
+import com.uri.lee.dl.feature.auth.SignInWindowBlockedException
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
@@ -73,6 +74,7 @@ internal suspend fun googleSignInPopup(): GoogleCredential? {
     } catch (e: Throwable) {
         val code = e.asDynamic().code as? String
         if (code == "auth/popup-closed-by-user" || code == "auth/cancelled-popup-request") return null
+        if (code == "auth/popup-blocked") throw SignInWindowBlockedException()
         throw e
     }
     val credential = AuthJs.GoogleAuthProvider.credentialFromResult(result) ?: return null

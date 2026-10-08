@@ -81,7 +81,8 @@ fun DeleteAccountRoute(
                     )
                 } catch (e: CancellationException) {
                     throw e
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
+                    // Throwable: on the web, the browser's own errors aren't Exceptions
                     Logger.withTag("DeleteAccount").e(e) { "Confirming sign-in failed" }
                     DeleteAccountAction.Failed
                 }

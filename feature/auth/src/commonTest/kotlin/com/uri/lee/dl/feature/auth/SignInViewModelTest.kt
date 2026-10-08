@@ -43,6 +43,21 @@ class SignInViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `a blocked sign-in window is reported as such`() {
+        val viewModel = SignInViewModel(auth)
+
+        viewModel.onAction(SignInAction.GoogleStarted)
+        viewModel.onAction(SignInAction.WindowBlocked)
+
+        assertFalse(viewModel.state.value.isWorking)
+        assertTrue(viewModel.state.value.windowBlocked)
+
+        // Trying again clears it
+        viewModel.onAction(SignInAction.GoogleStarted)
+        assertFalse(viewModel.state.value.windowBlocked)
+    }
+
+    @Test
     fun `a rejected token is reported`() {
         auth.failSignIn = true
         val viewModel = SignInViewModel(auth)

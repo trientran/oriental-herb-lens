@@ -41,6 +41,7 @@ import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.sign_in_apple
 import com.uri.lee.dl.core.designsystem.resources.sign_in_body
 import com.uri.lee.dl.core.designsystem.resources.sign_in_error
+import com.uri.lee.dl.core.designsystem.resources.sign_in_window_blocked
 import com.uri.lee.dl.core.designsystem.resources.sign_in_google
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
 import com.uri.lee.dl.core.designsystem.resources.terms_of_service
@@ -57,6 +58,9 @@ import org.koin.compose.viewmodel.koinViewModel
  * iOS); null means the user backed out. Throws when no account can be offered.
  */
 typealias GoogleSignInRequest = suspend () -> GoogleCredential?
+
+/** Thrown by a [GoogleSignInRequest] when the browser blocks its sign-in window (the web). */
+class SignInWindowBlockedException : Exception("The browser blocked the sign-in window")
 
 /** Asks the platform for a Sign in with Apple credential (iOS); null means the user backed out. */
 typealias AppleSignInRequest = suspend () -> AppleCredential?
@@ -83,7 +87,10 @@ fun SignInRoute(
                     SignInAction.GoogleFinished(requestGoogleSignIn())
                 } catch (e: CancellationException) {
                     throw e
-                } catch (e: Exception) {
+                } catch (e: SignInWindowBlockedException) {
+                    SignInAction.WindowBlocked
+                } catch (e: Throwable) {
+                    // Throwable: on the web, the browser's own errors aren't Exceptions
                     Logger.withTag("SignIn").e(e) { "Google sign-in failed" }
                     SignInAction.GoogleFailed
                 }
@@ -100,7 +107,7 @@ fun SignInRoute(
                         SignInAction.AppleFinished(request())
                     } catch (e: CancellationException) {
                         throw e
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         Logger.withTag("SignIn").e(e) { "Apple sign-in failed" }
                         SignInAction.GoogleFailed
                     }
@@ -164,7 +171,7 @@ fun SignInScreen(
                     }
                 }
                 if (state.hasError) {
-                    Text(stringResource(Res.string.sign_in_error), color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                    Text(stringResource(if (state.windowBlocked) Res.string.sign_in_window_blocked else Res.string.sign_in_error), color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                 }
                 Row {
                     TextButton(onClick = { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }) {
