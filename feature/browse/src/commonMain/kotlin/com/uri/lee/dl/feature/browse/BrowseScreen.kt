@@ -29,11 +29,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
@@ -74,7 +78,7 @@ fun BrowseRoute(
         onAction = viewModel::onAction,
         onOpenSpecies = onOpenSpecies,
         selectedId = selectedId,
-        onVoiceSearch = onVoiceSearch?.let { start -> { start { viewModel.onAction(BrowseAction.QueryChanged(it)) } } },
+        onVoiceSearch = onVoiceSearch,
         modifier = modifier,
     )
 }
@@ -86,7 +90,8 @@ fun BrowseScreen(
     onOpenSpecies: (Long) -> Unit,
     selectedId: Long?,
     modifier: Modifier = Modifier,
-    onVoiceSearch: (() -> Unit)? = null,
+    /** Starts platform speech recognition and reports the text; null hides the microphone. */
+    onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
 ) {
     val spacing = HerbLensTheme.spacing
     Column(modifier.fillMaxSize()) {
@@ -112,12 +117,24 @@ fun BrowseScreen(
 private fun SearchField(
     query: String,
     onQueryChange: (String) -> Unit,
-    onVoiceSearch: (() -> Unit)?,
+    onVoiceSearch: (((String) -> Unit) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    // The text and cursor live in the field, starting from the view model's query: typed text that
+    // went through the view model and back reached the field a frame late, and iOS then put the
+    // cursor back at the start between keystrokes
+    var field by remember { mutableStateOf(TextFieldValue(query, TextRange(query.length))) }
+    val set = { text: String ->
+        field = TextFieldValue(text, TextRange(text.length))
+        onQueryChange(text)
+    }
     OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
+        value = field,
+        onValueChange = {
+            val changed = it.text != field.text
+            field = it
+            if (changed) onQueryChange(it.text)
+        },
         modifier = modifier,
         singleLine = true,
         shape = CircleShape,
@@ -126,10 +143,10 @@ private fun SearchField(
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         trailingIcon = {
             when {
-                query.isNotEmpty() -> IconButton(onClick = { onQueryChange("") }) {
+                field.text.isNotEmpty() -> IconButton(onClick = { set("") }) {
                     Icon(Icons.Filled.Clear, contentDescription = stringResource(Res.string.cd_clear_search))
                 }
-                onVoiceSearch != null -> IconButton(onClick = onVoiceSearch) {
+                onVoiceSearch != null -> IconButton(onClick = { onVoiceSearch(set) }) {
                     Icon(Icons.Filled.Mic, contentDescription = stringResource(Res.string.cd_voice_search))
                 }
             }
