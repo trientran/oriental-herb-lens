@@ -151,6 +151,8 @@ class CommunitySharingTest : MainDispatcherTest() {
         viewModel.onAction(TrainingAction.Open(TrainingScreen.CommunityModel("c")))
         viewModel.onAction(TrainingAction.RemoveCommunityModel("c"))
         assertEquals(TrainingMessage.REMOVED, viewModel.state.value.message)
+        assertEquals(TrainingScreen.Community, viewModel.state.value.screen)
+        assertEquals(null, viewModel.state.value.error)
         assertTrue(community.shared.value.none { it.id == "c" })
     }
 
