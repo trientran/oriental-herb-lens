@@ -234,7 +234,8 @@ class TrainingViewModel(
                     community.remove(shared)
                     // The model it came from can be shared again
                     store.list().filter { it.sharedId == shared.id }.forEach { store.save(it.copy(sharedId = null)) }
-                    back()
+                    // Unless the page already left, as the model dropped off the list
+                    if (currentState.screen == TrainingScreen.CommunityModel(shared.id)) back()
                     setState { copy(message = TrainingMessage.REMOVED) }
                 }
             }

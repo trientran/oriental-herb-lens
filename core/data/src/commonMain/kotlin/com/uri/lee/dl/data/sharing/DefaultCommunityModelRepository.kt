@@ -129,10 +129,13 @@ internal class DefaultCommunityModelRepository(
 
     override suspend fun remove(model: CommunityModel) {
         val token = auth.idToken() ?: throw NotSignedInException()
-        // The Worker removes the file, its Hugging Face copy and the listing; the listing goes here
-        // too in case it couldn't (off the list is what matters most)
-        runCatching { deleteFile(model.id, token) }.onFailure { log.w(it) { "Shared model file not removed" } }
-        firestore.deleteSharedModel(model.id)
+        // The Worker removes the file, its Hugging Face copy and the listing. Only if it couldn't is
+        // the listing deleted here (off the list is what matters most): once the Worker has deleted
+        // it, the rules refuse a second delete, as they can't see whose it was
+        runCatching { deleteFile(model.id, token) }.onFailure {
+            log.w(it) { "Shared model not removed by the Worker; removing its listing" }
+            firestore.deleteSharedModel(model.id)
+        }
     }
 
     override suspend fun download(model: CommunityModel): ByteArray {

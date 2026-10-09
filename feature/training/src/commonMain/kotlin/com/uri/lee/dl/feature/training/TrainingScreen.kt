@@ -60,6 +60,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -503,7 +504,13 @@ private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> 
 /** One shared model: add it, see what it can identify; report it or hide its sharer, or stop sharing your own. */
 @Composable
 private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (TrainingAction) -> Unit) {
-    val model = state.community?.firstOrNull { it.id == id } ?: return LoadingState()
+    val community = state.community ?: return LoadingState()
+    val model = community.firstOrNull { it.id == id }
+    if (model == null) {
+        // No longer shared (just removed, or by its sharer elsewhere): back to the list, not a spinner
+        LaunchedEffect(id) { onAction(TrainingAction.Back) }
+        return
+    }
     val spacing = HerbLensTheme.spacing
     val uriHandler = LocalUriHandler.current
     var reporting by remember { mutableStateOf(false) }
