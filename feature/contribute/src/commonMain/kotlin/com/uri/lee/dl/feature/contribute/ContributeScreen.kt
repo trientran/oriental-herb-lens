@@ -46,6 +46,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,6 +69,7 @@ import com.uri.lee.dl.core.designsystem.resources.contribute_done
 import com.uri.lee.dl.core.designsystem.resources.contribute_failed
 import com.uri.lee.dl.core.designsystem.resources.contribute_finished
 import com.uri.lee.dl.core.designsystem.resources.contribute_finished_partly
+import com.uri.lee.dl.core.designsystem.resources.contribute_locating
 import com.uri.lee.dl.core.designsystem.resources.contribute_location
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_body
 import com.uri.lee.dl.core.designsystem.resources.contribute_location_needed
@@ -283,6 +285,8 @@ private fun LocationSection(
     val spacing = HerbLensTheme.spacing
     var showMap by rememberSaveable { mutableStateOf(false) }
     var unavailable by rememberSaveable { mutableStateOf(false) }
+    // A fix can take several seconds outdoors; say so, rather than look as if the tap did nothing
+    var locating by remember { mutableStateOf(false) }
     SectionCard(stringResource(Res.string.contribute_location), Modifier.padding(top = spacing.md)) {
         Text(stringResource(Res.string.contribute_location_body), style = MaterialTheme.typography.bodyMedium)
         if (picked != null) {
@@ -298,11 +302,19 @@ private fun LocationSection(
         if (unavailable) {
             Text(stringResource(Res.string.contribute_location_unavailable), color = MaterialTheme.colorScheme.error)
         }
+        if (locating) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                Text(stringResource(Res.string.contribute_locating), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm), verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
             if (currentLocation != null) {
-                FilledTonalButton(onClick = {
+                FilledTonalButton(enabled = !locating, onClick = {
                     unavailable = false
+                    locating = true
                     currentLocation { found ->
+                        locating = false
                         unavailable = found == null
                         if (found != null) onAction(ContributeAction.LocationPicked(found))
                     }

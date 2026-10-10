@@ -180,6 +180,7 @@
     <string name="contribute_location_body">Required. Where you photographed the plant: use your location, or choose the spot on the map.</string>
     <string name="contribute_location_needed">Add where it was to upload</string>
     <string name="contribute_use_my_location">Use my location</string>
+    <string name="contribute_locating">Finding your location…</string>
     <string name="contribute_choose_on_map">Choose on map</string>
     <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>
     <string name="contribute_use_this_place">Use this place</string>

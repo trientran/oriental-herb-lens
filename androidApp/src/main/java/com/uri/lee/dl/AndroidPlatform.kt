@@ -16,6 +16,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -115,20 +116,30 @@ class AndroidPlatform(private val activity: ComponentActivity) {
         }
     }
 
-    /** Null when location is off or no fix arrives; the screen then suggests the map instead. */
+    /**
+     * Null when location is off or no fix arrives; the screen then suggests the map instead.
+     * A fix up to two minutes old will do, and a fresh one gets up to 20 seconds with GPS: asking
+     * only for a quick network fix often came back empty (on Xiaomi phones, several taps in a
+     * row). Failing that, the last known place.
+     */
     @SuppressLint("MissingPermission") // only called once a location permission is granted
     private fun fetchLocation() {
         activity.lifecycleScope.launch {
-            val location = runCatching {
-                LocationServices.getFusedLocationProviderClient(activity)
-                    .getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
-                    .await()
-            }.getOrNull()
+            val client = LocationServices.getFusedLocationProviderClient(activity)
+            val request = CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(LOCATION_MAX_AGE_MS)
+                .setDurationMillis(LOCATION_WAIT_MS)
+                .build()
+            val location = runCatching { client.getCurrentLocation(request, null).await() }.getOrNull()
+                ?: runCatching { client.lastLocation.await() }.getOrNull()
             onLocation?.invoke(location?.let { GeoLocation(it.latitude, it.longitude) })
         }
     }
 
     private companion object {
+        const val LOCATION_MAX_AGE_MS = 2 * 60_000L
+        const val LOCATION_WAIT_MS = 20_000L
         const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.uri.lee.dl"
     }
 }
