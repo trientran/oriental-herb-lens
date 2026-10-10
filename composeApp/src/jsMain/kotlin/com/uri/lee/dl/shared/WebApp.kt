@@ -24,6 +24,7 @@ import org.w3c.dom.HTMLInputElement
 import org.w3c.fetch.Response
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.url.URL
+import org.w3c.dom.url.URLSearchParams
 import org.w3c.files.Blob
 import org.w3c.files.File
 
@@ -100,7 +101,7 @@ fun startWebApp(config: WebConfig) {
     ComposeViewport(document.getElementById("app")!!) {
         // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
         // a selectable label in a button takes the click as the start of a selection
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions) }
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions, openHerbId = speciesInAddress()) }
     }
 }
 
@@ -158,6 +159,10 @@ internal fun chooseFiles(configure: HTMLInputElement.() -> Unit, onChosen: (List
     input.click()
 }
 
+
+/** The species to open, from an address like /app/?species=3035652 (the species pages' "Open" button). */
+private fun speciesInAddress(): Long? =
+    URLSearchParams(window.location.search).get("species")?.toLongOrNull()
 
 /** The system share sheet where there is one (phones), otherwise the link goes to the clipboard. */
 private fun share(url: String) {
