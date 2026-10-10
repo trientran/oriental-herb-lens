@@ -56,6 +56,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uri.lee.dl.core.designsystem.LegalLinks
+import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
+import com.uri.lee.dl.core.designsystem.component.AiTerm
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.privacy_policy
@@ -77,6 +80,7 @@ import com.uri.lee.dl.core.designsystem.resources.profile_privacy
 import com.uri.lee.dl.core.designsystem.resources.profile_share
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body
+import com.uri.lee.dl.core.designsystem.resources.profile_sign_in_body_no_photos
 import com.uri.lee.dl.core.designsystem.resources.profile_sign_out
 import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
@@ -129,8 +133,11 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), onClick = it) }
                 LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) { uriHandler.openUri(HERB_LIST_URL) }
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
-                // The address too: without a mail app set up, a mailto link does nothing
-                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAIL) { uriHandler.openUri("mailto:$CONTACT_EMAIL") }
+                // The addresses too: without a mail app set up, a mailto link does nothing. One email to both,
+                // the university's first
+                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAILS.joinToString("\n")) {
+                    uriHandler.openUri("mailto:" + CONTACT_EMAILS.joinToString(","))
+                }
                 // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
                 val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(about) }
@@ -173,7 +180,7 @@ private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: (
                 }
             }
             false -> {
-                Text(stringResource(Res.string.profile_sign_in_body), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(if (LocalSharesPhotos.current) Res.string.profile_sign_in_body else Res.string.profile_sign_in_body_no_photos), style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onSignIn) {
                     Icon(Icons.Filled.AccountCircle, contentDescription = null)
                     Text(stringResource(Res.string.profile_sign_in), Modifier.padding(start = spacing.sm))
@@ -189,7 +196,10 @@ private fun AccountCard(isSignedIn: Boolean?, onSignIn: () -> Unit, onSignOut: (
 private fun ConfidenceSetting(value: Float, onChange: (Float) -> Unit) {
     var dragging by remember(value) { mutableFloatStateOf(value) }
     Column {
-        Text(stringResource(Res.string.profile_min_confidence, (dragging * 100).roundToInt()), style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(Res.string.profile_min_confidence, (dragging * 100).roundToInt()), style = MaterialTheme.typography.bodyLarge)
+            InfoTip(AiTerm.CONFIDENCE)
+        }
         Text(
             stringResource(Res.string.profile_min_confidence_body),
             style = MaterialTheme.typography.bodyMedium,
@@ -266,4 +276,4 @@ private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null
 }
 
 private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private const val CONTACT_EMAIL = "tptrien@gmail.com"
+private val CONTACT_EMAILS = listOf("ttran72@myune.edu.au", "tptrien@gmail.com")

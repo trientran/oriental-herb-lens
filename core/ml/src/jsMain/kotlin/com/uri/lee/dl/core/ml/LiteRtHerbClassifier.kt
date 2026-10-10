@@ -5,6 +5,7 @@ import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.model.Classification
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.await
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -18,9 +19,13 @@ import kotlin.js.Promise
 import kotlin.js.json
 
 
-/** Where the browser gets the herb model: the published release, or the copy served with the site. */
+/**
+ * Where the browser gets the herb model, in order of preference: the published release, then the
+ * copy served with the site, used when the first can't be loaded (offline, or a site address the
+ * content storage doesn't serve).
+ */
 fun interface WebModelSource {
-    suspend fun modelUrl(): String
+    suspend fun modelUrls(): List<String>
 }
 
 /**
@@ -41,7 +46,7 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
     private suspend fun run(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> {
         val model = model()
         val canvas = (image as WebClassifierImage).canvas
-        val pixels = drawn(canvas, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble(), SIZE, SIZE)
+        val pixels = modelInput(canvas, SIZE)
             .context2d.getImageData(0.0, 0.0, SIZE.toDouble(), SIZE.toDouble()).data
         val input = Float32Array(SIZE * SIZE * 3)
         var j = 0
@@ -65,7 +70,19 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
 
     private suspend fun load(): Model {
         loadLiteRtRuntime()
-        val url = source.modelUrl()
+        val urls = source.modelUrls()
+        urls.forEachIndexed { i, url ->
+            try {
+                return load(url)
+            } catch (e: Throwable) {
+                if (e is CancellationException || i == urls.lastIndex) throw e
+                Logger.withTag("Model").w(e) { "Couldn't load $url; trying the next copy" }
+            }
+        }
+        error("No model to load")
+    }
+
+    private suspend fun load(url: String): Model {
         val bytes = window.fetch(url).await().also { check(it.ok) { "HTTP ${it.status} for $url" } }
             .unsafeCast<Response>().arrayBuffer().await()
         val compiled = LiteRt.loadAndCompile(Uint8Array(bytes), json("accelerator" to "wasm")).await()

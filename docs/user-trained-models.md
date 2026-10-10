@@ -192,6 +192,23 @@ hidden layer is a setting and an ablation in the study.
   hidden for the reporter at once); hide everything its sharer shared (models and photos, on this
   device); or stop sharing your own (`DELETE /models/{id}` removes the file, uploader only). The
   administrator removes reported models in the Firestore console and bans accounts as for photos.
+- **Hugging Face:** the confirm step's *Also publish it on Hugging Face (recommended)* is ticked by
+  default. The entry is listed with `huggingFace: "requested"`, then the app asks the Worker
+  (`POST /models/<id>/huggingface`, with the file's SHA-256). The Worker checks it's the sharer's,
+  checks the names again, copies the file from R2 to `<HF_ORG>/<name>-<id>` with a model card
+  (licence, species, how to use it, caution, credit to "a Med Herb Lens user", the papers to cite)
+  and marks the entry `published` with `huggingFaceUrl`; the app links to it. The token is the
+  Worker secret `HF_TOKEN`. If publishing fails, the entry stays `requested`: the hourly moderation
+  workflow opens an issue and `tools/moderate.py publish-hf <id>` does it by hand. Stopping sharing,
+  or the administrator removing a reported model, deletes the Hugging Face repository too.
+- **Sharing that finishes:** the request is saved first (`ModelShareQueue`, under the app's
+  `uploads/models/`), with the share's id, then run by the `UploadScheduler`: WorkManager on Android
+  (it carries on after the app is swiped away, and waits for a connection), the app's scope on iOS
+  (with background time) and the web, and again at every launch. Each step is safe to repeat. If it
+  can't finish, the screen says it'll be shared when there's a connection; after 8 tries it gives up.
+- **Encouraging sharing:** the training screen mentions that the model can be shared when it's
+  done, and a trained model's results show an invitation to share until it is (the model then
+  remembers its shared id).
 
 ## Research mode
 

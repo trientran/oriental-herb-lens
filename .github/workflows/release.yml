@@ -21,10 +21,6 @@ on:
         options: [all, android-and-ios, android, ios, web]
         default: all
 
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 env:
   VERSION_NAME: ${{ inputs.version_name }}
   BUILD_NUMBER: ${{ github.run_number }}0
@@ -32,6 +28,10 @@ env:
 jobs:
   android:
     if: contains(fromJSON('["all", "android-and-ios", "android"]'), inputs.platforms)
+    # One release per platform at a time, queued not cancelled; the platforms don't wait for each other
+    concurrency:
+      group: release-android
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -87,8 +87,12 @@ jobs:
 
   ios:
     if: contains(fromJSON('["all", "android-and-ios", "ios"]'), inputs.platforms)
+    concurrency:
+      group: release-ios
+      cancel-in-progress: false
     runs-on: macos-latest
-    timeout-minutes: 60
+    # An optimised Kotlin/Native release link alone takes most of an hour on a hosted runner
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v5
 
@@ -117,6 +121,18 @@ jobs:
           echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
           python3 tools/ios_secrets.py
           echo "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
+
+      # Built here, where its progress shows, rather than hidden inside xcodebuild; the archive's
+      # build phase (embedAndSignAppleFrameworkForXcode) then finds the framework up to date
+      - name: Build the shared Kotlin framework (release)
+        # The optimising link runs out of a 4 GB heap (GC overhead limit; on the hosted Mac it
+        # thrashes for hours instead). It runs in its own process with most of the runner's 7 GB,
+        # beside a small Gradle daemon
+        run: |
+          ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
+            -Dorg.gradle.jvmargs="-Xmx1g -XX:+UseParallelGC" \
+            -Pkotlin.native.disableCompilerDaemon=true \
+            -Pkotlin.native.jvmArgs="-Xmx5g"
 
       - name: Archive
         working-directory: iosApp
@@ -151,6 +167,9 @@ jobs:
 
   web:
     if: contains(fromJSON('["all", "web"]'), inputs.platforms)
+    concurrency:
+      group: release-web
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

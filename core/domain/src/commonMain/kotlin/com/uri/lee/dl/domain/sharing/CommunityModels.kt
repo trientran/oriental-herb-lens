@@ -15,7 +15,17 @@ data class CommunityModel(
     val url: String,
     val sizeBytes: Int,
     val uploaderId: String,
+    /** Whether it's also on Hugging Face, in the project's organisation (after review). */
+    val huggingFace: HuggingFaceStatus = HuggingFaceStatus.NONE,
+    /** Its page there, once published. */
+    val huggingFaceUrl: String? = null,
 )
+
+/**
+ * Publishing a shared model in the project's Hugging Face organisation, where researchers find
+ * models: the sharer asks for it, an administrator reviews it and publishes it (tools/moderate.py).
+ */
+enum class HuggingFaceStatus { NONE, REQUESTED, PUBLISHED, DECLINED }
 
 enum class ModelReportReason { OFFENSIVE, PERSONAL_INFORMATION, MISLEADING, SPAM, OTHER }
 
@@ -28,8 +38,20 @@ interface CommunityModelRepository {
     /** Newest first, without the ones this user hid. */
     fun observe(): Flow<List<CommunityModel>>
 
-    /** Uploads [file] (a .tflite of at most [SharingRules.MAX_BYTES]) and lists it. Needs a signed-in user. */
-    suspend fun share(name: String, species: List<String>, backbone: String, trainable: Boolean, file: ByteArray): CommunityModel
+    /**
+     * Uploads [file] (a .tflite of at most [SharingRules.MAX_BYTES]) as the shared model [id] (a UUID
+     * the app picks) and lists it; [offerToHuggingFace] publishes it on Hugging Face too. Safe to
+     * repeat with the same [id] after a failure: steps already done are kept. Needs a signed-in user.
+     */
+    suspend fun share(
+        id: String,
+        name: String,
+        species: List<String>,
+        backbone: String,
+        trainable: Boolean,
+        file: ByteArray,
+        offerToHuggingFace: Boolean = false,
+    ): CommunityModel
 
     /** Takes down a model this user shared. */
     suspend fun remove(model: CommunityModel)

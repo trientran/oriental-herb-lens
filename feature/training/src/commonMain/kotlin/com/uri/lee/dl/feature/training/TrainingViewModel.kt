@@ -18,10 +18,14 @@ import kotlin.random.Random
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.core.common.ApplicationScope
+import com.uri.lee.dl.domain.notification.UploadNotifier
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.sharing.SharingRules
@@ -66,11 +70,14 @@ enum class TrainingError { READ_PHOTOS, DOWNLOAD, TRAIN, NO_LABELS, IMPORT, TOO_
 sealed interface SharingStep {
     data object SignIn : SharingStep
     data object Terms : SharingStep
+
+    /** Ready: share, and say whether to offer it to Hugging Face too. */
+    data object Confirm : SharingStep
     data class Problem(val problem: SharingProblem) : SharingStep
 }
 
 /** Something done, said once. */
-enum class TrainingMessage { SHARED, ADDED, REPORTED, HIDDEN, REMOVED }
+enum class TrainingMessage { SHARED, SHARED_HUGGING_FACE, SHARED_HUGGING_FACE_LATER, SHARE_LATER, ADDED, REPORTED, HIDDEN, REMOVED }
 
 data class TrainingState(
     val screen: TrainingScreen = TrainingScreen.Models,
@@ -120,7 +127,11 @@ sealed interface TrainingAction {
 
     /** Shares the trained model on screen with everyone (after sign-in, the terms and the name checks). */
     data object ShareWithEveryone : TrainingAction
+
+    /** The same for a model in the list, without opening it. */
+    data class ShareModel(val id: String) : TrainingAction
     data object AcceptSharingTerms : TrainingAction
+    data class ConfirmShare(val offerToHuggingFace: Boolean) : TrainingAction
     data object DismissSharing : TrainingAction
     data class AddCommunityModel(val id: String) : TrainingAction
     data class ReportCommunityModel(val id: String, val reason: ModelReportReason) : TrainingAction
@@ -143,6 +154,10 @@ class TrainingViewModel(
     private val community: CommunityModelRepository,
     private val auth: AuthRepository,
     private val settings: SettingsRepository,
+    private val appScope: ApplicationScope,
+    private val notifier: UploadNotifier,
+    private val shareQueue: ModelShareQueue,
+    private val scheduler: UploadScheduler,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<TrainingState, TrainingAction>(TrainingState()) {
 
@@ -155,6 +170,7 @@ class TrainingViewModel(
 
     init {
         refresh()
+        followShares()
         auth.observeUserId()
             .onEach { setState { copy(userId = it) } }
             .catch { log.w(it) { "Sign-in state unavailable" } }
@@ -195,10 +211,15 @@ class TrainingViewModel(
             TrainingAction.BackToCamera -> setState { copy(photo = null, predictions = emptyList()) }
             TrainingAction.DismissError -> setState { copy(error = null) }
             TrainingAction.ShareWithEveryone -> shareWithEveryone(termsAccepted = false)
+            is TrainingAction.ShareModel -> viewModelScope.launch {
+                if (currentState.model?.id != action.id) load(action.id)
+                shareWithEveryone(termsAccepted = false)
+            }
             TrainingAction.AcceptSharingTerms -> {
                 viewModelScope.launch { runCatching { settings.acceptSharingTerms() } }
                 shareWithEveryone(termsAccepted = true)
             }
+            is TrainingAction.ConfirmShare -> upload(action.offerToHuggingFace)
             TrainingAction.DismissSharing -> setState { copy(sharing = null) }
             is TrainingAction.AddCommunityModel -> addCommunityModel(action.id)
             is TrainingAction.ReportCommunityModel -> reportCommunityModel(action.id, action.reason)
@@ -211,7 +232,10 @@ class TrainingViewModel(
                 val shared = sharedModel(action.id) ?: return
                 launchWork(TrainingError.COMMUNITY) {
                     community.remove(shared)
-                    back()
+                    // The model it came from can be shared again
+                    store.list().filter { it.sharedId == shared.id }.forEach { store.save(it.copy(sharedId = null)) }
+                    // Unless the page already left, as the model dropped off the list
+                    if (currentState.screen == TrainingScreen.CommunityModel(shared.id)) back()
                     setState { copy(message = TrainingMessage.REMOVED) }
                 }
             }
@@ -241,15 +265,66 @@ class TrainingViewModel(
                 setState { copy(sharing = SharingStep.Problem(it)) }
                 return@launch
             }
-            setState { copy(sharing = null) }
-            launchWork(TrainingError.SHARE) {
-                setState { copy(work = TrainingWork.Uploading) }
-                // Trained here, so the file carries what's needed to go on learning
-                community.share(model.name, model.trainedClasses, model.backbone, trainable = true, file = file)
-                analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "community"))
-                setState { copy(message = TrainingMessage.SHARED) }
+            setState { copy(sharing = SharingStep.Confirm) }
+        }
+    }
+
+    /**
+     * Saves the request and has it run ([ModelShareQueue], [UploadScheduler]): sharing carries on when
+     * the user leaves the tab or the app, and is retried later if it can't finish (Android's
+     * WorkManager even after the app is swiped away). The screen shows the outcome if it's open.
+     */
+    private fun upload(offerToHuggingFace: Boolean) {
+        val model = currentState.model ?: return
+        setState { copy(sharing = null, work = TrainingWork.Uploading) }
+        notifier.uploadStarted()
+        appScope.launch {
+            try {
+                shareQueue.enqueue(model.id, offerToHuggingFace)
+                scheduler.schedule()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log.e(e) { "Sharing not saved" }
+                setState { copy(work = null, error = TrainingError.SHARE) }
             }
         }
+    }
+
+    /** Shares that ended, here or in the background: says how, and updates the model on screen. */
+    private fun followShares() {
+        shareQueue.progress.onEach { shares ->
+            for ((modelId, progress) in shares) {
+                val onScreen = currentState.model?.id == modelId
+                when (progress) {
+                    ShareProgress.Sharing -> if (onScreen) setState { copy(work = TrainingWork.Uploading) }
+                    ShareProgress.Waiting -> {
+                        setState { copy(work = if (onScreen) null else work, message = TrainingMessage.SHARE_LATER) }
+                        shareQueue.acknowledge(modelId)
+                    }
+                    is ShareProgress.Done -> {
+                        val shared = progress.shared
+                        setState {
+                            copy(
+                                work = if (onScreen) null else work,
+                                model = if (onScreen) model?.copy(sharedId = shared.id) else model,
+                                message = when {
+                                    shared.huggingFace == HuggingFaceStatus.PUBLISHED -> TrainingMessage.SHARED_HUGGING_FACE
+                                    shared.huggingFace == HuggingFaceStatus.REQUESTED -> TrainingMessage.SHARED_HUGGING_FACE_LATER
+                                    else -> TrainingMessage.SHARED
+                                },
+                            )
+                        }
+                        shareQueue.acknowledge(modelId)
+                        refresh()
+                    }
+                    ShareProgress.Failed -> {
+                        setState { copy(work = if (onScreen) null else work, error = TrainingError.SHARE) }
+                        shareQueue.acknowledge(modelId)
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun addCommunityModel(id: String) {

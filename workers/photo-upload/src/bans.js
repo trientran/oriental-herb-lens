@@ -39,6 +39,17 @@ async function accessToken(account, fetchFn, nowMs) {
   return token;
 }
 
+/**
+ * A Firestore REST request as the service account, to [path] under the database's documents
+ * (e.g. "sharedModels/<id>"); null when no service account is set up.
+ */
+export async function firestoreRequest(env, path, init = {}, fetchFn = fetch, nowMs = Date.now()) {
+  if (!env.FIREBASE_SERVICE_ACCOUNT) return null;
+  const token = await accessToken(JSON.parse(env.FIREBASE_SERVICE_ACCOUNT), fetchFn, nowMs);
+  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
+  return fetchFn(url, { ...init, headers: { ...(init.headers ?? {}), authorization: `Bearer ${token}` } });
+}
+
 /** True when bannedUsers/{uid} exists; false when it doesn't, or when no service account is set up. */
 export async function isBanned(uid, env, fetchFn = fetch, nowMs = Date.now()) {
   if (!env.FIREBASE_SERVICE_ACCOUNT) return false;

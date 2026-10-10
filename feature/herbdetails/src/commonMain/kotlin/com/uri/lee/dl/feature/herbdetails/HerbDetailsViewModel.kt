@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.location.AddressLine
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
 import com.uri.lee.dl.domain.model.Species
@@ -31,6 +33,9 @@ sealed interface HerbDetailsAction {
 
     /** The full details sheet was opened, and from it the GBIF page (for usage statistics). */
     data object InfoOpened : HerbDetailsAction
+
+    /** A pin on the photo map was tapped (null closes its card). */
+    data class SelectPlace(val location: GeoLocation?) : HerbDetailsAction
     data object GbifOpened : HerbDetailsAction
 
     /** Reports a shared photo to the administrator; it's hidden for this user at once. */
@@ -64,10 +69,15 @@ data class HerbDetailsState(
     val notice: ModerationNotice? = null,
     /** Reporting a photo needs an account, so reports can be followed up and abuse stopped. */
     val isSignedIn: Boolean = false,
+    /** The place picked on the photo map, with its address once known. */
+    val place: SelectedPlace? = null,
 ) {
     /** User contributions first, then GBIF photos, without the ones this user hid. */
     val photos: List<SpeciesPhoto> get() = (userPhotos + referencePhotos).filterNot { hidden.hides(it.url, it.uploaderId) }
 }
+
+/** A pin on the photo map: where, and the address there (null while it's looked up, or when there's none). */
+data class SelectedPlace(val location: GeoLocation, val address: String? = null)
 
 /** A species: its names and classification from the catalog, user and GBIF photos, favourite state. */
 class HerbDetailsViewModel(
@@ -78,6 +88,7 @@ class HerbDetailsViewModel(
     private val library: UserLibraryRepository,
     private val moderation: ModerationRepository,
     private val auth: AuthRepository,
+    private val addresses: AddressLine,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(HerbDetailsState(herbId)) {
 
@@ -110,6 +121,7 @@ class HerbDetailsViewModel(
                 load()
             }
             HerbDetailsAction.InfoOpened -> analytics.log(AnalyticsEvent.SpeciesInfoViewed(currentState.herbId))
+            is HerbDetailsAction.SelectPlace -> selectPlace(action.location)
             HerbDetailsAction.GbifOpened -> analytics.log(AnalyticsEvent.GbifOpened(currentState.herbId))
             is HerbDetailsAction.Report -> moderate(ModerationNotice.REPORTED) {
                 analytics.log(AnalyticsEvent.PhotoReported(action.reason.name))
@@ -140,6 +152,24 @@ class HerbDetailsViewModel(
     }
 
     /** Closes the viewer (the photo is gone from the list) and confirms what happened. */
+    private fun selectPlace(location: GeoLocation?) {
+        if (location == null || currentState.place?.location == location) {
+            setState { copy(place = null) }
+            return
+        }
+        setState { copy(place = SelectedPlace(location)) }
+        viewModelScope.launch {
+            val address = try {
+                addresses(location)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            setState { if (place?.location == location) copy(place = place.copy(address = address)) else this }
+        }
+    }
+
     private fun moderate(done: ModerationNotice, block: suspend () -> Unit) {
         setState { copy(viewingPhoto = null) }
         viewModelScope.launch {

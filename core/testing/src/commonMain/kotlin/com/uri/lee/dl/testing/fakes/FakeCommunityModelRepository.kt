@@ -2,6 +2,7 @@ package com.uri.lee.dl.testing.fakes
 
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,12 +21,23 @@ class FakeCommunityModelRepository(private val uid: () -> String? = { "user-1" }
         models.filter { it.id !in ids && it.uploaderId !in people }
     }
 
-    override suspend fun share(name: String, species: List<String>, backbone: String, trainable: Boolean, file: ByteArray): CommunityModel {
+    override suspend fun share(
+        id: String,
+        name: String,
+        species: List<String>,
+        backbone: String,
+        trainable: Boolean,
+        file: ByteArray,
+        offerToHuggingFace: Boolean,
+    ): CommunityModel {
         if (failUpload) error("upload failed")
         val uploader = checkNotNull(uid()) { "Sign in to share" }
-        val id = "shared-${shared.value.size + 1}"
+        shared.value.firstOrNull { it.id == id }?.let { return it }
         files[id] = file
-        val model = CommunityModel(id, name, species, backbone, trainable, "https://r2/models/$id.tflite", file.size, uploader)
+        val model = CommunityModel(
+            id, name, species, backbone, trainable, "https://r2/models/$id.tflite", file.size, uploader,
+            huggingFace = if (offerToHuggingFace) HuggingFaceStatus.REQUESTED else HuggingFaceStatus.NONE,
+        )
         shared.update { listOf(model) + it }
         return model
     }

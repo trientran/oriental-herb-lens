@@ -4,14 +4,14 @@ import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.UploadedImage
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 
 /**
  * The app's only two Firestore writes:
  * - photo URLs, appended to the `images` map of `herbs/{speciesKey}` (rules forbid removing or
  *   changing existing entries)
- * - Vietnamese name suggestions, created in `nameSuggestions` for the admin to review; the app
- *   itself shows only the catalog's names
+ * - common (vernacular) name suggestions, with their language, created in `nameSuggestions` for
+ *   the admin to review; the app itself shows only the catalog's names
  */
 internal class FirestoreContributionRepository(
     private val firestore: FirestoreClient,
@@ -23,8 +23,8 @@ internal class FirestoreContributionRepository(
         firestore.addHerbImages(herbId, entries)
     }
 
-    override suspend fun suggestVietnameseName(herbId: Long, name: String) {
+    override suspend fun suggestName(herbId: Long, language: String, name: String) {
         val uid = auth.currentUserId ?: throw NotSignedInException()
-        firestore.addNameSuggestion(herbId, name.trim(), uid)
+        firestore.addNameSuggestion(herbId, language, name.trim(), uid)
     }
 }

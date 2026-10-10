@@ -17,7 +17,11 @@ import com.uri.lee.dl.data.StartupTasks
 import com.uri.lee.dl.data.dataModule
 import com.uri.lee.dl.domain.usecase.IdentifyPlantsUseCase
 import com.uri.lee.dl.domain.usecase.RecognizeHerbsUseCase
-import com.uri.lee.dl.domain.usecase.SubmitImagesUseCase
+import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.training.scoped
+import com.uri.lee.dl.domain.upload.PhotoUploadQueue
+import com.uri.lee.dl.domain.upload.UploadQueue
+import org.koin.dsl.bind
 import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -26,7 +30,7 @@ import org.koin.core.module.Module
 import com.uri.lee.dl.core.location.AddressLookup
 import com.uri.lee.dl.feature.auth.authModule
 import com.uri.lee.dl.feature.browse.browseModule
-import com.uri.lee.dl.feature.contribute.AddressLine
+import com.uri.lee.dl.domain.location.AddressLine
 import com.uri.lee.dl.feature.contribute.contributeModule
 import com.uri.lee.dl.feature.herbdetails.herbDetailsModule
 import com.uri.lee.dl.feature.profile.profileModule
@@ -53,7 +57,9 @@ private val coreModule = module {
 private val domainModule = module {
     factoryOf(::RecognizeHerbsUseCase)
     factoryOf(::SyncContentUseCase)
-    factoryOf(::SubmitImagesUseCase)
+    // Saved uploads: photos here, shared models in trainingModule; each platform binds UploadScheduler
+    single { PhotoUploadQueue(get<AppFiles>().scoped("uploads/photos"), get(), get(), get(), get(), get(), get()) } bind UploadQueue::class
+    single { PendingUploads(getAll<UploadQueue>()) }
     factoryOf(::IdentifyPlantsUseCase)
 }
 

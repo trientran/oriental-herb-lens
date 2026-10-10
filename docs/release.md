@@ -44,7 +44,12 @@ ready meanwhile; the secrets are set.
 6. **Web:** the same workflow publishes the site (choose `all` or `web`). Check
    `https://med-herb-lens.pages.dev` links to the app and that `/app/` loads, signs in and
    identifies a photo.
-7. **Google Analytics:** data retention 14 months, Google signals off.
+7. **Google Analytics:** data retention 14 months, Google signals off; turn on the BigQuery export
+   to keep the raw data longer.
+8. **Google Play Data safety:** match the App Privacy table below (shared models are user content,
+   shared publicly).
+9. **Console safety nets:** a Google Cloud budget alert; API keys restricted to the apps and the
+   website (docs/security.md, section 8).
 
 ## Running a release
 
@@ -93,6 +98,9 @@ the app uses Play App Signing). These are the same values as `RELEASE_*` in your
 3. Play Console → **Users and permissions → Invite new users**: the service account's email. Under
    **App permissions** add Med Herb Lens with **Release apps to testing tracks** (and **Release to
    production** if you want to promote from the workflow later). Send the invitation.
+4. In the same Google Cloud project, **APIs & Services → Library → Google Play Android Developer
+   API → Enable**. Without it the upload fails with "Google Play Android Developer API has not been
+   used in project … or it is disabled"; after enabling, wait a few minutes before re-running.
 
 ### iOS
 
@@ -130,7 +138,7 @@ token, with only that permission, for your account.
 `.github/workflows/moderation.yml` runs every hour and opens a GitHub issue (label `moderation`)
 for each photo reported in the app, so GitHub emails you. Act on it within 24 hours with
 `tools/moderate.py` (remove the photo, ban the uploader, or dismiss), then close the issue.
-It also opens an issue (label `name-suggestion`) for each Vietnamese name users suggest: add
+It also opens an issue (label `name-suggestion`) for each common name users suggest: add
 the ones that are right to the catalog CSV and publish it, then `tools/moderate.py
 dismiss-suggestion ID` and close the issue. GitHub pauses scheduled workflows after 60 days
 without commits (it emails first); re-enable it in the Actions tab.
@@ -164,14 +172,18 @@ Paste into App Store Connect → the version → App Review Information → Note
 
 > Med Herb Lens identifies medicinal herbs with an on-device model; browsing and identification
 > need no account. Signing in (Google or Sign in with Apple) is only needed to share photos or
-> suggest names.
+> models, report, or suggest names.
 >
 > Account deletion: Profile → Delete account (the user signs in again to confirm).
 >
 > User-generated content (guideline 1.2): photos are checked on the device and only uploaded
 > if a plant is found; any shared photo can be reported or its contributor hidden (open a photo
 > on a species page → ⋮); reports reach the administrator within the hour and are acted on
-> within 24 hours; offending photos are removed and their uploaders banned. Users must be 18+.
+> within 24 hours; offending photos are removed and their uploaders banned. The same applies to
+> image classifiers users train and share (Train tab → a trained model → Share with everyone): names
+> are checked on the device and the server before sharing; any shared model can be reported or its
+> sharer hidden (Train → Models shared by others → a model); reported models are removed within
+> 24 hours, together with their public copy on Hugging Face. Users must be 18+.
 
 ## App Store privacy answers (App Store Connect → App Privacy)
 
@@ -185,7 +197,7 @@ Keep these in step with the app; they can be edited at any time. Tracking: **No*
 | Identifiers → User ID | Yes | App Functionality |
 | User Content → Photos or Videos | Yes | App Functionality, Other Purposes (research, model training) |
 | Location → Precise Location (place of each shared photo) | Yes | App Functionality, Other Purposes (research) |
-| User Content → Other User Content (name suggestions, photo reports) | Yes | App Functionality |
+| User Content → Other User Content (name suggestions, reports, shared models) | Yes | App Functionality, Other Purposes (research) |
 | Identifiers → Device ID (Analytics app instance ID) | No | Analytics |
 | Usage Data → Product Interaction | No | Analytics |
 | Location → Coarse Location (Analytics, from the IP address) | No | Analytics |

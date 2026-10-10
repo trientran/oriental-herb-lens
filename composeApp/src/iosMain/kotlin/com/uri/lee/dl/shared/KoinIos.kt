@@ -11,6 +11,7 @@ import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 
@@ -39,6 +40,7 @@ fun startKoinIos(
             single { embedder }
             single<UploadNotifier> { IosUploadNotifier(get()) }
             single<AppFiles> { IosAppFiles() }
+            single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
             if (isDebug) single<LocalBackbones> { IosLocalBackbones() }
         })
     }.koin

@@ -45,6 +45,7 @@
     <string name="details_no_photos">No photos yet. Be the first to add one.</string>
     <string name="details_photos_loading">Loading photos</string>
     <string name="details_add_photos">Add photos</string>
+    <string name="details_share_in_apps">To share photos of this herb, use the Med Herb Lens app on Android or iPhone.</string>
     <string name="details_names">Names</string>
     <string name="details_vietnamese_names">Vietnamese</string>
     <string name="details_english_names">English</string>
@@ -65,7 +66,7 @@
     <string name="details_order">Order</string>
     <string name="details_gbif_key">GBIF species key</string>
     <string name="details_source">From the Global Biodiversity Information Facility (GBIF), which has more on the species: occurrences, maps and literature.</string>
-    <string name="details_suggest_name">Suggest a Vietnamese name</string>
+    <string name="details_suggest_name">Suggest a vernacular name</string>
     <string name="photo_counter">%1$d of %2$d</string>
     <string name="photo_credit">© %1$s · %2$s</string>
     <string name="photo_credit_publisher">via %1$s and GBIF</string>
@@ -77,12 +78,16 @@
     <string name="cd_close">Close</string>
 
     <!-- Suggest a name -->
-    <string name="suggest_name_title">Suggest a Vietnamese name</string>
-    <string name="suggest_name_label">Vietnamese name</string>
-    <string name="suggest_name_body">We review suggestions before updating the catalog.</string>
+    <string name="suggest_name_title">Suggest a vernacular name</string>
+    <string name="suggest_name_label">Name (%1$s)</string>
+    <string name="suggest_name_body">A common name for this species, as people call it where you live. We review suggestions before adding them to the catalog.</string>
     <string name="suggest_name_submit">Send</string>
     <string name="suggest_name_sent">Thank you! Your suggestion has been sent.</string>
     <string name="suggest_name_sign_in">Sign in to suggest a name.</string>
+    <string name="suggest_name_language">Language</string>
+    <string name="suggest_name_listed">Already listed: %1$s</string>
+    <string name="details_names_unverified">Names not checked by experts</string>
+    <string name="details_names_unverified_body">Common names come from GBIF and from people using the app, and experts haven’t checked them. A name may be regional, rarely used or wrong: use the scientific name to be sure which plant is meant.</string>
 
     <!-- Identify -->
     <string name="scan_whole_view">Whole view</string>
@@ -98,11 +103,14 @@
     <string name="scan_photo_none">No herb recognised in this photo.</string>
     <string name="scan_photo_none_pick">No separate plants found in this photo. Try Whole view.</string>
     <string name="scan_photo_failed">This photo couldn’t be read.</string>
+    <string name="scan_identify_failed">This photo couldn’t be identified. Try again, or pick another photo.</string>
     <string name="scan_photos">Photos</string>
     <string name="scan_back_to_camera">Camera</string>
     <string name="scan_working">Identifying…</string>
     <string name="scan_notice_title">A research preview</string>
-    <string name="scan_notice_body">Med Herb Lens is a research project. It identifies herbs with our own model, trained by our team and running on your device; no other company’s identification service is involved.\n\nWe don’t have enough photos yet to train it well for most herbs, so results are often wrong. Treat a result as a lead to check, not an answer.\n\nNever eat a plant or use it as medicine because of what the app says. Ask a qualified expert first.\n\nYou can help it improve: add your own photos on a herb’s page.</string>
+    <string name="scan_notice_body">Med Herb Lens is a research project. It identifies herbs with our own model, trained by our team and running on your device; no other company’s identification service is involved.\n\nWe don’t have enough photos yet to train it well for most herbs, so results are often wrong. Treat a result as a lead to check, not an answer.\n\nNever eat a plant or use it as medicine because of what the app says. Ask a qualified expert first.</string>
+    <string name="scan_notice_help">You can help it improve: add your own photos on a herb’s page.</string>
+    <string name="scan_notice_help_in_apps">You can help it improve: share photos of herbs from the Med Herb Lens app on Android or iPhone.</string>
     <string name="scan_notice_ok">I understand</string>
     <string name="scan_notice_line">Research preview: results are often wrong.</string>
     <string name="scan_notice_more">Learn more</string>
@@ -120,6 +128,7 @@
     <!-- Profile -->
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_sign_in_body">Sign in to add photos and suggest names. Browsing works without an account.</string>
+    <string name="profile_sign_in_body_no_photos">Sign in to suggest names and share models. Browsing works without an account.</string>
     <string name="profile_signed_in">Signed in</string>
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_delete_account">Delete account</string>
@@ -148,9 +157,11 @@
     <!-- Sign in -->
     <string name="sign_in_title">Sign in to contribute</string>
     <string name="sign_in_body">Browsing and identifying herbs work without an account. Sign in to share photos and suggest names.</string>
+    <string name="sign_in_body_no_photos">Browsing and identifying herbs work without an account. Sign in to suggest names and share models.</string>
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_apple">Continue with Apple</string>
     <string name="sign_in_error">Couldn’t sign in. Check your connection and try again.</string>
+    <string name="sign_in_window_blocked">Your browser blocked the sign-in window. Allow pop-ups for this site, then try again.</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="terms_of_service">Terms of service</string>
 
@@ -169,6 +180,7 @@
     <string name="contribute_location_body">Required. Where you photographed the plant: use your location, or choose the spot on the map.</string>
     <string name="contribute_location_needed">Add where it was to upload</string>
     <string name="contribute_use_my_location">Use my location</string>
+    <string name="contribute_locating">Finding your location…</string>
     <string name="contribute_choose_on_map">Choose on map</string>
     <string name="contribute_map_hint">Move the map so the pin marks where the plant grows</string>
     <string name="contribute_use_this_place">Use this place</string>
@@ -181,7 +193,18 @@
     <string name="contribute_finished_partly">%1$d of %2$d photos uploaded. The others couldn’t be read.</string>
     <string name="contribute_done">Done</string>
     <string name="details_photo_map">Where photos were taken</string>
+    <string name="details_map_hint">Tap a pin to see the photos taken there.</string>
+    <string name="details_place_photo">Photo taken here</string>
+    <plurals name="details_place_photos">
+        <item quantity="one">%1$d photo taken here</item>
+        <item quantity="other">%1$d photos taken here</item>
+    </plurals>
     <string name="notify_uploads_channel">Photo uploads</string>
+    <string name="notify_uploading">Uploading…</string>
+    <string name="notify_model_shared_title">Model shared</string>
+    <string name="notify_model_shared">“%1$s” is shared with everyone.</string>
+    <string name="notify_model_share_failed_title">Model not shared</string>
+    <string name="notify_model_share_failed">“%1$s” couldn’t be shared. Open the app to try again.</string>
     <string name="notify_upload_done_title">Photos shared</string>
     <plurals name="notify_upload_done">
         <item quantity="one">Your photo of %2$s is now on its page.</item>
@@ -331,8 +354,23 @@
     <string name="train_sharing">Sharing…</string>
     <string name="train_share_sign_in">Sign in to share models with everyone, so that a shared model can be followed up if it’s reported.</string>
     <string name="train_share_terms_title">Share with everyone?</string>
-    <string name="train_share_terms_body">Anyone using Med Herb Lens will be able to find this model, add it and train it further.\n\n• It’s shared under the Creative Commons Attribution licence (CC BY 4.0).\n• It includes its name, the species names you typed and a compact summary of your photos that lets it go on learning. Your photos themselves aren’t included, nor your name or email.\n• Don’t use people’s names, contact details or anything offensive. Shared models can be reported, and we remove those that break the terms of service.\n• You can stop sharing it at any time; copies others already added stay with them.</string>
+    <string name="train_share_terms_body">Anyone using Med Herb Lens will be able to find this model, add it and train it further.\n\n• It’s shared under the Creative Commons Attribution licence (CC BY 4.0), and, unless you untick it when sharing, also published on Hugging Face, where anyone can download it.\n• It includes its name, the species names you typed and a compact summary of your photos that lets it go on learning. Your photos themselves aren’t included, nor your name or email.\n• Don’t use people’s names, contact details or anything offensive. Shared models can be reported, and we remove those that break the terms of service.\n• You can stop sharing it at any time, which removes it from Hugging Face too; copies others already added stay with them.</string>
     <string name="train_share_accept">Agree and share</string>
+    <string name="train_share_confirm_title">Share with everyone?</string>
+    <string name="train_share_confirm_body">Anyone using Med Herb Lens will be able to add it to their models and train it further.</string>
+    <string name="train_share_hf">Also publish it on Hugging Face (recommended)</string>
+    <string name="train_share_hf_body">It’s published at once in the Med Herb Lens organisation on Hugging Face, where researchers look for models, with a page that credits Med Herb Lens users, not you by name. It helps the research reach more people.</string>
+    <string name="train_share_button">Share</string>
+    <string name="train_msg_shared_hf">Shared, in the app and on Hugging Face.</string>
+    <string name="train_msg_shared_hf_later">Shared. It’ll be on Hugging Face shortly.</string>
+    <string name="train_msg_share_later">It isn’t shared yet: it will be as soon as there’s a connection, even if you close the app.</string>
+    <string name="train_share_invite_title">Help others identify these plants</string>
+    <string name="train_share_invite_body">Share your model with everyone: others can add it to their models, and it helps the research behind the app. You can also have it published on Hugging Face.</string>
+    <string name="train_shared_already">Shared with everyone</string>
+    <string name="train_training_share_note">When it’s ready, you can share it with everyone, so others can use it too.</string>
+    <string name="train_hf_open">On Hugging Face</string>
+    <string name="train_hf_requested">Not on Hugging Face yet: we’ll publish it soon.</string>
+    <string name="train_hf_declined">Not published on Hugging Face.</string>
     <string name="train_share_problem_name">A shared model’s name must be 1 to 60 characters. Rename it, then share again.</string>
     <string name="train_share_problem_species">A shared model needs at least 2 species, and at most 500.</string>
     <string name="train_share_problem_contact">Its name or a species name looks like contact details (an email, a link or a phone number). Shared models are public, so these can’t be shared.</string>
@@ -351,4 +389,54 @@
     </plurals>
     <string name="train_knows_hint">It can only name these species. A plant that isn’t one of them still gets the closest match, so check the percentage.</string>
     <string name="train_use_only">This model can identify, but not learn more here: it wasn’t shared from Herb Lens, or from an older version. Models shared from the latest Herb Lens can be given new species and photos.</string>
+
+    <!-- Tips on AI terms (InfoTip): a title and a plain explanation each -->
+    <string name="term_ai_model">AI model</string>
+    <string name="term_ai_model_body">A program that has learned, from many example photos, to recognise patterns. Med Herb Lens uses models to name the plant in a photo. A model only knows what it was trained on, and it can be wrong.</string>
+    <string name="term_image_classification">Image classification</string>
+    <string name="term_image_classification_body">A kind of AI that looks at a whole photo and picks which name from a fixed list it shows best, with a percentage for how sure it is. It can’t name anything outside its list, show where things are in the photo, or describe the photo.</string>
+    <string name="term_confidence">Confidence (%)</string>
+    <string name="term_confidence_body">How sure the model is about a name, from 0 to 100%. It’s the model’s own estimate, not a guarantee: a model can be very sure and still wrong, especially for plants it wasn’t trained on. Results below the minimum confidence set in Profile aren’t shown.</string>
+    <string name="term_identify_modes">Whole view and Pick a plant</string>
+    <string name="term_identify_modes_body">Whole view identifies the whole picture at once. Pick a plant first finds each separate plant in the picture (object detection) and marks it with a dot, then identifies just that plant. It helps when several plants are in view.</string>
+    <string name="term_base_model">Quality: what your model builds on</string>
+    <string name="term_base_model_body">Your model builds on a ready-made image model (MobileNet, from Google’s MediaPipe) that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Fast uses a small base model: quick to train and run. Balanced uses a larger, more accurate one. Best also learns from two cropped copies of each photo: slower, often a little better.</string>
+    <string name="term_training">Training</string>
+    <string name="term_training_body">Teaching a model from examples. You give it photos sorted by species; round by round, it adjusts itself until it can tell them apart. Here it all happens on your device, and your photos aren’t uploaded.</string>
+    <string name="term_round">Round (epoch)</string>
+    <string name="term_round_body">One pass through all the training photos. After each round the model is checked on the checking photos. Training stops when it stops improving, or at the maximum number of rounds.</string>
+    <string name="term_checking_photos">Checking photos (validation)</string>
+    <string name="term_checking_photos_body">A share of your photos set aside and never learned from. After each round the model is tried on them, to see how it does on photos it hasn’t seen and to decide when to stop.</string>
+    <string name="term_test_accuracy">Accuracy on unseen photos</string>
+    <string name="term_test_accuracy_body">The share of test photos, set aside and never learned from, that the finished model names correctly. It’s the best guide to how it will do on new photos, as long as they’re like the ones you trained with.</string>
+    <string name="term_loss">Error (loss)</string>
+    <string name="term_loss_body">A number for how wrong the model’s answers are, counting how sure it was. Lower is better. If the error on the photos it learns from keeps falling while the error on the checking photos rises, the model is memorising its photos rather than learning (overfitting).</string>
+    <string name="term_confusion">Confusion matrix</string>
+    <string name="term_confusion_body">A table of the test photos. Each row is the species a photo really shows; each column is the species the model said. Numbers on the diagonal are right answers; the others show which species it mixes up.</string>
+    <string name="term_continual">Keep old ones (replay) or Retrain all</string>
+    <string name="term_continual_body">When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
+    <string name="term_learning_rate">Learning rate</string>
+    <string name="term_learning_rate_body">How big a step the model takes each time it corrects itself. Too high and it jumps around without settling; too low and it learns very slowly.</string>
+    <string name="term_batch_size">Batch size</string>
+    <string name="term_batch_size_body">How many photos the model looks at before each correction. Larger batches give steadier steps; smaller ones can learn more from few photos.</string>
+    <string name="term_early_stopping">Early stopping</string>
+    <string name="term_early_stopping_body">Training stops once the checking photos haven’t improved for this many rounds, and the best round is kept. This stops the model memorising its photos.</string>
+    <string name="term_weight_decay">Weight decay (L2)</string>
+    <string name="term_weight_decay_body">A gentle pull that keeps the model’s numbers small, so it relies on general patterns rather than the quirks of a few photos. Higher values guard more against memorising.</string>
+    <string name="term_seed">Seed</string>
+    <string name="term_seed_body">A starting number for the random choices in training, such as which photos are set aside. The same seed and the same photos give the same model, so a result can be repeated.</string>
+    <string name="term_hidden_layer">Hidden layer</string>
+    <string name="term_hidden_layer_body">An extra layer of units between the base model and the answer, which lets the model learn more complex differences. 0 means none: simpler, faster and usually enough.</string>
+    <string name="term_class_balance">Balancing species</string>
+    <string name="term_class_balance_body">When some species have far fewer photos, the model tends to favour the others. Balancing counts each photo of a rarer species more, so every species weighs the same.</string>
+    <string name="term_tflite">TensorFlow Lite file (.tflite)</string>
+    <string name="term_tflite_body">The standard file format for AI models that run on phones and other small devices. A model saved this way, with its species list inside, works in other apps that run TensorFlow Lite models, not only in Med Herb Lens.</string>
+    <string name="term_hugging_face">Hugging Face</string>
+    <string name="term_hugging_face_body">A public website where researchers and developers share AI models. Publishing there lets others find, download and cite your model.</string>
+    <string name="tip_open">What’s this: %1$s?</string>
+    <string name="tip_got_it">Got it</string>
+    <string name="details_map_note">Photo locations come from the people who shared the photos and haven’t been checked, so they may not be accurate.</string>
+    <string name="train_intro_title">What is Train for?</string>
+    <string name="train_intro_body">Train makes your own AI model that tells apart things you choose, learned from your own photos. It isn’t only for herbs: it works in any field where photos can tell things apart, such as agriculture and farming (grading the quality of harvested tomatoes, say), forestry, biosecurity (spotting pests, diseases or weeds), or teaching and research in medicine. Training runs on this device.\n\nFor now it makes image classification models only: a model that says which of your categories (species, grades, conditions) a photo shows. Models you train are for learning and research: don’t rely on them alone for decisions that need an expert, such as a diagnosis or whether food is safe.</string>
+    <string name="train_intro_steps">Name a model, add each category with its photos, train it, then try it with the camera.</string>
 </resources>

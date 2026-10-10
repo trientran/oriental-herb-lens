@@ -76,6 +76,12 @@ storage credentials are in the apps.
 - **CORS** allows only the website and local development.
 - **Storage:** Cloudflare R2, which charges nothing for downloads, so heavy traffic can't run up
   a bandwidth bill.
+- **Uploads that finish:** photos and shared models are saved in the app's own files before they're
+  sent (`PhotoUploadQueue`, `ModelShareQueue`), with each finished step noted, so a retry never
+  sends anything twice; a shared model's id is picked by the app, and only its uploader can send
+  to it again. Android runs them with WorkManager (they carry on after the app is swiped away, and
+  wait for a connection); iOS and the web run them in the app, with background time on iOS, and
+  again at the next launch. After 8 tries a job gives up and says so.
 
 ## 5. User-generated content and moderation
 
@@ -91,6 +97,11 @@ To meet App Store guideline 1.2 and Google Play's user-generated content policy:
   `tools/moderate.py` removes content (from Firestore and R2) and bans accounts.
 - **Terms** that forbid objectionable content and explain removal and bans
   (`website/pages/terms-of-service.html`).
+- **Hugging Face:** a shared model is published there only if its sharer leaves the box ticked,
+  by the upload Worker, which checks the request comes from the sharer and checks the names again
+  on the server. The write token is a Worker secret (`HF_TOKEN`), never in an app; clients can
+  only ask for publishing, not mark a model published (Firestore rules). Taking a model down
+  (by its sharer or the administrator) deletes its Hugging Face repository too.
 
 ## 6. Privacy
 

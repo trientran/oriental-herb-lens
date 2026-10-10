@@ -1,5 +1,6 @@
 package com.uri.lee.dl.feature.training
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,11 +19,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.ChevronRight
@@ -39,6 +42,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -56,6 +60,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,20 +71,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.EmptyState
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.LoadingState
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
+import com.uri.lee.dl.core.designsystem.component.TermChip
 import com.uri.lee.dl.core.designsystem.resources.*
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.media.PickPhotos
 import com.uri.lee.dl.domain.ml.ClassifierImage
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.training.Dataset
@@ -165,6 +176,9 @@ internal fun TrainingScreen(
 private val TrainingMessage.text: StringResource
     get() = when (this) {
         TrainingMessage.SHARED -> Res.string.train_msg_shared
+        TrainingMessage.SHARED_HUGGING_FACE -> Res.string.train_msg_shared_hf
+        TrainingMessage.SHARED_HUGGING_FACE_LATER -> Res.string.train_msg_shared_hf_later
+        TrainingMessage.SHARE_LATER -> Res.string.train_msg_share_later
         TrainingMessage.ADDED -> Res.string.train_msg_added
         TrainingMessage.REPORTED -> Res.string.train_msg_reported
         TrainingMessage.HIDDEN -> Res.string.train_msg_hidden
@@ -198,6 +212,7 @@ private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit,
                 confirmButton = { TextButton(onClick = { onAction(TrainingAction.AcceptSharingTerms) }) { Text(stringResource(Res.string.train_share_accept)) } },
                 dismissButton = { TextButton(onClick = dismiss) { Text(stringResource(Res.string.cancel)) } },
             )
+            SharingStep.Confirm -> ConfirmShareDialog(onDismiss = dismiss) { onAction(TrainingAction.ConfirmShare(it)) }
             is SharingStep.Problem -> AlertDialog(
                 onDismissRequest = dismiss,
                 title = { Text(stringResource(Res.string.train_share_everyone)) },
@@ -206,6 +221,43 @@ private fun SharingDialog(step: SharingStep, onAction: (TrainingAction) -> Unit,
             )
         }
     }
+}
+
+/** The last step before sharing, with publishing on Hugging Face too (ticked, can be unticked). */
+@Composable
+private fun ConfirmShareDialog(onDismiss: () -> Unit, onShare: (offerToHuggingFace: Boolean) -> Unit) {
+    // On by default (the model is public under CC BY 4.0 either way); the sharer can untick it
+    var huggingFace by remember { mutableStateOf(true) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Filled.Public, contentDescription = null) },
+        title = { Text(stringResource(Res.string.train_share_confirm_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.md)) {
+                Text(stringResource(Res.string.train_share_confirm_body), style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .toggleable(value = huggingFace, role = Role.Checkbox, onValueChange = { huggingFace = it }),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Checkbox(checked = huggingFace, onCheckedChange = null)
+                    Column(Modifier.padding(start = HerbLensTheme.spacing.md)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(Res.string.train_share_hf), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f, fill = false))
+                            InfoTip(AiTerm.HUGGING_FACE)
+                        }
+                        Text(
+                            stringResource(Res.string.train_share_hf_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onShare(huggingFace) }) { Text(stringResource(Res.string.train_share_button)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    )
 }
 
 private val SharingProblem.text: StringResource
@@ -299,6 +351,7 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         }
     }
     Page(stringResource(Res.string.train_models_title), onBack = null) {
+        TrainIntro()
         val models = state.models
         when {
             models == null -> LoadingState()
@@ -318,6 +371,12 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                     model = model,
                     supporting = stringResource(Res.string.train_model_summary, model.classes.size, status),
                     onOpen = { onAction(TrainingAction.Open(if (model.imported) TrainingScreen.Use(model.id) else TrainingScreen.Edit(model.id))) },
+                    // Only models trained here, not yet shared
+                    onShare = if (model.report != null && model.sharedId == null) {
+                        { onAction(TrainingAction.ShareModel(model.id)) }
+                    } else {
+                        null
+                    },
                     onRename = { renaming = model },
                     onDelete = { deleting = model },
                 )
@@ -328,17 +387,85 @@ private fun ModelsScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
             Text(stringResource(Res.string.train_new_model))
         }
         platform.pickModelFile?.let { pick ->
-            OutlinedButton(
-                onClick = { scope.launch { pick()?.let { onAction(TrainingAction.ImportModel(it.name, it.bytes)) } } },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Filled.FileOpen, contentDescription = null)
-                Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(
+                    onClick = { scope.launch { pick()?.let { onAction(TrainingAction.ImportModel(it.name, it.bytes)) } } },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.FileOpen, contentDescription = null)
+                    Text(stringResource(Res.string.train_import_model), Modifier.padding(start = HerbLensTheme.spacing.sm))
+                }
+                InfoTip(AiTerm.TFLITE)
             }
         }
         OutlinedButton(onClick = { onAction(TrainingAction.Open(TrainingScreen.Community)) }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Public, contentDescription = null)
             Text(stringResource(Res.string.train_community), Modifier.padding(start = HerbLensTheme.spacing.sm))
+        }
+    }
+}
+
+/**
+ * What the Train tab is for, at its top: a new user can't tell otherwise what it trains, or that
+ * it's image classification only. The terms it uses explain themselves.
+ */
+@Composable
+private fun TrainIntro() {
+    val spacing = HerbLensTheme.spacing
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        Text(stringResource(Res.string.train_intro_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(Res.string.train_intro_body), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(Res.string.train_intro_steps), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            TermChip(AiTerm.AI_MODEL)
+            TermChip(AiTerm.IMAGE_CLASSIFICATION)
+            TermChip(AiTerm.TRAINING)
+        }
+    }
+}
+
+/** A setting's or section's heading, with a tip on the term it names. */
+@Composable
+private fun TermHeading(text: String, term: AiTerm) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = MaterialTheme.typography.titleSmall)
+        InfoTip(term)
+    }
+}
+
+/** A caption under a chart or result, with a tip on the term it relies on. */
+@Composable
+private fun TermCaption(text: String, term: AiTerm, style: TextStyle = MaterialTheme.typography.bodySmall) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = style, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        InfoTip(term)
+    }
+}
+
+/** Asks, on a trained model's results, to share it: others can use it, and it helps the research. */
+@Composable
+private fun ShareInvite(enabled: Boolean, onShare: () -> Unit) {
+    val spacing = HerbLensTheme.spacing
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondaryContainer).padding(spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        Text(
+            stringResource(Res.string.train_share_invite_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        Text(
+            stringResource(Res.string.train_share_invite_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+        Button(onClick = onShare, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Public, contentDescription = null)
+            Text(stringResource(Res.string.train_share_everyone), Modifier.padding(start = spacing.sm))
         }
     }
 }
@@ -366,7 +493,8 @@ private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> 
                     Icons.Filled.Psychology,
                     model.name,
                     supporting = pluralStringResource(Res.plurals.train_species_count, model.species.size, model.species.size) + ": " + preview +
-                        " · " + stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)),
+                        " · " + stringResource(Res.string.train_size_mb, megabytes(model.sizeBytes)) +
+                        if (model.huggingFace == HuggingFaceStatus.PUBLISHED) " · Hugging Face" else "",
                 ) { onAction(TrainingAction.Open(TrainingScreen.CommunityModel(model.id))) }
             }
         }
@@ -376,8 +504,15 @@ private fun CommunityScreen(state: TrainingState, onAction: (TrainingAction) -> 
 /** One shared model: add it, see what it can identify; report it or hide its sharer, or stop sharing your own. */
 @Composable
 private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (TrainingAction) -> Unit) {
-    val model = state.community?.firstOrNull { it.id == id } ?: return LoadingState()
+    val community = state.community ?: return LoadingState()
+    val model = community.firstOrNull { it.id == id }
+    if (model == null) {
+        // No longer shared (just removed, or by its sharer elsewhere): back to the list, not a spinner
+        LaunchedEffect(id) { onAction(TrainingAction.Back) }
+        return
+    }
     val spacing = HerbLensTheme.spacing
+    val uriHandler = LocalUriHandler.current
     var reporting by remember { mutableStateOf(false) }
     var hiding by remember { mutableStateOf(false) }
     var removing by remember { mutableStateOf(false) }
@@ -396,8 +531,21 @@ private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (Tr
             Icon(Icons.Filled.Download, contentDescription = null)
             Text(stringResource(Res.string.train_community_add), Modifier.padding(start = spacing.sm))
         }
+        val own = model.uploaderId == state.userId
+        val huggingFaceUrl = model.huggingFaceUrl
+        when {
+            model.huggingFace == HuggingFaceStatus.PUBLISHED && huggingFaceUrl != null ->
+                OutlinedButton(onClick = { uriHandler.openUri(huggingFaceUrl) }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                    Text(stringResource(Res.string.train_hf_open), Modifier.padding(start = spacing.sm))
+                }
+            own && model.huggingFace == HuggingFaceStatus.REQUESTED ->
+                Text(stringResource(Res.string.train_hf_requested), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            own && model.huggingFace == HuggingFaceStatus.DECLINED ->
+                Text(stringResource(Res.string.train_hf_declined), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         model.species.sortedBy { it.lowercase() }.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        if (model.uploaderId == state.userId) {
+        if (own) {
             OutlinedButton(onClick = { removing = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_community_remove)) }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
@@ -485,7 +633,7 @@ private fun megabytes(bytes: Int): String {
 
 /** A model in the list: opens it, and a menu to rename or delete it. */
 @Composable
-private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, onRename: () -> Unit, onDelete: () -> Unit) {
+private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, onShare: (() -> Unit)?, onRename: () -> Unit, onDelete: () -> Unit) {
     var menu by remember { mutableStateOf(false) }
     ListItem(
         headlineContent = { Text(model.name) },
@@ -497,6 +645,13 @@ private fun ModelRow(model: UserModel, supporting: String, onOpen: () -> Unit, o
                 // A popup: kept out of the web page's text selection, like dialogs
                 DialogLayer {
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        onShare?.let { share ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.train_share_everyone)) },
+                                leadingIcon = { Icon(Icons.Filled.Public, contentDescription = null) },
+                                onClick = { menu = false; share() },
+                            )
+                        }
                         DropdownMenuItem(text = { Text(stringResource(Res.string.train_rename)) }, onClick = { menu = false; onRename() })
                         DropdownMenuItem(
                             text = { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) },
@@ -570,7 +725,7 @@ private fun NewModelScreen(onAction: (TrainingAction) -> Unit, platform: Trainin
     val chosenName = { name.ifBlank { placeholder } }
     Page(stringResource(Res.string.train_new_title), onBack = { onAction(TrainingAction.Back) }) {
         OutlinedTextField(name, { name = it }, label = { Text(stringResource(Res.string.train_name)) }, placeholder = { Text(placeholder) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Text(stringResource(Res.string.train_quality), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_quality), AiTerm.BASE_MODEL)
         QualityChips(quality) { quality = it }
         Text(stringResource(Res.string.train_how_photos), style = MaterialTheme.typography.titleSmall)
         ChoiceRow(Icons.Filled.PhotoCamera, stringResource(Res.string.train_collect), stringResource(Res.string.train_collect_body)) {
@@ -654,6 +809,10 @@ private fun EditScreen(state: TrainingState, onAction: (TrainingAction) -> Unit,
                 Text(stringResource(Res.string.train_try_it))
             }
         }
+        // Trained here (it has results) and not shared yet: the same invitation as on the results
+        if (model.report != null && model.sharedId == null) {
+            ShareInvite(enabled = state.work == null) { onAction(TrainingAction.ShareWithEveryone) }
+        }
     }
     if (adding) AddSpeciesDialog(onDismiss = { adding = false }) { onAction(TrainingAction.AddSpecies(it)); adding = false }
 }
@@ -677,15 +836,27 @@ private fun TrainingProgressScreen(state: TrainingState, onAction: (TrainingActi
     Page(stringResource(Res.string.train_training_title), onBack = null) {
         val last = state.history.lastOrNull()
         if (last != null && state.work is TrainingWork.Learning) {
-            Text(
-                stringResource(Res.string.train_progress_accuracy, last.epoch, percent(last.validationAccuracy)),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(Res.string.train_progress_accuracy, last.epoch, percent(last.validationAccuracy)),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                InfoTip(AiTerm.ROUND)
+            }
             LinearProgressIndicator(Modifier.fillMaxWidth())
         } else {
             Work(state.work)
         }
         AccuracyChart(state.history)
+        // Planted while they wait: the results screen then offers to share
+        if (state.model?.sharedId == null) {
+            Text(
+                stringResource(Res.string.train_training_share_note),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         OutlinedButton(onClick = { onAction(TrainingAction.StopTraining) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.train_stop)) }
     }
 }
@@ -704,7 +875,7 @@ private fun AccuracyChart(history: List<com.uri.lee.dl.core.training.EpochStats>
         format = { "${(it * 100).roundToInt()}" },
         modifier = Modifier.fillMaxWidth(),
     )
-    Text(stringResource(Res.string.train_accuracy_caption), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    TermCaption(stringResource(Res.string.train_accuracy_caption), AiTerm.CHECKING_PHOTOS)
 }
 
 /** Both losses by round, and the round that was kept (lowest checking loss). */
@@ -721,7 +892,7 @@ private fun LossChart(history: List<com.uri.lee.dl.core.training.EpochStats>) {
         marker = kept,
         modifier = Modifier.fillMaxWidth(),
     )
-    Text(stringResource(Res.string.train_curve_legend), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    TermCaption(stringResource(Res.string.train_curve_legend), AiTerm.LOSS)
 }
 
 @Composable
@@ -733,10 +904,10 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
     var confirmDelete by remember { mutableStateOf(false) }
     Page(stringResource(Res.string.train_ready, model.name), onBack = { onAction(TrainingAction.Back) }) {
         Text(percent(report.accuracy), style = MaterialTheme.typography.displaySmall)
-        Text(
+        TermCaption(
             stringResource(if (report.heldOut) Res.string.train_right_on_unseen else Res.string.train_right_on_checking, report.testPhotos),
+            AiTerm.TEST_ACCURACY,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         report.perClass.forEach { (species, accuracy) ->
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
@@ -762,11 +933,16 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
                 onClick = { scope.launch { viewModel?.export()?.let { (name, bytes) -> platform.saveFile(name, bytes) } } },
                 modifier = Modifier.weight(1f),
             ) { Text(stringResource(Res.string.train_share)) }
+            InfoTip(AiTerm.TFLITE, Modifier.align(Alignment.CenterVertically))
         }
         Work(state.work)
-        Button(onClick = { onAction(TrainingAction.ShareWithEveryone) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Public, contentDescription = null)
-            Text(stringResource(Res.string.train_share_everyone), Modifier.padding(start = spacing.sm))
+        if (model.sharedId == null) {
+            ShareInvite(enabled = state.work == null) { onAction(TrainingAction.ShareWithEveryone) }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                Icon(Icons.Filled.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(stringResource(Res.string.train_shared_already), style = MaterialTheme.typography.bodyMedium)
+            }
         }
         UnderTheHood(report)
         TextButton(onClick = { confirmDelete = true }) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) }
@@ -785,7 +961,7 @@ private fun UnderTheHood(report: ModelReport) {
         LossChart(report.history)
     }
     if (report.confusion.isNotEmpty()) {
-        Text(stringResource(Res.string.train_confusion), style = MaterialTheme.typography.bodySmall)
+        TermCaption(stringResource(Res.string.train_confusion), AiTerm.CONFUSION)
         Column {
             report.confusion.forEach { row ->
                 Row {
@@ -810,11 +986,11 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
     var advanced by remember { mutableStateOf(false) }
     val spacing = HerbLensTheme.spacing
     Page(stringResource(Res.string.train_settings), onBack = { onAction(TrainingAction.Back) }) {
-        Text(stringResource(Res.string.train_quality), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_quality), AiTerm.BASE_MODEL)
         val fixed = model.photos > 0
         QualityChips(settings.quality, enabled = !fixed) { settings = settings.copy(quality = it) }
         if (fixed) Text(stringResource(Res.string.train_quality_fixed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(Res.string.train_when_adding), style = MaterialTheme.typography.titleSmall)
+        TermHeading(stringResource(Res.string.train_when_adding), AiTerm.CONTINUAL)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
             FilterChip(settings.update == UpdateMode.REPLAY, { settings = settings.copy(update = UpdateMode.REPLAY) }, label = { Text(stringResource(Res.string.train_update_replay)) })
             FilterChip(settings.update == UpdateMode.RETRAIN_ALL, { settings = settings.copy(update = UpdateMode.RETRAIN_ALL) }, label = { Text(stringResource(Res.string.train_update_retrain)) })
@@ -823,18 +999,19 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
         if (advanced) {
             val e = settings.expert
             fun set(expert: ExpertSettings) { settings = settings.copy(expert = expert) }
-            NumberField(Res.string.train_learning_rate, e.learningRate.toString()) { it.toFloatOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(learningRate = v)) } }
-            NumberField(Res.string.train_batch_size, e.batchSize.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(batchSize = v)) } }
-            NumberField(Res.string.train_max_epochs, e.maxEpochs.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(maxEpochs = v)) } }
-            NumberField(Res.string.train_patience, e.patience.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(patience = v)) } }
-            NumberField(Res.string.train_l2, e.l2.toString()) { it.toFloatOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(l2 = v)) } }
-            NumberField(Res.string.train_validation_share, e.validationShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(validationShare = v)) } }
-            NumberField(Res.string.train_test_share, e.testShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(testShare = v)) } }
-            NumberField(Res.string.train_seed, e.seed.toString()) { it.toIntOrNull()?.let { v -> set(e.copy(seed = v)) } }
-            NumberField(Res.string.train_hidden_units, e.hiddenUnits.toString()) { it.toIntOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(hiddenUnits = v)) } }
-            NumberField(Res.string.train_replay_per_class, e.replayPerClass.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(replayPerClass = v)) } }
+            NumberField(Res.string.train_learning_rate, AiTerm.LEARNING_RATE, e.learningRate.toString()) { it.toFloatOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(learningRate = v)) } }
+            NumberField(Res.string.train_batch_size, AiTerm.BATCH_SIZE, e.batchSize.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(batchSize = v)) } }
+            NumberField(Res.string.train_max_epochs, AiTerm.ROUND, e.maxEpochs.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(maxEpochs = v)) } }
+            NumberField(Res.string.train_patience, AiTerm.EARLY_STOPPING, e.patience.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(patience = v)) } }
+            NumberField(Res.string.train_l2, AiTerm.WEIGHT_DECAY, e.l2.toString()) { it.toFloatOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(l2 = v)) } }
+            NumberField(Res.string.train_validation_share, AiTerm.CHECKING_PHOTOS, e.validationShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(validationShare = v)) } }
+            NumberField(Res.string.train_test_share, AiTerm.TEST_ACCURACY, e.testShare.toString()) { it.toFloatOrNull()?.takeIf { v -> v in 0f..0.5f }?.let { v -> set(e.copy(testShare = v)) } }
+            NumberField(Res.string.train_seed, AiTerm.SEED, e.seed.toString()) { it.toIntOrNull()?.let { v -> set(e.copy(seed = v)) } }
+            NumberField(Res.string.train_hidden_units, AiTerm.HIDDEN_LAYER, e.hiddenUnits.toString()) { it.toIntOrNull()?.takeIf { v -> v >= 0 }?.let { v -> set(e.copy(hiddenUnits = v)) } }
+            NumberField(Res.string.train_replay_per_class, AiTerm.CONTINUAL, e.replayPerClass.toString()) { it.toIntOrNull()?.takeIf { v -> v > 0 }?.let { v -> set(e.copy(replayPerClass = v)) } }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(Res.string.train_class_balanced), Modifier.weight(1f))
+                InfoTip(AiTerm.CLASS_BALANCE)
                 Switch(e.classBalanced, { set(e.copy(classBalanced = it)) })
             }
         }
@@ -844,12 +1021,13 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
 
 /** A number setting; [onValue] gets the text when it changes and decides if it's valid. */
 @Composable
-private fun NumberField(label: StringResource, initial: String, onValue: (String) -> Unit) {
+private fun NumberField(label: StringResource, term: AiTerm, initial: String, onValue: (String) -> Unit) {
     var text by remember { mutableStateOf(initial) }
     OutlinedTextField(
         text,
         { text = it; onValue(it) },
         label = { Text(stringResource(label)) },
+        trailingIcon = { InfoTip(term) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth(),

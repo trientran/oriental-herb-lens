@@ -24,7 +24,7 @@ internal class IosUploadNotifier(private val scope: ApplicationScope) : UploadNo
         scope.launch(Dispatchers.Main) {
             endBackgroundTask()
             val application = UIApplication.sharedApplication
-            backgroundTask = application.beginBackgroundTaskWithName("Photo upload") { endBackgroundTask() }
+            backgroundTask = application.beginBackgroundTaskWithName("Upload") { endBackgroundTask() }
         }
     }
 
@@ -39,6 +39,21 @@ internal class IosUploadNotifier(private val scope: ApplicationScope) : UploadNo
                 }
                 UNUserNotificationCenter.currentNotificationCenter()
                     .addNotificationRequest(UNNotificationRequest.requestWithIdentifier("upload-$speciesId", content, null), null)
+            }
+            endBackgroundTask()
+        }
+    }
+
+    override fun modelShareFinished(modelName: String, shared: Boolean) {
+        scope.launch(Dispatchers.Main) {
+            if (UIApplication.sharedApplication.applicationState != UIApplicationState.UIApplicationStateActive) {
+                val text = modelShareNotificationText(modelName, shared)
+                val content = UNMutableNotificationContent().apply {
+                    setTitle(text.title)
+                    setBody(text.body)
+                }
+                UNUserNotificationCenter.currentNotificationCenter()
+                    .addNotificationRequest(UNNotificationRequest.requestWithIdentifier("model-share", content, null), null)
             }
             endBackgroundTask()
         }

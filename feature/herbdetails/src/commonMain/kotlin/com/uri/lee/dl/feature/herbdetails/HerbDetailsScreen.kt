@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,15 +24,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -63,7 +69,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LegalLinks
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.LoadingState
@@ -73,6 +81,7 @@ import com.uri.lee.dl.core.designsystem.component.SectionCard
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cd_add_favorite
 import com.uri.lee.dl.core.designsystem.resources.cd_back
+import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.cd_photo
 import com.uri.lee.dl.core.designsystem.resources.cd_remove_favorite
 import com.uri.lee.dl.core.designsystem.resources.details_add_photos
@@ -81,11 +90,18 @@ import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
 import com.uri.lee.dl.core.designsystem.resources.details_full
 import com.uri.lee.dl.core.designsystem.resources.details_genus
+import com.uri.lee.dl.core.designsystem.resources.details_map_hint
+import com.uri.lee.dl.core.designsystem.resources.details_map_note
 import com.uri.lee.dl.core.designsystem.resources.details_names
+import com.uri.lee.dl.core.designsystem.resources.details_names_unverified
+import com.uri.lee.dl.core.designsystem.resources.details_names_unverified_body
 import com.uri.lee.dl.core.designsystem.resources.details_no_photos
 import com.uri.lee.dl.core.designsystem.resources.details_not_found
 import com.uri.lee.dl.core.designsystem.resources.details_photo_map
 import com.uri.lee.dl.core.designsystem.resources.details_photos_loading
+import com.uri.lee.dl.core.designsystem.resources.details_place_photo
+import com.uri.lee.dl.core.designsystem.resources.details_place_photos
+import com.uri.lee.dl.core.designsystem.resources.details_share_in_apps
 import com.uri.lee.dl.core.designsystem.resources.details_suggest_name
 import com.uri.lee.dl.core.designsystem.resources.details_vietnamese_names
 import com.uri.lee.dl.core.designsystem.resources.details_view_on_gbif
@@ -93,13 +109,17 @@ import com.uri.lee.dl.core.designsystem.resources.generic_error
 import com.uri.lee.dl.core.designsystem.resources.notice_contributor_hidden
 import com.uri.lee.dl.core.designsystem.resources.notice_failed
 import com.uri.lee.dl.core.designsystem.resources.notice_reported
+import com.uri.lee.dl.core.designsystem.resources.ok
 import com.uri.lee.dl.core.designsystem.resources.photo_counter
 import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.core.maps.HerbMap
 import com.uri.lee.dl.core.maps.LatLng
+import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.model.NameLanguages
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.model.SpeciesPhoto
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -132,7 +152,8 @@ fun HerbDetailsRoute(
     if (suggesting && species != null) {
         SuggestNameSheet(
             herbId = herbId,
-            currentName = species.preferredVietnameseName.orEmpty(),
+            listed = NameLanguages.ENABLED.associateWith { species.names(it) },
+            language = if (LocalVietnameseFirst.current) NameLanguages.VIETNAMESE else NameLanguages.ENGLISH,
             onSignIn = { suggesting = false; onSignIn() },
             onDismiss = { suggesting = false },
         )
@@ -229,7 +250,7 @@ fun HerbDetailsScreen(
                 )
                 state.notFound -> EmptyState(Icons.Filled.SearchOff, stringResource(Res.string.details_not_found))
                 species == null -> LoadingState()
-                else -> DetailsContent(species, state.photos, state.photosLoading, onAction, onAddPhotos, onSuggestName)
+                else -> DetailsContent(species, state.photos, state.photosLoading, state.place, onAction, onAddPhotos, onSuggestName)
             }
         }
     }
@@ -240,6 +261,7 @@ private fun DetailsContent(
     species: Species,
     photos: List<SpeciesPhoto>,
     photosLoading: Boolean,
+    place: SelectedPlace?,
     onAction: (HerbDetailsAction) -> Unit,
     onAddPhotos: (() -> Unit)?,
     onSuggestName: () -> Unit,
@@ -270,16 +292,19 @@ private fun DetailsContent(
                 else -> NoPhotos(onAddPhotos)
             }
         }
+        // Names and classification can be selected and copied, e.g. to search elsewhere
         item("title") {
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                val commonName = species.displayName(LocalVietnameseFirst.current).takeIf { it != species.scientificName }
-                commonName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
-                ScientificName(
-                    species.scientificName,
-                    authorship = species.authorship,
-                    style = if (commonName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            SelectionContainer {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    val commonName = species.displayName(LocalVietnameseFirst.current).takeIf { it != species.scientificName }
+                    commonName?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
+                    ScientificName(
+                        species.scientificName,
+                        authorship = species.authorship,
+                        style = if (commonName == null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
         item("actions") {
@@ -296,11 +321,17 @@ private fun DetailsContent(
                 }
             }
         }
-        if (species.vietnameseNames.size > 1 || species.englishNames.isNotEmpty()) {
+        // Where photos can't be shared (the web), where they can
+        if (onAddPhotos == null) item("share-in-apps") { ShareInApps() }
+        // Every common name in the languages the app shows, with a warning that nobody checked them
+        if (NameLanguages.ENABLED.any { species.names(it).isNotEmpty() }) {
             item("names") {
-                SectionCard(stringResource(Res.string.details_names)) {
-                    NameList(stringResource(Res.string.details_vietnamese_names), species.vietnameseNames)
-                    NameList(stringResource(Res.string.details_english_names), species.englishNames)
+                SectionCard(stringResource(Res.string.details_names), titleAction = { UnverifiedNames() }) {
+                    SelectionContainer {
+                        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                            NameLanguages.ENABLED.forEach { language -> NameList(languageName(language), species.names(language)) }
+                        }
+                    }
                 }
             }
         }
@@ -308,14 +339,43 @@ private fun DetailsContent(
         if (photoPlaces.isNotEmpty()) {
             item("map") {
                 SectionCard(stringResource(Res.string.details_photo_map)) {
-                    HerbMap(photoPlaces, Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium))
+                    HerbMap(
+                        photoPlaces,
+                        Modifier.fillMaxWidth().height(220.dp).clip(MaterialTheme.shapes.medium),
+                        onPointClick = { index ->
+                            val point = photoPlaces[index]
+                            onAction(HerbDetailsAction.SelectPlace(GeoLocation(point.latitude, point.longitude)))
+                        },
+                    )
+                    if (place != null) {
+                        PlaceCard(place, photos, onOpen = { onAction(HerbDetailsAction.ViewPhoto(it)) }, onClose = { onAction(HerbDetailsAction.SelectPlace(null)) })
+                    } else {
+                        Text(
+                            stringResource(Res.string.details_map_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    // Places come from contributors' phones or pins, and nobody checks them
+                    Row(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            stringResource(Res.string.details_map_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
         item("classification") {
             SectionCard(stringResource(Res.string.details_classification)) {
-                if (species.family.isNotBlank()) LabeledValue(stringResource(Res.string.details_family), species.family)
-                if (species.genus.isNotBlank()) LabeledValue(stringResource(Res.string.details_genus), species.genus, italic = true)
+                SelectionContainer {
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                        if (species.family.isNotBlank()) LabeledValue(stringResource(Res.string.details_family), species.family)
+                        if (species.genus.isNotBlank()) LabeledValue(stringResource(Res.string.details_genus), species.genus, italic = true)
+                    }
+                }
                 // The full record stays in the app; GBIF is one step further, from the sheet
                 TextButton(onClick = { showInfo = true; onAction(HerbDetailsAction.InfoOpened) }) {
                     Text(stringResource(Res.string.details_full))
@@ -326,10 +386,81 @@ private fun DetailsContent(
     }
 }
 
+/** A pin's photos and address; tapping it opens the first of its photos. */
+@Composable
+private fun PlaceCard(place: SelectedPlace, photos: List<SpeciesPhoto>, onOpen: (Int) -> Unit, onClose: () -> Unit) {
+    val spacing = HerbLensTheme.spacing
+    val here = photos.withIndex().filter { (_, photo) -> photo.location == place.location }
+    val first = here.firstOrNull() ?: return
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable { onOpen(first.index) }
+            .padding(spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        RemoteImage(
+            first.value.thumbnailUrl,
+            stringResource(Res.string.details_place_photo),
+            Modifier.size(64.dp).clip(MaterialTheme.shapes.small),
+        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                place.address ?: formatCoordinates(place.location),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                pluralStringResource(Res.plurals.details_place_photos, here.size, here.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = onClose) { Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.cd_close)) }
+    }
+}
+
+/** "10.7769, 106.7009": a place without an address yet. */
+private fun formatCoordinates(location: GeoLocation): String {
+    fun four(value: Double) = (kotlin.math.round(value * 10_000) / 10_000).toString()
+    return "${four(location.latitude)}, ${four(location.longitude)}"
+}
+
 @Composable
 private fun NameList(label: String, names: List<String>) {
     if (names.isEmpty()) return
     LabeledValue(label, names.joinToString(" · "))
+}
+
+/** A language's name, from its ISO 639-1 code. */
+@Composable
+internal fun languageName(code: String): String = when (code) {
+    NameLanguages.VIETNAMESE -> stringResource(Res.string.details_vietnamese_names)
+    NameLanguages.ENGLISH -> stringResource(Res.string.details_english_names)
+    else -> code.uppercase()
+}
+
+/** A warning beside "Names": common names come from GBIF and users, and experts haven't checked them. */
+@Composable
+private fun UnverifiedNames() {
+    var open by remember { mutableStateOf(false) }
+    val title = stringResource(Res.string.details_names_unverified)
+    IconButton(onClick = { open = true }, modifier = Modifier.size(32.dp)) {
+        Icon(Icons.Outlined.WarningAmber, contentDescription = title, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+    }
+    if (open) {
+        DialogLayer {
+            AlertDialog(
+                onDismissRequest = { open = false },
+                icon = { Icon(Icons.Outlined.WarningAmber, contentDescription = null) },
+                title = { Text(title) },
+                text = { Text(stringResource(Res.string.details_names_unverified_body)) },
+                confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(Res.string.ok)) } },
+            )
+        }
+    }
 }
 
 @Composable
@@ -390,6 +521,24 @@ private fun PhotosLoading() {
         contentAlignment = Alignment.Center,
     ) {
         Icon(Icons.Filled.Image, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+    }
+}
+
+/** Points to the apps, which share photos, with links to their store pages. */
+@Composable
+private fun ShareInApps() {
+    val uriHandler = LocalUriHandler.current
+    Column {
+        Text(
+            stringResource(Res.string.details_share_in_apps),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow {
+            // Store names, the same in every language
+            TextButton(onClick = { uriHandler.openUri(LegalLinks.GOOGLE_PLAY) }) { Text("Google Play") }
+            TextButton(onClick = { uriHandler.openUri(LegalLinks.APP_STORE) }) { Text("App Store") }
+        }
     }
 }
 

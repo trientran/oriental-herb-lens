@@ -41,6 +41,18 @@ class SpeciesCsvReaderTest {
     }
 
     @Test
+    fun `names in other languages come from vernacularName columns with a language code`() {
+        val csv = "$header,vernacularName_zh,vernacularName_FR\n" +
+            "3035652,(L.) Harms,Polyscias fruticosa,Araliaceae,Polyscias,x,Ming Aralia,Đinh lăng,南洋参; 福禄桐,\n"
+
+        val species = reader.read(csv).species.single()
+
+        assertEquals(mapOf("zh" to listOf("南洋参", "福禄桐")), species.otherNames)
+        assertEquals(listOf("南洋参", "福禄桐"), species.names("zh"))
+        assertEquals(listOf("Ming Aralia"), species.names("en"))
+    }
+
+    @Test
     fun `decomposed Vietnamese is stored precomposed`() {
         val nfd = "Ba\u0323c ha\u0300" // "Bạc hà" as base letters + combining marks
         val csv = "$header\n1,,Mentha arvensis,Lamiaceae,Mentha,,,$nfd\n"

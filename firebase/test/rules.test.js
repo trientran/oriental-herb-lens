@@ -70,7 +70,24 @@ test('banned users can’t contribute', async () => {
   }));
 });
 
-test('name suggestions: well-formed creates only, never read back', async () => {
+test('name suggestions: a name in an offered language, never read back', async () => {
+  const bob = as('bob');
+  const ok = { speciesKey: 3035652, language: 'en', name: 'Ming aralia', uid: 'bob', createdAt: serverTimestamp() };
+  const created = await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), ok));
+  await assertFails(getDoc(created));
+  await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'vi', name: 'Đinh lăng' }));
+  // Languages waiting for the ethics approval, and anything else
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh', name: '南洋参' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'english' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: '' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: 'x'.repeat(101) }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, uid: 'alice' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, viName: 'Đinh lăng' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, createdAt: new Date(0) }));
+  await assertFails(addDoc(collection(as(null), 'nameSuggestions'), ok));
+});
+
+test('name suggestions from earlier builds: a Vietnamese name', async () => {
   const bob = as('bob');
   const ok = { speciesKey: 3035652, viName: 'Cây gỏi cá', uid: 'bob', createdAt: serverTimestamp() };
   const created = await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), ok));
@@ -143,7 +160,8 @@ test('contributors share models as themselves; anyone browses; only the uploader
   await assertFails(setDoc(ref('carol'), model('carol', { license: 'proprietary' })));
   await assertFails(setDoc(ref('carol'), model('carol', { extra: 1 })));
   await assertFails(setDoc(doc(as('carol'), 'sharedModels/not-a-uuid'), model('carol')));
-  await assertSucceeds(setDoc(ref('carol'), model('carol')));
+  await assertFails(setDoc(ref('carol'), model('carol', { huggingFace: 'published' })));
+  await assertSucceeds(setDoc(ref('carol'), model('carol', { huggingFace: 'requested' })));
 
   await assertSucceeds(getDoc(ref(null)));
   await assertSucceeds(getDocs(collection(as(null), 'sharedModels')));

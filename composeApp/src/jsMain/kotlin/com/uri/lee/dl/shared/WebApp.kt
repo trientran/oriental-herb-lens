@@ -1,6 +1,5 @@
 package com.uri.lee.dl.shared
 
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalUriHandler
@@ -17,6 +16,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
+import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
@@ -25,6 +25,7 @@ import org.w3c.fetch.Response
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
+import org.w3c.files.File
 
 /** The web build's settings, from the webApp module. */
 class WebConfig(
@@ -77,6 +78,7 @@ fun startWebApp(config: WebConfig) {
             sharedModules(app) + module {
                 single<UploadNotifier> { WebUploadNotifier() }
                 single<AppFiles> { WebAppFiles() }
+                single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
                 if (config.isDebug) single<LocalBackbones> { WebLocalBackbones() }
             },
         )
@@ -96,10 +98,9 @@ fun startWebApp(config: WebConfig) {
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
-            // On the web any text can be selected and copied, e.g. a name to search elsewhere
-            SelectionContainer { App(actions) }
-        }
+        // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
+        // a selectable label in a button takes the click as the start of a selection
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions) }
     }
 }
 
@@ -128,17 +129,32 @@ private fun ignoreCancelledRequests() {
 
 /** The browser's file chooser, for images; on phones it also offers the camera. */
 private fun pickPhotos(pick: PhotoPick) {
+    chooseFiles({
+        accept = "image/*"
+        multiple = true
+    }) { files -> pick.onPicked(files.take(MAX_PHOTOS).map(::WebLocalImage)) }
+}
+
+/**
+ * Opens the browser's file chooser; [onChosen] gets the files, or none when it's cancelled (Chrome
+ * and Safari report that). The input stays in the page until then: iOS Safari drops the choice
+ * made in a chooser whose input isn't in the page.
+ */
+internal fun chooseFiles(configure: HTMLInputElement.() -> Unit, onChosen: (List<File>) -> Unit) {
     val input = document.createElement("input") as HTMLInputElement
     input.type = "file"
-    input.accept = "image/*"
-    input.multiple = true
+    input.style.display = "none"
+    input.configure()
+    fun done(files: List<File>) {
+        input.remove()
+        onChosen(files)
+    }
     input.onchange = {
         val files = input.files
-        val photos = (0 until (files?.length ?: 0)).mapNotNull { files?.item(it) }.take(MAX_PHOTOS).map(::WebLocalImage)
-        pick.onPicked(photos)
+        done((0 until (files?.length ?: 0)).mapNotNull { files?.item(it) })
     }
-    // Chrome and Safari report a cancelled chooser
-    input.addEventListener("cancel", { pick.onPicked(emptyList()) })
+    input.addEventListener("cancel", { done(emptyList()) })
+    document.body?.appendChild(input)
     input.click()
 }
 

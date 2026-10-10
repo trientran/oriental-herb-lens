@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reviews what users send: reported photos and shared models, and Vietnamese name suggestions.
+"""Reviews what users send: reported photos and shared models, and common-name suggestions.
 
 Users report photos in the app (photoReports in Firestore, which only this kind of admin access
 can read). App Store guideline 1.2 expects objectionable content to be acted on within 24 hours;
@@ -16,16 +16,24 @@ R2). It does the same for each name suggestion (nameSuggestions), which has no d
     tools/moderate.py model-reports               open reports of shared models, newest first
     tools/moderate.py remove-model REPORT_ID [--ban]   take the model down (Firestore and R2), close its reports
     tools/moderate.py dismiss-model REPORT_ID     close a model report, keeping the model
+    tools/moderate.py hf-requests                 shared models asked for Hugging Face but not on it yet
+    tools/moderate.py publish-hf MODEL_ID         publish one there by hand (the Worker normally does it)
+    tools/moderate.py decline-hf MODEL_ID         don't publish it (the sharer sees that in the app)
     tools/moderate.py ban UID / unban UID         stop / allow an account contributing
     tools/moderate.py suggestions                 open name suggestions, with the current names
     tools/moderate.py dismiss-suggestion ID       close a suggestion (after adding the name, or not)
     tools/moderate.py notify --repo OWNER/REPO    (CI) open an issue per new report and suggestion
 
-To accept a suggestion, add the name to the species' vietnameseName in
-androidApp/assets/herb_catalog.csv (names separated by "; ", the preferred one first), publish
-the catalog (docs/content-publishing.md), then dismiss the suggestion.
+To accept a suggestion, add the name to the species' column for its language in
+androidApp/assets/herb_catalog.csv: vietnameseName (vi), vernacularName (en), or
+vernacularName_<code> for others (names separated by "; ", the preferred one first). Publish the
+catalog (docs/content-publishing.md), then dismiss the suggestion.
 
 Removing the file from R2 needs Cloudflare's wrangler CLI, logged in (`npx wrangler login`).
+Models are published on Hugging Face by the upload Worker as they're shared (when the sharer
+leaves the box ticked). publish-hf, and removing a published model, need `pip install
+huggingface_hub` and HF_TOKEN, a write token for the organisation (HF_ORG, by default
+med-herb-lens); keep it out of the repository.
 The service account needs the "Cloud Datastore User" role; keep its key out of the repository.
 """
 
@@ -49,6 +57,15 @@ SUGGESTIONS = "nameSuggestions"
 CATALOG = "androidApp/assets/herb_catalog.csv"
 HERBS = "herbs"
 BANNED = "bannedUsers"
+HF_ORG = os.environ.get("HF_ORG", "med-herb-lens")
+CITATIONS = [
+    "Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2025). Med Herb Lens: A prototype AI "
+    "app for medicinal plant identification. *Procedia Computer Science*, 270, 2603–2612. "
+    "https://doi.org/10.1016/j.procs.2025.09.382",
+    "Tran, T. P., Ud Din, F., Brankovic, L., Sanin, C., & Hester, S. M. (2026). Resource-efficient continual "
+    "learning for medicinal plant identification: A periodic retraining approach for edge-deployed agricultural "
+    "IoT applications. *IoT*, 7(3), 57. https://doi.org/10.3390/iot7030057",
+]
 # Where the photo-upload Worker stores photos (workers/photo-upload/wrangler.toml)
 R2_BUCKET = "herb-lens-content"
 R2_PUBLIC_HOST = "pub-394936ea0f444a64a542ff743b102f1f.r2.dev"
@@ -175,6 +192,9 @@ def cmd_remove_model(db, args):
     model = listed.get()
     if model.exists:
         url = model.to_dict().get("url")
+        hub_url = model.to_dict().get("huggingFaceUrl")
+        if hub_url:
+            unpublish_hf(hub_url)
         listed.delete()
         print("  removed sharedModels/%s" % model_id)
         if url and not args.keep_file:
@@ -227,6 +247,154 @@ def notify_model_reports(db, repo):
     return opened
 
 
+def shared_model_or_fail(db, model_id):
+    snapshot = db.collection(SHARED_MODELS).document(model_id).get()
+    if not snapshot.exists:
+        fail("no shared model %s" % model_id)
+    return snapshot
+
+
+def describe_shared_model(snapshot):
+    m = snapshot.to_dict()
+    species = m.get("species") or []
+    return "%s  %s (%d species, %.1f MB, %s)\n    species   %s\n    file      %s\n    sharer    %s" % (
+        snapshot.id, m.get("name"), len(species), (m.get("size") or 0) / 1048576, m.get("backbone"),
+        ", ".join(species[:12]) + (" …" if len(species) > 12 else ""), m.get("url"), m.get("uploaderId"),
+    )
+
+
+def cmd_hf_requests(db, args):
+    requested = list(db.collection(SHARED_MODELS).where(filter=firestore.FieldFilter("huggingFace", "==", "requested")).stream())
+    if not requested:
+        print("No models waiting for Hugging Face.")
+    for snapshot in requested:
+        print(describe_shared_model(snapshot))
+
+
+def model_card(model_id, m):
+    species = sorted(m.get("species") or [], key=str.lower)
+    lines = [
+        "---",
+        "license: cc-by-4.0",
+        "library_name: tflite",
+        "pipeline_tag: image-classification",
+        "tags:",
+        "- med-herb-lens",
+        "- plants",
+        "- medicinal-plants",
+        "- on-device",
+        "- tflite",
+        "---",
+        "",
+        "# %s" % m.get("name"),
+        "",
+        "An image classifier trained by a [Med Herb Lens](https://med-herb-lens.pages.dev/about.html) user on their "
+        "own device, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).",
+        "",
+        "## What it identifies (%d species)" % len(species),
+        "",
+    ] + ["- %s" % name for name in species] + [
+        "",
+        "## How to use it",
+        "",
+        "- **In Med Herb Lens:** download `model.tflite`, then Train → Import a model.%s" % (
+            " Made in Med Herb Lens, it can go on learning there: add species or photos and train again." if m.get("trainable") else ""),
+        "- **Anywhere TensorFlow Lite runs:** a 224 × 224 RGB image with values from 0 to 1 in; one probability per "
+        "species out. The species list is inside the file (`labels.txt` in its metadata).",
+        "",
+        "## How it was made",
+        "",
+        "A final layer trained in Med Herb Lens, on the device, on top of the `%s` MediaPipe image embedder "
+        "(Apache 2.0)." % m.get("backbone"),
+        "",
+        "## Caution",
+        "",
+        "Like any model, it can be wrong, and its species names were typed by its sharer. Never eat a plant or use "
+        "it as medicine because of what a model says.",
+        "",
+        "## Credit and citation",
+        "",
+        "Shared by a Med Herb Lens user (shared model `%s`). If you use it, please cite:" % model_id,
+        "",
+    ] + ["%s\n" % c for c in CITATIONS]
+    return "\n".join(lines)
+
+
+def slug(text):
+    """A Hugging Face repository name: ASCII letters, digits and dashes ("Rau Hà Nội" -> "rau-ha-noi")."""
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D")).encode("ascii", "ignore").decode()
+    cleaned = "".join(c.lower() if c.isalnum() else "-" for c in folded)
+    return "-".join(part for part in cleaned.split("-") if part)[:60] or "model"
+
+
+def cmd_publish_hf(db, args):
+    snapshot = shared_model_or_fail(db, args.model_id)
+    m = snapshot.to_dict()
+    token = os.environ.get("HF_TOKEN") or fail("set HF_TOKEN to a write token for the %s organisation" % HF_ORG)
+    from huggingface_hub import HfApi
+    import urllib.request
+    api = HfApi(token=token)
+    repo_id = "%s/%s-%s" % (HF_ORG, slug(m.get("name", "model")), args.model_id[:8])
+    with urllib.request.urlopen(m["url"]) as response:
+        model_bytes = response.read()
+    api.create_repo(repo_id, repo_type="model", exist_ok=True)
+    api.upload_file(path_or_fileobj=model_bytes, path_in_repo="model.tflite", repo_id=repo_id,
+                    commit_message="Model shared in Med Herb Lens (%s)" % args.model_id)
+    api.upload_file(path_or_fileobj=model_card(args.model_id, m).encode("utf-8"), path_in_repo="README.md",
+                    repo_id=repo_id, commit_message="Model card")
+    url = "https://huggingface.co/%s" % repo_id
+    snapshot.reference.update({"huggingFace": "published", "huggingFaceUrl": url})
+    print("Published %s; the app now links to it." % url)
+
+
+def unpublish_hf(hub_url):
+    token = os.environ.get("HF_TOKEN")
+    if not token:
+        print("  HF_TOKEN not set: delete %s by hand" % hub_url)
+        return
+    from huggingface_hub import HfApi
+    repo_id = "/".join(urlparse(hub_url).path.strip("/").split("/")[:2])
+    HfApi(token=token).delete_repo(repo_id, repo_type="model", missing_ok=True)
+    print("  deleted Hugging Face repository %s" % repo_id)
+
+
+def cmd_decline_hf(db, args):
+    shared_model_or_fail(db, args.model_id).reference.update({"huggingFace": "declined"})
+    print("Declined; %s stays shared in the app only." % args.model_id)
+
+
+def notify_hf_requests(db, repo):
+    """Opens a GitHub issue for every new request to publish a shared model on Hugging Face."""
+    opened = 0
+    for snapshot in db.collection(SHARED_MODELS).where(filter=firestore.FieldFilter("huggingFace", "==", "requested")).stream():
+        if snapshot.to_dict().get("hfNotifiedAt"):
+            continue
+        body = "\n".join([
+            "A shared model was meant to be published on Hugging Face (%s), but isn't yet: the Worker" % HF_ORG,
+            "couldn't publish it (Hugging Face unreachable, or HF_TOKEN not set on the Worker).",
+            "",
+            "```",
+            describe_shared_model(snapshot),
+            "```",
+            "",
+            "If its name and species are fine to publish:",
+            "",
+            "```",
+            "tools/moderate.py publish-hf %s   # publish it" % snapshot.id,
+            "tools/moderate.py decline-hf %s   # keep it in the app only" % snapshot.id,
+            "```",
+            "",
+            "Close this issue once done.",
+        ])
+        title = "Hugging Face request: %s" % snapshot.to_dict().get("name")
+        subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
+                        "--label", "hugging-face"], check=True)
+        snapshot.reference.update({"hfNotifiedAt": firestore.SERVER_TIMESTAMP})
+        opened += 1
+    return opened
+
+
 def cmd_ban(db, args):
     ban(db, args.uid, args.reason or "banned by the admin")
 
@@ -236,14 +404,29 @@ def cmd_unban(db, args):
     print("Unbanned %s." % args.uid)
 
 
-def catalog_names(species_key):
-    """(scientific name, current Vietnamese names) from the catalog CSV, if it has the species."""
+LANGUAGE_NAMES = {"vi": "Vietnamese", "en": "English"}
+
+
+def name_column(language):
+    """The catalog column that holds names in a language (an ISO 639-1 code)."""
+    return {"vi": "vietnameseName", "en": "vernacularName"}.get(language, "vernacularName_%s" % language)
+
+
+def suggested(suggestion):
+    """(language, name) of a suggestion; earlier builds sent Vietnamese names only, as viName."""
+    if suggestion.get("viName"):
+        return "vi", suggestion.get("viName")
+    return suggestion.get("language") or "?", suggestion.get("name")
+
+
+def catalog_names(species_key, language="vi"):
+    """(scientific name, its current names in the language) from the catalog CSV, if it has the species."""
     path = os.path.join(os.path.dirname(__file__), "..", CATALOG)
     try:
         with open(path, encoding="utf-8", newline="") as f:
             for row in csv.DictReader(f):
                 if row.get("speciesKey") == str(species_key):
-                    return row.get("canonicalName") or row.get("scientificName"), row.get("vietnameseName") or ""
+                    return row.get("canonicalName") or row.get("scientificName"), row.get(name_column(language)) or ""
     except OSError:
         pass
     return None, None
@@ -253,10 +436,11 @@ def describe_suggestion(snapshot):
     s = snapshot.to_dict()
     created = s.get("createdAt")
     when = created.strftime("%Y-%m-%d %H:%M UTC") if created else "?"
-    scientific, current = catalog_names(s.get("speciesKey"))
-    return "%s  %s  species %s (%s)\n    suggested %s\n    current   %s\n    by        %s" % (
-        snapshot.id, when, s.get("speciesKey"), scientific or "not in the catalog", s.get("viName"),
-        current or "-", s.get("uid"),
+    language, name = suggested(s)
+    scientific, current = catalog_names(s.get("speciesKey"), language)
+    return "%s  %s  species %s (%s)\n    suggested %s (%s)\n    current   %s\n    by        %s" % (
+        snapshot.id, when, s.get("speciesKey"), scientific or "not in the catalog", name,
+        LANGUAGE_NAMES.get(language, language), current or "-", s.get("uid"),
     )
 
 
@@ -286,18 +470,20 @@ def notify_suggestions(db, repo):
         if suggestion.get("notifiedAt"):
             continue
         key = suggestion.get("speciesKey")
-        name = suggestion.get("viName")
-        scientific, current = catalog_names(key)
+        language, name = suggested(suggestion)
+        language_name = LANGUAGE_NAMES.get(language, language)
+        scientific, current = catalog_names(key, language)
         body = "\n".join([
-            "A user suggested a Vietnamese name.",
+            "A user suggested a common name in %s." % language_name,
             "",
             "- Suggested: **%s**" % name,
+            "- Language: %s (`%s`)" % (language_name, language),
             "- Species: %s, %s (https://www.gbif.org/species/%s)" % (scientific or "not in the catalog", key, key),
-            "- Current Vietnamese names: %s" % (current or "none"),
+            "- Current %s names: %s" % (language_name, current or "none"),
             "- By: `%s`" % suggestion.get("uid"),
             "",
-            "If it's right, add it to the species' `vietnameseName` in `%s` (names separated by `; `, "
-            "the preferred one first) and publish the catalog (docs/content-publishing.md). Either way, then:" % CATALOG,
+            "If it's right, add it to the species' `%s` in `%s` (names separated by `; `, "
+            "the preferred one first) and publish the catalog (docs/content-publishing.md). Either way, then:" % (name_column(language), CATALOG),
             "",
             "```",
             "tools/moderate.py dismiss-suggestion %s" % snapshot.id,
@@ -305,7 +491,7 @@ def notify_suggestions(db, repo):
             "",
             "Close this issue once done.",
         ])
-        title = "Name suggestion: %s for %s" % (name, scientific or "species %s" % key)
+        title = "Name suggestion (%s): %s for %s" % (language_name, name, scientific or "species %s" % key)
         subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body,
                         "--label", "name-suggestion"], check=True)
         snapshot.reference.update({"notifiedAt": firestore.SERVER_TIMESTAMP})
@@ -345,6 +531,7 @@ def cmd_notify(db, args):
         opened += 1
     print("Opened %d issue(s) for reports." % opened)
     print("Opened %d issue(s) for model reports." % notify_model_reports(db, args.repo))
+    print("Opened %d issue(s) for Hugging Face requests." % notify_hf_requests(db, args.repo))
     print("Opened %d issue(s) for name suggestions." % notify_suggestions(db, args.repo))
 
 
@@ -369,6 +556,13 @@ def main():
     dismiss_model = sub.add_parser("dismiss-model")
     dismiss_model.add_argument("report_id")
     dismiss_model.set_defaults(run=cmd_dismiss_model)
+    sub.add_parser("hf-requests").set_defaults(run=cmd_hf_requests)
+    publish_hf = sub.add_parser("publish-hf")
+    publish_hf.add_argument("model_id")
+    publish_hf.set_defaults(run=cmd_publish_hf)
+    decline_hf = sub.add_parser("decline-hf")
+    decline_hf.add_argument("model_id")
+    decline_hf.set_defaults(run=cmd_decline_hf)
     ban_parser = sub.add_parser("ban")
     ban_parser.add_argument("uid")
     ban_parser.add_argument("--reason")

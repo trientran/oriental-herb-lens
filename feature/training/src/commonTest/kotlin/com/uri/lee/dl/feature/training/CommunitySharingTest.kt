@@ -2,11 +2,17 @@ package com.uri.lee.dl.feature.training
 
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.sharing.CommunityModel
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingProblem
 import com.uri.lee.dl.domain.training.AppFiles
 import com.uri.lee.dl.domain.training.Backbones
+import com.uri.lee.dl.core.common.ApplicationScope
+import kotlinx.coroutines.launch
+import com.uri.lee.dl.domain.analytics.NoAnalytics
+import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.testing.MainDispatcherTest
+import kotlinx.coroutines.CoroutineScope
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
 import com.uri.lee.dl.testing.fakes.FakeCommunityModelRepository
 import com.uri.lee.dl.testing.fakes.FakeSettingsRepository
@@ -29,9 +35,17 @@ class CommunitySharingTest : MainDispatcherTest() {
     }
 
     private val store = UserModelStore(MemoryFiles())
+    private val appScope by lazy { ApplicationScope(CoroutineScope(testDispatcher)) }
+    private val queueFiles = MemoryFiles()
+    private val shareQueue by lazy { ModelShareQueue(queueFiles, store, community, notifier, NoAnalytics) }
     private val auth = FakeAuthRepository()
     private val community = FakeCommunityModelRepository { auth.currentUserId }
     private val settings = FakeSettingsRepository()
+    private val finished = mutableListOf<Pair<String, Boolean>>()
+    private val notifier = object : UploadNotifier {
+        override fun uploadFinished(speciesId: Long, speciesName: String?, uploaded: Int, failed: Int) = Unit
+        override fun modelShareFinished(modelName: String, shared: Boolean) { finished += modelName to shared }
+    }
     private val backbones = object : Backbones {
         override val available = listOf("mobilenet_v3_large")
         override suspend fun location(name: String, onDownloading: () -> Unit) = name
@@ -41,6 +55,9 @@ class CommunitySharingTest : MainDispatcherTest() {
     private fun viewModel() = TrainingViewModel(
         store, backbones, reader = { null }, embedders = ImageEmbedderLoader { error("no embedder in tests") },
         cropper = { image, _ -> image }, community = community, auth = auth, settings = settings,
+        appScope = appScope, notifier = notifier, shareQueue = shareQueue,
+        // As in the browser and on iOS: right away, in the app's scope
+        scheduler = { appScope.launch { shareQueue.runPending() } },
     )
 
     /** A model with its file, open on its results screen. */
@@ -69,13 +86,34 @@ class CommunitySharingTest : MainDispatcherTest() {
         assertEquals(SharingStep.Terms, viewModel.state.value.sharing)
 
         viewModel.onAction(TrainingAction.AcceptSharingTerms)
+        assertEquals(SharingStep.Confirm, viewModel.state.value.sharing)
+        assertTrue(settings.sharingTermsAccepted.value)
+
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = true))
 
         assertNull(viewModel.state.value.sharing)
-        assertEquals(TrainingMessage.SHARED, viewModel.state.value.message)
-        assertTrue(settings.sharingTermsAccepted.value)
+        // The fake doesn't publish, as when Hugging Face is down: shared here, published later
+        assertEquals(TrainingMessage.SHARED_HUGGING_FACE_LATER, viewModel.state.value.message)
         val shared = community.shared.value.single()
         assertEquals(listOf("Mint", "Basil"), shared.species)
         assertEquals("user-1", shared.uploaderId)
+        assertEquals(HuggingFaceStatus.REQUESTED, shared.huggingFace)
+        assertEquals(listOf("Garden herbs" to true), finished)
+        // Remembered, so the results screen stops asking
+        assertEquals(shared.id, viewModel.state.value.model?.sharedId)
+        assertEquals(shared.id, store.load("m1")?.sharedId)
+    }
+
+    @Test
+    fun `a second share skips the terms`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        val viewModel = opened()
+
+        viewModel.onAction(TrainingAction.ShareWithEveryone)
+        assertEquals(SharingStep.Confirm, viewModel.state.value.sharing)
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        assertEquals(HuggingFaceStatus.NONE, community.shared.value.single().huggingFace)
     }
 
     @Test
@@ -113,6 +151,8 @@ class CommunitySharingTest : MainDispatcherTest() {
         viewModel.onAction(TrainingAction.Open(TrainingScreen.CommunityModel("c")))
         viewModel.onAction(TrainingAction.RemoveCommunityModel("c"))
         assertEquals(TrainingMessage.REMOVED, viewModel.state.value.message)
+        assertEquals(TrainingScreen.Community, viewModel.state.value.screen)
+        assertEquals(null, viewModel.state.value.error)
         assertTrue(community.shared.value.none { it.id == "c" })
     }
 
@@ -125,5 +165,56 @@ class CommunitySharingTest : MainDispatcherTest() {
         viewModel.onAction(TrainingAction.Back)
 
         assertNull(viewModel.state.value.community)
+    }
+
+    @Test
+    fun `a model in the list can be shared without opening it`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        store.saveImported(UserModel("m2", "Weeds", listOf("Lantana", "Mimosa"), trainedClasses = listOf("Lantana", "Mimosa")), ByteArray(10))
+        val viewModel = viewModel()
+
+        viewModel.onAction(TrainingAction.ShareModel("m2"))
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        assertEquals("Weeds", community.shared.value.single().name)
+        assertEquals(community.shared.value.single().id, store.load("m2")?.sharedId)
+    }
+
+    @Test
+    fun `a share that can't finish waits and is retried as after the app was closed`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        community.failUpload = true
+        val viewModel = opened()
+
+        viewModel.onAction(TrainingAction.ShareWithEveryone)
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        assertEquals(TrainingMessage.SHARE_LATER, viewModel.state.value.message)
+        assertNull(viewModel.state.value.work)
+        assertTrue(finished.isEmpty())
+        assertTrue(queueFiles.files.isNotEmpty())
+
+        // Back online, a later run (the next launch, or WorkManager) finishes it, with the same share id
+        community.failUpload = false
+        ModelShareQueue(queueFiles, store, community, notifier, NoAnalytics).runPending()
+
+        assertEquals(listOf("Garden herbs" to true), finished)
+        assertEquals(community.shared.value.single().id, store.load("m1")?.sharedId)
+        assertTrue(queueFiles.files.isEmpty())
+    }
+
+    @Test
+    fun `after the last try the notifier hears it failed`() = runTest {
+        settings.sharingTermsAccepted.value = true
+        community.failUpload = true
+        val viewModel = opened()
+        viewModel.onAction(TrainingAction.ShareWithEveryone)
+        viewModel.onAction(TrainingAction.ConfirmShare(offerToHuggingFace = false))
+
+        repeat(ModelShareQueue.MAX_ATTEMPTS - 1) { shareQueue.runPending() }
+
+        assertEquals(TrainingError.SHARE, viewModel.state.value.error)
+        assertEquals(listOf("Garden herbs" to false), finished)
+        assertTrue(queueFiles.files.isEmpty())
     }
 }

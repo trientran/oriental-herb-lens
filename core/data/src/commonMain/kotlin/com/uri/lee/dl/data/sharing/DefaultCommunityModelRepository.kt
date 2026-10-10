@@ -9,14 +9,16 @@ import com.uri.lee.dl.data.upload.sendWithinRateLimit
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
+import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
 import com.uri.lee.dl.domain.sharing.ModelReportReason
 import com.uri.lee.dl.domain.sharing.SharingRules
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.readRawBytes
@@ -24,6 +26,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import okio.ByteString.Companion.toByteString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -47,6 +50,12 @@ internal class DefaultCommunityModelRepository(
     @Serializable
     private data class Uploaded(val id: String, val url: String, val size: Int)
 
+    @Serializable
+    private data class Published(val url: String)
+
+    @Serializable
+    private data class PublishRequest(val sha256: String)
+
     override fun observe(): Flow<List<CommunityModel>> =
         combine(firestore.observeSharedModels(LIMIT), prefs.data) { records, stored ->
             val hiddenModels = stored[HIDDEN_MODELS].orEmpty()
@@ -54,12 +63,21 @@ internal class DefaultCommunityModelRepository(
             records.filter { it.id !in hiddenModels && it.uploaderId !in hiddenPeople }.map { it.toModel() }
         }
 
-    override suspend fun share(name: String, species: List<String>, backbone: String, trainable: Boolean, file: ByteArray): CommunityModel {
+    override suspend fun share(
+        id: String,
+        name: String,
+        species: List<String>,
+        backbone: String,
+        trainable: Boolean,
+        file: ByteArray,
+        offerToHuggingFace: Boolean,
+    ): CommunityModel {
         if (workerUrl.isBlank()) throw IOException("PHOTO_UPLOAD_URL isn't configured for this build")
         val uid = auth.currentUserId ?: throw NotSignedInException()
         val token = auth.idToken() ?: throw NotSignedInException()
         val response = sendWithinRateLimit {
             client.post("${workerUrl.trimEnd('/')}/models") {
+                parameter("id", id)
                 bearerAuth(token)
                 contentType(ContentType.Application.OctetStream)
                 setBody(file)
@@ -67,22 +85,57 @@ internal class DefaultCommunityModelRepository(
         }
         if (!response.status.isSuccess()) throw IOException("Model upload failed: HTTP ${response.status.value}")
         val uploaded = response.body<Uploaded>()
-        val record = SharedModelRecord(uploaded.id, name, species, backbone, trainable, uploaded.url, uploaded.size, uid, SharingRules.LICENSE)
+        val record = SharedModelRecord(
+            uploaded.id, name, species, backbone, trainable, uploaded.url, uploaded.size, uid, SharingRules.LICENSE,
+            huggingFace = if (offerToHuggingFace) "requested" else "none",
+        )
         try {
-            firestore.addSharedModel(record)
+            // Listed by an earlier try that didn't get to finish: keep that entry (the rules don't allow rewriting it)
+            if (!firestore.sharedModelExists(record.id)) firestore.addSharedModel(record)
         } catch (e: Exception) {
             // Not listed: don't leave the file behind
             if (e !is CancellationException) runCatching { deleteFile(uploaded.id, token) }
             throw e
         }
-        return record.toModel()
+        val shared = record.toModel()
+        return if (offerToHuggingFace) publishToHuggingFace(shared, file, token) else shared
+    }
+
+    /**
+     * Asks the Worker to publish the model on Hugging Face (it holds the token). If that fails, the
+     * model stays shared here and asked for; the administrator can publish it later.
+     */
+    private suspend fun publishToHuggingFace(model: CommunityModel, file: ByteArray, token: String): CommunityModel = try {
+        val response = sendWithinRateLimit {
+            client.post("${workerUrl.trimEnd('/')}/models/${model.id}/huggingface") {
+                bearerAuth(token)
+                contentType(ContentType.Application.Json)
+                // Hashed here: the Worker has little computing time, and Hugging Face checks the upload
+                setBody(PublishRequest(file.toByteString().sha256().hex()))
+            }
+        }
+        if (response.status.isSuccess()) {
+            model.copy(huggingFace = HuggingFaceStatus.PUBLISHED, huggingFaceUrl = response.body<Published>().url)
+        } else {
+            log.w { "Not published on Hugging Face: HTTP ${response.status.value}" }
+            model
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        log.w(e) { "Not published on Hugging Face" }
+        model
     }
 
     override suspend fun remove(model: CommunityModel) {
         val token = auth.idToken() ?: throw NotSignedInException()
-        firestore.deleteSharedModel(model.id)
-        // Off the list is what matters; a file left behind is only storage
-        runCatching { deleteFile(model.id, token) }.onFailure { log.w(it) { "Shared model file not removed" } }
+        // The Worker removes the file, its Hugging Face copy and the listing. Only if it couldn't is
+        // the listing deleted here (off the list is what matters most): once the Worker has deleted
+        // it, the rules refuse a second delete, as they can't see whose it was
+        runCatching { deleteFile(model.id, token) }.onFailure {
+            log.w(it) { "Shared model not removed by the Worker; removing its listing" }
+            firestore.deleteSharedModel(model.id)
+        }
     }
 
     override suspend fun download(model: CommunityModel): ByteArray {
@@ -109,7 +162,16 @@ internal class DefaultCommunityModelRepository(
         }
     }
 
-    private fun SharedModelRecord.toModel() = CommunityModel(id, name, species, backbone, trainable, url, size, uploaderId)
+    private fun SharedModelRecord.toModel() = CommunityModel(
+        id, name, species, backbone, trainable, url, size, uploaderId,
+        huggingFace = when (huggingFace) {
+            "requested" -> HuggingFaceStatus.REQUESTED
+            "published" -> HuggingFaceStatus.PUBLISHED
+            "declined" -> HuggingFaceStatus.DECLINED
+            else -> HuggingFaceStatus.NONE
+        },
+        huggingFaceUrl = huggingFaceUrl?.takeIf { it.startsWith("https://huggingface.co/") },
+    )
 
     private companion object {
         const val LIMIT = 200

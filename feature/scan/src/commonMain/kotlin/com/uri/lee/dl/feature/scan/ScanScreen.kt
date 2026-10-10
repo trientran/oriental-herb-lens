@@ -75,7 +75,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.ConfidenceChip
+import com.uri.lee.dl.core.designsystem.component.InfoTip
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.component.HerbCard
 import com.uri.lee.dl.core.designsystem.component.RemoteImage
@@ -89,10 +91,13 @@ import com.uri.lee.dl.core.designsystem.resources.scan_back_to_camera
 import com.uri.lee.dl.core.designsystem.resources.scan_hold_steady
 import com.uri.lee.dl.core.designsystem.resources.scan_looking
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_body
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_help
+import com.uri.lee.dl.core.designsystem.resources.scan_notice_help_in_apps
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_line
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_more
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_ok
 import com.uri.lee.dl.core.designsystem.resources.scan_notice_title
+import com.uri.lee.dl.core.designsystem.resources.scan_identify_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_failed
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none
 import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
@@ -122,6 +127,7 @@ fun ScanRoute(
     pickPhotos: PickPhotos,
     onOpenSpecies: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    canSharePhotos: Boolean = true,
 ) {
     val viewModel = koinViewModel<ScanViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -140,6 +146,7 @@ fun ScanRoute(
             onOpenSpecies(id)
         },
         modifier = modifier,
+        canSharePhotos = canSharePhotos,
         camera = { CameraPreview(onFrame = viewModel::analyzeFrame, modifier = Modifier.fillMaxSize()) },
     )
 }
@@ -151,6 +158,8 @@ fun ScanScreen(
     onPickPhotos: () -> Unit,
     onOpenSpecies: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    /** Whether this platform shares photos; where it doesn't (the web), the notice points to the apps. */
+    canSharePhotos: Boolean = true,
     camera: @Composable () -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
@@ -161,21 +170,22 @@ fun ScanScreen(
             Single(state, source, onAction, onPickPhotos, onOpenSpecies, camera)
         }
         if (state.preparingPhotos > 0) Preparing(state.preparingPhotos)
-        if (state.showNotice) NoticeDialog { onAction(ScanAction.DismissNotice) }
+        if (state.showNotice) NoticeDialog(canSharePhotos) { onAction(ScanAction.DismissNotice) }
     }
 }
 
 /** Why results are often wrong: the herb model is a research preview, with too few photos yet. */
 @Composable
-private fun NoticeDialog(onDismiss: () -> Unit) {
+private fun NoticeDialog(canSharePhotos: Boolean, onDismiss: () -> Unit) {
     DialogLayer {
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = { Icon(Icons.Outlined.Science, contentDescription = null) },
             title = { Text(stringResource(Res.string.scan_notice_title)) },
             text = {
+                val help = stringResource(if (canSharePhotos) Res.string.scan_notice_help else Res.string.scan_notice_help_in_apps)
                 Text(
-                    stringResource(Res.string.scan_notice_body),
+                    stringResource(Res.string.scan_notice_body) + "\n\n" + help,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                 )
@@ -201,6 +211,8 @@ private fun NoticeLine(onClick: () -> Unit, modifier: Modifier = Modifier) {
             modifier = Modifier.weight(1f, fill = false),
         )
         Text(stringResource(Res.string.scan_notice_more), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        // What the percentages mean
+        InfoTip(AiTerm.CONFIDENCE)
     }
 }
 
@@ -251,19 +263,22 @@ private fun Single(
 @Composable
 private fun ModeSwitch(mode: ScanMode, onChange: (ScanMode) -> Unit, modifier: Modifier = Modifier) {
     Surface(modifier, shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)) {
-        // Fixed width: the labels need it, and it fits a 360dp phone
-        SingleChoiceSegmentedButtonRow(Modifier.padding(4.dp).width(300.dp)) {
-            ScanMode.entries.forEachIndexed { i, entry ->
-                SegmentedButton(
-                    selected = mode == entry,
-                    onClick = { onChange(entry) },
-                    shape = SegmentedButtonDefaults.itemShape(i, ScanMode.entries.size),
-                    // The filled segment shows the choice; a tick would squeeze the labels
-                    icon = {},
-                ) {
-                    Text(stringResource(if (entry == ScanMode.WHOLE_VIEW) Res.string.scan_whole_view else Res.string.scan_pick_plant), maxLines = 1, softWrap = false)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Fixed width: the labels need it, and with the tip it fits a 360dp phone
+            SingleChoiceSegmentedButtonRow(Modifier.padding(start = 4.dp, top = 4.dp, bottom = 4.dp).width(268.dp)) {
+                ScanMode.entries.forEachIndexed { i, entry ->
+                    SegmentedButton(
+                        selected = mode == entry,
+                        onClick = { onChange(entry) },
+                        shape = SegmentedButtonDefaults.itemShape(i, ScanMode.entries.size),
+                        // The filled segment shows the choice; a tick would squeeze the labels
+                        icon = {},
+                    ) {
+                        Text(stringResource(if (entry == ScanMode.WHOLE_VIEW) Res.string.scan_whole_view else Res.string.scan_pick_plant), maxLines = 1, softWrap = false)
+                    }
                 }
             }
+            InfoTip(AiTerm.IDENTIFY_MODES, Modifier.padding(end = 4.dp))
         }
     }
 }
@@ -441,6 +456,7 @@ private fun Picked(picked: PickedPlant, fromCamera: Boolean, onAction: (ScanActi
 @Composable
 private fun hintFor(state: ScanState): String = when {
     state.hasError -> stringResource(Res.string.scan_photo_failed)
+    state.identifyFailed -> stringResource(Res.string.scan_identify_failed)
     state.source is ScanSource.Photo && state.mode == ScanMode.PICK_PLANT ->
         stringResource(if (state.objects.isEmpty()) Res.string.scan_photo_none_pick else Res.string.scan_tap_plant)
     state.source is ScanSource.Photo -> stringResource(Res.string.scan_photo_none)

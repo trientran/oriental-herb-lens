@@ -12,37 +12,77 @@ class SuggestNameViewModelTest : MainDispatcherTest() {
 
     private val contributions = FakeContributionRepository()
     private val auth = FakeAuthRepository()
-    private val viewModel by lazy { SuggestNameViewModel(5L, "Đinh lăng", contributions, auth) }
+    private val listed = mapOf("vi" to listOf("Đinh lăng"), "en" to listOf("Ming aralia"))
+    private val viewModel by lazy { SuggestNameViewModel(5L, listed, "vi", contributions, auth) }
 
     @Test
-    fun `starts from the current name and can't submit it unchanged`() {
-        assertEquals("Đinh lăng", viewModel.state.value.draft)
+    fun `starts empty in the given language and shows the names already listed`() {
+        assertEquals("vi", viewModel.state.value.language)
+        assertEquals("", viewModel.state.value.draft)
+        assertEquals(listOf("Đinh lăng"), viewModel.state.value.listedInLanguage)
         assertFalse(viewModel.state.value.canSubmit)
     }
 
     @Test
-    fun `blank or whitespace-only changes can't be submitted`() {
+    fun `a name already listed in that language can't be suggested`() {
+        viewModel.onAction(SuggestNameAction.DraftChanged(" đinh LĂNG "))
+        assertFalse(viewModel.state.value.canSubmit)
+
+        // Listed in Vietnamese, but new in English
+        viewModel.onAction(SuggestNameAction.LanguageChanged("en"))
+        assertTrue(viewModel.state.value.canSubmit)
+    }
+
+    @Test
+    fun `blank names and names longer than the rules allow can't be submitted`() {
         viewModel.onAction(SuggestNameAction.DraftChanged("   "))
         assertFalse(viewModel.state.value.canSubmit)
 
-        viewModel.onAction(SuggestNameAction.DraftChanged(" Đinh lăng "))
-        assertFalse(viewModel.state.value.canSubmit)
-    }
-
-    @Test
-    fun `names longer than the rules allow can't be submitted`() {
         viewModel.onAction(SuggestNameAction.DraftChanged("a".repeat(SuggestNameState.MAX_LENGTH + 1)))
         assertFalse(viewModel.state.value.canSubmit)
     }
 
     @Test
-    fun `a new name is submitted once`() {
-        viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi cá"))
+    fun `only the offered languages can be chosen`() {
+        viewModel.onAction(SuggestNameAction.LanguageChanged("zh"))
+        assertEquals("vi", viewModel.state.value.language)
+
+        val unoffered = SuggestNameViewModel(5L, listed, "zh", contributions, auth)
+        assertEquals("vi", unoffered.state.value.language)
+    }
+
+    @Test
+    fun `a new name is submitted once with its language`() {
+        viewModel.onAction(SuggestNameAction.LanguageChanged("en"))
+        viewModel.onAction(SuggestNameAction.DraftChanged("Ming aralia tree"))
         viewModel.onAction(SuggestNameAction.Submit)
         viewModel.onAction(SuggestNameAction.Submit)
 
         assertTrue(viewModel.state.value.isSubmitted)
-        assertEquals(listOf(5L to "Cây gỏi cá"), contributions.names)
+        assertEquals(listOf(Triple(5L, "en", "Ming aralia tree")), contributions.names)
+    }
+
+    @Test
+    fun `opening the sheet again after a send starts a new suggestion`() {
+        viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi cá"))
+        viewModel.onAction(SuggestNameAction.Submit)
+
+        viewModel.onAction(SuggestNameAction.Opened)
+
+        assertFalse(viewModel.state.value.isSubmitted)
+        assertEquals("", viewModel.state.value.draft)
+        viewModel.onAction(SuggestNameAction.DraftChanged("Nam dương lâm"))
+        viewModel.onAction(SuggestNameAction.Submit)
+        assertEquals(listOf("Cây gỏi cá", "Nam dương lâm"), contributions.names.map { it.third })
+    }
+
+    @Test
+    fun `opening the sheet keeps a draft that wasn't sent`() {
+        viewModel.onAction(SuggestNameAction.DraftChanged("Cây gỏi"))
+
+        viewModel.onAction(SuggestNameAction.Opened)
+
+        assertEquals("Cây gỏi", viewModel.state.value.draft)
     }
 
     @Test

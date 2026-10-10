@@ -2,7 +2,7 @@ package com.uri.lee.dl.data.upload
 
 import com.uri.lee.dl.core.network.herbLensHttpClient
 import com.uri.lee.dl.testing.testAppInfo
-import com.uri.lee.dl.domain.usecase.NotSignedInException
+import com.uri.lee.dl.domain.upload.NotSignedInException
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

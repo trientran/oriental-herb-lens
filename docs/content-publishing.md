@@ -23,6 +23,16 @@ file, checks it, and replaces the old one under the same name.
    To move from r2.dev to a custom domain later, connect the domain and set
    `HERB_CONTENT_BASE_URL` to it. Then republish and update Remote Config with the new values.
    Keep the r2.dev URL enabled until no device is still using the old URLs.
+   **Which sites may load it (CORS).** The web app downloads the model and catalog from the
+   bucket, so the bucket must allow each site address the app runs on: the live site, the
+   `review` preview and local development, listed in [r2-cors.json](r2-cors.json). Without it, a
+   browser refuses the download: the web app then falls back to the copies served with the site,
+   which may be older. After changing the list:
+
+   ```bash
+   npx wrangler r2 bucket cors set herb-lens-content --file docs/r2-cors.json
+   ```
+
 3. Install and log in to wrangler on the machine you publish from:
 
    ```bash
@@ -57,6 +67,16 @@ Create four string parameters in Firebase → Remote Config and leave them empty
 While a URL or checksum is empty, the app keeps using its bundled copy. The old `model_url`
 parameter (a `gs://` Firebase Storage path) is no longer read by new app versions. Keep it until
 nobody runs an older version, then delete it along with the Firebase Storage file.
+
+## Common names in the catalog
+
+Each species' common names are in the catalog CSV, names separated by `; `, the preferred one
+first: `vietnameseName` for Vietnamese and `vernacularName` for English. Names in other languages
+go in a column per language, `vernacularName_<code>` with an ISO 639-1 code (e.g.
+`vernacularName_zh`). The app reads them all, but shows, and takes suggestions in, only the
+languages in `NameLanguages.ENABLED` (Vietnamese and English), until the research ethics approval
+for others. Accepted user suggestions (`tools/moderate.py suggestions`) go in the column for their
+language.
 
 ## Publishing a new version
 

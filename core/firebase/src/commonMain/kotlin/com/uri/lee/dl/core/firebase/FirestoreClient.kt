@@ -33,6 +33,9 @@ data class SharedModelRecord(
     val size: Int,
     val uploaderId: String,
     val license: String,
+    /** "none" or "requested" when shared; the administrator sets "published" (with [huggingFaceUrl]) or "declined". */
+    val huggingFace: String = "none",
+    val huggingFaceUrl: String? = null,
 )
 
 /** Favourites and history as earlier versions stored them on `users/{uid}`, oldest first. */
@@ -53,8 +56,8 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(HERBS).document(speciesKey.toString()).set(mapOf(HERB_IMAGES to images), merge = true)
     }
 
-    suspend fun addNameSuggestion(speciesKey: Long, vietnameseName: String, uid: String) {
-        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey.asStoredKey(), vietnameseName, uid))
+    suspend fun addNameSuggestion(speciesKey: Long, language: String, name: String, uid: String) {
+        db.collection(NAME_SUGGESTIONS).add(NameSuggestion(speciesKey.asStoredKey(), language, name, uid))
     }
 
     suspend fun legacyUserLibrary(uid: String): LegacyUserLibrary {
@@ -91,9 +94,14 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     /** Lists a model the Worker stored; the rules check it's the user's own and well formed. */
     suspend fun addSharedModel(record: SharedModelRecord) {
         db.collection(SHARED_MODELS).document(record.id).set(
-            SharedModelDocument(record.name, record.species, record.backbone, record.trainable, record.url, record.size, record.uploaderId, record.license),
+            SharedModelDocument(
+                record.name, record.species, record.backbone, record.trainable, record.url, record.size,
+                record.uploaderId, record.license, record.huggingFace,
+            ),
         )
     }
+
+    suspend fun sharedModelExists(id: String): Boolean = db.collection(SHARED_MODELS).document(id).get().exists
 
     suspend fun deleteSharedModel(id: String) {
         db.collection(SHARED_MODELS).document(id).delete()
@@ -138,6 +146,7 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         val size: Int,
         val uploaderId: String,
         val license: String,
+        val huggingFace: String,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )
 
@@ -161,12 +170,16 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         size = runCatching { get<Long>("size").toInt() }.getOrElse { get<Double>("size").toInt() },
         uploaderId = get<String>("uploaderId"),
         license = get<String?>("license").orEmpty(),
+        huggingFace = runCatching { get<String?>("huggingFace") }.getOrNull() ?: "none",
+        huggingFaceUrl = runCatching { get<String?>("huggingFaceUrl") }.getOrNull(),
     )
 
     @Serializable
+    /** Before vernacular names, suggestions were Vietnamese only, in a `viName` field; the rules still accept those. */
     private data class NameSuggestion(
         val speciesKey: Int,
-        val viName: String,
+        val language: String,
+        val name: String,
         val uid: String,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )

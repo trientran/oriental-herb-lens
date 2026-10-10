@@ -42,10 +42,11 @@ class KoinGraphTest {
                 AuthClient::class,
                 FirestoreClient::class,
                 RemoteConfigClient::class,
-                // Plain values passed inline (version code, sort language, URLs)
+                // Plain values passed inline (version code, sort language, URLs, a herb's listed names)
                 Long::class,
                 Boolean::class,
                 String::class,
+                Map::class,
             ),
         )
     }

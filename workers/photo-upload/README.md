@@ -31,6 +31,25 @@ DELETE /models/<uuid>          (its uploader only) 204
 Only TensorFlow Lite files (identifier `TFL3`) up to 25 MB; the app then lists the model in
 `sharedModels/{id}`, whose rules check the entry. The CORS headers allow POST and DELETE.
 
+```
+POST /models/<uuid>/huggingface   {"sha256": "<hex of the file>"}   (its sharer only)
+
+201 {"url": "https://huggingface.co/<HF_ORG>/<name>-<id8>"}
+```
+
+Publishes a shared model in the Hugging Face organisation (`HF_ORG` in `wrangler.toml`) when its
+entry asks for it: the Worker checks the names, copies the file from R2 through Hugging Face's Git
+LFS API, adds a model card, and marks the entry published. `DELETE /models/<uuid>` also deletes
+the repository and the entry. It needs two secrets, set once:
+
+```bash
+npx wrangler secret put HF_TOKEN                                  # a write token for the organisation
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT < key.json       # reads and updates sharedModels
+```
+
+Without them it answers 503, and models stay `requested` until published with
+`tools/moderate.py publish-hf`.
+
 ## Deploy
 
 From this directory, logged in with `wrangler login`:
