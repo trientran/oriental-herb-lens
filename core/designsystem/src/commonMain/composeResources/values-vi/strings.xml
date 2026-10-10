@@ -178,6 +178,7 @@
     <string name="contribute_location_body">Bắt buộc. Nơi bạn chụp cây: dùng vị trí của bạn, hoặc chọn điểm trên bản đồ.</string>
     <string name="contribute_location_needed">Thêm nơi chụp để tải lên</string>
     <string name="contribute_use_my_location">Dùng vị trí của tôi</string>
+    <string name="contribute_locating">Đang tìm vị trí của bạn…</string>
     <string name="contribute_choose_on_map">Chọn trên bản đồ</string>
     <string name="contribute_map_hint">Di chuyển bản đồ để ghim chỉ vào nơi cây mọc</string>
     <string name="contribute_use_this_place">Chọn nơi này</string>
