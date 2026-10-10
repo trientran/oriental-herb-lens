@@ -135,10 +135,184 @@ val aboutPage by tasks.registering {
     }
 }
 
+// Helpers for speciesPages, outside the task: the script compiler can't take classes inside a task action
+// RFC 4180: quoted fields may hold commas, quotes ("") and line breaks
+fun parseCsv(text: String): List<List<String>> {
+    val rows = mutableListOf<List<String>>()
+    var row = mutableListOf<String>()
+    val field = StringBuilder()
+    var quoted = false
+    var i = 0
+    while (i < text.length) {
+        val c = text[i]
+        when {
+            quoted && c == '"' && text.getOrNull(i + 1) == '"' -> { field.append('"'); i++ }
+            c == '"' -> quoted = !quoted
+            !quoted && c == ',' -> { row += field.toString(); field.clear() }
+            !quoted && (c == '\n' || c == '\r') -> {
+                if (c == '\r' && text.getOrNull(i + 1) == '\n') i++
+                row += field.toString(); field.clear()
+                if (row.any { it.isNotEmpty() }) rows += row
+                row = mutableListOf()
+            }
+            else -> field.append(c)
+        }
+        i++
+    }
+    if (field.isNotEmpty() || row.isNotEmpty()) { row += field.toString(); rows += row }
+    return rows
+}
+// As the app splits them (SpeciesCsvReader.splitNames): ";" or "," outside parentheses
+fun splitNames(raw: String): List<String> {
+    val names = mutableListOf<String>()
+    val current = StringBuilder()
+    var depth = 0
+    for (c in raw) {
+        when {
+            c == '(' -> { depth++; current.append(c) }
+            c == ')' -> { depth = (depth - 1).coerceAtLeast(0); current.append(c) }
+            (c == ';' || c == ',') && depth == 0 -> { names += current.toString(); current.clear() }
+            else -> current.append(c)
+        }
+    }
+    names += current.toString()
+    return names.map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }
+}
+fun esc(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+fun json(s: String) = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("<", "\\u003c") + "\""
+fun slug(s: String) = s.lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
+
+data class Herb(
+    val id: Long, val scientific: String, val authorship: String, val vietnamese: List<String>,
+    val english: List<String>, val ranks: List<Pair<String, String>>, val genus: String, val file: String,
+)
+
+// The production address: species pages' canonical links and the sitemap point here, so copies on
+// preview addresses (review.…) don't compete with it in search results
+val SITE_URL = "https://med-herb-lens.pages.dev"
+
+// A page per species, made from the app's catalog CSV, so search engines can find each herb (the
+// web app draws on a canvas, which they can't read): its names, classification and GBIF link, and
+// a button that opens it in the web app. With an A–Z index, the sitemap and robots.txt.
+val speciesPages by tasks.registering {
+    val catalog = rootProject.layout.projectDirectory.file("androidApp/assets/herb_catalog.csv")
+    val template = rootProject.layout.projectDirectory.file("website/species.template.html")
+    val out = layout.buildDirectory.dir("generated/species")
+    inputs.files(catalog, template)
+    outputs.dir(out)
+    doLast {
+        val rows = parseCsv(catalog.asFile.readText())
+        val header = rows.first().map { it.trim() }
+        val col = header.withIndex().associate { (i, name) -> name to i }
+        fun List<String>.at(name: String) = col[name]?.let { getOrNull(it)?.trim() }.orEmpty()
+
+        val herbs = rows.drop(1).mapNotNull { row ->
+            val id = row.at("speciesKey").toLongOrNull() ?: return@mapNotNull null
+            val scientific = row.at("canonicalName").ifEmpty { return@mapNotNull null }
+            if (row.size != header.size) return@mapNotNull null
+            val ranks = listOf("Kingdom" to "kingdom", "Phylum" to "phylum", "Class" to "class", "Order" to "order", "Family" to "family", "Genus" to "genus")
+                .map { (label, column) -> label to row.at(column) }.filter { it.second.isNotEmpty() }
+            Herb(
+                id, scientific, row.at("authorship"), splitNames(row.at("vietnameseName")), splitNames(row.at("vernacularName")),
+                ranks, row.at("genus"), "$id-${slug(scientific)}.html",
+            )
+        }.distinctBy { it.id }.sortedBy { it.scientific.lowercase() }
+        check(herbs.size > 1000) { "Only ${herbs.size} species read from the catalog: is it complete?" }
+
+        val dir = out.get().asFile.apply { deleteRecursively(); mkdirs() }
+        val herbsDir = dir.resolve("herbs").apply { mkdirs() }
+        val page = template.asFile.readText()
+        herbs.forEach { h ->
+            val canonical = "$SITE_URL/herbs/${h.file}"
+            val common = (h.vietnamese.take(1) + h.english.take(1))
+            val title = (listOf(h.scientific) + common).joinToString(" · ") + " | Med Herb Lens"
+            val description = buildString {
+                append(h.scientific)
+                if (h.vietnamese.isNotEmpty()) append(" (tiếng Việt: ${h.vietnamese.joinToString(", ")})")
+                if (h.english.isNotEmpty()) append(", in English ${h.english.joinToString(", ")}")
+                h.ranks.firstOrNull { it.first == "Family" }?.let { append(", family ${it.second}") }
+                append(". Names, classification and photos in Med Herb Lens, an app to identify medicinal herbs.")
+            }
+            val content = buildString {
+                appendLine("<h1><i>${esc(h.scientific)}</i>${if (h.authorship.isNotEmpty()) " <small>${esc(h.authorship)}</small>" else ""}</h1>")
+                if (common.isNotEmpty()) appendLine("<p class=\"updated\">${common.joinToString(" · ") { esc(it) }}</p>")
+                appendLine("<div class=\"buttons\"><a class=\"button\" href=\"../app/?species=${h.id}\">Open in Med Herb Lens</a></div>")
+                if (h.vietnamese.isNotEmpty() || h.english.isNotEmpty()) {
+                    appendLine("<h2>Names</h2>")
+                    if (h.vietnamese.isNotEmpty()) appendLine("<p><b>Vietnamese</b> (<span lang=\"vi\">tiếng Việt</span>): <span lang=\"vi\">${h.vietnamese.joinToString(" · ") { esc(it) }}</span></p>")
+                    if (h.english.isNotEmpty()) appendLine("<p><b>English</b>: ${h.english.joinToString(" · ") { esc(it) }}</p>")
+                    appendLine("<p class=\"updated\">Common names come from GBIF and from people using the app, and experts haven’t checked them: the scientific name is the one that identifies the species.</p>")
+                }
+                if (h.ranks.isNotEmpty()) {
+                    appendLine("<h2>Classification</h2>")
+                    appendLine("<div class=\"wrap\"><table>")
+                    h.ranks.forEach { (label, value) ->
+                        val shown = if (label == "Genus") "<i>${esc(value)}</i>" else esc(value)
+                        appendLine("<tr><th>$label</th><td>$shown</td></tr>")
+                    }
+                    appendLine("<tr><th>Species</th><td><i>${esc(h.scientific)}</i></td></tr>")
+                    appendLine("</table></div>")
+                }
+                appendLine("<p>Full record, photos and distribution on <a href=\"https://www.gbif.org/species/${h.id}\">GBIF (species ${h.id})</a>.</p>")
+                appendLine("<div class=\"card\"><p><b>No medical advice.</b> Never eat a plant or use it as medicine because of what this page or the app says. Ask a qualified expert first.</p>")
+                appendLine("<p lang=\"vi\"><b>Không phải lời khuyên y tế.</b> Tuyệt đối không ăn hoặc dùng cây làm thuốc chỉ dựa vào trang này hay ứng dụng. Hãy hỏi ý kiến chuyên gia trước.</p></div>")
+            }
+            val jsonld = buildString {
+                append("{\"@context\":\"https://schema.org\",\"@type\":\"Taxon\",\"name\":${json(h.scientific)},\"taxonRank\":\"species\"")
+                val alternate = h.vietnamese + h.english
+                if (alternate.isNotEmpty()) append(",\"alternateName\":[${alternate.joinToString(",") { json(it) }}]")
+                if (h.genus.isNotEmpty()) append(",\"parentTaxon\":{\"@type\":\"Taxon\",\"name\":${json(h.genus)},\"taxonRank\":\"genus\"}")
+                append(",\"sameAs\":\"https://www.gbif.org/species/${h.id}\",\"url\":${json(canonical)}}")
+            }
+            herbsDir.resolve(h.file).writeText(
+                page.replace("{{title}}", esc(title)).replace("{{canonical}}", canonical)
+                    .replace("{{description}}", esc(description)).replace("{{jsonld}}", jsonld).replace("{{content}}", content.trim()),
+            )
+        }
+
+        // A–Z index, by scientific name, so every page is a link away
+        val index = buildString {
+            appendLine("<h1>All species</h1>")
+            appendLine("<p>The ${"%,d".format(herbs.size)} species in Med Herb Lens, by scientific name, with their Vietnamese and English names. <a href=\"../app/\">Open the app</a> to identify a plant with your camera.</p>")
+            val groups = herbs.groupBy { it.scientific.first().uppercaseChar() }
+            appendLine("<p>${groups.keys.joinToString(" · ") { "<a href=\"#$it\">$it</a>" }}</p>")
+            groups.forEach { (letter, list) ->
+                appendLine("<h2 id=\"$letter\">$letter</h2>")
+                appendLine("<ul>")
+                list.forEach { h ->
+                    val names = (h.vietnamese.take(1) + h.english.take(1)).joinToString(" · ") { esc(it) }
+                    appendLine("<li><a href=\"${h.file}\"><i>${esc(h.scientific)}</i></a>${if (names.isNotEmpty()) " — $names" else ""}</li>")
+                }
+                appendLine("</ul>")
+            }
+        }
+        herbsDir.resolve("index.html").writeText(
+            page.replace("{{title}}", "All species | Med Herb Lens").replace("{{canonical}}", "$SITE_URL/herbs/")
+                .replace("{{description}}", "The ${"%,d".format(herbs.size)} plant species in Med Herb Lens, with their Vietnamese and English names, classification and GBIF links.")
+                .replace("<script type=\"application/ld+json\">{{jsonld}}</script>\n", "").replace("{{content}}", index.trim()),
+        )
+
+        val pages = listOf("", "about.html", "about-vi.html", "pages/privacy-policy.html", "pages/terms-of-service.html", "herbs/") +
+            herbs.map { "herbs/${it.file}" }
+        check(pages.size < 50_000) { "A sitemap holds at most 50,000 addresses" }
+        dir.resolve("sitemap.xml").writeText(
+            buildString {
+                appendLine("""<?xml version="1.0" encoding="UTF-8"?>""")
+                appendLine("""<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">""")
+                pages.forEach { appendLine("  <url><loc>$SITE_URL/$it</loc></url>") }
+                appendLine("</urlset>")
+            },
+        )
+        dir.resolve("robots.txt").writeText("User-agent: *\nAllow: /\n\nSitemap: $SITE_URL/sitemap.xml\n")
+        logger.lifecycle("Species pages: ${herbs.size}")
+    }
+}
+
 // The whole site: the home page and legal pages (website/), the About page, with the app at /app/
 val site by tasks.registering(Sync::class) {
-    from(rootProject.file("website")) { exclude("README.md", "about.template.html") }
+    from(rootProject.file("website")) { exclude("README.md", "about.template.html", "species.template.html") }
     from(aboutPage)
+    from(speciesPages)
     from(tasks.named("jsBrowserDistribution")) {
         into("app")
         // Webpack bundles Skiko into herblens.js and loads its hashed .wasm: these copies are unused
