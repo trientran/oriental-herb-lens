@@ -191,6 +191,10 @@ data class Herb(
 // preview addresses (review.…) don't compete with it in search results
 val SITE_URL = "https://med-herb-lens.pages.dev"
 
+// Cloudflare Pages serves "x.html" at "x" and redirects the former there; search engines should be
+// given the address that answers, not one that redirects
+fun clean(path: String) = path.removeSuffix(".html")
+
 // A page per species, made from the app's catalog CSV, so search engines can find each herb (the
 // web app draws on a canvas, which they can't read): its names, classification and GBIF link, and
 // a button that opens it in the web app. With an A–Z index, the sitemap and robots.txt.
@@ -223,7 +227,7 @@ val speciesPages by tasks.registering {
         val herbsDir = dir.resolve("herbs").apply { mkdirs() }
         val page = template.asFile.readText()
         herbs.forEach { h ->
-            val canonical = "$SITE_URL/herbs/${h.file}"
+            val canonical = "$SITE_URL/herbs/${clean(h.file)}"
             val common = (h.vietnamese.take(1) + h.english.take(1))
             val title = (listOf(h.scientific) + common).joinToString(" · ") + " | Med Herb Lens"
             val description = buildString {
@@ -292,8 +296,8 @@ val speciesPages by tasks.registering {
                 .replace("<script type=\"application/ld+json\">{{jsonld}}</script>\n", "").replace("{{content}}", index.trim()),
         )
 
-        val pages = listOf("", "about.html", "about-vi.html", "pages/privacy-policy.html", "pages/terms-of-service.html", "herbs/") +
-            herbs.map { "herbs/${it.file}" }
+        val pages = listOf("", "about", "about-vi", "pages/privacy-policy", "pages/terms-of-service", "herbs/") +
+            herbs.map { "herbs/${clean(it.file)}" }
         check(pages.size < 50_000) { "A sitemap holds at most 50,000 addresses" }
         dir.resolve("sitemap.xml").writeText(
             buildString {
