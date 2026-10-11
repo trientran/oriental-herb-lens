@@ -58,6 +58,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
@@ -235,6 +236,8 @@ private fun Single(
             Modifier
                 .weight(1f)
                 .fillMaxHeight()
+                // The camera view fills by cropping and would otherwise draw over the navigation rail
+                .clipToBounds()
                 .background(Color.Black)
                 .onSizeChanged { if (it.height > 0) onAction(ScanAction.ViewAspect(it.width.toFloat() / it.height)) },
         ) {
