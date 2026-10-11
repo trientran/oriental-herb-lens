@@ -134,7 +134,7 @@ Upload photos you took yourself.
 
 1. Profile shows sign in (signed out) or sign out (signed in); sign out, then sign in again.
 2. Move the minimum confidence slider. Kill and relaunch: it's kept, and Identify uses it.
-4. Full herb list, Share, Contact, About and Privacy policy open the right page or app.
+4. Full herb list and GBIF image data (the Kaggle dataset), Share, Contact, About and Privacy policy open the right page or app. With `contact_emails` or `dataset_url` published (see `docs/content-publishing.md`), Contact and the dataset row use the published values.
 5. With `how_to_cite` published (see `docs/content-publishing.md`), How to cite lists each work; Copy puts the reference on the clipboard and Open opens its link. With the key empty, the section is gone.
 
 ## 12. Offline

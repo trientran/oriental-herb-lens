@@ -143,7 +143,7 @@
     <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
     <string name="profile_app">App</string>
     <string name="profile_language">Language</string>
-    <string name="profile_full_list">Full herb list</string>
+    <string name="profile_full_list">Full herb list and GBIF image data</string>
     <string name="profile_share">Share this app</string>
     <string name="profile_contact">Contact us</string>
     <string name="profile_about">About</string>

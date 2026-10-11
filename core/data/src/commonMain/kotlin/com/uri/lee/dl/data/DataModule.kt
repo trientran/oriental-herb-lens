@@ -6,6 +6,7 @@ import com.uri.lee.dl.data.catalog.SpeciesCsvReader
 import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
+import com.uri.lee.dl.data.firebase.RemoteConfigAppLinksRepository
 import com.uri.lee.dl.data.firebase.RemoteConfigCitationRepository
 import com.uri.lee.dl.data.sharing.DefaultCommunityModelRepository
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
@@ -24,6 +25,7 @@ import com.uri.lee.dl.data.upload.R2PhotoHost
 import com.uri.lee.dl.domain.media.ImageHost
 import com.uri.lee.dl.domain.repository.AppStatusRepository
 import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.AppLinksRepository
 import com.uri.lee.dl.domain.repository.CitationRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.PhotoRepository
@@ -61,6 +63,7 @@ val dataModule: Module = module {
         DefaultAppStatusRepository(get(), versionCode = app.versionCode, platform = app.platform)
     }
     single<CitationRepository> { RemoteConfigCitationRepository(get()) }
+    single<AppLinksRepository> { RemoteConfigAppLinksRepository(get()) }
     single<CommunityModelRepository> {
         DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl)
     }

@@ -142,7 +142,7 @@
     <string name="profile_min_confidence_body">Không hiển thị kết quả có độ tin cậy thấp hơn mức này.</string>
     <string name="profile_app">Ứng dụng</string>
     <string name="profile_language">Ngôn ngữ</string>
-    <string name="profile_full_list">Danh sách dược liệu đầy đủ</string>
+    <string name="profile_full_list">Danh sách dược liệu đầy đủ và dữ liệu ảnh GBIF</string>
     <string name="profile_share">Chia sẻ ứng dụng này</string>
     <string name="profile_contact">Liên hệ chúng tôi</string>
     <string name="profile_about">Giới thiệu</string>
