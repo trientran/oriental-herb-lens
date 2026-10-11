@@ -95,6 +95,9 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
         },
     )
 
+    /** The dataset link in Profile was opened (Kaggle counts the downloads, this counts the visits from the app). */
+    data object DatasetOpened : AnalyticsEvent("open_dataset", emptyMap())
+
     /**
      * Research mode, to count who runs studies with the app: the run's size only, never its results
      * (those stay in the researcher's own files).

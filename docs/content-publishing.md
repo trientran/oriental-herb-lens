@@ -126,6 +126,20 @@ on their next launch, since the old files are still in the bucket.
 | Model labels not all in the catalog | Keeps the verified file and activates it once a catalog covers them |
 | Anything fails | Keeps the current files; the working copy is replaced only after every check passes |
 
+## Contact and dataset links
+
+Profile → Contact us and Full herb list and GBIF image data use two Remote Config string parameters,
+so they can change without a release. Leave either unset and the app uses its built-in value.
+
+| Parameter | Value | Built in |
+|---|---|---|
+| `contact_emails` | Addresses separated by commas; one email goes to all, the first listed first | `ttran72@myune.edu.au,tptrien@gmail.com` |
+| `dataset_url` | A web link (`https://…`) | `https://www.kaggle.com/datasets/trientran/viet-medi-species-2026` |
+
+A value that isn't valid (any address without `@` and a domain, or a link that isn't a web link) is
+ignored and the built-in value is used; the app logs a warning. Opening the dataset is counted as the
+`open_dataset` event, and Kaggle counts the downloads.
+
 ## How to cite
 
 Profile → How to cite lists the works to cite when the app is used in research. They come from the

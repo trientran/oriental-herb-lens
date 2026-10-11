@@ -1,11 +1,13 @@
 package com.uri.lee.dl.testing.fakes
 
+import com.uri.lee.dl.domain.model.AppLinks
 import com.uri.lee.dl.domain.model.Citation
 import com.uri.lee.dl.domain.model.SpeciesPhoto
 import com.uri.lee.dl.domain.moderation.HiddenContent
 import com.uri.lee.dl.domain.moderation.ModerationRepository
 import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.AppLinksRepository
 import com.uri.lee.dl.domain.repository.CitationRepository
 import com.uri.lee.dl.domain.repository.ContributionRepository
 import com.uri.lee.dl.domain.repository.PhotoRepository
@@ -120,4 +122,9 @@ class FakeModerationRepository : ModerationRepository {
 class FakeCitationRepository(var published: List<Citation> = emptyList()) : CitationRepository {
     var fail = false
     override suspend fun citations(): List<Citation> = if (fail) error("fetch failed") else published
+}
+
+class FakeAppLinksRepository(var published: AppLinks = AppLinks()) : AppLinksRepository {
+    var fail = false
+    override suspend fun links(): AppLinks = if (fail) error("fetch failed") else published
 }

@@ -131,12 +131,15 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
 
             SectionCard(stringResource(Res.string.profile_app)) {
                 actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), onClick = it) }
-                LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) { uriHandler.openUri(HERB_LIST_URL) }
+                LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) {
+                    onAction(ProfileAction.DatasetOpened)
+                    uriHandler.openUri(state.links.datasetUrl)
+                }
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
-                // The addresses too: without a mail app set up, a mailto link does nothing. One email to both,
-                // the university's first
-                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAILS.joinToString("\n")) {
-                    uriHandler.openUri("mailto:" + CONTACT_EMAILS.joinToString(","))
+                // The addresses too: without a mail app set up, a mailto link does nothing. One email to all of them
+                val emails = state.links.contactEmails
+                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = emails.joinToString("\n")) {
+                    uriHandler.openUri("mailto:" + emails.joinToString(","))
                 }
                 // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
                 val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
@@ -274,6 +277,3 @@ private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null
         modifier = Modifier.clickable(onClick = onClick).semantics { role = Role.Button },
     )
 }
-
-private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private val CONTACT_EMAILS = listOf("ttran72@myune.edu.au", "tptrien@gmail.com")
