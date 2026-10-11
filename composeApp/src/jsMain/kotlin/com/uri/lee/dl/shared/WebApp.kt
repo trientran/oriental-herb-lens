@@ -7,6 +7,8 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.ml.WebLocalImage
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import dev.gitlive.firebase.FirebaseOptions
@@ -85,6 +87,8 @@ fun startWebApp(config: WebConfig) {
         )
     }.koin
     koin.runStartupTasks()
+    val openHerbId = speciesInAddress()
+    openHerbId?.let { koin.get<Analytics>().log(AnalyticsEvent.OpenedFromSpeciesPage(it)) }
     val actions = PlatformActions(
         // Photos are for identifying only: sharing them is in the apps (D19)
         pickPhotos = ::pickPhotos,
@@ -101,7 +105,7 @@ fun startWebApp(config: WebConfig) {
     ComposeViewport(document.getElementById("app")!!) {
         // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
         // a selectable label in a button takes the click as the start of a selection
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions, openHerbId = speciesInAddress()) }
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions, openHerbId = openHerbId) }
     }
 }
 

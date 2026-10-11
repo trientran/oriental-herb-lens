@@ -80,6 +80,12 @@ sealed class AnalyticsEvent(val name: String, val parameters: Map<String, Any>) 
     /** The user opened one of their own models to identify with it. */
     class ModelTried(speciesCount: Int) : AnalyticsEvent("try_model", mapOf("species_count" to speciesCount))
 
+    /** A "?" tip explaining an AI term was opened; [term] is its name, e.g. "confidence". */
+    class TipViewed(term: String) : AnalyticsEvent("view_tip", mapOf("term" to term))
+
+    /** The web app was opened from a species page (/herbs/…), on that species: search traffic reaching the app. */
+    class OpenedFromSpeciesPage(speciesId: Long) : AnalyticsEvent("open_from_species_page", mapOf("species_id" to speciesId))
+
     /** A reference from Profile → How to cite was copied; [url] is its DOI or web link, if any. */
     class CitationCopied(position: Int, url: String?) : AnalyticsEvent(
         "copy_citation",
