@@ -38,7 +38,9 @@ import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
+import com.uri.lee.dl.core.designsystem.component.LocalTipViewed
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
@@ -53,6 +55,7 @@ import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.model.NamePreference
@@ -108,8 +111,14 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
 @Composable
 fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val vietnameseFirst = koinInject<NamePreference>().vietnameseFirst()
+    val analytics = koinInject<Analytics>()
+    val tipViewed = remember(analytics) { { term: AiTerm -> analytics.log(AnalyticsEvent.TipViewed(term.name.lowercase())) } }
     HerbLensTheme {
-        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst, LocalSharesPhotos provides actions.sharePhotos) {
+        CompositionLocalProvider(
+            LocalVietnameseFirst provides vietnameseFirst,
+            LocalSharesPhotos provides actions.sharePhotos,
+            LocalTipViewed provides tipViewed,
+        ) {
             AppContent(actions, openHerbId)
         }
     }
