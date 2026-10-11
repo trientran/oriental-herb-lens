@@ -246,6 +246,8 @@ private class PreviewView(session: AVCaptureSession) : UIView(frame = CGRectZero
     private val preview = AVCaptureVideoPreviewLayer(session = session).apply { videoGravity = AVLayerVideoGravityResizeAspectFill }
 
     init {
+        // Filling crops the image beyond the view's edges; without clipping it covers the navigation rail on iPad
+        clipsToBounds = true
         layer.addSublayer(preview)
     }
 
