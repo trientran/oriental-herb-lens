@@ -38,7 +38,7 @@ ready meanwhile; the secrets are set.
      - App Privacy answers (the table at the end of this file);
      - screenshots: iPhone 6.9″ and iPad 13″;
      - description, keywords, support URL `https://med-herb-lens.pages.dev`;
-     - age rating 18+, to match the terms;
+     - age rating 13+, to match the terms;
      - review notes (below).
    - Submit the build for review.
 6. **Web:** the same workflow publishes the site (choose `all` or `web`). Check
@@ -183,7 +183,7 @@ Paste into App Store Connect → the version → App Review Information → Note
 > image classifiers users train and share (Train tab → a trained model → Share with everyone): names
 > are checked on the device and the server before sharing; any shared model can be reported or its
 > sharer hidden (Train → Models shared by others → a model); reported models are removed within
-> 24 hours, together with their public copy on Hugging Face. Users must be 18+.
+> 24 hours, together with their public copy on Hugging Face. Users must be 13 or older (under 18 with a parent or guardian's permission).
 
 ## App Store privacy answers (App Store Connect → App Privacy)
 
