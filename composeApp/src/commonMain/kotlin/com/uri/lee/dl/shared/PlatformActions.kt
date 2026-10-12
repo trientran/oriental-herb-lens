@@ -31,6 +31,8 @@ data class PlatformActions(
     /** Asks once for permission to show notifications, e.g. when an upload finishes in the background. */
     val requestNotificationPermission: (() -> Unit)? = null,
     val onOpenLanguageSettings: (() -> Unit)? = null,
+    /** Switches the app to a language ("en" or "vi") and restarts it (web, from Browse); null hides the choice. */
+    val setLanguage: ((String) -> Unit)? = null,
     /** User-trained models: dataset and model-file pickers, saving a model; null hides those buttons. */
     val files: FileActions? = null,
     /** Phase 7 research mode (debug builds for now): device readings, dataset pickers, saving results; null hides it. */

@@ -25,6 +25,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.FilterChip
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -69,6 +73,8 @@ fun BrowseRoute(
     modifier: Modifier = Modifier,
     /** Starts platform speech recognition and reports the text; null hides the microphone. */
     onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
+    /** Switches the app's language ("en" or "vi"); null hides the choice (the apps follow the system's). */
+    onSetLanguage: ((String) -> Unit)? = null,
 ) {
     val vietnamese = LocalVietnameseFirst.current
     val viewModel = koinViewModel<BrowseViewModel> { parametersOf(vietnamese) }
@@ -79,6 +85,7 @@ fun BrowseRoute(
         onOpenSpecies = onOpenSpecies,
         selectedId = selectedId,
         onVoiceSearch = onVoiceSearch,
+        onSetLanguage = onSetLanguage,
         modifier = modifier,
     )
 }
@@ -92,6 +99,7 @@ fun BrowseScreen(
     modifier: Modifier = Modifier,
     /** Starts platform speech recognition and reports the text; null hides the microphone. */
     onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
+    onSetLanguage: ((String) -> Unit)? = null,
 ) {
     val spacing = HerbLensTheme.spacing
     Column(modifier.fillMaxSize()) {
@@ -101,6 +109,7 @@ fun BrowseScreen(
             onVoiceSearch = onVoiceSearch,
             modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.lg, vertical = spacing.sm),
         )
+        onSetLanguage?.let { LanguageChoice(it, Modifier.align(Alignment.End).padding(horizontal = spacing.lg)) }
         when {
             state.isSearching -> SearchResults(state.query, state.results, selectedId, onOpenSpecies)
             state.hasError && state.species.isEmpty() -> ErrorState(
@@ -109,6 +118,22 @@ fun BrowseScreen(
                 onRetry = { onAction(BrowseAction.Retry) },
             )
             else -> CatalogList(state, selectedId, onOpenSpecies, onLoadMore = { onAction(BrowseAction.LoadMore) })
+        }
+    }
+}
+
+/** English or Tiếng Việt, each named in its own language. */
+@Composable
+private fun LanguageChoice(onSetLanguage: (String) -> Unit, modifier: Modifier = Modifier) {
+    val current = if (Locale.current.language == "vi") "vi" else "en"
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.sm)) {
+        listOf("en" to "English", "vi" to "Tiếng Việt").forEach { (code, name) ->
+            FilterChip(
+                selected = code == current,
+                onClick = { if (code != current) onSetLanguage(code) },
+                label = { Text(name) },
+                leadingIcon = if (code == current) { { Icon(Icons.Filled.Language, contentDescription = null) } } else null,
+            )
         }
     }
 }

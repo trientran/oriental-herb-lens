@@ -65,6 +65,7 @@ class WebFirebaseConfig(
 /** Starts the app in the page's `#app` element. */
 @OptIn(ExperimentalComposeUiApi::class)
 fun startWebApp(config: WebConfig) {
+    applyChosenLanguage()
     startFirebase(config.firebase.toOptions(), config.appCheckSiteKey)
     val app = AppInfo(
         versionName = config.versionName,
@@ -100,6 +101,7 @@ fun startWebApp(config: WebConfig) {
         // Research mode, listed in Profile in every build
         research = ::webResearch,
         files = webFileActions(),
+        setLanguage = ::setLanguage,
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
@@ -107,6 +109,25 @@ fun startWebApp(config: WebConfig) {
         // a selectable label in a button takes the click as the start of a selection
         CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions, openHerbId = openHerbId) }
     }
+}
+
+/** Shared with the site's pages (website/language.js), so a choice made on either applies to both. */
+private const val LANGUAGE_KEY = "herblens.language"
+
+/**
+ * The language chosen on the site or in Browse, if any, in place of the browser's: Compose reads
+ * the browser's languages for the app's text, so they are replaced before the app starts.
+ */
+private fun applyChosenLanguage() {
+    val chosen = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()?.takeIf { it == "en" || it == "vi" } ?: return
+    js("Object.defineProperty(navigator, 'language', { get: function () { return chosen; }, configurable: true })")
+    js("Object.defineProperty(navigator, 'languages', { get: function () { return [chosen]; }, configurable: true })")
+}
+
+/** Remembers [code] and restarts the app in it. */
+private fun setLanguage(code: String) {
+    runCatching { window.localStorage.setItem(LANGUAGE_KEY, code) }
+    window.location.reload()
 }
 
 /** Links open in a new tab; mailto: links go to the mail app (through a link, without a blank tab). */

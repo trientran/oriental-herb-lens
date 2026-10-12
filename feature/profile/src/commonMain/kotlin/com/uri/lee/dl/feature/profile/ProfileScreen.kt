@@ -149,10 +149,11 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = emails.joinToString("\n")) {
                     uriHandler.openUri("mailto:" + emails.joinToString(","))
                 }
-                // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
-                val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
+                // In Vietnamese for an app shown in Vietnamese
+                val language = Locale.current.language
+                val about = LegalLinks.about(language)
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(about) }
-                LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
+                LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.privacyPolicy(language)) }
                 actions.debugTools.forEach { (name, run) -> LinkRow(Icons.Filled.Build, name, onClick = run) }
             }
 
