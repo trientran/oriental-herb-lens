@@ -17,6 +17,6 @@ data class AppLinks(
     companion object {
         val DEFAULT_CONTACT_EMAILS = listOf("ttran72@myune.edu.au", "tptrien@gmail.com")
         const val DEFAULT_DATASET_URL = "https://www.kaggle.com/datasets/trientran/viet-medi-species-2026"
-        const val DEFAULT_SURVEY_URL = "https://unesurveys.au1.qualtrics.com/jfe/form/SV_bKt013Ld2eldhRA"
+        const val DEFAULT_SURVEY_URL = "https://unesurveys.au1.qualtrics.com/jfe/form/SV_6MtFwcscSiEnLvw"
     }
 }

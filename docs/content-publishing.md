@@ -135,7 +135,7 @@ so they can change without a release. Leave either unset and the app uses its bu
 |---|---|---|
 | `contact_emails` | Addresses separated by commas; one email goes to all, the first listed first | `ttran72@myune.edu.au,tptrien@gmail.com` |
 | `dataset_url` | A web link (`https://…`) | `https://www.kaggle.com/datasets/trientran/viet-medi-species-2026` |
-| `survey_url` | The research survey: a web link, or `off` once the study has closed (hides the invitation and the Profile row) | `https://unesurveys.au1.qualtrics.com/jfe/form/SV_bKt013Ld2eldhRA` |
+| `survey_url` | The research survey: a web link, or `off` once the study has closed (hides the invitation and the Profile row) | `https://unesurveys.au1.qualtrics.com/jfe/form/SV_6MtFwcscSiEnLvw` |
 
 A value that isn't valid (any address without `@` and a domain, or a link that isn't a web link) is
 ignored and the built-in value is used; the app logs a warning. Opening the dataset is counted as the
