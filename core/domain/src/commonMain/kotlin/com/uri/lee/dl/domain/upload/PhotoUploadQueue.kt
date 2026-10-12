@@ -53,6 +53,7 @@ class PhotoUploadQueue(
     /** Saves the photos (compressed) and returns the job's id; nothing is uploaded yet. */
     suspend fun enqueue(herbId: Long, speciesName: String?, images: List<LocalImage>, location: GeoLocation): String {
         val uploader = auth.currentUserId ?: throw NotSignedInException()
+        val place = location.coarse()
         val id = "p" + Random.nextLong(1, Long.MAX_VALUE).toString(36)
         var saved = 0
         for (image in images) {
@@ -70,8 +71,8 @@ class PhotoUploadQueue(
             "jobs/$id/job.txt",
             JobFile.encode(
                 listOf(
-                    "herbId" to herbId, "speciesName" to speciesName, "latitude" to location.latitude,
-                    "longitude" to location.longitude, "uploader" to uploader, "photos" to saved, "unreadable" to images.size - saved,
+                    "herbId" to herbId, "speciesName" to speciesName, "latitude" to place.latitude,
+                    "longitude" to place.longitude, "uploader" to uploader, "photos" to saved, "unreadable" to images.size - saved,
                 ),
             ).encodeToByteArray(),
         )

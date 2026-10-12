@@ -196,7 +196,7 @@ Keep these in step with the app; they can be edited at any time. Tracking: **No*
 | Contact Info → Email Address | Yes | App Functionality |
 | Identifiers → User ID | Yes | App Functionality |
 | User Content → Photos or Videos | Yes | App Functionality, Other Purposes (research, model training) |
-| Location → Precise Location (place of each shared photo) | Yes | App Functionality, Other Purposes (research) |
+| Location → Coarse Location (place of each shared photo, rounded to about 1 km) | Yes | App Functionality, Other Purposes (research) |
 | User Content → Other User Content (name suggestions, reports, shared models) | Yes | App Functionality, Other Purposes (research) |
 | Identifiers → Device ID (Analytics app instance ID) | No | Analytics |
 | Usage Data → Product Interaction | No | Analytics |

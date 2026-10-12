@@ -66,6 +66,16 @@ class PhotoUploadQueueTest {
     }
 
     @Test
+    fun `the place is stored rounded to about a kilometre`() = runTest {
+        val queue = queue()
+        queue.enqueue(42, "Mint", listOf(Picked("a")), GeoLocation(10.776889, 106.700806))
+
+        queue.runPending()
+
+        assertEquals(GeoLocation(10.78, 106.70), contributions.images.single().second.single().location)
+    }
+
+    @Test
     fun `a job survives a failed run and picks up where it stopped without sending a photo twice`() = runTest {
         val first = queue()
         first.enqueue(42, "Mint", listOf(Picked("a"), Picked("b")), here)

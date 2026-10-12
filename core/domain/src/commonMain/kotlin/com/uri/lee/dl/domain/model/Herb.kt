@@ -1,6 +1,15 @@
 package com.uri.lee.dl.domain.model
 
-data class GeoLocation(val latitude: Double, val longitude: Double)
+import kotlin.math.round
+
+data class GeoLocation(val latitude: Double, val longitude: Double) {
+    /**
+     * Rounded to two decimal places (about 1 km): what is stored and shown publicly for a shared
+     * photo, so a photo taken at home doesn't give the address away. Under three decimal places
+     * counts as coarse location for the App Store and Google Play privacy declarations.
+     */
+    fun coarse() = GeoLocation(round(latitude * 100) / 100, round(longitude * 100) / 100)
+}
 
 enum class PhotoSource { USER, GBIF }
 
