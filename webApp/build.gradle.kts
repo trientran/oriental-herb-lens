@@ -129,7 +129,7 @@ val aboutPage by tasks.registering {
             page(
                 vi, "vi", "Giới thiệu Med Herb Lens",
                 "Med Herb Lens: nhận dạng cây thuốc bằng camera, tra cứu 4.799 loài và tự huấn luyện mô hình, trên Android, iOS và web. Một dự án nghiên cứu.",
-                """<a href="about.html">English</a> · <a href="pages/privacy-policy.html">Chính sách quyền riêng tư</a> · <a href="pages/terms-of-service.html">Điều khoản dịch vụ</a> (tiếng Anh) · Liên hệ: $contact""",
+                """<a href="about.html">English</a> · <a href="pages/privacy-policy-vi.html">Chính sách quyền riêng tư</a> · <a href="pages/terms-of-service-vi.html">Điều khoản dịch vụ</a> · Liên hệ: $contact""",
             ),
         )
     }
@@ -296,7 +296,7 @@ val speciesPages by tasks.registering {
                 .replace("<script type=\"application/ld+json\">{{jsonld}}</script>\n", "").replace("{{content}}", index.trim()),
         )
 
-        val pages = listOf("", "about", "about-vi", "pages/privacy-policy", "pages/terms-of-service", "herbs/") +
+        val pages = listOf("", "index-vi", "about", "about-vi", "pages/privacy-policy", "pages/privacy-policy-vi", "pages/terms-of-service", "pages/terms-of-service-vi", "herbs/") +
             herbs.map { "herbs/${clean(it.file)}" }
         check(pages.size < 50_000) { "A sitemap holds at most 50,000 addresses" }
         dir.resolve("sitemap.xml").writeText(

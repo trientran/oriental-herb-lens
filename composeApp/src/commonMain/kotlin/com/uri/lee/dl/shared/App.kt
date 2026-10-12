@@ -190,7 +190,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
             }
             composable<BrowseDestination> { entry ->
                 SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
-                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, modifier = Modifier.statusBarsPadding())
+                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, onSetLanguage = actions.setLanguage, modifier = Modifier.statusBarsPadding())
                 }
             }
             composable<SavedDestination> {
