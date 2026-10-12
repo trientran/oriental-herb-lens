@@ -2,11 +2,16 @@ package com.uri.lee.dl.shared
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -53,6 +58,11 @@ import com.uri.lee.dl.core.designsystem.resources.status_suspended
 import com.uri.lee.dl.core.designsystem.resources.status_update
 import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
+import com.uri.lee.dl.core.designsystem.resources.survey_close
+import com.uri.lee.dl.core.designsystem.resources.survey_letter
+import com.uri.lee.dl.core.designsystem.resources.survey_not_now
+import com.uri.lee.dl.core.designsystem.resources.survey_start
+import com.uri.lee.dl.core.designsystem.resources.survey_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
@@ -142,6 +152,8 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
     val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
+    val appViewModel = koinViewModel<AppViewModel>()
+    val surveyAvailable = appViewModel.state.collectAsStateWithLifecycle().value.surveyAvailable
     val addPhotos = if (actions.sharePhotos) { herbId: Long -> navController.navigate(ContributeDestination(herbId)) } else null
     NavigationSuiteScaffold(
         layoutType = when {
@@ -208,6 +220,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onShareApp = actions.onShareApp,
                         onOpenLanguageSettings = actions.onOpenLanguageSettings,
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
+                        onOpenSurvey = if (surveyAvailable) { { appViewModel.onAction(AppAction.ShowSurveyInvite) } } else null,
                         debugTools = listOfNotNull(
                             actions.research?.let { "Research mode" to { showResearch = true } },
                         ),
@@ -280,8 +293,38 @@ private fun StatusDialogs(actions: PlatformActions) {
                     },
                 )
             }
+            else -> state.visibleSurveyInvite?.let { source ->
+                SurveyInvite(source, state.links?.surveyLink(Locale.current.language), viewModel::onAction)
+            }
         }
     }
+}
+
+/** The approved recruitment letter, then the survey in the browser. */
+@Composable
+private fun SurveyInvite(source: SurveyInviteSource, link: String?, onAction: (AppAction) -> Unit) {
+    val uriHandler = LocalUriHandler.current
+    val close = { onAction(AppAction.SurveyInviteClosed) }
+    AlertDialog(
+        onDismissRequest = close,
+        icon = { Icon(Icons.Filled.RateReview, contentDescription = null) },
+        title = { Text(stringResource(Res.string.survey_title)) },
+        text = { Text(stringResource(Res.string.survey_letter), Modifier.verticalScroll(rememberScrollState())) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onAction(AppAction.SurveyStarted)
+                    link?.let(uriHandler::openUri)
+                },
+                enabled = link != null,
+            ) { Text(stringResource(Res.string.survey_start)) }
+        },
+        dismissButton = {
+            TextButton(onClick = close) {
+                Text(stringResource(if (source == SurveyInviteSource.PROFILE) Res.string.survey_close else Res.string.survey_not_now))
+            }
+        },
+    )
 }
 
 /** "com.uri.lee.dl.shared.SpeciesDestination/{herbId}" → "species", for usage statistics. */

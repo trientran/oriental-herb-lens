@@ -29,4 +29,12 @@ class AppLinksParsingTest {
     fun `a dataset link that isn't a web link keeps the built-in one`() {
         assertEquals(AppLinks.DEFAULT_DATASET_URL, parse("", "javascript:alert(1)").datasetUrl)
     }
+
+    @Test
+    fun `the survey is on by default and off when the study has closed`() {
+        assertEquals(AppLinks.DEFAULT_SURVEY_URL, parse("", "", "").surveyUrl)
+        assertEquals(null, parse("", "", " OFF ").surveyUrl)
+        assertEquals("https://example.org/s", parse("", "", "https://example.org/s").surveyUrl)
+        assertEquals(AppLinks.DEFAULT_SURVEY_URL, parse("", "", "not a link").surveyUrl)
+    }
 }

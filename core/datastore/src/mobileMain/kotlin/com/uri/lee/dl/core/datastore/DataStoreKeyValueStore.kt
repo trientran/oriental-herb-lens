@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +37,7 @@ class DataStoreKeyValueStore(private val dataStore: DataStore<Preferences>) : Ke
 @Suppress("UNCHECKED_CAST")
 private fun <T : Any> StoreKey<T>.toPreferencesKey(): Preferences.Key<T> = when (type) {
     StoreKey.Type.BOOLEAN -> booleanPreferencesKey(name)
+    StoreKey.Type.INT -> intPreferencesKey(name)
     StoreKey.Type.FLOAT -> floatPreferencesKey(name)
     StoreKey.Type.STRING -> stringPreferencesKey(name)
     StoreKey.Type.STRING_SET -> stringSetPreferencesKey(name)

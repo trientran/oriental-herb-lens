@@ -1,6 +1,7 @@
 package com.uri.lee.dl.domain.repository
 
 import com.uri.lee.dl.domain.model.ScanSettings
+import com.uri.lee.dl.domain.model.SurveyProgress
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
@@ -24,4 +25,16 @@ interface SettingsRepository {
     val sharingTermsAccepted: Flow<Boolean>
 
     suspend fun acceptSharingTerms()
+
+    /** The research survey invitation: how often the app was opened, and whether to ask. */
+    val surveyProgress: Flow<SurveyProgress>
+
+    /** Counts one more opening of the app. */
+    suspend fun recordAppOpen()
+
+    /** "Not now": asks again a few opens later the first time, never after the second. */
+    suspend fun postponeSurvey()
+
+    /** The user opened the survey: the invitation isn't shown again. */
+    suspend fun finishSurveyInvite()
 }
