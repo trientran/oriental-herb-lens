@@ -3,7 +3,9 @@ package com.uri.lee.dl.data.settings
 import com.uri.lee.dl.core.datastore.KeyValueStore
 import com.uri.lee.dl.core.datastore.booleanKey
 import com.uri.lee.dl.core.datastore.floatKey
+import com.uri.lee.dl.core.datastore.intKey
 import com.uri.lee.dl.domain.model.ScanSettings
+import com.uri.lee.dl.domain.model.SurveyProgress
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,6 +49,29 @@ internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore)
         dataStore.edit { it[SHARING_TERMS_ACCEPTED] = true }
     }
 
+    override val surveyProgress: Flow<SurveyProgress> = dataStore.data
+        .map { SurveyProgress(it[APP_OPENS] ?: 0, it[SURVEY_ASK_AT] ?: SurveyProgress.FIRST_ASK, it[SURVEY_FINISHED] ?: false) }
+        .distinctUntilChanged()
+
+    override suspend fun recordAppOpen() {
+        dataStore.edit { it[APP_OPENS] = (it[APP_OPENS] ?: 0) + 1 }
+    }
+
+    override suspend fun postponeSurvey() {
+        dataStore.edit {
+            val opens = it[APP_OPENS] ?: 0
+            if ((it[SURVEY_ASK_AT] ?: SurveyProgress.FIRST_ASK) > SurveyProgress.FIRST_ASK) {
+                it[SURVEY_FINISHED] = true
+            } else {
+                it[SURVEY_ASK_AT] = opens + SurveyProgress.ASK_AGAIN_AFTER
+            }
+        }
+    }
+
+    override suspend fun finishSurveyInvite() {
+        dataStore.edit { it[SURVEY_FINISHED] = true }
+    }
+
     companion object {
         // Persisted key names. Renaming one silently resets the user's setting.
         val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanKey("IS_OBJECTS_MODE")
@@ -54,5 +79,8 @@ internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore)
         val USAGE_STATISTICS = booleanKey("usage_statistics")
         val IDENTIFY_NOTICE_SEEN = booleanKey("identify_notice_seen")
         val SHARING_TERMS_ACCEPTED = booleanKey("sharing_terms_accepted")
+        val APP_OPENS = intKey("app_opens")
+        val SURVEY_ASK_AT = intKey("survey_ask_at")
+        val SURVEY_FINISHED = booleanKey("survey_finished")
     }
 }

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,6 +87,8 @@ import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics_body
 import com.uri.lee.dl.core.designsystem.resources.profile_version
+import com.uri.lee.dl.core.designsystem.resources.survey_row_body
+import com.uri.lee.dl.core.designsystem.resources.survey_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.model.Citation
 import kotlin.math.roundToInt
@@ -99,6 +102,8 @@ data class ProfileActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Opens account deletion; null hides it. */
     val onDeleteAccount: (() -> Unit)? = null,
+    /** Shows the research survey invitation; null (once the study has closed) hides it. */
+    val onOpenSurvey: (() -> Unit)? = null,
     /** Developer and research tools, by name (not translated). */
     val debugTools: List<Pair<String, () -> Unit>> = emptyList(),
 )
@@ -134,6 +139,9 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
                 LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) {
                     onAction(ProfileAction.DatasetOpened)
                     uriHandler.openUri(state.links.datasetUrl)
+                }
+                actions.onOpenSurvey?.let {
+                    LinkRow(Icons.Filled.RateReview, stringResource(Res.string.survey_title), supporting = stringResource(Res.string.survey_row_body), onClick = it)
                 }
                 actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
                 // The addresses too: without a mail app set up, a mailto link does nothing. One email to all of them

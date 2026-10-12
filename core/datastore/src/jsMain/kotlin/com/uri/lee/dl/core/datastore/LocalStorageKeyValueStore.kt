@@ -29,6 +29,7 @@ internal class LocalStorageKeyValueStore(private val storageKey: String) : KeyVa
         override fun <T : Any> get(key: StoreKey<T>): T? = map[key.name]?.let { value ->
             when (key.type) {
                 StoreKey.Type.BOOLEAN -> value as? Boolean
+                StoreKey.Type.INT -> (value as? Number)?.toInt()
                 StoreKey.Type.FLOAT -> (value as? Number)?.toFloat()
                 StoreKey.Type.STRING -> value as? String
                 StoreKey.Type.STRING_SET -> (value as? Set<*>)?.filterIsInstance<String>()?.toSet()
