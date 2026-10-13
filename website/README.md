@@ -21,6 +21,10 @@ content-publishing.md) reaches them at the next site build, once it's also in `a
 After the first deploy, submit `https://med-herb-lens.pages.dev/sitemap.xml` in Google Search
 Console (Sitemaps); the site is already verified there.
 
+**Sample photos.** `/sample-photos.html` shows photos of eight species the model knows (from
+`test-images/`, with their credits), for App Review and anyone trying the app without the plants;
+it isn't indexed by search engines.
+
 Build the whole site, then publish it to Cloudflare Pages (free) from the repository root:
 
     ./gradlew :webApp:site
