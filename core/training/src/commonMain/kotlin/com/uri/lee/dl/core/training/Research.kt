@@ -12,6 +12,7 @@ data class ResearchPlan(
     ),
     val seeds: List<Int> = (1..10).toList(),
     val options: TrainingOptions = TrainingOptions(classBalanced = true),
+    val split: SplitSettings = SplitSettings(),
 ) {
     val runsPerBackbone: Int get() = scenarios.size * strategies.size * seeds.size
 
@@ -19,12 +20,22 @@ data class ResearchPlan(
         append("scenarios=").append(scenarios.joinToString(";") { it.id })
         append(", strategies=").append(strategies.joinToString(";") { it.id })
         append(", seeds=").append(seeds.joinToString(";"))
+        append(", split=").append(split.id)
         append(", options=").append(options)
     }
 }
 
-/** A dataset's photos, already turned into embeddings by one backbone. */
-class EmbeddedDataset(val backbone: String, val labels: List<String>, val examples: List<Example>)
+/**
+ * A dataset's photos, already turned into embeddings by one backbone, with any separate [test]
+ * set's (labelled by the same class indices) and each class's stage for stage-incremental runs.
+ */
+class EmbeddedDataset(
+    val backbone: String,
+    val labels: List<String>,
+    val examples: List<Example>,
+    val test: List<Example>? = null,
+    val stages: List<Int>? = null,
+)
 
 sealed interface ResearchProgress {
     /** Identifies the job, so a resumed session can skip it. */
@@ -98,7 +109,10 @@ class ResearchSession(
         val dataset = job.dataset
         return when (job) {
             is Job.Run -> {
-                val result = ContinualRunner.run(dataset.examples, dataset.labels.size, job.scenario, job.strategy, job.seed, plan.options, monitor)
+                val result = ContinualRunner.run(
+                    dataset.examples, dataset.labels.size, job.scenario, job.strategy, job.seed, plan.options, monitor,
+                    split = plan.split, test = dataset.test, stages = dataset.stages,
+                )
                 tables.getValue(dataset.backbone).add(result)
                 val rows = StudyCsv(context(dataset.backbone)).apply { add(result) }.files().mapValues { it.value.substringAfter("\r\n") }
                 ResearchProgress.Run(job.key, dataset.backbone, job.index, plan.runsPerBackbone, result, rows)
@@ -151,6 +165,8 @@ object ResearchFormats {
         appendLine("scenarios=" + plan.scenarios.joinToString(",") { it.id })
         appendLine("strategies=" + plan.strategies.joinToString(",") { it.id })
         appendLine("seeds=" + plan.seeds.joinToString(","))
+        appendLine("trainShare=${plan.split.trainShare}")
+        appendLine("validationShare=${plan.split.validationShare}")
         val o = plan.options
         appendLine("learningRate=${o.learningRate}")
         appendLine("l2=${o.l2}")
@@ -180,6 +196,10 @@ object ResearchFormats {
                 hiddenUnits = values["hiddenUnits"]?.toInt() ?: defaults.hiddenUnits,
                 classBalanced = values["classBalanced"]?.toBoolean() ?: true,
             ),
+            split = SplitSettings(
+                trainShare = values["trainShare"]?.toFloat() ?: SplitSettings().trainShare,
+                validationShare = values["validationShare"]?.toFloat() ?: SplitSettings().validationShare,
+            ),
         )
     }
 
@@ -192,6 +212,7 @@ object ResearchFormats {
         id == Strategy.Joint.id -> Strategy.Joint
         id == Strategy.Naive.id -> Strategy.Naive
         id == Strategy.Prototypes.id -> Strategy.Prototypes
+        id == Strategy.LwF.id -> Strategy.LwF
         id.startsWith("replay-") -> Strategy.Replay(id.removePrefix("replay-").toInt())
         else -> error("Unknown strategy $id")
     }

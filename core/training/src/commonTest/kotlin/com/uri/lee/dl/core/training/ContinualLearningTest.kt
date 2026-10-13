@@ -22,6 +22,53 @@ class ContinualLearningTest {
     }
 
     @Test
+    fun splitSettingsSetTheShares() {
+        val settings = SplitSettings(trainShare = 0.8f, validationShare = 0.1f)
+        val split = DataSplit.of(data, Random(1), settings)
+
+        assertEquals("80/10/10", settings.id)
+        for (c in 0 until 8) {
+            assertEquals(32, split.train.count { it.label == c })
+            assertEquals(4, split.validation.count { it.label == c })
+            assertEquals(4, split.test.count { it.label == c })
+        }
+    }
+
+    @Test
+    fun aSeparateTestSetLeavesTheDatasetToTrainAndValidate() {
+        val other = clusters(classes = 8, perClass = 10, dimensions = 24, spread = 0.9f, seed = 12)
+        val split = DataSplit.of(data, Random(1), SplitSettings(), test = other)
+
+        assertEquals(data.size, split.train.size + split.validation.size)
+        assertTrue(split.test === other)
+        // 15:70 of each class's 40 photos, rounded
+        for (c in 0 until 8) assertEquals(7, split.validation.count { it.label == c })
+    }
+
+    @Test
+    fun stageIncrementalLearnsTheStagesInOrder() {
+        val stages = listOf(1, 0, 1, 0, 0, 1, 1, 0)
+        val plan = ScenarioPlan.of(DataSplit.stratified(data, Random(1)), 8, Scenario(ScenarioKind.StageIncremental, 2), Random(1), stages)
+
+        assertEquals(listOf(4, 8), plan.steps.map { it.classesSeen })
+        assertEquals(setOf(1, 3, 4, 7), plan.classOrder.take(4).toSet())
+        // Its steps are tasks, so forgetting is measured
+        val run = ContinualRunner.run(data, 8, Scenario(ScenarioKind.StageIncremental, 2), Strategy.Naive, seed = 3, stages = stages)
+        assertEquals(2, run.steps.last().taskAccuracies.size)
+        assertTrue(run.continual != null)
+    }
+
+    @Test
+    fun lwfForgetsLessThanNaiveFineTuning() {
+        val scenario = Scenario(ScenarioKind.ClassIncremental, 4)
+        fun forgetting(strategy: Strategy) = ContinualRunner.run(data, 8, scenario, strategy, seed = 3).continual!!.forgetting
+        val naive = forgetting(Strategy.Naive)
+        val lwf = forgetting(Strategy.LwF)
+
+        assertTrue(lwf < naive, "naive $naive, lwf $lwf")
+    }
+
+    @Test
     fun classIncrementalBringsNewClassesInARandomOrder() {
         val plan = ScenarioPlan.of(DataSplit.stratified(data, Random(1)), 8, Scenario(ScenarioKind.ClassIncremental, 4), Random(1))
 
