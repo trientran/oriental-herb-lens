@@ -102,7 +102,8 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                                 "${pending.dataset}: ${pending.done} of ${pending.total} runs done. It's kept on this device until you start a new run or discard it.",
                                 style = MaterialTheme.typography.bodySmall,
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // Wraps on narrow phones, where three buttons don't fit on a line
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (pending.finished) {
                                     Button(onClick = { scope.launch { controller.save() } }) { Text("Save results") }
                                 } else {
