@@ -333,9 +333,7 @@ class ResearchController(
         val archive = runCatching {
             withContext(Dispatchers.Default) {
                 // The headers the run was started with, matching its rows
-                val saved = files.read(HEADERS)?.decodeToString()?.split(HEADER_SEPARATOR)?.filter { it.isNotEmpty() }
-                    ?.associate { it.substringBefore('\n') to it.substringAfter('\n') }
-                val headers = saved ?: ResearchSession.headers()
+                val headers = savedHeaders() ?: ResearchSession.headers()
                 val csv = headers.mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
                     ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.flatMap { b -> listOf("$b", "$b-test") }.map { f -> files.read("$EMBEDDINGS/$f.csv")?.decodeToString().orEmpty() }.joinToString(""))
                 val models = meta.backbones.mapNotNull { b -> files.read("$MODELS/$b.json")?.let { b to ModelPack.fromJson(it.decodeToString()).head } }.toMap()
@@ -380,6 +378,11 @@ class ResearchController(
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }
 
+    /** The header line of each table, by name, as saved when the run started. */
+    private suspend fun savedHeaders(): Map<String, String>? =
+        files.read(HEADERS)?.decodeToString()?.split(HEADER_SEPARATOR)?.filter { it.isNotEmpty() }
+            ?.associate { it.substringBefore('\n') to it.substringAfter('\n') }
+
     /** Each table's name and header line, to save with a run. */
     private fun headerText(): String =
         (ResearchSession.headers() + ("embedding.csv" to EMBEDDING_HEADER + "\r\n")).entries
@@ -387,7 +390,8 @@ class ResearchController(
 
     /** The saved results so far, summarised for the charts. */
     private suspend fun summary(): List<ResultGroup> {
-        val headers = ResearchSession.headers()
+        // The headers the run was started with: a run saved by an earlier version has other columns
+        val headers = savedHeaders() ?: ResearchSession.headers()
         val runs = files.read("$RESULTS/runs.csv")?.decodeToString() ?: return emptyList()
         val steps = files.read("$RESULTS/steps.csv")?.decodeToString().orEmpty()
         return runCatching { ResearchSummary.of(headers.getValue("runs.csv") + runs, headers.getValue("steps.csv") + steps) }.getOrDefault(emptyList())

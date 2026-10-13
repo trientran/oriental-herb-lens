@@ -12,7 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,6 +84,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = "Close") }
                     Text("Research mode", style = MaterialTheme.typography.titleLarge)
+                    HelpButton(ResearchHelp.overview)
                 }
                 Column(
                     Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp).widthIn(max = 720.dp),
@@ -94,7 +97,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                     )
 
                     state.pending?.takeIf { !state.running }?.let { pending ->
-                        Section(if (pending.finished) "Last run: finished" else "Last run: stopped") {
+                        Section(if (pending.finished) "Last run: finished" else "Last run: stopped", ResearchHelp.lastRun) {
                             Text(
                                 "${pending.dataset}: ${pending.done} of ${pending.total} runs done. It's kept on this device until you start a new run or discard it.",
                                 style = MaterialTheme.typography.bodySmall,
@@ -111,7 +114,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                         }
                     }
 
-                    Section("Dataset") {
+                    Section("Dataset", ResearchHelp.dataset) {
                         Text(
                             "A folder with one subfolder of photos per species." +
                                 if (controller.canPickZip) " If no folders show up (some phones), choose a zip instead." else "",
@@ -150,7 +153,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                         }
                     }
 
-                    Section("Test photos") {
+                    Section("Test photos", ResearchHelp.testPhotos) {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             FilterChip(!separateTestSet, { separateTestSet = false }, label = { Text("Held out of the dataset") }, enabled = !state.running)
                             FilterChip(separateTestSet, { separateTestSet = true }, label = { Text("A separate test set") }, enabled = !state.running)
@@ -204,14 +207,14 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                         }
                     }
 
-                    Section("Backbones") {
+                    Section("Backbones", ResearchHelp.backbones) {
                         Text("Downloaded from MediaPipe when first used, then kept.", style = MaterialTheme.typography.bodySmall)
                         Chips(state.backbones, backbones, { it }) { backbones = it }
                     }
                     val stages = state.dataset?.stages
                     // Stage-incremental needs stage folders
                     val kinds = ScenarioKind.entries.filter { it != ScenarioKind.StageIncremental || stages != null }
-                    Section("Scenarios") {
+                    Section("Scenarios", ResearchHelp.scenarios) {
                         Text(
                             "Class- and data-incremental runs have 5 steps" +
                                 (stages?.let { "; stage-incremental, one per stage: ${it.joinToString(", then ")}" }
@@ -220,15 +223,16 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                         )
                         Chips(kinds, scenarios, { it.id }) { scenarios = it }
                     }
-                    Section("Strategies") {
+                    Section("Strategies", ResearchHelp.strategies) {
                         Chips(STRATEGIES, strategies, { it.id }) { strategies = it }
                     }
-                    Section("Seeds: 1 to ${seeds.toInt()}") {
+                    Section("Seeds: 1 to ${seeds.toInt()}", ResearchHelp.seeds) {
                         Slider(seeds, { seeds = it }, valueRange = 1f..10f, steps = 8, enabled = !state.running)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Switch(hiddenLayer, { hiddenLayer = it }, enabled = !state.running)
                         Text("Hidden layer of 100 units (much slower)", style = MaterialTheme.typography.bodyMedium)
+                        HelpButton(ResearchHelp.hiddenLayer)
                     }
 
                     val validationShare = validationPercent.roundToInt() / 100f
@@ -263,7 +267,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                     state.progress?.let { LinearProgressIndicator(progress = { it }, modifier = Modifier.fillMaxWidth()) }
                     state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
                     if (state.summary.isNotEmpty()) {
-                        Section("Results" + if (state.running) " so far" else "") {
+                        Section("Results" + if (state.running) " so far" else "", ResearchHelp.results) {
                             ResearchResultsView(state.summary)
                         }
                     }
@@ -278,10 +282,30 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
+private fun Section(title: String, help: Help? = null, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            help?.let { HelpButton(it) }
+        }
         content()
+    }
+}
+
+/** A help icon that explains [help] in a dialog. */
+@Composable
+private fun HelpButton(help: Help) {
+    var open by remember { mutableStateOf(false) }
+    IconButton(onClick = { open = true }) {
+        Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = "About ${help.title}", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    if (open) {
+        AlertDialog(
+            onDismissRequest = { open = false },
+            title = { Text(help.title) },
+            text = { Text(help.text, Modifier.verticalScroll(rememberScrollState()), style = MaterialTheme.typography.bodyMedium) },
+            confirmButton = { TextButton(onClick = { open = false }) { Text("OK") } },
+        )
     }
 }
 
