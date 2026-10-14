@@ -14,10 +14,12 @@ import com.uri.lee.dl.core.training.ResearchProgress
 import com.uri.lee.dl.core.training.ResearchResults
 import com.uri.lee.dl.core.training.ResearchSession
 import com.uri.lee.dl.core.training.RunContext
+import com.uri.lee.dl.core.training.ScenarioKind
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
 import com.uri.lee.dl.domain.training.Backbones
 import com.uri.lee.dl.domain.training.Dataset
+import com.uri.lee.dl.domain.training.LabelledImage
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -41,6 +43,8 @@ data class PendingRun(val dataset: String, val done: Int, val total: Int, val fi
 /** Where a research run is up to, for the screen. */
 data class ResearchState(
     val dataset: Dataset? = null,
+    /** A separate test set (e.g. the other phone's photos), when the test photos aren't held out of [dataset]. */
+    val testDataset: Dataset? = null,
     /** Datasets already in the app's folder, to choose without a picker. */
     val appDatasets: List<Dataset> = emptyList(),
     val backbones: List<String> = emptyList(),
@@ -102,7 +106,8 @@ class ResearchController(
         return PendingRun(meta.dataset, doneKeys().size, total, finished = files.read(FINISHED) != null)
     }
 
-    suspend fun pick(zip: Boolean) {
+    /** Picks the dataset, or with [test] the separate test set. */
+    suspend fun pick(zip: Boolean, test: Boolean = false) {
         val picker = if (zip) platform.pickDatasetZip ?: return else platform.pickDatasetFolder
         _state.update { it.copy(status = "Reading the dataset…", error = null) }
         val dataset = runCatching { picker() }.getOrElse { e -> _state.update { it.copy(status = "", error = e.message ?: "Couldn't read the dataset") }; return }
@@ -110,6 +115,7 @@ class ResearchController(
             when {
                 dataset == null -> it.copy(status = "")
                 dataset.classes.size < 2 -> it.copy(status = "", error = "Found ${dataset.images.size} photos in ${dataset.classes.size} class folders: a dataset needs at least two.")
+                test -> it.copy(testDataset = dataset, status = "", error = null)
                 else -> it.copy(dataset = dataset, status = "", error = null)
             }
         }
@@ -117,27 +123,50 @@ class ResearchController(
 
     fun choose(dataset: Dataset) = _state.update { it.copy(dataset = dataset, error = null) }
 
-    /** Starts a new run, replacing any saved one. */
+    fun chooseTest(dataset: Dataset?) = _state.update { it.copy(testDataset = dataset, error = null) }
+
+    /** Starts a new run, replacing any saved one; with [useTestSet], tested on the chosen test set. */
     @OptIn(ExperimentalTime::class)
-    fun start(plan: ResearchPlan, backbones: List<String>) {
+    fun start(plan: ResearchPlan, backbones: List<String>, useTestSet: Boolean = false) {
         val dataset = state.value.dataset ?: return
-        val minSteps = plan.scenarios.maxOfOrNull { it.steps } ?: 1
-        if (dataset.classes.size < minSteps) {
-            _state.update { it.copy(error = "Class-incremental runs need at least $minSteps classes; this dataset has ${dataset.classes.size}.") }
+        val test = if (useTestSet) state.value.testDataset else null
+        val problem = when {
+            useTestSet && test == null -> "Choose the test set, or test on photos held out of the dataset."
+            test != null && test.classes != dataset.classes ->
+                "The test set's classes don't match the dataset's. Only in the dataset: ${(dataset.classes - test.classes.toSet()).joinToString().ifEmpty { "none" }}. " +
+                    "Only in the test set: ${(test.classes - dataset.classes.toSet()).joinToString().ifEmpty { "none" }}."
+            plan.scenarios.any { it.kind == ScenarioKind.StageIncremental } && dataset.stages == null ->
+                "Stage-incremental runs need the class folders grouped in two or more stage folders, e.g. \"1 Vietnam\" and \"2 Australia\"."
+            dataset.classes.size < (plan.scenarios.maxOfOrNull { it.steps } ?: 1) ->
+                "Class-incremental runs need at least ${plan.scenarios.maxOf { it.steps }} classes; this dataset has ${dataset.classes.size}."
+            else -> null
+        }
+        if (problem != null) {
+            _state.update { it.copy(error = problem) }
             return
         }
         launchRun {
             files.delete(WORK)
-            _state.update { it.copy(log = emptyList()) }
-            val meta = SessionMeta(dataset.name, backbones, dataset.classes.map { c -> c to dataset.images.count { it.className == c } }, Clock.System.now().toString())
+            // The last run's charts go with its files: the new run's appear after its first runs
+            _state.update { it.copy(log = emptyList(), summary = emptyList()) }
+            val meta = SessionMeta(
+                dataset = dataset.name,
+                backbones = backbones,
+                classes = dataset.classes.map { c -> c to dataset.images.count { it.className == c } },
+                started = Clock.System.now().toString(),
+                stages = dataset.stages?.let { dataset.classes.map { c -> dataset.stages!![dataset.stageOf(c)!!] } },
+                testSet = test?.name,
+                testClasses = test?.let { t -> dataset.classes.map { c -> c to t.images.count { it.className == c } } }.orEmpty(),
+            )
             files.write(META, meta.encode().encodeToByteArray())
             files.write(PLAN, ResearchFormats.encodePlan(plan).encodeToByteArray())
             files.write(HEADERS, headerText().encodeToByteArray())
             log("Device: ${platform.device}; app $appVersion")
-            log("Dataset ${dataset.name}: ${dataset.images.size} photos, ${dataset.classes.size} classes")
+            log("Dataset ${dataset.name}: ${dataset.images.size} photos, ${dataset.classes.size} classes" + (dataset.stages?.let { "; stages ${it.joinToString(", ")}" } ?: ""))
+            test?.let { log("Test set ${it.name}: ${it.images.size} photos") }
             log("Plan: ${plan.describe()}")
             analytics.log(AnalyticsEvent.ResearchStarted(false, backbones.size, (plan.runsPerBackbone + 1) * backbones.size, dataset.classes.size, dataset.images.size))
-            execute(meta, plan, dataset)
+            execute(meta, plan, dataset, test)
         }
     }
 
@@ -151,7 +180,12 @@ class ResearchController(
         _state.update { it.copy(log = files.read(LOG)?.decodeToString()?.lines()?.filter { l -> l.isNotEmpty() }.orEmpty()) }
         log("Resumed on ${platform.device}")
         analytics.log(AnalyticsEvent.ResearchStarted(true, meta.backbones.size, (plan.runsPerBackbone + 1) * meta.backbones.size, meta.classes.size, meta.classes.sumOf { it.second }))
-        execute(meta, plan, state.value.dataset?.takeIf { it.classes == meta.classes.map { c -> c.first } })
+        val classes = meta.classes.map { c -> c.first }
+        execute(
+            meta, plan,
+            state.value.dataset?.takeIf { it.classes == classes && it.name == meta.dataset },
+            state.value.testDataset?.takeIf { it.classes == classes && it.name == meta.testSet },
+        )
     }
 
     fun stop() {
@@ -190,10 +224,18 @@ class ResearchController(
         }
     }
 
-    private suspend fun execute(meta: SessionMeta, plan: ResearchPlan, dataset: Dataset?) {
+    private suspend fun execute(meta: SessionMeta, plan: ResearchPlan, dataset: Dataset?, test: Dataset?) {
         val classes = meta.classes.map { it.first }
-        val embedded = meta.backbones.map { backbone -> loadOrEmbed(backbone, classes, dataset) }
-        val context = { backbone: String -> RunContext(platform.device, platform.platform, backbone, classes, appVersion) }
+        val stages = meta.stages?.let { names -> val order = Dataset.sortStages(names.distinct()); names.map(order::indexOf) }
+        val embedded = meta.backbones.map { backbone ->
+            val train = loadOrEmbed(backbone, classes, dataset?.images, dataset?.name ?: meta.dataset, test = false)
+            val testExamples = meta.testSet?.let { name -> loadOrEmbed(backbone, classes, test?.images, name, test = true) }
+            EmbeddedDataset(backbone, classes, train, testExamples, stages)
+        }
+        val split = if (meta.testSet != null) plan.split.let { s -> s.copy(trainShare = s.trainShare / (s.trainShare + s.validationShare), validationShare = s.validationShare / (s.trainShare + s.validationShare)) } else plan.split
+        val context = { backbone: String ->
+            RunContext(platform.device, platform.platform, backbone, classes, appVersion, meta.dataset, meta.testSet ?: "held out", split.id)
+        }
         val session = ResearchSession(embedded, plan, context, platform.monitor, doneKeys())
         val sizes = restoreResults()
         val started = TimeSource.Monotonic.markNow()
@@ -235,9 +277,11 @@ class ResearchController(
         _state.update { it.copy(status = "Done", progress = 1f) }
     }
 
-    private suspend fun loadOrEmbed(backbone: String, classes: List<String>, dataset: Dataset?): EmbeddedDataset {
-        files.read("$EMBEDDINGS/$backbone.bin")?.let { return EmbeddedDataset(backbone, classes, ResearchFormats.decodeEmbeddings(it)) }
-        checkNotNull(dataset) { "$backbone hadn't finished embedding the photos: choose the same dataset again, then Resume." }
+    /** The embeddings of the dataset's photos (or with [test], the test set's), embedding them first if needed. */
+    private suspend fun loadOrEmbed(backbone: String, classes: List<String>, images: List<LabelledImage>?, name: String, test: Boolean): List<Example> {
+        val file = "$EMBEDDINGS/$backbone" + if (test) "-test" else ""
+        files.read("$file.bin")?.let { return ResearchFormats.decodeEmbeddings(it) }
+        checkNotNull(images) { "$backbone hadn't finished embedding $name: choose the same ${if (test) "test set" else "dataset"} again, then Resume." }
         val location = backbones.location(backbone) {
             _state.update { it.copy(status = "Downloading $backbone…", progress = null) }
         }
@@ -249,11 +293,11 @@ class ResearchController(
         var unreadable = 0
         var firstMs: Double? = null
         try {
-            dataset.images.forEachIndexed { i, photo ->
+            images.forEachIndexed { i, photo ->
                 if (i % 25 == 0) {
-                    val status = "Embedding with $backbone: $i of ${dataset.images.size}"
-                    _state.update { it.copy(status = status, progress = i.toFloat() / dataset.images.size) }
-                    platform.background.progress(i, dataset.images.size, status)
+                    val status = "Embedding ${if (test) "the test set" else "the dataset"} with $backbone: $i of ${images.size}"
+                    _state.update { it.copy(status = status, progress = i.toFloat() / images.size) }
+                    platform.background.progress(i, images.size, status)
                 }
                 val image = reader.read(photo.image)?.image
                 if (image == null) {
@@ -273,14 +317,14 @@ class ResearchController(
         val sorted = times.sorted()
         fun quantile(q: Double) = if (sorted.isEmpty()) 0.0 else sorted[((sorted.size - 1) * q).roundToInt()]
         val row = listOf(
-            platform.device, platform.platform, appVersion, backbone, examples.size, unreadable, loadMs, firstMs,
+            platform.device, platform.platform, appVersion, backbone, if (test) "test" else "dataset", examples.size, unreadable, loadMs, firstMs,
             quantile(0.5), times.average(), quantile(0.9), platform.monitor.sample().memoryBytes,
         ).joinToString(",") { v -> v?.toString()?.let { if (',' in it || '"' in it) "\"" + it.replace("\"", "\"\"") + "\"" else it } ?: "" }
         // Its row first, then the embeddings: once these exist, the backbone is done
-        files.write("$EMBEDDINGS/$backbone.csv", (row + "\r\n").encodeToByteArray())
-        files.write("$EMBEDDINGS/$backbone.bin", ResearchFormats.encodeEmbeddings(examples))
-        log("$backbone: embedded ${examples.size} photos, ${ms(quantile(0.5))} ms median" + if (unreadable > 0) "; $unreadable unreadable, skipped" else "")
-        return EmbeddedDataset(backbone, classes, examples)
+        files.write("$file.csv", (row + "\r\n").encodeToByteArray())
+        files.write("$file.bin", ResearchFormats.encodeEmbeddings(examples))
+        log("$backbone: embedded ${examples.size} photos of $name, ${ms(quantile(0.5))} ms median" + if (unreadable > 0) "; $unreadable unreadable, skipped" else "")
+        return examples
     }
 
     @OptIn(ExperimentalTime::class)
@@ -290,11 +334,9 @@ class ResearchController(
         val archive = runCatching {
             withContext(Dispatchers.Default) {
                 // The headers the run was started with, matching its rows
-                val saved = files.read(HEADERS)?.decodeToString()?.split(HEADER_SEPARATOR)?.filter { it.isNotEmpty() }
-                    ?.associate { it.substringBefore('\n') to it.substringAfter('\n') }
-                val headers = saved ?: ResearchSession.headers()
+                val headers = savedHeaders() ?: ResearchSession.headers()
                 val csv = headers.mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
-                    ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.map { b -> files.read("$EMBEDDINGS/$b.csv")?.decodeToString().orEmpty() }.joinToString(""))
+                    ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.flatMap { b -> listOf("$b", "$b-test") }.map { f -> files.read("$EMBEDDINGS/$f.csv")?.decodeToString().orEmpty() }.joinToString(""))
                 val models = meta.backbones.mapNotNull { b -> files.read("$MODELS/$b.json")?.let { b to ModelPack.fromJson(it.decodeToString()).head } }.toMap()
                 val backboneFiles = models.keys.associateWith { backbones.read(it) }
                 ResearchArchive.build(ResearchResults(csv, models, 0), backboneFiles, meta.classes.map { it.first }, readme(meta))
@@ -311,7 +353,13 @@ class ResearchController(
         appendLine()
         appendLine("Device: ${platform.device} (${platform.platform}); app $appVersion")
         appendLine("Dataset: ${meta.dataset}, ${meta.classes.sumOf { it.second }} photos; run started ${meta.started}")
-        meta.classes.forEach { (c, n) -> appendLine("  $c: $n") }
+        meta.classes.forEachIndexed { i, (c, n) -> appendLine("  $c: $n" + (meta.stages?.let { " (stage ${it[i]})" } ?: "")) }
+        if (meta.testSet != null) {
+            appendLine("Test set: ${meta.testSet}, ${meta.testClasses.sumOf { it.second }} photos; the dataset is split into training and validation only")
+            meta.testClasses.forEach { (c, n) -> appendLine("  $c: $n") }
+        } else {
+            appendLine("Test photos: held out of the dataset (see the split column)")
+        }
         appendLine()
         appendLine("Log:")
         files.read(LOG)?.decodeToString()?.lines()?.filter { it.isNotEmpty() }?.forEach { appendLine("  $it") }
@@ -323,13 +371,18 @@ class ResearchController(
         appendLine("  confusion.csv      confusion matrices in long format (actual, predicted, count)")
         appendLine("  task_accuracy.csv  accuracy on each earlier step's classes after every step")
         appendLine("  epochs.csv         learning curves: losses and validation accuracy per epoch")
-        appendLine("  embedding.csv      backbone load time, first photo (warm-up) and per-photo embedding time on this device")
+        appendLine("  embedding.csv      backbone load time, first photo (warm-up) and per-photo embedding time on this device, for the dataset and any test set")
         appendLine()
         appendLine("models/<backbone>/model.tflite: a standalone LiteRT image classifier trained on every photo.")
         appendLine("  Input: 224 x 224 RGB, float 0-1. Output: a probability per class in labels.txt order.")
         appendLine("  It carries TFLite metadata and labels.txt inside; labels.txt is also next to it.")
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }
+
+    /** The header line of each table, by name, as saved when the run started. */
+    private suspend fun savedHeaders(): Map<String, String>? =
+        files.read(HEADERS)?.decodeToString()?.split(HEADER_SEPARATOR)?.filter { it.isNotEmpty() }
+            ?.associate { it.substringBefore('\n') to it.substringAfter('\n') }
 
     /** Each table's name and header line, to save with a run. */
     private fun headerText(): String =
@@ -338,7 +391,8 @@ class ResearchController(
 
     /** The saved results so far, summarised for the charts. */
     private suspend fun summary(): List<ResultGroup> {
-        val headers = ResearchSession.headers()
+        // The headers the run was started with: a run saved by an earlier version has other columns
+        val headers = savedHeaders() ?: ResearchSession.headers()
         val runs = files.read("$RESULTS/runs.csv")?.decodeToString() ?: return emptyList()
         val steps = files.read("$RESULTS/steps.csv")?.decodeToString().orEmpty()
         return runCatching { ResearchSummary.of(headers.getValue("runs.csv") + runs, headers.getValue("steps.csv") + steps) }.getOrDefault(emptyList())
@@ -383,24 +437,42 @@ class ResearchController(
         else -> "${seconds / 3600} h ${seconds % 3600 / 60} min"
     }
 
-    /** What a saved run was started with. */
-    private class SessionMeta(val dataset: String, val backbones: List<String>, val classes: List<Pair<String, Int>>, val started: String) {
+    /**
+     * What a saved run was started with: per class, its photo count and (with stage folders) its
+     * stage; and any separate test set, with its photo count per class.
+     */
+    private class SessionMeta(
+        val dataset: String,
+        val backbones: List<String>,
+        val classes: List<Pair<String, Int>>,
+        val started: String,
+        val stages: List<String>? = null,
+        val testSet: String? = null,
+        val testClasses: List<Pair<String, Int>> = emptyList(),
+    ) {
         fun encode() = buildString {
             appendLine("dataset=$dataset")
             appendLine("backbones=${backbones.joinToString(",")}")
             appendLine("started=$started")
-            classes.forEach { (name, count) -> appendLine("class=$count\t$name") }
+            testSet?.let { appendLine("test=$it") }
+            classes.forEachIndexed { i, (name, count) -> appendLine("class=$count\t$name" + (stages?.let { "\t" + it[i] } ?: "")) }
+            testClasses.forEach { (name, count) -> appendLine("testclass=$count\t$name") }
         }
     }
 
     private fun parseMeta(text: String): SessionMeta? {
         val lines = text.lines()
         fun value(key: String) = lines.firstOrNull { it.startsWith("$key=") }?.substringAfter('=')
+        fun rows(key: String) = lines.filter { it.startsWith("$key=") }.map { it.substringAfter('=').split('\t') }
+        val classRows = rows("class")
         return SessionMeta(
             dataset = value("dataset") ?: return null,
             backbones = value("backbones")?.split(',')?.filter { it.isNotEmpty() } ?: return null,
-            classes = lines.filter { it.startsWith("class=") }.map { it.substringAfter('=') }.map { it.substringAfter('\t') to it.substringBefore('\t').toInt() },
+            classes = classRows.map { it[1] to it[0].toInt() },
             started = value("started").orEmpty(),
+            stages = classRows.takeIf { r -> r.isNotEmpty() && r.all { it.size >= 3 } }?.map { it[2] },
+            testSet = value("test"),
+            testClasses = rows("testclass").map { it[1] to it[0].toInt() },
         )
     }
 
@@ -417,7 +489,7 @@ class ResearchController(
         private const val HEADERS = "$WORK/headers.txt"
         private const val SUMMARY_EVERY = 10
         private const val HEADER_SEPARATOR = "\u0000"
-        private const val EMBEDDING_HEADER = "device,platform,app_version,backbone,photos,unreadable,load_ms,first_ms,median_ms,mean_ms,p90_ms,memory_after_bytes"
+        private const val EMBEDDING_HEADER = "device,platform,app_version,backbone,set,photos,unreadable,load_ms,first_ms,median_ms,mean_ms,p90_ms,memory_after_bytes"
 
         private var shared: ResearchController? = null
 

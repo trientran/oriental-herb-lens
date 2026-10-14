@@ -27,10 +27,7 @@ internal class LiteRtEmbedder(private val model: dynamic) : ImageEmbedder {
         for (i in 0 until SIZE * SIZE * 4 step 4) {
             for (c in 0 until 3) input[j++] = (pixels[i + c].toInt() and 0xff) / 255f
         }
-        val outputs = settled(model.run(LiteRt.Tensor(input, arrayOf(1, SIZE, SIZE, 3))))
-        val output = outputs[0]
-        val values = settled(output.toTypedArray()).unsafeCast<Float32Array>()
-        output.delete()
+        val values = runOnce(model, input, arrayOf(1, SIZE, SIZE, 3))
         FloatArray(values.length) { values[it] }
     }
 
