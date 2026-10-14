@@ -374,7 +374,8 @@ class ResearchController(
         appendLine("  embedding.csv      backbone load time, first photo (warm-up) and per-photo embedding time on this device, for the dataset and any test set")
         appendLine()
         appendLine("models/<backbone>/model.tflite: a standalone LiteRT image classifier trained on every photo.")
-        appendLine("  Input: 224 x 224 RGB, float 0-1. Output: a probability per class in labels.txt order.")
+        appendLine("  Input: 224 x 224 RGB, float 0-1: the photo's centre square, resized (as the app trains it).")
+        appendLine("  Output: a probability per class in labels.txt order.")
         appendLine("  It carries TFLite metadata and labels.txt inside; labels.txt is also next to it.")
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }

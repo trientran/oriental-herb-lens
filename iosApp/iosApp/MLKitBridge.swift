@@ -173,7 +173,10 @@ final class LiteRTEmbedder: NSObject, NativeEmbedder {
         return interpreter
     }
 
-    /** The image drawn at 224 × 224 (upright), as float32 RGB in [0, 1]. */
+    /**
+     * The image's centre square drawn at 224 × 224 (upright), as float32 RGB in [0, 1]: the shorter
+     * side fills the square and the rest is cropped, so the photo isn't squashed.
+     */
     private static func pixels(_ image: UIImage) -> Data? {
         let side = size
         var rgba = [UInt8](repeating: 0, count: side * side * 4)
@@ -185,7 +188,10 @@ final class LiteRTEmbedder: NSObject, NativeEmbedder {
         // UIKit draws upside down in a bare CGContext: flip it, then draw honouring the orientation
         context.translateBy(x: 0, y: CGFloat(side))
         context.scaleBy(x: 1, y: -1)
-        image.draw(in: CGRect(x: 0, y: 0, width: side, height: side))
+        guard min(image.size.width, image.size.height) > 0 else { return nil }
+        let scale = CGFloat(side) / min(image.size.width, image.size.height)
+        let width = image.size.width * scale, height = image.size.height * scale
+        image.draw(in: CGRect(x: (CGFloat(side) - width) / 2, y: (CGFloat(side) - height) / 2, width: width, height: height))
         UIGraphicsPopContext()
         var floats = [Float](repeating: 0, count: side * side * 3)
         for i in 0..<(side * side) {
