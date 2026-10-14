@@ -67,6 +67,7 @@ class WebFirebaseConfig(
 fun startWebApp(config: WebConfig) {
     applyChosenLanguage()
     startFirebase(config.firebase.toOptions(), config.appCheckSiteKey)
+    WebDeviceName.start()
     val app = AppInfo(
         versionName = config.versionName,
         // The web is always the latest version: update prompts don't apply

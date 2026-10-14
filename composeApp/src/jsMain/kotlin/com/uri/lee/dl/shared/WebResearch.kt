@@ -30,7 +30,7 @@ internal fun webResearch(): ResearchPlatform {
     val battery = WebBattery()
     var wakeLock: dynamic = null
     return ResearchPlatform(
-        device = window.navigator.userAgent,
+        device = WebDeviceName.value,
         platform = "web",
         monitor = ResourceMonitor {
             val memory = window.performance.asDynamic().memory
