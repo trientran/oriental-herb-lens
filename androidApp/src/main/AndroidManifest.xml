@@ -21,10 +21,13 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
+    <!-- largeHeap: a Research mode results zip (CSV tables and models) is built in memory and can
+         pass 150 MB, more than the default 256 MB heap leaves free on mid-range phones -->
     <application
         android:name=".BaseApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.HerbLens"
