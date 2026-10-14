@@ -147,7 +147,8 @@ class ResearchController(
         }
         launchRun {
             files.delete(WORK)
-            _state.update { it.copy(log = emptyList()) }
+            // The last run's charts go with its files: the new run's appear after its first runs
+            _state.update { it.copy(log = emptyList(), summary = emptyList()) }
             val meta = SessionMeta(
                 dataset = dataset.name,
                 backbones = backbones,
