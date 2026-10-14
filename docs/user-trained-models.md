@@ -19,7 +19,10 @@ The spike's benchmark (embed a labelled photo set with each backbone, train on 1
 and on 5, test on the other 8) gave the results below; it has since been removed, as Research mode
 does the same and more. The same photos and backbones still serve for development runs.
 
-**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]:
+**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]. Every
+platform feeds them the photo's centre square (since 14 Oct 2026; before, the whole photo squashed
+to a square): in the invasive-plants study this gained about 3.5 points of cross-device accuracy.
+Models trained before then saw squashed photos, so they lose a little accuracy until retrained:
 
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/latest/mobilenet_v3_small.tflite
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/latest/mobilenet_v3_large.tflite
