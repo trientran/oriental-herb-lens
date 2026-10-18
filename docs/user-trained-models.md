@@ -225,7 +225,10 @@ hidden layer is a setting and an ablation in the study.
 translated: it's for researchers; everyday training is the Train tab.
 
 1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
-   from Google's public model storage the first time a run uses them, then stay on the device.
+   from Google's public model storage, and DINOv2 ViT-S/14 (Apache 2.0, converted to LiteRT with
+   8-bit weights, 22.8 MB) from the app's R2 bucket, the first time a run uses them (with a
+   progress bar), then stay on the device. DINOv2 is much more accurate (about 96 % against
+   75–80 % cross-device in the invasive-plants study) and slower to embed photos.
    Copies put in by hand are used instead when present: `Android/data/com.uri.lee.dl/files/backbones/`
    (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
 2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,

@@ -167,6 +167,8 @@ final class LiteRTEmbedder: NSObject, NativeEmbedder {
         if let cached = interpreters[path] { return cached }
         var options = Interpreter.Options()
         options.threadCount = 4
+        // XNNPACK, as LiteRT uses by default on Android and the web: about twice as fast for DINOv2
+        options.isXNNPackEnabled = true
         let interpreter = try Interpreter(modelPath: path, options: options)
         try interpreter.allocateTensors()
         interpreters[path] = interpreter

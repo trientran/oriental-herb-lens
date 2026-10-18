@@ -282,8 +282,10 @@ class ResearchController(
         val file = "$EMBEDDINGS/$backbone" + if (test) "-test" else ""
         files.read("$file.bin")?.let { return ResearchFormats.decodeEmbeddings(it) }
         checkNotNull(images) { "$backbone hadn't finished embedding $name: choose the same ${if (test) "test set" else "dataset"} again, then Resume." }
-        val location = backbones.location(backbone) {
-            _state.update { it.copy(status = "Downloading $backbone…", progress = null) }
+        val location = backbones.location(backbone) { received, total ->
+            val status = "Downloading $backbone: ${megabytes(received)}" + (total?.let { " of ${megabytes(it)}" } ?: "") + " MB"
+            _state.update { it.copy(status = status, progress = total?.takeIf { t -> t > 0 }?.let { t -> received.toFloat() / t }) }
+            platform.background.progress(received.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), (total ?: 0L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), status)
         }
         val loadStart = TimeSource.Monotonic.markNow()
         val embedder = embedders.load(location)
@@ -432,6 +434,7 @@ class ResearchController(
 
     private fun percent(v: Float) = "${(v * 1000).roundToInt() / 10.0} %"
     private fun ms(v: Double) = ((v * 10).roundToInt() / 10.0).toString()
+    private fun megabytes(bytes: Long) = ((bytes / 100_000.0).roundToInt() / 10.0).toString()
     private fun duration(seconds: Long): String = when {
         seconds < 60 -> "$seconds s"
         seconds < 3600 -> "${seconds / 60} min ${seconds % 60} s"
