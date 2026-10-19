@@ -251,15 +251,21 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                     Text("${plan.runsPerBackbone * chosen.size} runs", style = MaterialTheme.typography.bodySmall)
 
                     if (controller.backgroundNote.isNotEmpty()) Text(controller.backgroundNote, style = MaterialTheme.typography.bodySmall)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (state.running) {
-                            Button(onClick = controller::stop) { Text("Stop") }
-                        } else {
-                            Button(
-                                onClick = { controller.start(plan, chosen, useTestSet = separateTestSet) },
-                                enabled = state.dataset != null && chosen.isNotEmpty() && plan.runsPerBackbone > 0 && splitValid &&
-                                    (!separateTestSet || state.testDataset != null),
-                            ) { Text(if (state.pending != null) "Start a new run" else "Start") }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val startEnabled = state.dataset != null && chosen.isNotEmpty() && plan.runsPerBackbone > 0 && splitValid &&
+                            (!separateTestSet || state.testDataset != null)
+                        val start = { controller.start(plan, chosen, useTestSet = separateTestSet) }
+                        when {
+                            state.running -> Button(onClick = controller::stop) { Text("Stop") }
+                            // Also here, not only at the top: a run stopped by the system (e.g. iOS ending its
+                            // background time) is noticed down here, next to the button that would replace it
+                            state.pending?.finished == false -> {
+                                Button(onClick = controller::resume) { Text("Resume") }
+                                OutlinedButton(onClick = start, enabled = startEnabled) { Text("Start a new run") }
+                            }
+                            else -> Button(onClick = start, enabled = startEnabled) {
+                                Text(if (state.pending != null) "Start a new run" else "Start")
+                            }
                         }
                         TextButton(onClick = onDismiss) { Text("Close") }
                     }

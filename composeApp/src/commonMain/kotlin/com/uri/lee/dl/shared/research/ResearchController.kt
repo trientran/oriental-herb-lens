@@ -209,7 +209,7 @@ class ResearchController(
             try {
                 block()
             } catch (e: CancellationException) {
-                _state.update { it.copy(status = "Stopped. Progress is saved: you can resume.", progress = null) }
+                _state.update { it.copy(status = "Stopped. Progress is saved: tap Resume to carry on.", progress = null) }
                 throw e
             } catch (e: Exception) {
                 Logger.withTag("Research").e(e) { "Run failed" }
