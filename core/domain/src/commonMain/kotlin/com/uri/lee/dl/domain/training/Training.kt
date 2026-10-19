@@ -95,8 +95,11 @@ interface Backbones {
     /** Backbone names, e.g. "mobilenet_v3_large". */
     val available: List<String>
 
-    /** Where the backbone is, downloading it first if needed ([onDownloading] says so). */
-    suspend fun location(name: String, onDownloading: () -> Unit = {}): String
+    /**
+     * Where the backbone is, downloading it first if needed; [onDownloading] reports the bytes
+     * received so far and the file's size (null if the server doesn't say), from time to time.
+     */
+    suspend fun location(name: String, onDownloading: (received: Long, total: Long?) -> Unit = { _, _ -> }): String
 
     /** The backbone file itself (to build a standalone .tflite from). */
     suspend fun read(name: String): ByteArray

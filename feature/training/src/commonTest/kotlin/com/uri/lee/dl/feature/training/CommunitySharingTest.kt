@@ -48,7 +48,7 @@ class CommunitySharingTest : MainDispatcherTest() {
     }
     private val backbones = object : Backbones {
         override val available = listOf("mobilenet_v3_large")
-        override suspend fun location(name: String, onDownloading: () -> Unit) = name
+        override suspend fun location(name: String, onDownloading: (received: Long, total: Long?) -> Unit) = name
         override suspend fun read(name: String) = ByteArray(0)
     }
 

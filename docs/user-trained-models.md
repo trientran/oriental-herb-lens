@@ -19,7 +19,10 @@ The spike's benchmark (embed a labelled photo set with each backbone, train on 1
 and on 5, test on the other 8) gave the results below; it has since been removed, as Research mode
 does the same and more. The same photos and backbones still serve for development runs.
 
-**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]:
+**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]. Every
+platform feeds them the photo's centre square (since 14 Oct 2026; before, the whole photo squashed
+to a square): in the invasive-plants study this gained about 3.5 points of cross-device accuracy.
+Models trained before then saw squashed photos, so they lose a little accuracy until retrained:
 
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/latest/mobilenet_v3_small.tflite
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/latest/mobilenet_v3_large.tflite
@@ -222,7 +225,10 @@ hidden layer is a setting and an ablation in the study.
 translated: it's for researchers; everyday training is the Train tab.
 
 1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
-   from Google's public model storage the first time a run uses them, then stay on the device.
+   from Google's public model storage, and DINOv2 ViT-S/14 (Apache 2.0, converted to LiteRT with
+   8-bit weights, 22.8 MB) from the app's R2 bucket, the first time a run uses them (with a
+   progress bar), then stay on the device. DINOv2 is much more accurate (about 96 % against
+   75–80 % cross-device in the invasive-plants study) and slower to embed photos.
    Copies put in by hand are used instead when present: `Android/data/com.uri.lee.dl/files/backbones/`
    (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
 2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,

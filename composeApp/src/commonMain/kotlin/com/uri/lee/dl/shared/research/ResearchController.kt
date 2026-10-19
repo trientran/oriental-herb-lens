@@ -225,6 +225,7 @@ class ResearchController(
     }
 
     private suspend fun execute(meta: SessionMeta, plan: ResearchPlan, dataset: Dataset?, test: Dataset?) {
+        val began = TimeSource.Monotonic.markNow()
         val classes = meta.classes.map { it.first }
         val stages = meta.stages?.let { names -> val order = Dataset.sortStages(names.distinct()); names.map(order::indexOf) }
         val embedded = meta.backbones.map { backbone ->
@@ -272,8 +273,10 @@ class ResearchController(
             yield() // lets the screen update and Stop through
         }
         files.write(FINISHED, byteArrayOf())
-        log("Finished; this session took ${duration(started.elapsedNow().inWholeSeconds)}")
-        analytics.log(AnalyticsEvent.ResearchFinished(session.totalJobs, started.elapsedNow().inWholeMinutes))
+        val total = began.elapsedNow().inWholeSeconds
+        val training = started.elapsedNow().inWholeSeconds
+        log("Finished; this session took ${duration(total)}: ${duration(total - training)} embedding photos, ${duration(training)} training")
+        analytics.log(AnalyticsEvent.ResearchFinished(session.totalJobs, began.elapsedNow().inWholeMinutes))
         _state.update { it.copy(status = "Done", progress = 1f) }
     }
 
@@ -282,8 +285,10 @@ class ResearchController(
         val file = "$EMBEDDINGS/$backbone" + if (test) "-test" else ""
         files.read("$file.bin")?.let { return ResearchFormats.decodeEmbeddings(it) }
         checkNotNull(images) { "$backbone hadn't finished embedding $name: choose the same ${if (test) "test set" else "dataset"} again, then Resume." }
-        val location = backbones.location(backbone) {
-            _state.update { it.copy(status = "Downloading $backbone…", progress = null) }
+        val location = backbones.location(backbone) { received, total ->
+            val status = "Downloading $backbone: ${megabytes(received)}" + (total?.let { " of ${megabytes(it)}" } ?: "") + " MB"
+            _state.update { it.copy(status = status, progress = total?.takeIf { t -> t > 0 }?.let { t -> received.toFloat() / t }) }
+            platform.background.progress(received.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), (total ?: 0L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), status)
         }
         val loadStart = TimeSource.Monotonic.markNow()
         val embedder = embedders.load(location)
@@ -374,7 +379,8 @@ class ResearchController(
         appendLine("  embedding.csv      backbone load time, first photo (warm-up) and per-photo embedding time on this device, for the dataset and any test set")
         appendLine()
         appendLine("models/<backbone>/model.tflite: a standalone LiteRT image classifier trained on every photo.")
-        appendLine("  Input: 224 x 224 RGB, float 0-1. Output: a probability per class in labels.txt order.")
+        appendLine("  Input: 224 x 224 RGB, float 0-1: the photo's centre square, resized (as the app trains it).")
+        appendLine("  Output: a probability per class in labels.txt order.")
         appendLine("  It carries TFLite metadata and labels.txt inside; labels.txt is also next to it.")
         appendLine("  head.json: the trained layers alone, for continuing training in the app.")
     }
@@ -431,6 +437,7 @@ class ResearchController(
 
     private fun percent(v: Float) = "${(v * 1000).roundToInt() / 10.0} %"
     private fun ms(v: Double) = ((v * 10).roundToInt() / 10.0).toString()
+    private fun megabytes(bytes: Long) = ((bytes / 100_000.0).roundToInt() / 10.0).toString()
     private fun duration(seconds: Long): String = when {
         seconds < 60 -> "$seconds s"
         seconds < 3600 -> "${seconds / 60} min ${seconds % 60} s"

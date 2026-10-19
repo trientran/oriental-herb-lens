@@ -222,4 +222,4 @@ private class WebBattery {
 }
 
 private const val LOCAL_SERVER = "http://127.0.0.1:8767"
-private val BACKBONES = listOf("mobilenet_v3_small", "mobilenet_v3_large")
+private val BACKBONES = listOf("mobilenet_v3_small", "mobilenet_v3_large", "dinov2_vits14")

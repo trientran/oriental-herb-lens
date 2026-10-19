@@ -209,7 +209,7 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                     }
 
                     Section("Backbones", ResearchHelp.backbones) {
-                        Text("Downloaded from MediaPipe when first used, then kept.", style = MaterialTheme.typography.bodySmall)
+                        Text("Downloaded when first used, then kept. dinov2_vits14 is the most accurate, and the slowest to embed photos.", style = MaterialTheme.typography.bodySmall)
                         Chips(state.backbones, backbones, { it }) { backbones = it }
                     }
                     val stages = state.dataset?.stages

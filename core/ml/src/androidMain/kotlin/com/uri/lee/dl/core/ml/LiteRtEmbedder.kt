@@ -14,7 +14,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * A backbone in LiteRT (user-trained models, plan Phase 7): 224 × 224 RGB in [0, 1], as the
+ * A backbone in LiteRT (user-trained models, plan Phase 7): the photo's centre square at 224 × 224, RGB in [0, 1], as the
  * MediaPipe image embedders expect; the first output is the embedding. ML Kit keeps the herb model.
  */
 internal class LiteRtEmbedder(private val interpreter: Interpreter) : ImageEmbedder {
@@ -26,9 +26,13 @@ internal class LiteRtEmbedder(private val interpreter: Interpreter) : ImageEmbed
     override suspend fun embed(image: ClassifierImage): FloatArray = mutex.withLock {
         withContext(Dispatchers.Default) {
             val bitmap = (image as MlKitClassifierImage).bitmap ?: error("No bitmap to embed")
-            val scaled = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, true)
+            // The centre square, so the photo isn't squashed (+3.5 points cross-device in the study)
+            val side = minOf(bitmap.width, bitmap.height)
+            val square = Bitmap.createBitmap(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side)
+            val scaled = Bitmap.createScaledBitmap(square, SIZE, SIZE, true)
             scaled.getPixels(pixels, 0, SIZE, 0, 0, SIZE, SIZE)
-            if (scaled !== bitmap) scaled.recycle()
+            if (scaled !== square && scaled !== bitmap) scaled.recycle()
+            if (square !== bitmap) square.recycle()
             input.rewind()
             for (p in pixels) {
                 input.putFloat((p shr 16 and 0xff) / 255f)

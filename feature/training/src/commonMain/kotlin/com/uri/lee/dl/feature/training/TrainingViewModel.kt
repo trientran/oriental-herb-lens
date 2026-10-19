@@ -477,7 +477,7 @@ class TrainingViewModel(
 
     private suspend fun embedderFor(backbone: String): ImageEmbedder? = embedderLock.withLock {
         embedder?.takeIf { it.first == backbone }?.second ?: run {
-            val location = runCatching { backbones.location(backbone) { setState { copy(work = TrainingWork.Downloading) } } }
+            val location = runCatching { backbones.location(backbone) { _, _ -> setState { copy(work = TrainingWork.Downloading) } } }
                 .getOrElse { e ->
                     log.e(e) { "Backbone $backbone unavailable" }
                     setState { copy(error = TrainingError.DOWNLOAD) }
