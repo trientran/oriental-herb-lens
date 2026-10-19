@@ -283,6 +283,7 @@
     <string name="train_delete">Delete model</string>
     <string name="train_delete_confirm">Delete %1$s? This can’t be undone.</string>
     <string name="train_quality">Quality</string>
+    <string name="train_quality_most_accurate">Most accurate</string>
     <string name="train_quality_fast">Fast</string>
     <string name="train_quality_balanced">Balanced</string>
     <string name="train_quality_best">Best</string>
@@ -400,7 +401,7 @@
     <string name="term_identify_modes">Whole view and Pick a plant</string>
     <string name="term_identify_modes_body">Whole view identifies the whole picture at once. Pick a plant first finds each separate plant in the picture (object detection) and marks it with a dot, then identifies just that plant. It helps when several plants are in view.</string>
     <string name="term_base_model">Quality: what your model builds on</string>
-    <string name="term_base_model_body">Your model builds on a ready-made image model (MobileNet, from Google’s MediaPipe) that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Fast uses a small base model: quick to train and run. Balanced uses a larger, more accurate one. Best also learns from two cropped copies of each photo: slower, often a little better.</string>
+    <string name="term_base_model_body">Your model builds on a ready-made image model that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Most accurate uses DINOv2 (from Meta): far more accurate, but each photo takes longer to read (about a tenth of a second on a recent iPhone, about a second on a mid-range phone), and it’s a 23 MB download the first time. Fast uses a small MobileNet (from Google’s MediaPipe): quick, less accurate. Models made earlier with Balanced or Best keep the larger MobileNet they were made with.</string>
     <string name="term_training">Training</string>
     <string name="term_training_body">Teaching a model from examples. You give it photos sorted by species; round by round, it adjusts itself until it can tell them apart. Here it all happens on your device, and your photos aren’t uploaded.</string>
     <string name="term_round">Round (epoch)</string>

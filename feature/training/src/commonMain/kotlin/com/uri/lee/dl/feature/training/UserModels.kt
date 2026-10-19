@@ -10,16 +10,23 @@ import com.uri.lee.dl.core.training.TrainingOptions
 import com.uri.lee.dl.domain.training.AppFiles
 import kotlin.random.Random
 
-/** Simple choices for people who don't want to think about training settings. */
-enum class Quality(val backbone: String, val augment: Boolean) {
-    /** The small backbone: quickest to train and run. */
-    FAST("mobilenet_v3_small", augment = false),
+/**
+ * Simple choices for people who don't want to think about training settings. A model keeps the
+ * quality it was made with (it decides how its photos were read), so earlier choices stay for the
+ * models that use them; new models are offered the [offered] ones.
+ */
+enum class Quality(val backbone: String, val augment: Boolean, val offered: Boolean) {
+    /** DINOv2 ViT-S/14: by far the most accurate (about 96 % on another phone's photos in the invasive-plants study, against 70–80 % for the MobileNets), slower to read photos. */
+    MOST_ACCURATE("dinov2_vits14", augment = false, offered = true),
 
-    /** The large backbone. */
-    BALANCED("mobilenet_v3_large", augment = false),
+    /** The small MobileNet: quickest to read photos and run, least accurate. */
+    FAST("mobilenet_v3_small", augment = false, offered = true),
 
-    /** The large backbone, plus two cropped copies of every photo to learn from. */
-    BEST("mobilenet_v3_large", augment = true),
+    /** The large MobileNet (models made before DINOv2). */
+    BALANCED("mobilenet_v3_large", augment = false, offered = false),
+
+    /** The large MobileNet, plus two cropped copies of every photo to learn from (models made before DINOv2). */
+    BEST("mobilenet_v3_large", augment = true, offered = false),
 }
 
 /** How a trained model learns species or photos added later. */
@@ -51,7 +58,7 @@ data class ExpertSettings(
 )
 
 data class TrainingSettings(
-    val quality: Quality = Quality.BALANCED,
+    val quality: Quality = Quality.MOST_ACCURATE,
     val update: UpdateMode = UpdateMode.REPLAY,
     val expert: ExpertSettings = ExpertSettings(),
 ) {
@@ -201,6 +208,7 @@ class UserModelStore(private val files: AppFiles) {
     private fun decodeSettings(v: Map<String, String>): TrainingSettings {
         val d = ExpertSettings()
         return TrainingSettings(
+            // Settings saved without a quality predate the choice: those models were read with the large MobileNet
             quality = v["quality"]?.let { q -> Quality.entries.firstOrNull { it.name == q } } ?: Quality.BALANCED,
             update = v["update"]?.let { u -> UpdateMode.entries.firstOrNull { it.name == u } } ?: UpdateMode.REPLAY,
             expert = ExpertSettings(
