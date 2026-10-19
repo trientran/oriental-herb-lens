@@ -11,7 +11,6 @@ import com.uri.lee.dl.core.training.ResearchArchive
 import com.uri.lee.dl.core.training.ResearchFormats
 import com.uri.lee.dl.core.training.ResearchPlan
 import com.uri.lee.dl.core.training.ResearchProgress
-import com.uri.lee.dl.core.training.ResearchResults
 import com.uri.lee.dl.core.training.ResearchSession
 import com.uri.lee.dl.core.training.RunContext
 import com.uri.lee.dl.core.training.ScenarioKind
@@ -59,6 +58,11 @@ data class ResearchState(
     val error: String? = null,
     /** The saved run's results so far, by backbone and scenario, for the charts. */
     val summary: List<ResultGroup> = emptyList(),
+    /** Building the results zip, which takes a while for a long run. */
+    val saving: Boolean = false,
+    /** About saving the results ("Saved"), or why it failed: shown by the button that saves. */
+    val saveStatus: String = "",
+    val saveError: String? = null,
 )
 
 /**
@@ -196,7 +200,7 @@ class ResearchController(
     fun discard() {
         scope.launch {
             files.delete(WORK)
-            _state.update { it.copy(pending = null, log = emptyList(), status = "", progress = null, summary = emptyList()) }
+            _state.update { it.copy(pending = null, log = emptyList(), status = "", progress = null, summary = emptyList(), saveStatus = "", saveError = null) }
         }
     }
 
@@ -205,7 +209,7 @@ class ResearchController(
         job = scope.launch {
             platform.keepAwake(true)
             platform.background.start("Herb Lens research run") { job?.cancel() }
-            _state.update { it.copy(running = true, error = null, status = "Starting…", progress = null) }
+            _state.update { it.copy(running = true, error = null, status = "Starting…", progress = null, saveStatus = "", saveError = null) }
             try {
                 block()
             } catch (e: CancellationException) {
@@ -335,22 +339,25 @@ class ResearchController(
     @OptIn(ExperimentalTime::class)
     suspend fun save() {
         val meta = files.read(META)?.decodeToString()?.let(::parseMeta) ?: return
-        _state.update { it.copy(status = "Preparing the results…", error = null) }
+        if (state.value.saving) return
+        _state.update { it.copy(saving = true, saveStatus = "Preparing the results…", saveError = null) }
         val archive = runCatching {
             withContext(Dispatchers.Default) {
                 // The headers the run was started with, matching its rows
                 val headers = savedHeaders() ?: ResearchSession.headers()
-                val csv = headers.mapValues { (table, header) -> header + (files.read("$RESULTS/$table")?.decodeToString() ?: "") } +
-                    ("embedding.csv" to (headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.flatMap { b -> listOf("$b", "$b-test") }.map { f -> files.read("$EMBEDDINGS/$f.csv")?.decodeToString().orEmpty() }.joinToString(""))
+                // As bytes, never decoded: a three-backbone run's tables, as text, don't fit in an Android app's heap
+                val csv = headers.mapValues { (table, header) -> header.encodeToByteArray() + (files.read("$RESULTS/$table") ?: ByteArray(0)) } +
+                    ("embedding.csv" to ((headers["embedding.csv"] ?: (EMBEDDING_HEADER + "\r\n")) + meta.backbones.flatMap { b -> listOf("$b", "$b-test") }.map { f -> files.read("$EMBEDDINGS/$f.csv")?.decodeToString().orEmpty() }.joinToString("")).encodeToByteArray())
                 val models = meta.backbones.mapNotNull { b -> files.read("$MODELS/$b.json")?.let { b to ModelPack.fromJson(it.decodeToString()).head } }.toMap()
                 val backboneFiles = models.keys.associateWith { backbones.read(it) }
-                ResearchArchive.build(ResearchResults(csv, models, 0), backboneFiles, meta.classes.map { it.first }, readme(meta))
+                ResearchArchive.build(csv, models, backboneFiles, meta.classes.map { it.first }, readme(meta))
             }
-        }.getOrElse { e -> _state.update { it.copy(status = "", error = e.message ?: e.toString()) }; return }
+        }.getOrElse { e -> _state.update { it.copy(saving = false, saveStatus = "", saveError = e.message ?: e.toString()) }; return }
         val stamp = Clock.System.now().toString().take(19).replace(":", "").replace("-", "")
-        platform.saveArchive("herblens-research-${platform.platform}-$stamp.zip", archive)
+        val saved = runCatching { platform.saveArchive("herblens-research-${platform.platform}-$stamp.zip", archive) }
+        saved.exceptionOrNull()?.let { e -> _state.update { it.copy(saving = false, saveStatus = "", saveError = e.message ?: e.toString()) }; return }
         analytics.log(AnalyticsEvent.ResearchSaved(doneKeys().size))
-        _state.update { it.copy(status = "Saved") }
+        _state.update { it.copy(saving = false, saveStatus = "Saved", saveError = null) }
     }
 
     private suspend fun readme(meta: SessionMeta) = buildString {

@@ -1,6 +1,7 @@
 package com.uri.lee.dl.core.training
 
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -74,5 +75,15 @@ class TfliteExportTest {
     @Test
     fun crcMatchesTheStandard() {
         assertEquals(0xCBF43926.toInt(), StoredZip.crc32("123456789".encodeToByteArray()))
+    }
+
+    @Test
+    fun storedZipIsExactlyItsHeadersAndFiles() {
+        // Many files: their headers overflowed the old 256-byte allowance, doubling the buffer
+        val files = (1..40).associate { "results/table_$it.csv" to ByteArray(1000 + it) { b -> b.toByte() } }
+        val zip = StoredZip.append(ByteArray(0), files)
+        val expected = files.entries.sumOf { (name, data) -> 30 + 46 + 2 * name.length + data.size } + 22
+        assertEquals(expected, zip.size)
+        files.forEach { (name, data) -> assertContentEquals(data, StoredZip.read(zip, name)) }
     }
 }
