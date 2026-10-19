@@ -225,6 +225,7 @@ class ResearchController(
     }
 
     private suspend fun execute(meta: SessionMeta, plan: ResearchPlan, dataset: Dataset?, test: Dataset?) {
+        val began = TimeSource.Monotonic.markNow()
         val classes = meta.classes.map { it.first }
         val stages = meta.stages?.let { names -> val order = Dataset.sortStages(names.distinct()); names.map(order::indexOf) }
         val embedded = meta.backbones.map { backbone ->
@@ -272,8 +273,10 @@ class ResearchController(
             yield() // lets the screen update and Stop through
         }
         files.write(FINISHED, byteArrayOf())
-        log("Finished; this session took ${duration(started.elapsedNow().inWholeSeconds)}")
-        analytics.log(AnalyticsEvent.ResearchFinished(session.totalJobs, started.elapsedNow().inWholeMinutes))
+        val total = began.elapsedNow().inWholeSeconds
+        val training = started.elapsedNow().inWholeSeconds
+        log("Finished; this session took ${duration(total)}: ${duration(total - training)} embedding photos, ${duration(training)} training")
+        analytics.log(AnalyticsEvent.ResearchFinished(session.totalJobs, began.elapsedNow().inWholeMinutes))
         _state.update { it.copy(status = "Done", progress = 1f) }
     }
 
