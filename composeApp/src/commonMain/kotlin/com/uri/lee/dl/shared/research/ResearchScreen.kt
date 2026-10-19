@@ -72,6 +72,8 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
     var separateTestSet by remember { mutableStateOf(false) }
     var trainPercent by remember { mutableStateOf(70f) }
     var validationPercent by remember { mutableStateOf(15f) }
+    // Which Save button was tapped (the top one or the one by Start): its progress shows under it
+    var savedFromBottom by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { controller.refresh() }
     LaunchedEffect(state.backbones) { if (backbones.isEmpty()) backbones = state.backbones.toSet() }
@@ -104,14 +106,16 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                             )
                             // Wraps on narrow phones, where three buttons don't fit on a line
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val save = { savedFromBottom = false; scope.launch { controller.save() }; Unit }
                                 if (pending.finished) {
-                                    Button(onClick = { scope.launch { controller.save() } }) { Text("Save results") }
+                                    Button(onClick = save, enabled = !state.saving) { Text("Save results") }
                                 } else {
-                                    Button(onClick = controller::resume) { Text("Resume") }
-                                    OutlinedButton(onClick = { scope.launch { controller.save() } }) { Text("Save results so far") }
+                                    Button(onClick = controller::resume, enabled = !state.saving) { Text("Resume") }
+                                    OutlinedButton(onClick = save, enabled = !state.saving) { Text("Save results so far") }
                                 }
-                                TextButton(onClick = controller::discard) { Text("Discard") }
+                                TextButton(onClick = controller::discard, enabled = !state.saving) { Text("Discard") }
                             }
+                            if (!savedFromBottom) SaveProgress(state)
                         }
                     }
 
@@ -251,18 +255,31 @@ fun ResearchDialog(controller: ResearchController, onDismiss: () -> Unit) {
                     Text("${plan.runsPerBackbone * chosen.size} runs", style = MaterialTheme.typography.bodySmall)
 
                     if (controller.backgroundNote.isNotEmpty()) Text(controller.backgroundNote, style = MaterialTheme.typography.bodySmall)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (state.running) {
-                            Button(onClick = controller::stop) { Text("Stop") }
-                        } else {
-                            Button(
-                                onClick = { controller.start(plan, chosen, useTestSet = separateTestSet) },
-                                enabled = state.dataset != null && chosen.isNotEmpty() && plan.runsPerBackbone > 0 && splitValid &&
-                                    (!separateTestSet || state.testDataset != null),
-                            ) { Text(if (state.pending != null) "Start a new run" else "Start") }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val startEnabled = state.dataset != null && chosen.isNotEmpty() && plan.runsPerBackbone > 0 && splitValid &&
+                            (!separateTestSet || state.testDataset != null)
+                        val start = { controller.start(plan, chosen, useTestSet = separateTestSet) }
+                        when {
+                            state.running -> Button(onClick = controller::stop) { Text("Stop") }
+                            // Also here, not only at the top: a run stopped by the system (e.g. iOS ending its
+                            // background time) is noticed down here, next to the button that would replace it
+                            state.pending?.finished == false -> {
+                                Button(onClick = controller::resume, enabled = !state.saving) { Text("Resume") }
+                                OutlinedButton(onClick = start, enabled = startEnabled && !state.saving) { Text("Start a new run") }
+                            }
+                            // A finished run's results are only on this device until saved: Save comes first
+                            // here too, as Start a new run would replace them
+                            state.pending?.finished == true -> {
+                                Button(onClick = { savedFromBottom = true; scope.launch { controller.save() } }, enabled = !state.saving) { Text("Save results") }
+                                OutlinedButton(onClick = start, enabled = startEnabled && !state.saving) { Text("Start a new run") }
+                            }
+                            else -> Button(onClick = start, enabled = startEnabled) {
+                                Text(if (state.pending != null) "Start a new run" else "Start")
+                            }
                         }
                         TextButton(onClick = onDismiss) { Text("Close") }
                     }
+                    if (savedFromBottom) SaveProgress(state)
 
                     if (state.status.isNotEmpty()) Text(state.status, style = MaterialTheme.typography.bodyMedium)
                     state.progress?.let { LinearProgressIndicator(progress = { it }, modifier = Modifier.fillMaxWidth()) }
@@ -321,4 +338,12 @@ private fun <T> Chips(options: List<T>, selected: Set<T>, label: (T) -> String, 
             )
         }
     }
+}
+
+/** Saving the results: a bar while the zip is built (long runs take a while), then "Saved" or the error. */
+@Composable
+private fun SaveProgress(state: ResearchState) {
+    if (state.saveStatus.isNotEmpty()) Text(state.saveStatus, style = MaterialTheme.typography.bodyMedium)
+    if (state.saving) LinearProgressIndicator(Modifier.fillMaxWidth())
+    state.saveError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
 }

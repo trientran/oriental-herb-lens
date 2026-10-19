@@ -67,9 +67,15 @@ internal object ResearchHelp {
         """
         The frozen image model that turns each photo into an embedding. Only the classifier on top of it is trained, which is what makes training on a phone fast. Each photo's centre square is used, at 224 × 224.
 
-        dinov2_vits14: by far the most accurate (in our invasive-plants study, about 96 % against about 75–80 % for the others, on photos from another phone). A vision transformer (DINOv2 ViT-S/14, Meta, Apache 2.0), 22.8 MB to download, 384 numbers per photo. It takes the longest to embed photos: about 0.1 s a photo on an iPhone 17 Pro Max, some 25 times the MobileNets, and longer on slower phones. Training the classifier afterwards is as fast.
-        mobilenet_v3_large: MediaPipe's embedder (Apache 2.0), 11 MB, 1,280 numbers per photo. Fast.
-        mobilenet_v3_small: MediaPipe's embedder, 4 MB, 1,024 numbers per photo. The fastest and smallest, a little less accurate.
+        dinov2_vits14: by far the most accurate. In our invasive-plants study (21 species, tested on photos from another phone), about 96 %, against 72–80 % for mobilenet_v3_large and 70–77 % for mobilenet_v3_small. A vision transformer (DINOv2 ViT-S/14, Meta, Apache 2.0), 22.8 MB to download, 384 numbers per photo. Embedding photos is slow, but training on its short embeddings is about three times faster than on the MobileNets'.
+        mobilenet_v3_large: MediaPipe's embedder (Apache 2.0), 11 MB, 1,280 numbers per photo. Fast to embed, the slowest to train.
+        mobilenet_v3_small: MediaPipe's embedder, 4 MB, 1,024 numbers per photo. The quickest overall, the least accurate.
+
+        Time per backbone in that study (7,269 photos embedded once, then 240 runs: 3 scenarios × 8 strategies × 10 seeds):
+        iPhone 17 Pro Max: about 30 min for each backbone.
+        Chrome on a MacBook (M4): about 40–45 min each.
+        Redmi Note 12, a mid-range Android phone: about 2.5 h for dinov2_vits14 and 1.2–1.5 h for each MobileNet.
+        Per photo, dinov2_vits14 embeds in about 0.14 s on the iPhone, 0.2 s in Chrome and 0.9 s on the Redmi; the MobileNets in 5–40 ms. So on a fast device the three cost about the same, and on a slow one dinov2_vits14 alone is usually the best use of the time.
 
         Each is downloaded the first time a run uses it (progress is shown), then kept on the device. Each photo is embedded once per backbone; how long it takes is in embedding.csv, to compare devices.
         """.trimIndent(),

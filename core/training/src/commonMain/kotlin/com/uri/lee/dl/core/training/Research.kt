@@ -259,11 +259,24 @@ object ResearchArchive {
         labels: List<String>,
         readme: String,
         modelName: String = "Herb Lens user-trained classifier",
+    ): ByteArray = build(results.csv.mapValues { it.value.encodeToByteArray() }, results.models, backbones, labels, readme, modelName)
+
+    /**
+     * The same from the CSV files' bytes, as saved: a long run's tables (hundreds of MB as text)
+     * don't fit in a phone app's memory once decoded.
+     */
+    fun build(
+        csv: Map<String, ByteArray>,
+        models: Map<String, ClassifierHead>,
+        backbones: Map<String, ByteArray>,
+        labels: List<String>,
+        readme: String,
+        modelName: String = "Herb Lens user-trained classifier",
     ): ByteArray {
         val files = linkedMapOf<String, ByteArray>()
         files["README.txt"] = readme.encodeToByteArray()
-        for ((name, csv) in results.csv) files["results/$name"] = csv.encodeToByteArray()
-        for ((backbone, head) in results.models) {
+        for ((name, bytes) in csv) files["results/$name"] = bytes
+        for ((backbone, head) in models) {
             val backboneBytes = backbones[backbone] ?: continue
             files["models/$backbone/model.tflite"] = TfliteExport.export(backboneBytes, head, labels, "$modelName ($backbone)")
             files["models/$backbone/labels.txt"] = labels.joinToString("\n", postfix = "\n").encodeToByteArray()
