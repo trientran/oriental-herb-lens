@@ -695,7 +695,8 @@ private fun ConfirmDeleteDialog(name: String, onDismiss: () -> Unit, onDelete: (
 @Composable
 private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (Quality) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.sm)) {
-        Quality.entries.forEach { quality ->
+        // Earlier choices only for a model that already has one
+        Quality.entries.filter { it.offered || it == selected }.forEach { quality ->
             FilterChip(
                 selected = quality == selected,
                 onClick = { onSelect(quality) },
@@ -704,6 +705,7 @@ private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (
                     Text(
                         stringResource(
                             when (quality) {
+                                Quality.MOST_ACCURATE -> Res.string.train_quality_most_accurate
                                 Quality.FAST -> Res.string.train_quality_fast
                                 Quality.BALANCED -> Res.string.train_quality_balanced
                                 Quality.BEST -> Res.string.train_quality_best
@@ -720,7 +722,7 @@ private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (
 private fun NewModelScreen(onAction: (TrainingAction) -> Unit, platform: TrainingPlatform) {
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf("") }
-    var quality by remember { mutableStateOf(Quality.BALANCED) }
+    var quality by remember { mutableStateOf(Quality.MOST_ACCURATE) }
     val placeholder = stringResource(Res.string.train_name_placeholder)
     val chosenName = { name.ifBlank { placeholder } }
     Page(stringResource(Res.string.train_new_title), onBack = { onAction(TrainingAction.Back) }) {

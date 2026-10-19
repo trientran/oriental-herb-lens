@@ -49,6 +49,24 @@ class UserModelsTest {
     }
 
     @Test
+    fun newModelsBuildOnDinov2AndEarlierModelsKeepTheirBackbone() = runTest {
+        assertEquals("dinov2_vits14", TrainingSettings().quality.backbone)
+        assertEquals(listOf(Quality.MOST_ACCURATE, Quality.FAST), Quality.entries.filter { it.offered })
+
+        val files = MemoryFiles()
+        val store = UserModelStore(files)
+        store.save(UserModel("old", "Made before DINOv2", listOf("Lantana", "Mimosa"), settings = TrainingSettings(Quality.BEST)))
+        // Its photos were read with the large MobileNet: it must stay on it
+        assertEquals("mobilenet_v3_large", assertNotNull(store.load("old")).settings.quality.backbone)
+        assertTrue(assertNotNull(store.load("old")).settings.quality.augment)
+
+        // Settings saved before there was a quality: also the large MobileNet
+        val meta = files.files.getValue("models/old/meta.txt").decodeToString().lines().filterNot { it.startsWith("quality=") }
+        files.files["models/old/meta.txt"] = meta.joinToString("\n").encodeToByteArray()
+        assertEquals(Quality.BALANCED, assertNotNull(store.load("old")).settings.quality)
+    }
+
+    @Test
     fun aPhotoStaysInItsShareAsMoreAreAdded() {
         val expert = ExpertSettings()
         val shares = (0 until 200).map { ModelTrainer.share(it, expert) }

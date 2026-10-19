@@ -167,9 +167,16 @@ hidden layer is a setting and an ablation in the study.
 
   | Quality | What it uses |
   |---|---|
+  | Most accurate (default) | dinov2_vits14 (22.8 MB, downloaded from R2 when first used) |
   | Fast | mobilenet_v3_small |
-  | Balanced (default) | mobilenet_v3_large |
-  | Best | mobilenet_v3_large, plus two centre crops of every photo |
+  | Balanced (models made before DINOv2 only) | mobilenet_v3_large |
+  | Best (models made before DINOv2 only) | mobilenet_v3_large, plus two centre crops of every photo |
+
+  A model keeps the quality it was made with, as its photos were embedded with that backbone, so
+  Balanced and Best stay for the models that use them but aren't offered for new ones. In the
+  invasive-plants study, DINOv2 reached about 96 % on another phone's photos against 70–80 % for
+  the MobileNets; embedding a photo takes about 0.14 s on an iPhone 17 Pro Max and 0.9 s on a
+  Redmi Note 12, against 5–40 ms for the MobileNets.
 
   Photos are collected species by species from the photo picker, or imported as a folder (a zip
   too on Android). Each photo is embedded once, when it's added; only embeddings are kept, in the
