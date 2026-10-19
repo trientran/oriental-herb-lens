@@ -241,10 +241,16 @@ class ResearchController(
         val context = { backbone: String ->
             RunContext(platform.device, platform.platform, backbone, classes, appVersion, meta.dataset, meta.testSet ?: "held out", split.id)
         }
-        val session = ResearchSession(embedded, plan, context, platform.monitor, doneKeys())
+        val doneBefore = doneKeys()
+        val session = ResearchSession(embedded, plan, context, platform.monitor, doneBefore)
+        // For the time left: a job takes about as long as its backbone's embedding is wide (the head's
+        // weights; measured, MobileNet V3 large's 1,280 numbers take about three times DINOv2's 384),
+        // and backbones run one after another, so counting jobs alone underestimates after the first
+        val weight = embedded.associate { it.backbone to (it.examples.firstOrNull()?.embedding?.size ?: 1).toDouble() }
+        val jobsLeft = embedded.associate { e -> e.backbone to (plan.runsPerBackbone + 1) - doneBefore.count { it.startsWith(e.backbone + "|") } }.toMutableMap()
+        var weightDone = 0.0
         val sizes = restoreResults()
         val started = TimeSource.Monotonic.markNow()
-        val startedAt = session.jobsDone
         while (session.hasNext()) {
             val progress = withContext(Dispatchers.Default) { session.next() }
             when (progress) {
@@ -267,9 +273,11 @@ class ResearchController(
             // the results files' lengths, so a resume can cut off rows of a job that didn't finish
             files.append(DONE, progress.key + "\t" + sizes.entries.joinToString(",") { "${it.key}=${it.value}" } + "\n")
             val done = session.jobsDone
-            val thisSession = done - startedAt
+            jobsLeft[progress.backbone] = jobsLeft.getValue(progress.backbone) - 1
+            weightDone += weight.getValue(progress.backbone)
+            val weightLeft = jobsLeft.entries.sumOf { (backbone, jobs) -> jobs * weight.getValue(backbone) }
             val elapsed = started.elapsedNow().inWholeSeconds
-            val remaining = if (thisSession == 0) null else elapsed * (session.totalJobs - done) / thisSession
+            val remaining = if (weightDone == 0.0) null else (elapsed * weightLeft / weightDone).toLong()
             val status = "Run $done of ${session.totalJobs}" + (remaining?.let { "; about ${duration(it)} left" } ?: "")
             _state.update { it.copy(status = status, progress = done.toFloat() / session.totalJobs) }
             platform.background.progress(done, session.totalJobs, status)
