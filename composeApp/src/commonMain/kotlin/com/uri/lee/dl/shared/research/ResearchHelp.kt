@@ -111,6 +111,8 @@ internal object ResearchHelp {
 
         prototypes: nearest class mean. Each class is the average of its embeddings; no training and no forgetting.
 
+        slda: streaming linear discriminant analysis (Hayes & Kanan, 2020). Each class's average embedding plus one table, shared by all classes, of how the embedding's numbers vary together; the classifier is calculated from these, not trained. No training and no forgetting, and the order the data arrive in doesn't matter.
+
         A continuing model gives each new class a head start: its weights begin at the class's mean embedding (weight imprinting).
         """.trimIndent(),
     )

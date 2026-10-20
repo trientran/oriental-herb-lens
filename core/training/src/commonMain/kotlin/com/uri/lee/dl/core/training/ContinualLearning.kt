@@ -91,6 +91,9 @@ sealed class Strategy(val id: String) {
 
     /** Nearest class mean: no training, no forgetting (see [PrototypeClassifier]). */
     data object Prototypes : Strategy("prototypes")
+
+    /** Class means with a shared covariance: no gradient training, no forgetting (see [SldaClassifier]). */
+    data object Slda : Strategy("slda")
 }
 
 /** One step of a scenario: the new data, with labels in the order classes arrive. */
@@ -263,6 +266,7 @@ object ContinualRunner {
         val trainBuffer = ReplayBuffer((strategy as? Strategy.Replay)?.perClass ?: 0, bufferRandom)
         val validationBuffer = ReplayBuffer((strategy as? Strategy.Replay)?.perClass?.let { validationShare(it) } ?: 0, bufferRandom)
         val prototypes = PrototypeClassifier(dimensions)
+        val slda = SldaClassifier(dimensions)
         var head: ClassifierHead? = null
         val results = mutableListOf<StepResult>()
 
@@ -273,7 +277,7 @@ object ContinualRunner {
                 Strategy.Joint -> seen.flatMap { it.train } to seen.flatMap { it.validation }
                 Strategy.Naive, Strategy.LwF -> step.train to step.validation
                 is Strategy.Replay -> (step.train + trainBuffer.contents()) to (step.validation + validationBuffer.contents())
-                Strategy.Prototypes -> step.train to emptyList()
+                Strategy.Prototypes, Strategy.Slda -> step.train to emptyList()
             }
 
             val before = monitor.sample()
@@ -281,6 +285,10 @@ object ContinualRunner {
             var training: TrainingResult? = null
             if (strategy == Strategy.Prototypes) {
                 prototypes.learn(train)
+            } else if (strategy == Strategy.Slda) {
+                slda.learn(train)
+                // Computing the classifier is part of learning, so it counts in the step's time
+                slda.head()
             } else {
                 val start = if (strategy == Strategy.Joint) null else head?.expanded(step.classesSeen)?.also { grown ->
                     // New classes start from their mean embedding rather than from zero
@@ -300,7 +308,11 @@ object ContinualRunner {
                 validationBuffer.add(step.validation)
             }
 
-            val classifier: EmbeddingClassifier = if (strategy == Strategy.Prototypes) prototypes else head!!
+            val classifier: EmbeddingClassifier = when (strategy) {
+                Strategy.Prototypes -> prototypes
+                Strategy.Slda -> slda.head()
+                else -> head!!
+            }
             val tasks = if (plan.scenario.kind.addsClasses) seen.map { it.test } else listOf(step.test)
             val result = StepResult(
                 step = step.index,
@@ -311,6 +323,8 @@ object ContinualRunner {
                     Strategy.Naive, Strategy.LwF -> 0
                     is Strategy.Replay -> trainBuffer.size + validationBuffer.size
                     Strategy.Prototypes -> prototypes.classes
+                    // Class sums plus the shared scatter matrix, one row per dimension
+                    Strategy.Slda -> slda.classes + dimensions
                 },
                 training = training,
                 trainMillis = trainMillis,
@@ -322,7 +336,11 @@ object ContinualRunner {
             results += result
             onStep(result)
         }
-        val final: EmbeddingClassifier = if (strategy == Strategy.Prototypes) prototypes else head!!
+        val final: EmbeddingClassifier = when (strategy) {
+            Strategy.Prototypes -> prototypes
+            Strategy.Slda -> slda.head()
+            else -> head!!
+        }
         return RunResult(plan.scenario, strategy, seed, options, plan.classOrder, results, final)
     }
 

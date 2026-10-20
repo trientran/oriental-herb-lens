@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 
 private val STRATEGIES = listOf(
     Strategy.Joint, Strategy.Naive, Strategy.LwF, Strategy.Replay(5), Strategy.Replay(10), Strategy.Replay(20), Strategy.Replay(50), Strategy.Prototypes,
+    Strategy.Slda,
 )
 
 /**
