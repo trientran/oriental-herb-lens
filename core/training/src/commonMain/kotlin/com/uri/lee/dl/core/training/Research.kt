@@ -213,6 +213,7 @@ object ResearchFormats {
         id == Strategy.Naive.id -> Strategy.Naive
         id == Strategy.Prototypes.id -> Strategy.Prototypes
         id == Strategy.LwF.id -> Strategy.LwF
+        id == Strategy.Slda.id -> Strategy.Slda
         id.startsWith("replay-") -> Strategy.Replay(id.removePrefix("replay-").toInt())
         else -> error("Unknown strategy $id")
     }
