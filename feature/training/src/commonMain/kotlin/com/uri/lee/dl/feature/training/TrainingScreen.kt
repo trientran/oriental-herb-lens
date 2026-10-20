@@ -308,6 +308,7 @@ private fun Work(work: TrainingWork?) {
         TrainingWork.Downloading -> Progress(stringResource(Res.string.train_downloading), null)
         is TrainingWork.Reading -> Progress(stringResource(Res.string.train_reading, work.done, work.total), work.done.toFloat() / work.total.coerceAtLeast(1))
         is TrainingWork.Learning -> Progress(stringResource(Res.string.train_epoch, work.epoch), null)
+        TrainingWork.Calculating -> Progress(stringResource(Res.string.train_calculating), null)
         TrainingWork.Saving -> Progress(stringResource(Res.string.train_saving), null)
         TrainingWork.Uploading -> Progress(stringResource(Res.string.train_sharing), null)
     }
@@ -994,6 +995,7 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
         if (fixed) Text(stringResource(Res.string.train_quality_fixed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         TermHeading(stringResource(Res.string.train_when_adding), AiTerm.CONTINUAL)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            FilterChip(settings.update == UpdateMode.CALCULATE, { settings = settings.copy(update = UpdateMode.CALCULATE) }, label = { Text(stringResource(Res.string.train_update_calculate)) })
             FilterChip(settings.update == UpdateMode.REPLAY, { settings = settings.copy(update = UpdateMode.REPLAY) }, label = { Text(stringResource(Res.string.train_update_replay)) })
             FilterChip(settings.update == UpdateMode.RETRAIN_ALL, { settings = settings.copy(update = UpdateMode.RETRAIN_ALL) }, label = { Text(stringResource(Res.string.train_update_retrain)) })
         }

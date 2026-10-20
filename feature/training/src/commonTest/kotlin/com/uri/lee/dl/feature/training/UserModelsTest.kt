@@ -87,9 +87,36 @@ class UserModelsTest {
     }
 
     @Test
+    fun newModelsAreCalculatedAndEarlierOnesKeepTheirWay() = runTest {
+        assertEquals(UpdateMode.CALCULATE, TrainingSettings().update)
+
+        val files = MemoryFiles()
+        val store = UserModelStore(files)
+        store.save(UserModel("old", "Trained with replay", listOf("Lantana", "Mimosa")))
+        // Settings saved before there was a way to calculate: those models were trained with replay
+        val meta = files.files.getValue("models/old/meta.txt").decodeToString().lines().filterNot { it.startsWith("update=") }
+        files.files["models/old/meta.txt"] = meta.joinToString("\n").encodeToByteArray()
+        assertEquals(UpdateMode.REPLAY, assertNotNull(store.load("old")).settings.update)
+    }
+
+    @Test
+    fun calculatingNeedsNoRoundsAndAddsSpeciesWithoutForgetting() {
+        val all = photos(4, 30)
+        val model = UserModel("m", "Test", listOf("a", "b", "c"))
+        val first = ModelTrainer.train(model, all.filter { it.classIndex < 3 }, previous = null)
+        val grown = model.copy(classes = listOf("a", "b", "c", "d"), trainedThrough = first.trainedThrough, trainedClasses = model.classes)
+        val second = ModelTrainer.train(grown, all, previous = first.head)
+
+        assertEquals(0, first.report.epochs)
+        assertTrue(first.report.accuracy >= 0.9f, "accuracy ${first.report.accuracy}")
+        assertEquals(4, second.head.classes)
+        assertTrue(second.report.perClass.all { (_, accuracy) -> accuracy.isNaN() || accuracy >= 0.8f }, "per class ${second.report.perClass}")
+    }
+
+    @Test
     fun addingASpeciesWithReplayKeepsTheOldOnes() {
         val all = photos(4, 30)
-        val firstModel = UserModel("m", "Test", listOf("a", "b", "c"))
+        val firstModel = UserModel("m", "Test", listOf("a", "b", "c"), settings = TrainingSettings(update = UpdateMode.REPLAY))
         val first = ModelTrainer.train(firstModel, all.filter { it.classIndex < 3 }, previous = null)
         val grown = firstModel.copy(classes = listOf("a", "b", "c", "d"), trainedThrough = first.trainedThrough, trainedClasses = firstModel.classes)
         val second = ModelTrainer.train(grown, all, previous = first.head)
