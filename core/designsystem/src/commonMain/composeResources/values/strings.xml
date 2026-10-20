@@ -270,6 +270,7 @@
     <string name="train_downloading">Downloading what the model builds on (about 11 MB, once)…</string>
     <string name="train_training_title">Training</string>
     <string name="train_epoch">Round %1$d</string>
+    <string name="train_calculating">Calculating the model…</string>
     <string name="train_saving">Saving the model…</string>
     <string name="train_stop">Stop</string>
     <string name="train_curve_legend">Blue: error on the photos it learns from. Orange: error on the checking photos, set aside. Training stops once the orange line stops falling; the dashed line marks the round that was kept.</string>
@@ -289,6 +290,7 @@
     <string name="train_quality_best">Best</string>
     <string name="train_quality_fixed">The quality can’t change once photos are in: it decides how they were read.</string>
     <string name="train_when_adding">When adding species or photos later</string>
+    <string name="train_update_calculate">Calculate (recommended)</string>
     <string name="train_update_replay">Keep old ones (replay)</string>
     <string name="train_update_retrain">Retrain all</string>
     <string name="train_advanced">Advanced</string>
@@ -414,8 +416,8 @@
     <string name="term_loss_body">A number for how wrong the model’s answers are, counting how sure it was. Lower is better. If the error on the photos it learns from keeps falling while the error on the checking photos rises, the model is memorising its photos rather than learning (overfitting).</string>
     <string name="term_confusion">Confusion matrix</string>
     <string name="term_confusion_body">A table of the test photos. Each row is the species a photo really shows; each column is the species the model said. Numbers on the diagonal are right answers; the others show which species it mixes up.</string>
-    <string name="term_continual">Keep old ones (replay) or Retrain all</string>
-    <string name="term_continual_body">When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
+    <string name="term_continual">Calculate, Keep old ones or Retrain all</string>
+    <string name="term_continual_body">Calculate works the model out from every photo: each species’ average photo, plus how photos vary, shared by all species. There are no training rounds, so it takes a moment, it never forgets, and it was the most accurate in our tests. When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
     <string name="term_learning_rate">Learning rate</string>
     <string name="term_learning_rate_body">How big a step the model takes each time it corrects itself. Too high and it jumps around without settling; too low and it learns very slowly.</string>
     <string name="term_batch_size">Batch size</string>

@@ -267,6 +267,7 @@
     <string name="train_downloading">Đang tải phần nền của mô hình (khoảng 11 MB, một lần)…</string>
     <string name="train_training_title">Đang huấn luyện</string>
     <string name="train_epoch">Vòng %1$d</string>
+    <string name="train_calculating">Đang tính toán mô hình…</string>
     <string name="train_saving">Đang lưu mô hình…</string>
     <string name="train_stop">Dừng</string>
     <string name="train_curve_legend">Xanh: sai số trên ảnh để học. Cam: sai số trên ảnh kiểm tra để riêng. Huấn luyện dừng khi đường cam thôi giảm; đường gạch đứt đánh dấu vòng được giữ lại.</string>
@@ -286,6 +287,7 @@
     <string name="train_quality_best">Tốt nhất</string>
     <string name="train_quality_fixed">Không đổi được chất lượng sau khi đã có ảnh: nó quyết định cách đọc ảnh.</string>
     <string name="train_when_adding">Khi thêm loài hoặc ảnh sau này</string>
+    <string name="train_update_calculate">Tính toán (khuyên dùng)</string>
     <string name="train_update_replay">Giữ các loài cũ (ôn lại)</string>
     <string name="train_update_retrain">Huấn luyện lại tất cả</string>
     <string name="train_advanced">Nâng cao</string>
@@ -411,8 +413,8 @@
     <string name="term_loss_body">Con số cho biết câu trả lời của mô hình sai đến mức nào, có tính đến việc nó chắc chắn ra sao. Càng thấp càng tốt. Nếu sai số trên ảnh học tiếp tục giảm trong khi sai số trên ảnh kiểm tra tăng lên, mô hình đang học thuộc lòng ảnh thay vì học thật (quá khớp).</string>
     <string name="term_confusion">Ma trận nhầm lẫn</string>
     <string name="term_confusion_body">Một bảng về các ảnh đánh giá. Mỗi hàng là loài thực sự có trong ảnh; mỗi cột là loài mà mô hình đoán. Các số trên đường chéo là câu trả lời đúng; các số còn lại cho thấy mô hình hay nhầm những loài nào.</string>
-    <string name="term_continual">Giữ các loài cũ (ôn lại) hay Huấn luyện lại tất cả</string>
-    <string name="term_continual_body">Khi bạn thêm loài hoặc ảnh sau này, Giữ các loài cũ sẽ học ảnh mới cùng một phần ảnh cũ, nên nhanh và không quên những gì đã biết (học liên tục). Huấn luyện lại tất cả học lại từ đầu với mọi ảnh: chậm hơn, đôi khi chính xác hơn một chút.</string>
+    <string name="term_continual">Tính toán, Giữ các loài cũ hay Huấn luyện lại tất cả</string>
+    <string name="term_continual_body">Tính toán tạo mô hình từ mọi ảnh: ảnh trung bình của từng loài, cùng mức độ khác nhau giữa các ảnh, dùng chung cho mọi loài. Không cần các vòng huấn luyện, nên chỉ mất một lát, không bao giờ quên, và chính xác nhất trong các thử nghiệm của chúng tôi. Khi bạn thêm loài hoặc ảnh sau này, Giữ các loài cũ sẽ học ảnh mới cùng một phần ảnh cũ, nên nhanh và không quên những gì đã biết (học liên tục). Huấn luyện lại tất cả học lại từ đầu với mọi ảnh: chậm hơn, đôi khi chính xác hơn một chút.</string>
     <string name="term_learning_rate">Tốc độ học</string>
     <string name="term_learning_rate_body">Mức điều chỉnh mỗi lần mô hình tự sửa sai. Quá cao thì nó dao động mà không ổn định; quá thấp thì nó học rất chậm.</string>
     <string name="term_batch_size">Kích thước lô</string>
