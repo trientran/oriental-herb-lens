@@ -6,8 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.filterToOne
-import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -15,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import com.uri.lee.dl.core.designsystem.LocalLanguageName
 import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
@@ -25,6 +24,7 @@ import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.ml.ObjectFinder
 import com.uri.lee.dl.domain.ml.ReadPhoto
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.domain.model.Classification
 import com.uri.lee.dl.domain.moderation.ModerationRepository
 import com.uri.lee.dl.domain.repository.AuthRepository
@@ -106,7 +106,14 @@ class InteractionTest {
     private fun show(sharesPhotos: Boolean = true, content: @Composable () -> Unit) {
         koin()
         compose.setContent {
-            HerbLensTheme { CompositionLocalProvider(LocalSharesPhotos provides sharesPhotos, content = content) }
+            HerbLensTheme {
+                CompositionLocalProvider(
+                    LocalSharesPhotos provides sharesPhotos,
+                    // As App provides it on the phones: each language by its own name
+                    LocalLanguageName provides { code -> AppLanguages.of(code)?.nativeName ?: code },
+                    content = content,
+                )
+            }
         }
     }
 
@@ -164,8 +171,9 @@ class InteractionTest {
         show { HerbDetailsRoute(HERB, onBack = {}, onAddPhotos = {}, onSignIn = {}) }
 
         compose.onNodeWithText("Suggest a vernacular name").performClick()
-        // The language chip, not the Names card's label
-        compose.onAllNodesWithText("Vietnamese").filterToOne(hasClickAction()).performClick()
+        // The language menu starts on the app's language; Vietnamese is picked from it
+        compose.onNodeWithText("English").performClick()
+        compose.onNodeWithText("Tiếng Việt").performClick()
         compose.onNode(hasSetTextAction()).performTextReplacement("Cây đinh lăng")
         compose.onNodeWithText("Send").performClick()
 

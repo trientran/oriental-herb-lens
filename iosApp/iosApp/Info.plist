@@ -25,6 +25,43 @@
 	<array>
 		<string>en</string>
 		<string>vi</string>
+		<string>ar</string>
+		<string>az</string>
+		<string>bn</string>
+		<string>bs</string>
+		<string>bg</string>
+		<string>zh-Hans</string>
+		<string>hr</string>
+		<string>cs</string>
+		<string>nl</string>
+		<string>eo</string>
+		<string>fr</string>
+		<string>de</string>
+		<string>el</string>
+		<string>hi</string>
+		<string>hu</string>
+		<string>it</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>la</string>
+		<string>ln</string>
+		<string>lt</string>
+		<string>mg</string>
+		<string>mr</string>
+		<string>ne</string>
+		<string>fa</string>
+		<string>pl</string>
+		<string>pt</string>
+		<string>ro</string>
+		<string>ru</string>
+		<string>sr</string>
+		<string>si</string>
+		<string>es</string>
+		<string>sv</string>
+		<string>sw</string>
+		<string>th</string>
+		<string>tr</string>
+		<string>uk</string>
 	</array>
 	<!-- Google sign-in returns to the app through its reversed client ID -->
 	<key>CFBundleURLTypes</key>

@@ -51,11 +51,16 @@ object NameLanguages {
     const val ENGLISH = "en"
 
     /**
-     * The languages the app shows names in and takes suggestions for. The catalog may hold names in
-     * others (`vernacularName_<code>` columns); they're kept but not shown until the research ethics
-     * approval for them comes. A language added here must be added to the Firestore rules too.
+     * The languages the app shows names in. The catalog may hold names in others
+     * (`vernacularName_<code>` columns); they're kept but not shown.
      */
     val ENABLED: List<String> = listOf(VIETNAMESE, ENGLISH)
+
+    /**
+     * The languages users can suggest a name in: every interface language. The Firestore rules
+     * list the same codes.
+     */
+    val SUGGESTIBLE: List<String> = AppLanguages.CODES
 }
 
 /** GBIF's classification above the family, and the name's nomenclature. */

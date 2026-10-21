@@ -2,7 +2,6 @@ package com.uri.lee.dl.feature.herbdetails
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -11,7 +10,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LocalLanguageName
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.cancel
@@ -97,16 +100,7 @@ internal fun SuggestNameContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(stringResource(Res.string.suggest_name_language), style = MaterialTheme.typography.labelLarge)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                    state.languages.forEach { code ->
-                        FilterChip(
-                            selected = code == state.language,
-                            onClick = { onAction(SuggestNameAction.LanguageChanged(code)) },
-                            label = { Text(languageName(code)) },
-                        )
-                    }
-                }
+                LanguageMenu(state.language, state.languages) { onAction(SuggestNameAction.LanguageChanged(it)) }
                 val listed = state.listedInLanguage
                 // The text and cursor live in the field: typed text that went through the view
                 // model and back reached it a frame late, and iOS then put the cursor back at the start
@@ -118,7 +112,7 @@ internal fun SuggestNameContent(
                         field = it
                         if (changed) onAction(SuggestNameAction.DraftChanged(it.text))
                     },
-                    label = { Text(stringResource(Res.string.suggest_name_label, languageName(state.language))) },
+                    label = { Text(stringResource(Res.string.suggest_name_label, LocalLanguageName.current(state.language))) },
                     singleLine = true,
                     isError = state.hasError,
                     supportingText = when {
@@ -141,6 +135,34 @@ internal fun SuggestNameContent(
                         Text(stringResource(Res.string.suggest_name_submit))
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageMenu(selected: String, languages: List<String>, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    // Each language by its own name on the phones, so speakers find theirs whatever language the app is in
+    val name = LocalLanguageName.current
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = name(selected),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(Res.string.suggest_name_language)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            languages.forEach { code ->
+                DropdownMenuItem(
+                    text = { Text(name(code)) },
+                    onClick = { onSelect(code); expanded = false },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
             }
         }
     }

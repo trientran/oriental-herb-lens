@@ -19,6 +19,7 @@ import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
 import com.uri.lee.dl.domain.upload.UploadScheduler
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
@@ -103,12 +104,15 @@ fun startWebApp(config: WebConfig) {
         research = ::webResearch,
         files = webFileActions(),
         setLanguage = ::setLanguage,
+        languageName = ::webLanguageName,
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
         // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
         // a selectable label in a button takes the click as the start of a selection
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions, openHerbId = openHerbId) }
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
+            WithFallbackFonts { App(actions, openHerbId = openHerbId) }
+        }
     }
 }
 
@@ -120,7 +124,7 @@ private const val LANGUAGE_KEY = "herblens.language"
  * the browser's languages for the app's text, so they are replaced before the app starts.
  */
 private fun applyChosenLanguage() {
-    val chosen = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()?.takeIf { it == "en" || it == "vi" } ?: return
+    val chosen = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()?.takeIf { it in AppLanguages.CODES } ?: return
     js("Object.defineProperty(navigator, 'language', { get: function () { return chosen; }, configurable: true })")
     js("Object.defineProperty(navigator, 'languages', { get: function () { return [chosen]; }, configurable: true })")
 }
