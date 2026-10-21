@@ -25,7 +25,10 @@ medherblens.com property.
 address, `med-herb-lens.pages.dev`, redirects there permanently (a Cloudflare Bulk Redirect, so
 links in older app versions and search results still work), and every page's canonical link names
 medherblens.com. Don't block the Pages address in `robots.txt`: both addresses serve the same file,
-and search engines must still crawl the old one to see its redirect.
+and search engines must still crawl the old one to see its redirect. The apps (`LegalLinks`) and the Hugging Face
+model cards link to the Pages address on purpose: it costs nothing and can't lapse, so if the
+domain is ever given up, deleting the redirect is all it takes for every installed version's links
+to keep working.
 
 **Sample photos.** `/sample-photos.html` shows photos of eight species the model knows (from
 `test-images/`, with their credits), for App Review and anyone trying the app without the plants;
