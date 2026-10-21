@@ -44,7 +44,7 @@ export function modelCard(model) {
     '---', 'license: cc-by-4.0', 'library_name: tflite', 'pipeline_tag: image-classification', 'tags:',
     '- med-herb-lens', '- plants', '- medicinal-plants', '- on-device', '- tflite', '---', '',
     `# ${model.name}`, '',
-    'An image classifier trained by a [Med Herb Lens](https://med-herb-lens.pages.dev/about.html) user on their own '
+    'An image classifier trained by a [Med Herb Lens](https://medherblens.com/about.html) user on their own '
       + 'device, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).', '',
     `## What it identifies (${species.length} species)`, '',
     ...species.map((name) => `- ${name}`), '',

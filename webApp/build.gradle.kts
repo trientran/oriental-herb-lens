@@ -82,6 +82,10 @@ kotlin {
 
 val REPOSITORY = "https://github.com/trientran/oriental-herb-lens"
 
+// The production address: canonical links and the sitemap point here, so copies on the Pages address
+// (med-herb-lens.pages.dev) and preview addresses (review.…) don't compete with it in search results
+val SITE_URL = "https://medherblens.com"
+
 // The About pages, made from the repository's READMEs so they can't differ: everything above the
 // "about:end" marker, in the site's header and footer (website/about.template.html); about.html from
 // README.md and about-vi.html from README.vi.md. Links to files in the repository point at GitHub.
@@ -107,14 +111,14 @@ val aboutPage by tasks.registering {
         }
         val parser = Parser.builder().build()
         val renderer = HtmlRenderer.builder().build()
-        fun page(markdown: String, lang: String, title: String, description: String, footer: String): String {
+        fun page(markdown: String, lang: String, title: String, description: String, footer: String, canonical: String): String {
             val body = renderer.render(parser.parse(markdown))
                 .replace("href=\"README.vi.md\"", "href=\"about-vi.html\"")
                 .replace("href=\"README.md\"", "href=\"about.html\"")
                 .replace(Regex("href=\"(?!https?:|mailto:|#|about)([^\"]+)\""), "href=\"$REPOSITORY/blob/master/$1\"")
             return template.asFile.readText()
                 .replace("{{lang}}", lang).replace("{{title}}", title).replace("{{description}}", description)
-                .replace("{{footer}}", footer).replace("{{content}}", body.trim())
+                .replace("{{footer}}", footer).replace("{{canonical}}", canonical).replace("{{content}}", body.trim())
         }
         val contact = """<a href="mailto:ttran72@myune.edu.au">ttran72@myune.edu.au</a> · <a href="mailto:tptrien@gmail.com">tptrien@gmail.com</a>"""
         val dir = out.get().asFile.apply { mkdirs() }
@@ -123,6 +127,7 @@ val aboutPage by tasks.registering {
                 en, "en", "About Med Herb Lens",
                 "Med Herb Lens: identify medicinal herbs with your camera, browse 4,799 species and train your own models, on Android, iOS and the web. A research project.",
                 """<a href="about-vi.html">Tiếng Việt</a> · <a href="pages/privacy-policy.html">Privacy Policy</a> · <a href="pages/terms-of-service.html">Terms of Service</a> · Contact: $contact""",
+                "$SITE_URL/about",
             ),
         )
         dir.resolve("about-vi.html").writeText(
@@ -130,6 +135,7 @@ val aboutPage by tasks.registering {
                 vi, "vi", "Giới thiệu Med Herb Lens",
                 "Med Herb Lens: nhận dạng cây thuốc bằng camera, tra cứu 4.799 loài và tự huấn luyện mô hình, trên Android, iOS và web. Một dự án nghiên cứu.",
                 """<a href="about.html">English</a> · <a href="pages/privacy-policy-vi.html">Chính sách quyền riêng tư</a> · <a href="pages/terms-of-service-vi.html">Điều khoản dịch vụ</a> · Liên hệ: $contact""",
+                "$SITE_URL/about-vi",
             ),
         )
     }
@@ -186,10 +192,6 @@ data class Herb(
     val id: Long, val scientific: String, val authorship: String, val vietnamese: List<String>,
     val english: List<String>, val ranks: List<Pair<String, String>>, val genus: String, val file: String,
 )
-
-// The production address: species pages' canonical links and the sitemap point here, so copies on
-// preview addresses (review.…) don't compete with it in search results
-val SITE_URL = "https://med-herb-lens.pages.dev"
 
 // Cloudflare Pages serves "x.html" at "x" and redirects the former there; search engines should be
 // given the address that answers, not one that redirects

@@ -167,8 +167,8 @@ bibliography; `url` is optional and must be a web link (a DOI link for papers):
     "url": "https://doi.org/…"
   },
   {
-    "text": "Author, A. (Year). Med Herb Lens (Version x.y) [Mobile app]. https://med-herb-lens.pages.dev",
-    "url": "https://med-herb-lens.pages.dev"
+    "text": "Author, A. (Year). Med Herb Lens (Version x.y) [Mobile app]. https://medherblens.com",
+    "url": "https://medherblens.com"
   }
 ]
 ```

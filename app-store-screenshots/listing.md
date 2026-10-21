@@ -57,9 +57,9 @@ herb,medicinal plant,plant identifier,Vietnam,botany,GBIF,species,flora,AI,thả
 
 ## URLs
 
-- Support URL: https://med-herb-lens.pages.dev
-- Marketing URL: https://med-herb-lens.pages.dev
-- Privacy Policy URL: https://med-herb-lens.pages.dev/pages/privacy-policy
+- Support URL: https://medherblens.com
+- Marketing URL: https://medherblens.com
+- Privacy Policy URL: https://medherblens.com/pages/privacy-policy
 
 ## Screenshots (upload in this order)
 
@@ -117,7 +117,7 @@ cây thuốc,thảo dược,nhận dạng cây,cây thuốc nam,dược liệu,t
 
 ### Support URL
 
-https://med-herb-lens.pages.dev/about-vi
+https://medherblens.com/about-vi
 
 ### Subtitle
 

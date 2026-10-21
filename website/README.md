@@ -1,6 +1,6 @@
 # Website
 
-The site at `https://med-herb-lens.pages.dev`: this home page, the About page, the privacy policy
+The site at `https://medherblens.com`: this home page, the About page, the privacy policy
 and the terms of service, with the web app (`:webApp`) at `/app/`. The About pages (`about.html`, and `about-vi.html` from README.vi.md)
 is made from the repository's README.md at build time (`about.template.html` holds its header and
 footer), so edit the README, not the page; it shows everything above the README's `about:end`
@@ -18,8 +18,14 @@ from the app's catalog (`androidApp/assets/herb_catalog.csv`) by the `speciesPag
 and `robots.txt`. Canonical links point at the production address, so copies on preview addresses
 don't compete with it. The pages follow the bundled catalog: a catalog published only to R2 (docs/
 content-publishing.md) reaches them at the next site build, once it's also in `androidApp/assets`.
-After the first deploy, submit `https://med-herb-lens.pages.dev/sitemap.xml` in Google Search
-Console (Sitemaps); the site is already verified there.
+Submit `https://medherblens.com/sitemap.xml` in Google Search Console (Sitemaps), in the
+medherblens.com property.
+
+**Addresses.** The site is `https://medherblens.com`, a custom domain on the Pages project. The Pages
+address, `med-herb-lens.pages.dev`, redirects there permanently (a Cloudflare Bulk Redirect, so
+links in older app versions and search results still work), and every page's canonical link names
+medherblens.com. Don't block the Pages address in `robots.txt`: both addresses serve the same file,
+and search engines must still crawl the old one to see its redirect.
 
 **Sample photos.** `/sample-photos.html` shows photos of eight species the model knows (from
 `test-images/`, with their credits), for App Review and anyone trying the app without the plants;

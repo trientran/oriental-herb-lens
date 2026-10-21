@@ -3,6 +3,7 @@
     {
       "allowed": {
         "origins": [
+          "https://medherblens.com",
           "https://med-herb-lens.pages.dev",
           "https://review.med-herb-lens.pages.dev",
           "http://localhost:8080"
