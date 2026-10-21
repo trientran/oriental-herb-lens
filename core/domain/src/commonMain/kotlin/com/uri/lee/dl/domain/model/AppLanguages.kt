@@ -57,4 +57,29 @@ object AppLanguages {
     fun of(code: String): AppLanguage? = ALL.firstOrNull { it.code == code }
 
     fun isRightToLeft(code: String): Boolean = of(code)?.rightToLeft == true
+
+    /** The languages written for the app: all there is while Remote Config's `all_languages` is off. */
+    val WRITTEN: List<String> = listOf("en", "vi")
+
+    /** This run's languages, for the interface and for name suggestions: [CODES], or [WRITTEN]. Set by [start]. */
+    var offered: List<String> = CODES
+        private set
+
+    /**
+     * Sets this run's languages from the last `all_languages` value saved (see [LanguageSwitchStore]),
+     * before the app shows anything. Returns the language to show the interface in instead of the
+     * system's [preferred] one (English, while the others are off), or null to keep it.
+     */
+    fun start(allLanguages: Boolean, preferred: String): String? {
+        offered = if (allLanguages) CODES else WRITTEN
+        return if (preferred in offered || allLanguages) null else NameLanguages.ENGLISH
+    }
+}
+
+/**
+ * Keeps Remote Config's `all_languages` for the next launch: the interface's language is fixed as the
+ * app starts, before Remote Config can be read, so a change applies from the launch after it's seen.
+ */
+fun interface LanguageSwitchStore {
+    fun save(allLanguages: Boolean)
 }

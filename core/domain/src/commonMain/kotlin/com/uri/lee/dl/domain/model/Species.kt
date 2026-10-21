@@ -57,10 +57,10 @@ object NameLanguages {
     val ENABLED: List<String> = listOf(VIETNAMESE, ENGLISH)
 
     /**
-     * The languages users can suggest a name in: every interface language. The Firestore rules
-     * list the same codes.
+     * The languages users can suggest a name in: the interface's languages this run. The Firestore
+     * rules list every one of [AppLanguages.CODES].
      */
-    val SUGGESTIBLE: List<String> = AppLanguages.CODES
+    val SUGGESTIBLE: List<String> get() = AppLanguages.offered
 }
 
 /** GBIF's classification above the family, and the name's nomenclature. */

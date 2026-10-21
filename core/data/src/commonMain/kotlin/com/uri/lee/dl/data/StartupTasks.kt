@@ -1,6 +1,7 @@
 package com.uri.lee.dl.data
 
 import com.uri.lee.dl.data.analytics.UsageStatisticsSync
+import com.uri.lee.dl.data.firebase.LanguageSwitchSync
 import com.uri.lee.dl.data.firebase.UserProfileSync
 import com.uri.lee.dl.data.library.LibraryMigration
 import com.uri.lee.dl.domain.repository.AuthRepository
@@ -18,12 +19,15 @@ class StartupTasks internal constructor(
     private val settings: SettingsRepository,
     private val usageStatistics: UsageStatisticsSync,
     private val uploads: UploadScheduler,
+    private val languageSwitch: LanguageSwitchSync,
 ) {
     fun launchIn(scope: CoroutineScope) {
         // Uploads saved but not finished last time (the app was closed, or offline)
         uploads.schedule()
         // Analytics follows the user's choice in Profile
         scope.launch { settings.usageStatistics.collect(usageStatistics::apply) }
+        // Whether the next launch offers every language or English and Vietnamese only
+        scope.launch { languageSwitch.run() }
         scope.launch {
             auth.observeUserId().filterNotNull().collect { uid ->
                 // Who the contributor is, once per user and device

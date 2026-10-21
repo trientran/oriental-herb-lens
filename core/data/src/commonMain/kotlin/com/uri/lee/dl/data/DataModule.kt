@@ -6,6 +6,7 @@ import com.uri.lee.dl.data.catalog.SpeciesCsvReader
 import com.uri.lee.dl.data.content.ReleaseSource
 import com.uri.lee.dl.data.content.RemoteConfigReleaseSource
 import com.uri.lee.dl.data.firebase.DefaultAppStatusRepository
+import com.uri.lee.dl.data.firebase.LanguageSwitchSync
 import com.uri.lee.dl.data.firebase.RemoteConfigAppLinksRepository
 import com.uri.lee.dl.data.firebase.RemoteConfigCitationRepository
 import com.uri.lee.dl.data.sharing.DefaultCommunityModelRepository
@@ -70,6 +71,8 @@ val dataModule: Module = module {
     singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
     single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = get<AppInfo>().photoUploadUrl) }
 
+    // Each platform binds LanguageSwitchStore, where it reads the switch from at launch
+    singleOf(::LanguageSwitchSync)
     singleOf(::StartupTasks)
 }
 

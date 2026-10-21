@@ -20,6 +20,7 @@ import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
 import com.uri.lee.dl.domain.upload.UploadScheduler
 import com.uri.lee.dl.domain.model.AppLanguages
+import com.uri.lee.dl.domain.model.LanguageSwitchStore
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
@@ -84,6 +85,7 @@ fun startWebApp(config: WebConfig) {
             sharedModules(app) + module {
                 single<UploadNotifier> { WebUploadNotifier() }
                 single<AppFiles> { WebAppFiles() }
+                single<LanguageSwitchStore> { WebLanguageSwitch }
                 single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
                 if (config.isDebug) single<LocalBackbones> { WebLocalBackbones() }
             },
@@ -119,12 +121,26 @@ fun startWebApp(config: WebConfig) {
 /** Shared with the site's pages (website/language.js), so a choice made on either applies to both. */
 private const val LANGUAGE_KEY = "herblens.language"
 
+/** Remote Config's `all_languages`, saved for the next visit (see applyChosenLanguage). */
+private const val ALL_LANGUAGES_KEY = "herblens.allLanguages"
+
+private object WebLanguageSwitch : LanguageSwitchStore {
+    override fun save(allLanguages: Boolean) {
+        runCatching { window.localStorage.setItem(ALL_LANGUAGES_KEY, allLanguages.toString()) }
+    }
+}
+
 /**
  * The language chosen on the site or in Browse, if any, in place of the browser's: Compose reads
- * the browser's languages for the app's text, so they are replaced before the app starts.
+ * the browser's languages for the app's text, so they are replaced before the app starts. While
+ * `all_languages` is off, a language other than English or Vietnamese becomes English.
  */
 private fun applyChosenLanguage() {
-    val chosen = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()?.takeIf { it in AppLanguages.CODES } ?: return
+    val all = runCatching { window.localStorage.getItem(ALL_LANGUAGES_KEY) }.getOrNull() != "false"
+    val saved = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()
+    val browser = window.navigator.language.substringBefore('-')
+    val preferred = saved?.takeIf { it in AppLanguages.CODES } ?: browser
+    val chosen = AppLanguages.start(all, preferred) ?: saved?.takeIf { it in AppLanguages.CODES } ?: return
     js("Object.defineProperty(navigator, 'language', { get: function () { return chosen; }, configurable: true })")
     js("Object.defineProperty(navigator, 'languages', { get: function () { return [chosen]; }, configurable: true })")
 }

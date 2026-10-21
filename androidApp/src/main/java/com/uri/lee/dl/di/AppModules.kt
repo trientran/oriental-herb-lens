@@ -1,12 +1,14 @@
 package com.uri.lee.dl.di
 
 import com.uri.lee.dl.AndroidAppFiles
+import com.uri.lee.dl.AndroidLanguageSwitch
 import com.uri.lee.dl.AndroidLocalBackbones
 import com.uri.lee.dl.AndroidUploadNotifier
 import com.uri.lee.dl.BuildConfig
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.data.content.ContentSyncWorker
 import com.uri.lee.dl.data.content.LegacyCleanup
+import com.uri.lee.dl.domain.model.LanguageSwitchStore
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.training.AppFiles
 import com.uri.lee.dl.shared.sharedModules
@@ -35,6 +37,7 @@ val androidModule = module {
     workerOf(::PendingUploadsWorker)
     single<UploadScheduler> { WorkManagerUploadScheduler(androidContext()) }
     single<AppFiles> { AndroidAppFiles(File(androidContext().filesDir, "app")) }
+    single<LanguageSwitchStore> { AndroidLanguageSwitch(androidContext()) }
     if (BuildConfig.DEBUG) single<LocalBackbones> { AndroidLocalBackbones(androidContext()) }
 }
 

@@ -126,10 +126,10 @@ fun BrowseScreen(
     }
 }
 
-/** The web's language menu: every interface language, named as LocalLanguageName gives it. */
+/** The web's language menu: the interface's languages this run, named as LocalLanguageName gives them. */
 @Composable
 private fun LanguageChoice(onSetLanguage: (String) -> Unit, modifier: Modifier = Modifier) {
-    val current = Locale.current.language.takeIf { it in AppLanguages.CODES } ?: "en"
+    val current = Locale.current.language.takeIf { it in AppLanguages.offered } ?: "en"
     val name = LocalLanguageName.current
     var open by remember { mutableStateOf(false) }
     Box(modifier) {
@@ -140,7 +140,7 @@ private fun LanguageChoice(onSetLanguage: (String) -> Unit, modifier: Modifier =
             leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            AppLanguages.CODES.forEach { code ->
+            AppLanguages.offered.forEach { code ->
                 DropdownMenuItem(
                     text = { Text(name(code)) },
                     onClick = {
