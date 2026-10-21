@@ -5,19 +5,19 @@ package com.uri.lee.dl.core.designsystem
  * listings and the Google sign-in consent screen, so update those when these change.
  */
 object LegalLinks {
-    const val SITE = "https://med-herb-lens.pages.dev/"
+    const val SITE = "https://medherblens.com/"
 
     /** Made from the repository's README.md when the site is built (webApp: aboutPage). */
-    const val ABOUT = "https://med-herb-lens.pages.dev/about.html"
+    const val ABOUT = "https://medherblens.com/about.html"
 
     /** The same in Vietnamese, from README.vi.md. */
-    const val ABOUT_VI = "https://med-herb-lens.pages.dev/about-vi.html"
-    const val PRIVACY_POLICY = "https://med-herb-lens.pages.dev/pages/privacy-policy.html"
-    const val TERMS_OF_SERVICE = "https://med-herb-lens.pages.dev/pages/terms-of-service.html"
+    const val ABOUT_VI = "https://medherblens.com/about-vi.html"
+    const val PRIVACY_POLICY = "https://medherblens.com/pages/privacy-policy.html"
+    const val TERMS_OF_SERVICE = "https://medherblens.com/pages/terms-of-service.html"
 
     /** Translations of the legal pages; where they differ, the English ones prevail. */
-    const val PRIVACY_POLICY_VI = "https://med-herb-lens.pages.dev/pages/privacy-policy-vi.html"
-    const val TERMS_OF_SERVICE_VI = "https://med-herb-lens.pages.dev/pages/terms-of-service-vi.html"
+    const val PRIVACY_POLICY_VI = "https://medherblens.com/pages/privacy-policy-vi.html"
+    const val TERMS_OF_SERVICE_VI = "https://medherblens.com/pages/terms-of-service-vi.html"
 
     /** Each page in the app's [language]: Vietnamese for "vi", English otherwise. */
     fun about(language: String) = if (language == "vi") ABOUT_VI else ABOUT

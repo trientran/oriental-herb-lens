@@ -8,7 +8,7 @@ Bitrise release workflow does:
 - **iOS:** an App Store archive, uploaded to App Store Connect. It appears in **TestFlight** once
   Apple has processed it (usually 10–30 minutes); from there you add testers or submit it for review.
 - **Web:** the whole site (home page, privacy policy, terms, and the web app at `/app/`),
-  published to Cloudflare Pages at `https://med-herb-lens.pages.dev`. It's live as soon as the
+  published to Cloudflare Pages at `https://medherblens.com`. It's live as soon as the
   job ends.
 
 ## When
@@ -37,12 +37,12 @@ ready meanwhile; the secrets are set.
    - Fill in the App Store listing:
      - App Privacy answers (the table at the end of this file);
      - screenshots: iPhone 6.9″ and iPad 13″;
-     - description, keywords, support URL `https://med-herb-lens.pages.dev`;
+     - description, keywords, support URL `https://medherblens.com`;
      - age rating 13+, to match the terms;
      - review notes (below).
    - Submit the build for review.
 6. **Web:** the same workflow publishes the site (choose `all` or `web`). Check
-   `https://med-herb-lens.pages.dev` links to the app and that `/app/` loads, signs in and
+   `https://medherblens.com` links to the app and that `/app/` loads, signs in and
    identifies a photo.
 7. **Google Analytics:** data retention 14 months, Google signals off; turn on the BigQuery export
    to keep the raw data longer.
@@ -59,7 +59,7 @@ ready meanwhile; the secrets are set.
 3. Android: Play Console → Med Herb Lens → **Testing → Internal testing**: the draft release is
    there. Add release notes, save, and roll it out (or promote it to production).
 4. iOS: App Store Connect → Med Herb Lens → **TestFlight**: the build appears when processed.
-5. Web: live at `https://med-herb-lens.pages.dev` when the job ends. Cloudflare Pages keeps every
+5. Web: live at `https://medherblens.com` when the job ends. Cloudflare Pages keeps every
    deployment: roll back under Workers & Pages → med-herb-lens → Deployments.
 
 The build number (Android `versionCode`, iOS `CFBundleVersion`) is the workflow's run number times
@@ -161,7 +161,7 @@ belong in `local.properties`). Point the tools at it with
 
 ## Done ahead of the release
 
-- Privacy policy and terms published at `https://med-herb-lens.pages.dev` (`website/`), and
+- Privacy policy and terms published at `https://medherblens.com` (`website/`), and
   entered in Play Console, App Store Connect and the Google sign-in branding (domain verified).
 - Secrets for both stores and for moderation are set in GitHub; the Worker has its service
   account.

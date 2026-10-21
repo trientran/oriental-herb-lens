@@ -14,7 +14,7 @@ Lens chạy trên Android, iOS và trình duyệt web.
 
 ## Tải ứng dụng
 
-- Trên trình duyệt: [med-herb-lens.pages.dev/app](https://med-herb-lens.pages.dev/app/)
+- Trên trình duyệt: [medherblens.com/app](https://medherblens.com/app/)
 - Android: [Google Play](https://play.google.com/store/apps/details?id=com.uri.lee.dl)
 - iPhone và iPad: [App Store](https://apps.apple.com/app/id6819173768)
 
@@ -46,7 +46,7 @@ Lens chạy trên Android, iOS và trình duyệt web.
 Ảnh được nhận dạng ngay trên thiết bị và chỉ rời khỏi thiết bị khi bạn chọn chia sẻ. Ứng dụng gửi
 số liệu sử dụng ẩn danh (ví dụ những loài nào được nhận dạng) phục vụ nghiên cứu, không kèm tên,
 email, ảnh hay vị trí; bạn có thể tắt trong mục Hồ sơ. Không có quảng cáo, không theo dõi. Chi tiết
-trong [chính sách quyền riêng tư](https://med-herb-lens.pages.dev/pages/privacy-policy.html)
+trong [chính sách quyền riêng tư](https://medherblens.com/pages/privacy-policy.html)
 (bằng tiếng Anh).
 
 ## Nghiên cứu và cách trích dẫn
