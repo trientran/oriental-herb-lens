@@ -77,7 +77,8 @@ test('name suggestions: a name in an offered language, never read back', async (
   await assertFails(getDoc(created));
   await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'vi', name: 'Đinh lăng' }));
   // Languages waiting for the ethics approval, and anything else
-  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh', name: '南洋参' }));
+  await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh', name: '南洋参' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'he', name: 'דוגמה' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'english' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: '' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: 'x'.repeat(101) }));

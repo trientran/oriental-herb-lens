@@ -1,5 +1,6 @@
 package com.uri.lee.dl
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,6 +13,11 @@ import com.uri.lee.dl.shared.App
 class MainActivity : ComponentActivity() {
 
     private val openHerbId = mutableStateOf<Long?>(null)
+
+    // Again each time the activity is created: a configuration change resets the default locale to the system's
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AndroidLanguageSwitch(newBase).apply(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

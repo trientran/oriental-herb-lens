@@ -25,6 +25,8 @@ class BaseApplication : Application() {
         super.onCreate()
         // All modules log through Kermit, which writes to Logcat
         Logger.setMinSeverity(if (BuildConfig.DEBUG) Severity.Verbose else Severity.Warn)
+        // The interface's languages, before anything reads the locale (notifications and workers included)
+        AndroidLanguageSwitch(this).apply(this)
 
         FirebaseApp.initializeApp(this)
         FirebaseAppCheck.getInstance().installAppCheckProviderFactory(

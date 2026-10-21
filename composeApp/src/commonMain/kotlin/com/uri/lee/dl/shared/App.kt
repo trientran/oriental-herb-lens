@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CameraAlt
@@ -29,6 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -41,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
+import com.uri.lee.dl.core.designsystem.LocalLanguageName
 import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.AiTerm
@@ -68,6 +71,7 @@ import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.domain.training.Backbones
@@ -124,10 +128,14 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val analytics = koinInject<Analytics>()
     val tipViewed = remember(analytics) { { term: AiTerm -> analytics.log(AnalyticsEvent.TipViewed(term.name.lowercase())) } }
     HerbLensTheme {
+        // Right to left for Arabic and Persian everywhere: Android does it itself, iOS and the web follow this
+        val direction = if (AppLanguages.isRightToLeft(Locale.current.language)) LayoutDirection.Rtl else LocalLayoutDirection.current
         CompositionLocalProvider(
             LocalVietnameseFirst provides vietnameseFirst,
             LocalSharesPhotos provides actions.sharePhotos,
             LocalTipViewed provides tipViewed,
+            LocalLayoutDirection provides direction,
+            LocalLanguageName provides (actions.languageName ?: { code -> AppLanguages.of(code)?.nativeName ?: code }),
         ) {
             AppContent(actions, openHerbId)
         }

@@ -14,21 +14,22 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.FilterChip
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -38,15 +39,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.uri.lee.dl.core.designsystem.LocalLanguageName
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
-import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.EmptyState
+import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.highlighted
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.browse_header
@@ -59,6 +62,7 @@ import com.uri.lee.dl.core.designsystem.resources.search_no_results
 import com.uri.lee.dl.core.designsystem.resources.search_no_results_body
 import com.uri.lee.dl.core.designsystem.resources.search_placeholder
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.domain.search.NameKind
 import com.uri.lee.dl.domain.search.SpeciesMatch
 import org.jetbrains.compose.resources.stringResource
@@ -73,7 +77,7 @@ fun BrowseRoute(
     modifier: Modifier = Modifier,
     /** Starts platform speech recognition and reports the text; null hides the microphone. */
     onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
-    /** Switches the app's language ("en" or "vi"); null hides the choice (the apps follow the system's). */
+    /** Switches the app's language (an AppLanguages code); null hides the choice (the apps follow the system's). */
     onSetLanguage: ((String) -> Unit)? = null,
 ) {
     val vietnamese = LocalVietnameseFirst.current
@@ -122,18 +126,30 @@ fun BrowseScreen(
     }
 }
 
-/** English or Tiếng Việt, each named in its own language. */
+/** The web's language menu: the interface's languages this run, named as LocalLanguageName gives them. */
 @Composable
 private fun LanguageChoice(onSetLanguage: (String) -> Unit, modifier: Modifier = Modifier) {
-    val current = if (Locale.current.language == "vi") "vi" else "en"
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.sm)) {
-        listOf("en" to "English", "vi" to "Tiếng Việt").forEach { (code, name) ->
-            FilterChip(
-                selected = code == current,
-                onClick = { if (code != current) onSetLanguage(code) },
-                label = { Text(name) },
-                leadingIcon = if (code == current) { { Icon(Icons.Filled.Language, contentDescription = null) } } else null,
-            )
+    val current = Locale.current.language.takeIf { it in AppLanguages.offered } ?: "en"
+    val name = LocalLanguageName.current
+    var open by remember { mutableStateOf(false) }
+    Box(modifier) {
+        FilterChip(
+            selected = true,
+            onClick = { open = true },
+            label = { Text(name(current)) },
+            leadingIcon = { Icon(Icons.Filled.Language, contentDescription = null) },
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            AppLanguages.offered.forEach { code ->
+                DropdownMenuItem(
+                    text = { Text(name(code)) },
+                    onClick = {
+                        open = false
+                        if (code != current) onSetLanguage(code)
+                    },
+                    leadingIcon = if (code == current) { { Icon(Icons.Filled.Check, contentDescription = null) } } else null,
+                )
+            }
         }
     }
 }

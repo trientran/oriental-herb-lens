@@ -6,6 +6,7 @@ import com.uri.lee.dl.core.ml.NativeEmbedder
 import com.uri.lee.dl.core.ml.NativeGeneralLabeler
 import com.uri.lee.dl.core.ml.NativeHerbLabeler
 import com.uri.lee.dl.core.ml.NativeObjectDetector
+import com.uri.lee.dl.domain.model.LanguageSwitchStore
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import com.uri.lee.dl.domain.usecase.SyncContentUseCase
 import kotlinx.coroutines.launch
@@ -31,6 +32,8 @@ fun startKoinIos(
     embedder: NativeEmbedder,
 ) {
     if (isDebug) DebugLog.start()
+    // The interface's languages, before anything reads the locale
+    IosLanguageSwitch.apply()
     val app = AppInfo(versionName, versionCode, platform = "ios", isDebug = isDebug, photoUploadUrl = photoUploadUrl)
     val koin = startKoin {
         modules(sharedModules(app) + module {
@@ -40,6 +43,7 @@ fun startKoinIos(
             single { embedder }
             single<UploadNotifier> { IosUploadNotifier(get()) }
             single<AppFiles> { IosAppFiles() }
+            single<LanguageSwitchStore> { IosLanguageSwitch }
             single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
             if (isDebug) single<LocalBackbones> { IosLocalBackbones() }
         })

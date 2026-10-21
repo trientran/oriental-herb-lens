@@ -25,7 +25,7 @@ sealed interface SuggestNameAction {
 
 data class SuggestNameState(
     val herbId: Long,
-    /** The language of the name, an ISO 639-1 code from [NameLanguages.ENABLED]. */
+    /** The language of the name, an ISO 639-1 code from [NameLanguages.SUGGESTIBLE]. */
     val language: String,
     /** The herb's names already in the catalog, by language, so they aren't suggested again. */
     val listed: Map<String, List<String>> = emptyMap(),
@@ -35,7 +35,7 @@ data class SuggestNameState(
     val isSubmitted: Boolean = false,
     val hasError: Boolean = false,
 ) {
-    val languages: List<String> get() = NameLanguages.ENABLED
+    val languages: List<String> get() = NameLanguages.SUGGESTIBLE
 
     /** The catalog's names in the chosen language. */
     val listedInLanguage: List<String> get() = listed[language].orEmpty()
@@ -63,7 +63,7 @@ class SuggestNameViewModel(
     auth: AuthRepository,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<SuggestNameState, SuggestNameAction>(
-    SuggestNameState(herbId, language.takeIf { it in NameLanguages.ENABLED } ?: NameLanguages.ENABLED.first(), listed),
+    SuggestNameState(herbId, language.takeIf { it in NameLanguages.SUGGESTIBLE } ?: NameLanguages.ENGLISH, listed),
 ) {
 
     init {
@@ -73,7 +73,7 @@ class SuggestNameViewModel(
     override fun onAction(action: SuggestNameAction) {
         when (action) {
             is SuggestNameAction.LanguageChanged ->
-                if (action.language in NameLanguages.ENABLED) setState { copy(language = action.language, hasError = false) }
+                if (action.language in NameLanguages.SUGGESTIBLE) setState { copy(language = action.language, hasError = false) }
             is SuggestNameAction.DraftChanged -> setState { copy(draft = action.text, hasError = false) }
             SuggestNameAction.Submit -> submit()
             SuggestNameAction.Opened -> if (currentState.isSubmitted) setState { copy(draft = "", isSubmitted = false, hasError = false) }
