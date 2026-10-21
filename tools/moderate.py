@@ -288,7 +288,7 @@ def model_card(model_id, m):
         "",
         "# %s" % m.get("name"),
         "",
-        "An image classifier trained by a [Med Herb Lens](https://medherblens.com/about.html) user on their "
+        "An image classifier trained by a [Med Herb Lens](https://med-herb-lens.pages.dev/about.html) user on their "
         "own device, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).",
         "",
         "## What it identifies (%d species)" % len(species),
