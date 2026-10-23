@@ -53,10 +53,7 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
         for (i in 0 until SIZE * SIZE * 4 step 4) {
             for (c in 0 until 3) input[j++] = ((pixels[i + c].toInt() and 0xff) - MEAN[c]) / STD[c]
         }
-        val outputs = settled(model.compiled.run(LiteRt.Tensor(input, arrayOf(1, SIZE, SIZE, 3))))
-        val output = outputs[0]
-        val scores = settled(output.toTypedArray()).unsafeCast<Float32Array>()
-        output.delete()
+        val scores = runOnce(model.compiled, input, arrayOf(1, SIZE, SIZE, 3))
         return (0 until scores.length)
             .filter { scores[it] >= minConfidence && it < model.labels.size }
             .sortedByDescending { scores[it] }

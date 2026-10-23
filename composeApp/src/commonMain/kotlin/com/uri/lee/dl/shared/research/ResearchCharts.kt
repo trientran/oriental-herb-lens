@@ -33,6 +33,7 @@ private fun strategyColor(strategy: String): Color = when {
     strategy == "joint" -> Color(0xFF378ADD)
     strategy == "naive" -> Color(0xFFE24B4A)
     strategy == "prototypes" -> Color(0xFF7F77DD)
+    strategy == "slda" -> Color(0xFFD4537E)
     strategy == "replay-5" -> Color(0xFF97C459)
     strategy == "replay-10" -> Color(0xFF639922)
     strategy == "replay-20" -> Color(0xFF1D9E75)

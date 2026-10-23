@@ -24,7 +24,7 @@ interface MutableStoreValues : StoreValues {
 
 /** A typed key. Names are persisted: renaming one loses what users saved under it. */
 class StoreKey<T : Any> internal constructor(val name: String, internal val type: Type) {
-    internal enum class Type { BOOLEAN, FLOAT, STRING, STRING_SET }
+    internal enum class Type { BOOLEAN, INT, FLOAT, STRING, STRING_SET }
 
     override fun equals(other: Any?) = other is StoreKey<*> && other.name == name && other.type == type
     override fun hashCode() = name.hashCode()
@@ -32,6 +32,7 @@ class StoreKey<T : Any> internal constructor(val name: String, internal val type
 }
 
 fun booleanKey(name: String) = StoreKey<Boolean>(name, StoreKey.Type.BOOLEAN)
+fun intKey(name: String) = StoreKey<Int>(name, StoreKey.Type.INT)
 fun floatKey(name: String) = StoreKey<Float>(name, StoreKey.Type.FLOAT)
 fun stringKey(name: String) = StoreKey<String>(name, StoreKey.Type.STRING)
 fun stringSetKey(name: String) = StoreKey<Set<String>>(name, StoreKey.Type.STRING_SET)

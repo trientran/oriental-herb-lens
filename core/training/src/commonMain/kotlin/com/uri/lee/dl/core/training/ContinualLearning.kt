@@ -4,9 +4,36 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.TimeSource
 
+/**
+ * How a dataset is split: [trainShare] and [validationShare] of each class, the rest for testing.
+ * With a separate test set, the two shares are used in proportion and nothing is held out to test.
+ */
+data class SplitSettings(val trainShare: Float = 0.7f, val validationShare: Float = 0.15f) {
+    init {
+        require(trainShare > 0f && validationShare >= 0f && trainShare + validationShare <= 1f + 1e-4f) { "Shares must be positive and add up to at most 1" }
+    }
+
+    val testShare: Float get() = (1f - trainShare - validationShare).coerceAtLeast(0f)
+
+    /** e.g. "70/15/15". */
+    val id: String get() = listOf(trainShare, validationShare, testShare).joinToString("/") { (it * 100).roundToInt().toString() }
+}
+
 /** A dataset split into training, validation (early stopping) and test examples. */
 class DataSplit(val train: List<Example>, val validation: List<Example>, val test: List<Example>) {
     companion object {
+        /**
+         * [examples] split by [settings], or, when a separate [test] set is given (photos from
+         * another device, site or season), [examples] split into training and validation only.
+         */
+        fun of(examples: List<Example>, random: Random, settings: SplitSettings, test: List<Example>? = null): DataSplit {
+            if (test == null) return stratified(examples, random, settings.trainShare, settings.validationShare)
+            val share = settings.trainShare / (settings.trainShare + settings.validationShare)
+            val split = stratified(examples, random, share, 1f - share)
+            // Rounding can leave a photo of a class over: it trains rather than being lost
+            return DataSplit(split.train + split.test, split.validation, test)
+        }
+
         /** A random split, stratified by class: each class is split in the same proportions. */
         fun stratified(examples: List<Example>, random: Random, trainShare: Float = 0.7f, validationShare: Float = 0.15f): DataSplit {
             val train = mutableListOf<Example>()
@@ -31,6 +58,13 @@ enum class ScenarioKind(val id: String) {
 
     /** All species from the start; more photos of each arrive at every step. */
     DataIncremental("data-incremental"),
+
+    /** Like class-incremental, but the steps are the dataset's stages, in order (e.g. one country, then another). */
+    StageIncremental("stage-incremental"),
+    ;
+
+    /** Whether each step brings new classes, so forgetting can be measured per step. */
+    val addsClasses: Boolean get() = this != DataIncremental
 }
 
 data class Scenario(val kind: ScenarioKind, val steps: Int = 5) {
@@ -48,8 +82,18 @@ sealed class Strategy(val id: String) {
     /** Continues from the last model on the new data plus a stored sample of [perClass] embeddings per class. */
     data class Replay(val perClass: Int) : Strategy("replay-$perClass")
 
+    /**
+     * Learning without Forgetting (Li & Hoiem, 2017): continues on the new data only, while
+     * keeping the last model's answers on it for the classes that model knew (knowledge
+     * distillation at temperature 2, weight 1). Stores no data.
+     */
+    data object LwF : Strategy("lwf")
+
     /** Nearest class mean: no training, no forgetting (see [PrototypeClassifier]). */
     data object Prototypes : Strategy("prototypes")
+
+    /** Class means with a shared covariance: no gradient training, no forgetting (see [SldaClassifier]). */
+    data object Slda : Strategy("slda")
 }
 
 /** One step of a scenario: the new data, with labels in the order classes arrive. */
@@ -70,17 +114,30 @@ class ScenarioPlan(
     val steps: List<ScenarioStep>,
 ) {
     companion object {
-        /** Splits [split] into the scenario's steps; class order and chunks are random per [random]. */
-        fun of(split: DataSplit, classes: Int, scenario: Scenario, random: Random): ScenarioPlan {
+        /**
+         * Splits [split] into the scenario's steps; class order and chunks are random per [random].
+         * Stage-incremental steps follow [stages] (each class's stage, from 0), classes within a
+         * stage in random order.
+         */
+        fun of(split: DataSplit, classes: Int, scenario: Scenario, random: Random, stages: List<Int>? = null): ScenarioPlan {
             val n = scenario.steps
             require(n >= 1) { "Needs a step" }
             return when (scenario.kind) {
-                ScenarioKind.ClassIncremental -> {
+                ScenarioKind.ClassIncremental, ScenarioKind.StageIncremental -> {
                     require(classes >= n) { "Fewer classes than steps" }
-                    val order = (0 until classes).shuffled(random)
+                    val order: List<Int>
+                    val bounds: List<Int>
+                    if (scenario.kind == ScenarioKind.StageIncremental) {
+                        requireNotNull(stages) { "Stage-incremental runs need a dataset in stage folders" }
+                        require(stages.size == classes && stages.distinct().sorted() == (0 until n).toList()) { "Every class needs one of the $n stages" }
+                        order = (0 until classes).shuffled(random).sortedBy { stages[it] }
+                        bounds = listOf(0) + (0 until n).map { s -> stages.count { it <= s } }
+                    } else {
+                        order = (0 until classes).shuffled(random)
+                        bounds = (0..n).map { it * classes / n }
+                    }
                     val position = IntArray(classes).also { p -> order.forEachIndexed { i, c -> p[c] = i } }
                     fun relabel(examples: List<Example>) = examples.map { Example(it.embedding, position[it.label]) }
-                    val bounds = (0..n).map { it * classes / n }
                     val steps = (0 until n).map { s ->
                         val range = bounds[s] until bounds[s + 1]
                         ScenarioStep(
@@ -165,7 +222,7 @@ class RunResult(
 ) {
     /** Forgetting and transfer; only meaningful when steps bring new classes. */
     val continual: ContinualMetrics? =
-        if (scenario.kind == ScenarioKind.ClassIncremental) ContinualMetrics(steps.map { it.taskAccuracies }) else null
+        if (scenario.kind.addsClasses) ContinualMetrics(steps.map { it.taskAccuracies }) else null
 
     val averageIncrementalAccuracy: Float get() = steps.map { it.evaluation.accuracy }.average().toFloat()
 }
@@ -185,9 +242,14 @@ object ContinualRunner {
         options: TrainingOptions = TrainingOptions(classBalanced = true),
         monitor: ResourceMonitor = ResourceMonitor { ResourceSample() },
         onStep: (StepResult) -> Unit = {},
+        split: SplitSettings = SplitSettings(),
+        /** A separate test set (e.g. another device's photos); otherwise the test photos are held out of [examples]. */
+        test: List<Example>? = null,
+        /** Each class's stage, for stage-incremental runs. */
+        stages: List<Int>? = null,
     ): RunResult {
         val random = Random(seed)
-        val plan = ScenarioPlan.of(DataSplit.stratified(examples, random), classes, scenario, random)
+        val plan = ScenarioPlan.of(DataSplit.of(examples, random, split, test), classes, scenario, random, stages)
         return run(plan, strategy, seed, options, monitor, onStep)
     }
 
@@ -204,6 +266,7 @@ object ContinualRunner {
         val trainBuffer = ReplayBuffer((strategy as? Strategy.Replay)?.perClass ?: 0, bufferRandom)
         val validationBuffer = ReplayBuffer((strategy as? Strategy.Replay)?.perClass?.let { validationShare(it) } ?: 0, bufferRandom)
         val prototypes = PrototypeClassifier(dimensions)
+        val slda = SldaClassifier(dimensions)
         var head: ClassifierHead? = null
         val results = mutableListOf<StepResult>()
 
@@ -212,9 +275,9 @@ object ContinualRunner {
             val stepOptions = options.copy(seed = seed * 1000 + step.index)
             val (train, validation) = when (strategy) {
                 Strategy.Joint -> seen.flatMap { it.train } to seen.flatMap { it.validation }
-                Strategy.Naive -> step.train to step.validation
+                Strategy.Naive, Strategy.LwF -> step.train to step.validation
                 is Strategy.Replay -> (step.train + trainBuffer.contents()) to (step.validation + validationBuffer.contents())
-                Strategy.Prototypes -> step.train to emptyList()
+                Strategy.Prototypes, Strategy.Slda -> step.train to emptyList()
             }
 
             val before = monitor.sample()
@@ -222,6 +285,10 @@ object ContinualRunner {
             var training: TrainingResult? = null
             if (strategy == Strategy.Prototypes) {
                 prototypes.learn(train)
+            } else if (strategy == Strategy.Slda) {
+                slda.learn(train)
+                // Computing the classifier is part of learning, so it counts in the step's time
+                slda.head()
             } else {
                 val start = if (strategy == Strategy.Joint) null else head?.expanded(step.classesSeen)?.also { grown ->
                     // New classes start from their mean embedding rather than from zero
@@ -229,7 +296,8 @@ object ContinualRunner {
                     val known = (0 until previous).toList()
                     for (c in previous until step.classesSeen) grown.imprint(c, step.train.filter { it.label == c }.map { it.embedding }, known)
                 }
-                training = HeadTrainer.train(train, validation, step.classesSeen, stepOptions, start)
+                val teacher = if (strategy == Strategy.LwF) head?.let { Distillation(it) } else null
+                training = HeadTrainer.train(train, validation, step.classesSeen, stepOptions, start, distillation = teacher)
                 head = training.head
             }
             val trainMillis = mark.elapsedNow().inWholeMilliseconds
@@ -240,17 +308,23 @@ object ContinualRunner {
                 validationBuffer.add(step.validation)
             }
 
-            val classifier: EmbeddingClassifier = if (strategy == Strategy.Prototypes) prototypes else head!!
-            val tasks = if (plan.scenario.kind == ScenarioKind.ClassIncremental) seen.map { it.test } else listOf(step.test)
+            val classifier: EmbeddingClassifier = when (strategy) {
+                Strategy.Prototypes -> prototypes
+                Strategy.Slda -> slda.head()
+                else -> head!!
+            }
+            val tasks = if (plan.scenario.kind.addsClasses) seen.map { it.test } else listOf(step.test)
             val result = StepResult(
                 step = step.index,
                 classesSeen = step.classesSeen,
                 trainExamples = train.size,
                 storedVectors = when (strategy) {
                     Strategy.Joint -> seen.sumOf { it.train.size + it.validation.size }
-                    Strategy.Naive -> 0
+                    Strategy.Naive, Strategy.LwF -> 0
                     is Strategy.Replay -> trainBuffer.size + validationBuffer.size
                     Strategy.Prototypes -> prototypes.classes
+                    // Class sums plus the shared scatter matrix, one row per dimension
+                    Strategy.Slda -> slda.classes + dimensions
                 },
                 training = training,
                 trainMillis = trainMillis,
@@ -262,7 +336,11 @@ object ContinualRunner {
             results += result
             onStep(result)
         }
-        val final: EmbeddingClassifier = if (strategy == Strategy.Prototypes) prototypes else head!!
+        val final: EmbeddingClassifier = when (strategy) {
+            Strategy.Prototypes -> prototypes
+            Strategy.Slda -> slda.head()
+            else -> head!!
+        }
         return RunResult(plan.scenario, strategy, seed, options, plan.classOrder, results, final)
     }
 

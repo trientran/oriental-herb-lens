@@ -54,12 +54,15 @@ internal fun drawn(source: dynamic, sx: Double, sy: Double, sw: Double, sh: Doub
  * [source] at [size] × [size], the models' input. A large step down in one draw samples only a
  * few of the pixels it covers, and browsers do it differently (WebKit, on every iPhone browser,
  * worst), so fine detail such as leaf veins comes out noisy and results differ by browser. Halving
- * at a time averages every pixel, close to the phones' resizing.
+ * at a time averages every pixel, close to the phones' resizing. With [centreCrop], only the
+ * centre square is used, so the photo isn't squashed.
  */
-internal fun modelInput(source: HTMLCanvasElement, size: Int): HTMLCanvasElement {
-    var current = source
-    var width = source.width
-    var height = source.height
+internal fun modelInput(source: HTMLCanvasElement, size: Int, centreCrop: Boolean = false): HTMLCanvasElement {
+    val side = minOf(source.width, source.height)
+    var current = if (!centreCrop || source.width == source.height) source
+    else drawn(source, ((source.width - side) / 2).toDouble(), ((source.height - side) / 2).toDouble(), side.toDouble(), side.toDouble(), side, side)
+    var width = current.width
+    var height = current.height
     while (width / 2 >= size && height / 2 >= size) {
         width /= 2
         height /= 2

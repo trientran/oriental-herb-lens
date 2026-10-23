@@ -60,6 +60,7 @@ sealed interface TrainingWork {
     data object Downloading : TrainingWork
     data class Reading(val done: Int, val total: Int) : TrainingWork
     data class Learning(val epoch: Int, val maxEpochs: Int) : TrainingWork
+    data object Calculating : TrainingWork
     data object Saving : TrainingWork
     data object Uploading : TrainingWork
 }
@@ -477,7 +478,7 @@ class TrainingViewModel(
 
     private suspend fun embedderFor(backbone: String): ImageEmbedder? = embedderLock.withLock {
         embedder?.takeIf { it.first == backbone }?.second ?: run {
-            val location = runCatching { backbones.location(backbone) { setState { copy(work = TrainingWork.Downloading) } } }
+            val location = runCatching { backbones.location(backbone) { _, _ -> setState { copy(work = TrainingWork.Downloading) } } }
                 .getOrElse { e ->
                     log.e(e) { "Backbone $backbone unavailable" }
                     setState { copy(error = TrainingError.DOWNLOAD) }
@@ -501,6 +502,7 @@ class TrainingViewModel(
             // Replay only adds to the last model; with nothing new (new settings, say) it trains afresh
             val previous = if (model.settings.update == UpdateMode.REPLAY && currentState.hasChanges) store.head(model.id) else null
             val maxEpochs = model.settings.expert.maxEpochs
+            if (model.settings.update == UpdateMode.CALCULATE) setState { copy(work = TrainingWork.Calculating) }
             val result = withContext(Dispatchers.Default) {
                 ModelTrainer.train(model, examples, previous) { epoch ->
                     setState { copy(work = TrainingWork.Learning(epoch.epoch, maxEpochs), history = history + epoch) }
@@ -518,7 +520,11 @@ class TrainingViewModel(
                     quality = model.settings.quality.name.lowercase(),
                     speciesCount = model.classes.size,
                     photoCount = model.photos,
-                    update = if (previous != null) "add" else "full",
+                    update = when {
+                        model.settings.update == UpdateMode.CALCULATE -> "calculate"
+                        previous != null -> "add"
+                        else -> "full"
+                    },
                 ),
             )
             classifier?.second?.close()

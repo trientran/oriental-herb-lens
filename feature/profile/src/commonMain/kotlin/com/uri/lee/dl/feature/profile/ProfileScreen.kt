@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,6 +87,8 @@ import com.uri.lee.dl.core.designsystem.resources.profile_signed_in
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics
 import com.uri.lee.dl.core.designsystem.resources.profile_usage_statistics_body
 import com.uri.lee.dl.core.designsystem.resources.profile_version
+import com.uri.lee.dl.core.designsystem.resources.survey_row_body
+import com.uri.lee.dl.core.designsystem.resources.survey_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.model.Citation
 import kotlin.math.roundToInt
@@ -99,6 +102,8 @@ data class ProfileActions(
     val onOpenLanguageSettings: (() -> Unit)? = null,
     /** Opens account deletion; null hides it. */
     val onDeleteAccount: (() -> Unit)? = null,
+    /** Shows the research survey invitation; null (once the study has closed) hides it. */
+    val onOpenSurvey: (() -> Unit)? = null,
     /** Developer and research tools, by name (not translated). */
     val debugTools: List<Pair<String, () -> Unit>> = emptyList(),
 )
@@ -131,17 +136,24 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
 
             SectionCard(stringResource(Res.string.profile_app)) {
                 actions.onOpenLanguageSettings?.let { LinkRow(Icons.Filled.Language, stringResource(Res.string.profile_language), onClick = it) }
-                LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) { uriHandler.openUri(HERB_LIST_URL) }
-                actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
-                // The addresses too: without a mail app set up, a mailto link does nothing. One email to both,
-                // the university's first
-                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = CONTACT_EMAILS.joinToString("\n")) {
-                    uriHandler.openUri("mailto:" + CONTACT_EMAILS.joinToString(","))
+                LinkRow(Icons.AutoMirrored.Filled.List, stringResource(Res.string.profile_full_list)) {
+                    onAction(ProfileAction.DatasetOpened)
+                    uriHandler.openUri(state.links.datasetUrl)
                 }
-                // In Vietnamese for an app shown in Vietnamese; the legal pages stay English only
-                val about = if (Locale.current.language == "vi") LegalLinks.ABOUT_VI else LegalLinks.ABOUT
+                actions.onOpenSurvey?.let {
+                    LinkRow(Icons.Filled.RateReview, stringResource(Res.string.survey_title), supporting = stringResource(Res.string.survey_row_body), onClick = it)
+                }
+                actions.onShareApp?.let { LinkRow(Icons.Filled.Share, stringResource(Res.string.profile_share), onClick = it) }
+                // The addresses too: without a mail app set up, a mailto link does nothing. One email to all of them
+                val emails = state.links.contactEmails
+                LinkRow(Icons.Filled.Email, stringResource(Res.string.profile_contact), supporting = emails.joinToString("\n")) {
+                    uriHandler.openUri("mailto:" + emails.joinToString(","))
+                }
+                // In Vietnamese for an app shown in Vietnamese
+                val language = Locale.current.language
+                val about = LegalLinks.about(language)
                 LinkRow(Icons.Filled.Info, stringResource(Res.string.profile_about)) { uriHandler.openUri(about) }
-                LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }
+                LinkRow(Icons.Filled.Policy, stringResource(Res.string.privacy_policy)) { uriHandler.openUri(LegalLinks.privacyPolicy(language)) }
                 actions.debugTools.forEach { (name, run) -> LinkRow(Icons.Filled.Build, name, onClick = run) }
             }
 
@@ -274,6 +286,3 @@ private fun LinkRow(icon: ImageVector, label: String, supporting: String? = null
         modifier = Modifier.clickable(onClick = onClick).semantics { role = Role.Button },
     )
 }
-
-private const val HERB_LIST_URL = "https://docs.google.com/spreadsheets/d/16IpEYlpkd7NW3XHXUvhdhJf8LySuhVRLooA7c1SAzOs/edit?usp=sharing"
-private val CONTACT_EMAILS = listOf("ttran72@myune.edu.au", "tptrien@gmail.com")

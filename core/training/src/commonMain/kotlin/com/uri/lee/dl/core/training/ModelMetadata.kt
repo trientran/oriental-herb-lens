@@ -80,11 +80,15 @@ internal object ModelMetadata {
 internal object StoredZip {
 
     fun append(model: ByteArray, files: Map<String, ByteArray>): ByteArray {
-        val out = ByteList(model.size + files.values.sumOf { it.size } + 256)
+        // Sized exactly (each file's 30-byte header and 46-byte directory entry, plus its name):
+        // growing by doubling would ask for twice a large archive at once, more than a phone app has
+        val names = files.keys.associateWith { it.encodeToByteArray() }
+        val centralSize = names.values.sumOf { 46 + it.size }
+        val out = ByteList(model.size + files.entries.sumOf { (name, data) -> 30 + names.getValue(name).size + data.size } + centralSize + 22)
         out.add(model)
-        val central = ByteList(256)
+        val central = ByteList(centralSize)
         for ((name, data) in files) {
-            val nameBytes = name.encodeToByteArray()
+            val nameBytes = names.getValue(name)
             val crc = crc32(data)
             val offset = out.size
             out.int(0x04034b50); out.short(10); out.short(0); out.short(0); out.short(0); out.short(0x21)
@@ -146,6 +150,7 @@ internal object StoredZip {
         fun add(data: ByteArray) { ensure(data.size); data.copyInto(bytes, size); size += data.size }
         fun short(v: Int) { ensure(2); bytes[size++] = v.toByte(); bytes[size++] = (v shr 8).toByte() }
         fun int(v: Int) { short(v and 0xFFFF); short(v ushr 16) }
-        fun toByteArray() = bytes.copyOf(size)
+        /** The bytes; no copy when the list was sized exactly, as a large archive can't be held twice. */
+        fun toByteArray() = if (size == bytes.size) bytes else bytes.copyOf(size)
     }
 }

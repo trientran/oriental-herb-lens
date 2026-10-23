@@ -7,6 +7,8 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.window.ComposeViewport
 import com.uri.lee.dl.core.common.AppInfo
 import com.uri.lee.dl.core.ml.WebLocalImage
+import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.media.PhotoPick
 import com.uri.lee.dl.domain.notification.UploadNotifier
 import dev.gitlive.firebase.FirebaseOptions
@@ -17,6 +19,8 @@ import kotlinx.coroutines.await
 import org.koin.core.context.startKoin
 import com.uri.lee.dl.domain.training.AppFiles
 import com.uri.lee.dl.domain.upload.UploadScheduler
+import com.uri.lee.dl.domain.model.AppLanguages
+import com.uri.lee.dl.domain.model.LanguageSwitchStore
 import com.uri.lee.dl.shared.training.LocalBackbones
 import org.koin.dsl.module
 import org.w3c.dom.HTMLAnchorElement
@@ -24,6 +28,7 @@ import org.w3c.dom.HTMLInputElement
 import org.w3c.fetch.Response
 import org.khronos.webgl.Int8Array
 import org.w3c.dom.url.URL
+import org.w3c.dom.url.URLSearchParams
 import org.w3c.files.Blob
 import org.w3c.files.File
 
@@ -62,7 +67,9 @@ class WebFirebaseConfig(
 /** Starts the app in the page's `#app` element. */
 @OptIn(ExperimentalComposeUiApi::class)
 fun startWebApp(config: WebConfig) {
+    applyChosenLanguage()
     startFirebase(config.firebase.toOptions(), config.appCheckSiteKey)
+    WebDeviceName.start()
     val app = AppInfo(
         versionName = config.versionName,
         // The web is always the latest version: update prompts don't apply
@@ -78,12 +85,15 @@ fun startWebApp(config: WebConfig) {
             sharedModules(app) + module {
                 single<UploadNotifier> { WebUploadNotifier() }
                 single<AppFiles> { WebAppFiles() }
+                single<LanguageSwitchStore> { WebLanguageSwitch }
                 single<UploadScheduler> { InProcessUploadScheduler(get(), get()) }
                 if (config.isDebug) single<LocalBackbones> { WebLocalBackbones() }
             },
         )
     }.koin
     koin.runStartupTasks()
+    val openHerbId = speciesInAddress()
+    openHerbId?.let { koin.get<Analytics>().log(AnalyticsEvent.OpenedFromSpeciesPage(it)) }
     val actions = PlatformActions(
         // Photos are for identifying only: sharing them is in the apps (D19)
         pickPhotos = ::pickPhotos,
@@ -95,13 +105,50 @@ fun startWebApp(config: WebConfig) {
         // Research mode, listed in Profile in every build
         research = ::webResearch,
         files = webFileActions(),
+        setLanguage = ::setLanguage,
+        languageName = ::webLanguageName,
     )
     ignoreCancelledRequests()
     ComposeViewport(document.getElementById("app")!!) {
         // Names and details can be selected where they're shown (e.g. a herb's page), not app-wide:
         // a selectable label in a button takes the click as the start of a selection
-        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) { App(actions) }
+        CompositionLocalProvider(LocalUriHandler provides WebUriHandler) {
+            WithFallbackFonts { App(actions, openHerbId = openHerbId) }
+        }
     }
+}
+
+/** Shared with the site's pages (website/language.js), so a choice made on either applies to both. */
+private const val LANGUAGE_KEY = "herblens.language"
+
+/** Remote Config's `all_languages`, saved for the next visit (see applyChosenLanguage). */
+private const val ALL_LANGUAGES_KEY = "herblens.allLanguages"
+
+private object WebLanguageSwitch : LanguageSwitchStore {
+    override fun save(allLanguages: Boolean) {
+        runCatching { window.localStorage.setItem(ALL_LANGUAGES_KEY, allLanguages.toString()) }
+    }
+}
+
+/**
+ * The language chosen on the site or in Browse, if any, in place of the browser's: Compose reads
+ * the browser's languages for the app's text, so they are replaced before the app starts. While
+ * `all_languages` is off, a language other than English or Vietnamese becomes English.
+ */
+private fun applyChosenLanguage() {
+    val all = runCatching { window.localStorage.getItem(ALL_LANGUAGES_KEY) }.getOrNull() != "false"
+    val saved = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()
+    val browser = window.navigator.language.substringBefore('-')
+    val preferred = saved?.takeIf { it in AppLanguages.CODES } ?: browser
+    val chosen = AppLanguages.start(all, preferred) ?: saved?.takeIf { it in AppLanguages.CODES } ?: return
+    js("Object.defineProperty(navigator, 'language', { get: function () { return chosen; }, configurable: true })")
+    js("Object.defineProperty(navigator, 'languages', { get: function () { return [chosen]; }, configurable: true })")
+}
+
+/** Remembers [code] and restarts the app in it. */
+private fun setLanguage(code: String) {
+    runCatching { window.localStorage.setItem(LANGUAGE_KEY, code) }
+    window.location.reload()
 }
 
 /** Links open in a new tab; mailto: links go to the mail app (through a link, without a blank tab). */
@@ -158,6 +205,10 @@ internal fun chooseFiles(configure: HTMLInputElement.() -> Unit, onChosen: (List
     input.click()
 }
 
+
+/** The species to open, from an address like /app/?species=3035652 (the species pages' "Open" button). */
+private fun speciesInAddress(): Long? =
+    URLSearchParams(window.location.search).get("species")?.toLongOrNull()
 
 /** The system share sheet where there is one (phones), otherwise the link goes to the clipboard. */
 private fun share(url: String) {

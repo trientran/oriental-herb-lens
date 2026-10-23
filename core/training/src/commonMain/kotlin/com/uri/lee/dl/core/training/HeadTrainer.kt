@@ -26,6 +26,14 @@ data class TrainingOptions(
     val seed: Int = 42,
 )
 
+/**
+ * Knowledge distillation from [teacher], an earlier model, for Learning without Forgetting (Li &
+ * Hoiem, 2017): while learning, the new model is also asked to give the teacher's answers, softened
+ * by [temperature], for the classes the teacher knew. [weight] is how much that counts against the
+ * usual loss.
+ */
+class Distillation(val teacher: ClassifierHead, val weight: Float = 1f, val temperature: Float = 2f)
+
 /** One epoch's progress, for learning curves. */
 data class EpochStats(val epoch: Int, val trainLoss: Float, val validationLoss: Float, val validationAccuracy: Float)
 
@@ -61,7 +69,8 @@ object HeadTrainer {
     /**
      * Trains on [train], stopping early on [validation] (on [train] itself when that's empty).
      * Starts from [start] when given (continual learning), expanded to [classes] if needed;
-     * otherwise from a fresh head.
+     * otherwise from a fresh head. With [distillation], the training loss also keeps the teacher's
+     * answers on [train] (early stopping still watches the validation loss alone).
      */
     fun train(
         train: List<Example>,
@@ -70,17 +79,21 @@ object HeadTrainer {
         options: TrainingOptions,
         start: ClassifierHead?,
         onEpoch: (EpochStats) -> Unit = {},
+        distillation: Distillation? = null,
     ): TrainingResult {
         require(train.isNotEmpty()) { "No examples" }
         val dimensions = train.first().embedding.size
         require((train + validation).all { it.embedding.size == dimensions && it.label in 0 until classes }) { "Inconsistent examples" }
         require(start == null || (start.dimensions == dimensions && start.hidden == options.hiddenUnits)) { "The starting head doesn't fit" }
+        require(distillation == null || (distillation.teacher.dimensions == dimensions && distillation.teacher.classes <= classes)) { "The teacher doesn't fit" }
 
         val random = Random(options.seed)
         val trainSet = train.map { Example(normalized(it.embedding), it.label) }
         val validationSet = validation.map { Example(normalized(it.embedding), it.label) }
         val monitored = validationSet.ifEmpty { trainSet }
         val weights = classWeights(trainSet, classes, options.classBalanced)
+        // The teacher's softened answers, once: it doesn't change while the student learns
+        val targets = distillation?.let { d -> d to trainSet.map { softmax(d.teacher.logits(d.teacher.featuresOf(it.embedding)), d.temperature) } }
 
         val model = start?.expanded(classes) ?: ClassifierHead.create(dimensions, options.hiddenUnits, classes, random)
         val adam = Adam(model.params.size, options.learningRate)
@@ -97,9 +110,11 @@ object HeadTrainer {
             order.shuffle(random)
             var trainLoss = 0.0
             for (start in order.indices step options.batchSize) {
-                val batch = order.subList(start, minOf(start + options.batchSize, order.size)).map { trainSet[it] }
+                val indices = order.subList(start, minOf(start + options.batchSize, order.size))
+                val batch = indices.map { trainSet[it] }
                 gradient.fill(0f)
-                trainLoss += accumulateGradient(model, batch, weights, options.l2, gradient) * batch.size
+                val soft = targets?.let { (d, all) -> SoftTargets(indices.map { all[it] }, d) }
+                trainLoss += accumulateGradient(model, batch, weights, options.l2, gradient, soft) * batch.size
                 adam.step(model.params, gradient)
             }
             val validationLoss = loss(model, monitored)
@@ -131,23 +146,47 @@ object HeadTrainer {
         return FloatArray(classes) { if (counts[it] == 0) 0f else examples.size.toFloat() / (present * counts[it]) }
     }
 
+    /** The teacher's answers for each example of a batch. */
+    private class SoftTargets(val targets: List<FloatArray>, val distillation: Distillation)
+
     /**
-     * Adds the mean (class-weighted) cross-entropy gradient of [batch], plus the L2 term, to
-     * [gradient]. Returns the batch's mean loss.
+     * Adds the mean (class-weighted) cross-entropy gradient of [batch], plus the L2 term and any
+     * distillation term ([soft]: T² times the cross-entropy between the teacher's and the model's
+     * softened answers on the teacher's classes, as Hinton et al., 2015), to [gradient]. Returns
+     * the batch's mean loss.
      */
-    private fun accumulateGradient(model: ClassifierHead, batch: List<Example>, weights: FloatArray, l2: Float, gradient: FloatArray): Float {
+    private fun accumulateGradient(
+        model: ClassifierHead,
+        batch: List<Example>,
+        weights: FloatArray,
+        l2: Float,
+        gradient: FloatArray,
+        soft: SoftTargets? = null,
+    ): Float {
         val features = model.features
         val scale = 1f / batch.size
         var loss = 0.0
         val outputError = FloatArray(model.classes)
         val hiddenError = FloatArray(model.hidden)
-        for (example in batch) {
+        for ((index, example) in batch.withIndex()) {
             val x = example.embedding
             val a = model.featuresOf(x)
-            val p = softmax(model.logits(a))
+            val logits = model.logits(a)
+            val p = softmax(logits)
             val w = weights[example.label]
             loss -= w * ln(max(p[example.label], 1e-7f).toDouble())
             for (c in 0 until model.classes) outputError[c] = (p[c] - if (c == example.label) 1f else 0f) * w * scale
+            if (soft != null) {
+                val q = soft.targets[index]
+                val t = soft.distillation.temperature
+                val lambda = soft.distillation.weight
+                val old = softmax(logits.copyOf(q.size), t)
+                for (c in q.indices) {
+                    loss -= lambda * t * t * q[c] * ln(max(old[c], 1e-7f).toDouble())
+                    // d/dz of T²·CE(q, softmax(z/T)) is T·(softmax(z/T) − q)
+                    outputError[c] += lambda * t * (old[c] - q[c]) * scale
+                }
+            }
             for (c in 0 until model.classes) {
                 val error = outputError[c]
                 val row = model.outputOffset + c * features

@@ -67,6 +67,8 @@ kotlin {
         // ./gradlew :composeApp:testAndroidHostTest -Proborazzi.test.record=true
         getByName("androidHostTest").dependencies {
             implementation(libs.junit4)
+            // Runs kotlin.test tests (the view model tests) on JUnit
+            implementation(libs.kotlin.test.junit)
             implementation(libs.robolectric)
             implementation(libs.roborazzi)
             implementation(libs.roborazzi.compose)

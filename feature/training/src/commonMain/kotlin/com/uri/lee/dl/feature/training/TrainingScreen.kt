@@ -308,6 +308,7 @@ private fun Work(work: TrainingWork?) {
         TrainingWork.Downloading -> Progress(stringResource(Res.string.train_downloading), null)
         is TrainingWork.Reading -> Progress(stringResource(Res.string.train_reading, work.done, work.total), work.done.toFloat() / work.total.coerceAtLeast(1))
         is TrainingWork.Learning -> Progress(stringResource(Res.string.train_epoch, work.epoch), null)
+        TrainingWork.Calculating -> Progress(stringResource(Res.string.train_calculating), null)
         TrainingWork.Saving -> Progress(stringResource(Res.string.train_saving), null)
         TrainingWork.Uploading -> Progress(stringResource(Res.string.train_sharing), null)
     }
@@ -695,7 +696,8 @@ private fun ConfirmDeleteDialog(name: String, onDismiss: () -> Unit, onDelete: (
 @Composable
 private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (Quality) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(HerbLensTheme.spacing.sm)) {
-        Quality.entries.forEach { quality ->
+        // Earlier choices only for a model that already has one
+        Quality.entries.filter { it.offered || it == selected }.forEach { quality ->
             FilterChip(
                 selected = quality == selected,
                 onClick = { onSelect(quality) },
@@ -704,6 +706,7 @@ private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (
                     Text(
                         stringResource(
                             when (quality) {
+                                Quality.MOST_ACCURATE -> Res.string.train_quality_most_accurate
                                 Quality.FAST -> Res.string.train_quality_fast
                                 Quality.BALANCED -> Res.string.train_quality_balanced
                                 Quality.BEST -> Res.string.train_quality_best
@@ -720,7 +723,7 @@ private fun QualityChips(selected: Quality, enabled: Boolean = true, onSelect: (
 private fun NewModelScreen(onAction: (TrainingAction) -> Unit, platform: TrainingPlatform) {
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf("") }
-    var quality by remember { mutableStateOf(Quality.BALANCED) }
+    var quality by remember { mutableStateOf(Quality.MOST_ACCURATE) }
     val placeholder = stringResource(Res.string.train_name_placeholder)
     val chosenName = { name.ifBlank { placeholder } }
     Page(stringResource(Res.string.train_new_title), onBack = { onAction(TrainingAction.Back) }) {
@@ -992,6 +995,7 @@ private fun SettingsScreen(state: TrainingState, onAction: (TrainingAction) -> U
         if (fixed) Text(stringResource(Res.string.train_quality_fixed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         TermHeading(stringResource(Res.string.train_when_adding), AiTerm.CONTINUAL)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            FilterChip(settings.update == UpdateMode.CALCULATE, { settings = settings.copy(update = UpdateMode.CALCULATE) }, label = { Text(stringResource(Res.string.train_update_calculate)) })
             FilterChip(settings.update == UpdateMode.REPLAY, { settings = settings.copy(update = UpdateMode.REPLAY) }, label = { Text(stringResource(Res.string.train_update_replay)) })
             FilterChip(settings.update == UpdateMode.RETRAIN_ALL, { settings = settings.copy(update = UpdateMode.RETRAIN_ALL) }, label = { Text(stringResource(Res.string.train_update_retrain)) })
         }

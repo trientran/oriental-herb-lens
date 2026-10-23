@@ -42,8 +42,8 @@ service cloud.firestore {
         && onlyAddsPhotos(request.resource.data.images, resource.data.get('images', {}));
     }
 
-    // A common name in one of the app's languages, read by the admin only. Only the languages the
-    // app offers (NameLanguages.ENABLED): others wait for the research ethics approval.
+    // A common name in one of the app's interface languages (NameLanguages.SUGGESTIBLE, the codes in
+    // AppLanguages), read by the admin only.
     match /nameSuggestions/{id} {
       allow create: if contributor()
         && request.resource.data.uid == request.auth.uid
@@ -54,7 +54,9 @@ service cloud.firestore {
 
     function vernacularName(d) {
       return d.keys().hasOnly(['speciesKey', 'language', 'name', 'uid', 'createdAt'])
-        && d.language in ['vi', 'en']
+        && d.language in ['en', 'vi', 'ar', 'az', 'bn', 'bs', 'bg', 'zh', 'hr', 'cs', 'nl', 'eo', 'fr', 'de',
+          'el', 'hi', 'hu', 'it', 'ja', 'ko', 'la', 'ln', 'lt', 'mg', 'mr', 'ne', 'fa', 'pl', 'pt', 'ro',
+          'ru', 'sr', 'si', 'es', 'sv', 'sw', 'th', 'tr', 'uk']
         && d.name is string && d.name.size() > 0 && d.name.size() <= 100;
     }
 

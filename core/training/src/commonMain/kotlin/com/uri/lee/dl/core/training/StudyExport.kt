@@ -12,6 +12,12 @@ data class RunContext(
     /** Class names, by the dataset's class index. */
     val labels: List<String>,
     val appVersion: String = "",
+    /** The dataset's name (its folder or zip). */
+    val dataset: String = "",
+    /** The separate test set's name, or "held out" when the test photos came from the dataset. */
+    val testSet: String = "",
+    /** Train/validation/test percentages, e.g. "70/15/15". */
+    val split: String = "",
 )
 
 /**
@@ -36,7 +42,7 @@ class StudyCsv(private val context: RunContext) {
 
     fun add(run: RunResult) {
         val keys = listOf(
-            context.device, context.platform, context.appVersion, context.backbone,
+            context.device, context.platform, context.appVersion, context.dataset, context.testSet, context.split, context.backbone,
             run.scenario.id, run.strategy.id, run.seed, run.options.hiddenUnits, run.options.learningRate, run.options.l2, run.options.batchSize,
         )
         fun name(label: Int) = context.labels.getOrElse(run.classOrder[label]) { "class ${run.classOrder[label]}" }
@@ -95,7 +101,7 @@ class StudyCsv(private val context: RunContext) {
     }
 
     private companion object {
-        val RUN_KEYS = listOf("device", "platform", "app_version", "backbone", "scenario", "strategy", "seed", "hidden_units", "learning_rate", "l2", "batch_size")
+        val RUN_KEYS = listOf("device", "platform", "app_version", "dataset", "test_set", "split", "backbone", "scenario", "strategy", "seed", "hidden_units", "learning_rate", "l2", "batch_size")
     }
 }
 

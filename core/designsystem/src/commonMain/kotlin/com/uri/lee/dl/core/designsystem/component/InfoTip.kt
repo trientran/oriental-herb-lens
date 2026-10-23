@@ -14,10 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.uri.lee.dl.core.designsystem.resources.Res
@@ -93,6 +95,12 @@ enum class AiTerm(val title: StringResource, val body: StringResource) {
     HUGGING_FACE(Res.string.term_hugging_face, Res.string.term_hugging_face_body),
 }
 
+/**
+ * Told when a tip is opened, with its term, for usage statistics (the design system doesn't log
+ * them itself); the app provides it.
+ */
+val LocalTipViewed = staticCompositionLocalOf<(AiTerm) -> Unit> { {} }
+
 /** A small question mark beside an AI term; tapping it explains the term in plain words. */
 @Composable
 fun InfoTip(term: AiTerm, modifier: Modifier = Modifier) {
@@ -123,6 +131,8 @@ fun TermChip(term: AiTerm, modifier: Modifier = Modifier) {
 
 @Composable
 private fun TermDialog(term: AiTerm, onDismiss: () -> Unit) {
+    val viewed = LocalTipViewed.current
+    LaunchedEffect(term) { viewed(term) }
     DialogLayer {
         AlertDialog(
             onDismissRequest = onDismiss,

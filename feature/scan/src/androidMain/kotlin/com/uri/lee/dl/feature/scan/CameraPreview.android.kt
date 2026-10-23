@@ -103,6 +103,9 @@ private fun Camera(onFrame: suspend (ClassifierImage, Float) -> Unit, modifier: 
                 bindToLifecycle(lifecycleOwner)
             }
             PreviewView(context).apply {
+                // A TextureView, clipped to the view like any other: the default SurfaceView, scaled to
+                // fill, drew past its edges over the navigation rail on tablets
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                 scaleType = PreviewView.ScaleType.FILL_CENTER
                 this.controller = controller
             }

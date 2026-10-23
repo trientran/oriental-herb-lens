@@ -13,7 +13,7 @@ on Android, iOS and the web.
 
 ## Get the app
 
-- In your browser: [med-herb-lens.pages.dev/app](https://med-herb-lens.pages.dev/app/)
+- In your browser: [medherblens.com/app](https://medherblens.com/app/)
 - Android: [Google Play](https://play.google.com/store/apps/details?id=com.uri.lee.dl)
 - iPhone and iPad: [App Store](https://apps.apple.com/app/id6819173768)
 
@@ -45,7 +45,7 @@ on Android, iOS and the web.
 Photos are identified on your device and leave it only when you choose to share them. The app sends
 anonymous usage statistics (such as which herbs are identified) for research, with no name, email,
 photo or place; you can turn them off in Profile. No ads, no tracking. Details in the
-[privacy policy](https://med-herb-lens.pages.dev/pages/privacy-policy.html).
+[privacy policy](https://medherblens.com/pages/privacy-policy.html).
 
 ## Research and how to cite
 

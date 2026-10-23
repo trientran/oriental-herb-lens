@@ -18,9 +18,9 @@ fun main() {
                 senderId = "305495327770",
                 measurementId = "G-3BQ83PSGP6",
             ),
-            // Fraud Defense key for med-herb-lens.pages.dev and localhost
+            // Fraud Defense key for medherblens.com, med-herb-lens.pages.dev and localhost
             appCheckSiteKey = "6LcUD-EtAAAAAAuRJ26g4Y7RKvYC5P_iCYjlZwcm",
-            siteUrl = "https://med-herb-lens.pages.dev",
+            siteUrl = "https://medherblens.com",
         ),
     )
 }

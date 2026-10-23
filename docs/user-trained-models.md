@@ -19,7 +19,10 @@ The spike's benchmark (embed a labelled photo set with each backbone, train on 1
 and on 5, test on the other 8) gave the results below; it has since been removed, as Research mode
 does the same and more. The same photos and backbones still serve for development runs.
 
-**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]:
+**Backbones:** MediaPipe image embedders (Apache 2.0), 224 × 224 RGB input in [0, 1]. Every
+platform feeds them the photo's centre square (since 14 Oct 2026; before, the whole photo squashed
+to a square): in the invasive-plants study this gained about 3.5 points of cross-device accuracy.
+Models trained before then saw squashed photos, so they lose a little accuracy until retrained:
 
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/latest/mobilenet_v3_small.tflite
     https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/latest/mobilenet_v3_large.tflite
@@ -92,7 +95,10 @@ mode) and exports the CSVs; nothing is measured by hand. Datasets and trained mo
 **Dataset:** about 7,000 photos of 20 invasive species, one folder per species.
 
 **Splits:** stratified per species, random for each seed: 70 % train, 15 % validation (early
-stopping), 15 % test. The test set is never trained on.
+stopping), 15 % test by default (the shares can be changed). The test set is never trained on.
+Or a separate test set (updated 14 Oct 2026): train on one phone's photos and test on the other's,
+then the other way round, so no test photo shows a plant from the same moment as a training photo.
+The dataset is then split into training and validation only.
 
 **Seeds:** 10 per configuration (seeds 1–10). Each seed fixes the split, the order species arrive
 in and the training order. `kotlin.random.Random(seed)` gives the same sequence on every
@@ -101,10 +107,13 @@ platform, so a seed means the same split and order on every device.
 **Scenarios:**
 - **Class-incremental:** 5 steps of 4 species, in a random order for each seed.
 - **Data-incremental:** all 20 species from the start; 5 steps, each adding 20 % of the training photos.
+- **Stage-incremental:** the dataset's stage folders in order: the 16 species photographed in
+  Vietnam, then the 5 photographed in Australia.
 
 **Strategies:** joint retraining on all stored embeddings (upper bound); naive fine-tuning on new
-data only (lower bound); replay with a buffer of 5, 10, 20 and 50 embeddings per species; class
-prototypes (nearest class mean, no training).
+data only (lower bound); Learning without Forgetting (distillation from the previous model,
+temperature 2, weight 1; stores no data); replay with a buffer of 5, 10, 20 and 50 embeddings per
+species; class prototypes (nearest class mean, no training).
 
 **Backbones:** mobilenet_v3_large (main); mobilenet_v3_small (efficiency comparison).
 
@@ -158,9 +167,16 @@ hidden layer is a setting and an ablation in the study.
 
   | Quality | What it uses |
   |---|---|
+  | Most accurate (default) | dinov2_vits14 (22.8 MB, downloaded from R2 when first used) |
   | Fast | mobilenet_v3_small |
-  | Balanced (default) | mobilenet_v3_large |
-  | Best | mobilenet_v3_large, plus two centre crops of every photo |
+  | Balanced (models made before DINOv2 only) | mobilenet_v3_large |
+  | Best (models made before DINOv2 only) | mobilenet_v3_large, plus two centre crops of every photo |
+
+  A model keeps the quality it was made with, as its photos were embedded with that backbone, so
+  Balanced and Best stay for the models that use them but aren't offered for new ones. In the
+  invasive-plants study, DINOv2 reached about 96 % on another phone's photos against 70–80 % for
+  the MobileNets; embedding a photo takes about 0.14 s on an iPhone 17 Pro Max and 0.9 s on a
+  Redmi Note 12, against 5–40 ms for the MobileNets.
 
   Photos are collected species by species from the photo picker, or imported as a folder (a zip
   too on Android). Each photo is embedded once, when it's added; only embeddings are kept, in the
@@ -216,11 +232,16 @@ hidden layer is a setting and an ablation in the study.
 translated: it's for researchers; everyday training is the Train tab.
 
 1. **Backbones:** MediaPipe's mobilenet_v3_small and mobilenet_v3_large (Apache 2.0) download
-   from Google's public model storage the first time a run uses them, then stay on the device.
+   from Google's public model storage, and DINOv2 ViT-S/14 (Apache 2.0, converted to LiteRT with
+   8-bit weights, 22.8 MB) from the app's R2 bucket, the first time a run uses them (with a
+   progress bar), then stay on the device. DINOv2 is much more accurate (about 96 % against
+   75–80 % cross-device in the invasive-plants study) and slower to embed photos.
    Copies put in by hand are used instead when present: `Android/data/com.uri.lee.dl/files/backbones/`
    (adb), `Documents/backbones/` (iOS), or the local test-photo server on port 8767 (web, debug).
 2. **Dataset:** one folder per species, photos inside (a wrapping folder is fine; other files,
-   hidden files and `__MACOSX` are skipped).
+   hidden files and `__MACOSX` are skipped). For stage-incremental runs, group the species
+   folders into two or more stage folders, learnt in the order of their names (a leading number
+   counts as a number): `1 Vietnam/<species>/…`, `2 Australia/<species>/…`.
    - Android: **Choose zip** or **Choose folder**. Some phones' folder pickers (Xiaomi HyperOS)
      show no folders at all; use a zip there.
    - iOS: **Choose folder** in Files; to use a zip, tap it in Files first to unpack it.
@@ -230,31 +251,36 @@ translated: it's for researchers; everyday training is the Train tab.
      Android: `adb push <folder> /sdcard/Android/data/com.uri.lee.dl/files/datasets/`.
      iOS: Finder → the iPhone → Files → drag the folder onto Herb Lens, into `datasets` (or
      `xcrun devicectl device copy to … --destination Documents/datasets/<name>` for development builds).
-3. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
+3. **Test photos:** held out of the dataset (training and validation shares on sliders; at least
+   5 % left to test), or **a separate test set**: another folder or zip with the same species
+   folders (e.g. another phone's photos), chosen like the dataset.
+4. Pick backbones, scenarios, strategies, seeds (1–10) and, optionally, the 100-unit hidden layer.
    **Start**.
-4. **Leaving it running:**
+5. **Leaving it running:**
    - Android: carries on with the screen off or in another app (a foreground service with a
      progress notification keeps the CPU awake).
    - iOS 26 and later: carries on with the phone locked or in another app; iOS shows the
      progress on the lock screen, and can end it if the phone gets busy. Older iOS: keep the app
      open (the screen stays on by itself).
    - Web: keep the tab open and in front, and the computer awake.
-5. **If a run stops** (the app is closed or killed, the system ends it, the battery runs out):
+6. **If a run stops** (the app is closed or killed, the system ends it, the battery runs out):
    open Research mode again and tap **Resume**. Every finished run is saved as it goes, with the
    embeddings, so it carries on where it stopped without the dataset and without repeating rows.
-6. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
+7. When it's done, **Save results**: Android asks where to save, iOS opens the share sheet (Save
    to Files, AirDrop) and also keeps the zip in the app's `research/` folder (Finder, Files), the
    web downloads the zip. A stopped run can also be saved as it is (**Save results so far**).
 
 The zip (`herblens-research-<platform>-<time>.zip`) holds:
 
-- `README.txt`: device, dataset (photos per class), the plan and the run's log.
+- `README.txt`: device, dataset (photos per class, with stages), any test set, the plan and the run's log.
 - `results/runs.csv`, `steps.csv`, `per_class.csv`, `confusion.csv`, `task_accuracy.csv`,
-  `epochs.csv`: one row per observation, each naming device, platform, app version, backbone,
-  scenario, strategy, seed and training settings, so files from several devices stack directly.
+  `epochs.csv`: one row per observation, each naming device, platform, app version, dataset,
+  test set ("held out" or its name), split (e.g. 70/15/15), backbone, scenario, strategy, seed and
+  training settings, so files from several devices and runs stack directly.
   `steps.csv` holds the device readings: training time, memory before/after, CPU time, battery
   charge used (Android), battery level, charging state, thermal state.
-- `results/embedding.csv`: backbone load time and per-photo embedding time (median, mean, p90).
+- `results/embedding.csv`: backbone load time and per-photo embedding time (median, mean, p90),
+  for the dataset and any test set.
 - `models/<backbone>/model.tflite`: a standalone classifier trained on every photo, with its
   `labels.txt` inside and next to it; `head.json` for continuing training in the app.
 

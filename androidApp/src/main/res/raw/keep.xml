@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mapbox reads its token by name at run time, so resource shrinking can't see it used: keep it -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@string/mapbox_access_token" />

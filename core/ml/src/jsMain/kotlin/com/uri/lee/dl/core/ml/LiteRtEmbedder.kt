@@ -13,24 +13,21 @@ import org.w3c.fetch.Response
 import kotlin.js.json
 
 /**
- * A backbone in LiteRT.js (WebAssembly): 224 × 224 RGB in [0, 1], as the MediaPipe image
+ * A backbone in LiteRT.js (WebAssembly): the photo's centre square at 224 × 224, RGB in [0, 1], as the MediaPipe image
  * embedders expect; the first output is the embedding.
  */
 internal class LiteRtEmbedder(private val model: dynamic) : ImageEmbedder {
 
     override suspend fun embed(image: ClassifierImage): FloatArray = jsErrorsAsExceptions {
         val canvas = (image as WebClassifierImage).canvas
-        val pixels = modelInput(canvas, SIZE)
+        val pixels = modelInput(canvas, SIZE, centreCrop = true)
             .context2d.getImageData(0.0, 0.0, SIZE.toDouble(), SIZE.toDouble()).data
         val input = Float32Array(SIZE * SIZE * 3)
         var j = 0
         for (i in 0 until SIZE * SIZE * 4 step 4) {
             for (c in 0 until 3) input[j++] = (pixels[i + c].toInt() and 0xff) / 255f
         }
-        val outputs = settled(model.run(LiteRt.Tensor(input, arrayOf(1, SIZE, SIZE, 3))))
-        val output = outputs[0]
-        val values = settled(output.toTypedArray()).unsafeCast<Float32Array>()
-        output.delete()
+        val values = runOnce(model, input, arrayOf(1, SIZE, SIZE, 3))
         FloatArray(values.length) { values[it] }
     }
 

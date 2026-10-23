@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalUriHandler
@@ -176,10 +177,10 @@ fun SignInScreen(
                     Text(stringResource(if (state.windowBlocked) Res.string.sign_in_window_blocked else Res.string.sign_in_error), color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                 }
                 Row {
-                    TextButton(onClick = { uriHandler.openUri(LegalLinks.PRIVACY_POLICY) }) {
+                    TextButton(onClick = { uriHandler.openUri(LegalLinks.privacyPolicy(Locale.current.language)) }) {
                         Text(stringResource(Res.string.privacy_policy), style = MaterialTheme.typography.bodySmall)
                     }
-                    TextButton(onClick = { uriHandler.openUri(LegalLinks.TERMS_OF_SERVICE) }) {
+                    TextButton(onClick = { uriHandler.openUri(LegalLinks.termsOfService(Locale.current.language)) }) {
                         Text(stringResource(Res.string.terms_of_service), style = MaterialTheme.typography.bodySmall)
                     }
                 }

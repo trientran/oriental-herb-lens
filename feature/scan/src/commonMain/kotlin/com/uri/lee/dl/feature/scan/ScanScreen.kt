@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,9 +21,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -55,6 +58,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
@@ -232,6 +236,8 @@ private fun Single(
             Modifier
                 .weight(1f)
                 .fillMaxHeight()
+                // The camera view fills by cropping and would otherwise draw over the navigation rail
+                .clipToBounds()
                 .background(Color.Black)
                 .onSizeChanged { if (it.height > 0) onAction(ScanAction.ViewAspect(it.width.toFloat() / it.height)) },
         ) {
@@ -241,6 +247,9 @@ private fun Single(
                 is ScanSource.Photos -> Unit
             }
             Objects(state, onAction)
+            // The status bar keeps the theme's colours, so its time and icons stay readable over the
+            // camera, a photo or the black around one
+            Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(MaterialTheme.colorScheme.surface))
             if (state.canPickPlants) {
                 ModeSwitch(state.mode, { onAction(ScanAction.SetMode(it)) }, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 12.dp))
             }

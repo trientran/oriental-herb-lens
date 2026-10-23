@@ -143,7 +143,7 @@
     <string name="profile_min_confidence_body">Results less certain than this are not shown.</string>
     <string name="profile_app">App</string>
     <string name="profile_language">Language</string>
-    <string name="profile_full_list">Full herb list</string>
+    <string name="profile_full_list">Full herb list and GBIF image data</string>
     <string name="profile_share">Share this app</string>
     <string name="profile_contact">Contact us</string>
     <string name="profile_about">About</string>
@@ -270,6 +270,7 @@
     <string name="train_downloading">Downloading what the model builds on (about 11 MB, once)…</string>
     <string name="train_training_title">Training</string>
     <string name="train_epoch">Round %1$d</string>
+    <string name="train_calculating">Calculating the model…</string>
     <string name="train_saving">Saving the model…</string>
     <string name="train_stop">Stop</string>
     <string name="train_curve_legend">Blue: error on the photos it learns from. Orange: error on the checking photos, set aside. Training stops once the orange line stops falling; the dashed line marks the round that was kept.</string>
@@ -283,11 +284,13 @@
     <string name="train_delete">Delete model</string>
     <string name="train_delete_confirm">Delete %1$s? This can’t be undone.</string>
     <string name="train_quality">Quality</string>
+    <string name="train_quality_most_accurate">Most accurate</string>
     <string name="train_quality_fast">Fast</string>
     <string name="train_quality_balanced">Balanced</string>
     <string name="train_quality_best">Best</string>
     <string name="train_quality_fixed">The quality can’t change once photos are in: it decides how they were read.</string>
     <string name="train_when_adding">When adding species or photos later</string>
+    <string name="train_update_calculate">Calculate (recommended)</string>
     <string name="train_update_replay">Keep old ones (replay)</string>
     <string name="train_update_retrain">Retrain all</string>
     <string name="train_advanced">Advanced</string>
@@ -400,7 +403,7 @@
     <string name="term_identify_modes">Whole view and Pick a plant</string>
     <string name="term_identify_modes_body">Whole view identifies the whole picture at once. Pick a plant first finds each separate plant in the picture (object detection) and marks it with a dot, then identifies just that plant. It helps when several plants are in view.</string>
     <string name="term_base_model">Quality: what your model builds on</string>
-    <string name="term_base_model_body">Your model builds on a ready-made image model (MobileNet, from Google’s MediaPipe) that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Fast uses a small base model: quick to train and run. Balanced uses a larger, more accurate one. Best also learns from two cropped copies of each photo: slower, often a little better.</string>
+    <string name="term_base_model_body">Your model builds on a ready-made image model that already recognises general shapes, colours and textures. Only the last step, telling your species apart, is learned from your photos, which is why a few dozen photos are enough. Most accurate uses DINOv2 (from Meta): far more accurate, but each photo takes longer to read (about a tenth of a second on a recent iPhone, about a second on a mid-range phone), and it’s a 23 MB download the first time. Fast uses a small MobileNet (from Google’s MediaPipe): quick, less accurate. Models made earlier with Balanced or Best keep the larger MobileNet they were made with.</string>
     <string name="term_training">Training</string>
     <string name="term_training_body">Teaching a model from examples. You give it photos sorted by species; round by round, it adjusts itself until it can tell them apart. Here it all happens on your device, and your photos aren’t uploaded.</string>
     <string name="term_round">Round (epoch)</string>
@@ -413,8 +416,8 @@
     <string name="term_loss_body">A number for how wrong the model’s answers are, counting how sure it was. Lower is better. If the error on the photos it learns from keeps falling while the error on the checking photos rises, the model is memorising its photos rather than learning (overfitting).</string>
     <string name="term_confusion">Confusion matrix</string>
     <string name="term_confusion_body">A table of the test photos. Each row is the species a photo really shows; each column is the species the model said. Numbers on the diagonal are right answers; the others show which species it mixes up.</string>
-    <string name="term_continual">Keep old ones (replay) or Retrain all</string>
-    <string name="term_continual_body">When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
+    <string name="term_continual">Calculate, Keep old ones or Retrain all</string>
+    <string name="term_continual_body">Calculate works the model out from every photo: each species’ average photo, plus how photos vary, shared by all species. There are no training rounds, so it takes a moment, it never forgets, and it was the most accurate in our tests. When you add species or photos later, Keep old ones trains on the new photos plus a sample of earlier ones, so it’s quick and doesn’t forget what it knew (continual learning). Retrain all starts again from every photo: slower, sometimes a little more accurate.</string>
     <string name="term_learning_rate">Learning rate</string>
     <string name="term_learning_rate_body">How big a step the model takes each time it corrects itself. Too high and it jumps around without settling; too low and it learns very slowly.</string>
     <string name="term_batch_size">Batch size</string>
@@ -439,4 +442,12 @@
     <string name="train_intro_title">What is Train for?</string>
     <string name="train_intro_body">Train makes your own AI model that tells apart things you choose, learned from your own photos. It isn’t only for herbs: it works in any field where photos can tell things apart, such as agriculture and farming (grading the quality of harvested tomatoes, say), forestry, biosecurity (spotting pests, diseases or weeds), or teaching and research in medicine. Training runs on this device.\n\nFor now it makes image classification models only: a model that says which of your categories (species, grades, conditions) a photo shows. Models you train are for learning and research: don’t rely on them alone for decisions that need an expert, such as a diagnosis or whether food is safe.</string>
     <string name="train_intro_steps">Name a model, add each category with its photos, train it, then try it with the camera.</string>
+
+    <!-- Research survey invitation: the recruitment letter approved by UNE HREC, adapted only to say the app is on more than Android, to name the button instead of a link, and to give the email address -->
+    <string name="survey_title">Research survey</string>
+    <string name="survey_row_body">About 10–15 minutes, anonymous</string>
+    <string name="survey_letter">Dear friends,\n\nI hope this message finds you well. My name is Trien Phat Tran, and I am currently pursuing my PhD in Computer Science at the University of New England (Australia), under the guidance of Dr. Fareed Ud Din, Professor Ljiljana Brankovic, Professor Cesar Sanin, and Associate Professor Susan Hester.\n\nI am writing to invite you to participate in an important phase of my PhD research. My study focuses on developing a mobile application for identifying Vietnamese medicinal plants using deep learning and crowdsourced data. Our goal is to create a user-friendly app that leverages community-contributed data to train and optimize deep learning models, ensuring accurate and safe identification of medicinal plants.\n\nTo ensure the success of this project, I am conducting an online survey to gather insights and feedback from individuals with knowledge and experience in this field. Your participation would be invaluable in helping us better understand the needs and expectations of users for this application.\n\nThe survey includes questions about:\n• User interface and experience of the mobile application.\n• Suggest new features that could benefit your work or field of expertise.\n• Effectiveness and clarity of the plant identification process.\n• Methods for crowd-sourcing data and user engagement strategies.\n\nThe survey will take approximately 10-15 minutes to complete. We greatly appreciate your time and contribution to this research. Your feedback will play a crucial role in refining and enhancing the quality of the application.\n\nPlease tap Take the survey below to begin.\n\nIf you have any questions or require further information, please do not hesitate to contact me at ttran72@myune.edu.au. I look forward to receiving your response and sincerely thank you for your support.\n\nBest Regards,\n\nTrien Phat Tran\nPhD Candidate - Computer Science\nUniversity of New England</string>
+    <string name="survey_start">Take the survey</string>
+    <string name="survey_not_now">Not now</string>
+    <string name="survey_close">Close</string>
 </resources>

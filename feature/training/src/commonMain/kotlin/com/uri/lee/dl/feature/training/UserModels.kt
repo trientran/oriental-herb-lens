@@ -6,24 +6,39 @@ import com.uri.lee.dl.core.training.Evaluation
 import com.uri.lee.dl.core.training.Example
 import com.uri.lee.dl.core.training.HeadTrainer
 import com.uri.lee.dl.core.training.ModelPack
+import com.uri.lee.dl.core.training.SldaClassifier
 import com.uri.lee.dl.core.training.TrainingOptions
 import com.uri.lee.dl.domain.training.AppFiles
 import kotlin.random.Random
 
-/** Simple choices for people who don't want to think about training settings. */
-enum class Quality(val backbone: String, val augment: Boolean) {
-    /** The small backbone: quickest to train and run. */
-    FAST("mobilenet_v3_small", augment = false),
+/**
+ * Simple choices for people who don't want to think about training settings. A model keeps the
+ * quality it was made with (it decides how its photos were read), so earlier choices stay for the
+ * models that use them; new models are offered the [offered] ones.
+ */
+enum class Quality(val backbone: String, val augment: Boolean, val offered: Boolean) {
+    /** DINOv2 ViT-S/14: by far the most accurate (about 96 % on another phone's photos in the invasive-plants study, against 70–80 % for the MobileNets), slower to read photos. */
+    MOST_ACCURATE("dinov2_vits14", augment = false, offered = true),
 
-    /** The large backbone. */
-    BALANCED("mobilenet_v3_large", augment = false),
+    /** The small MobileNet: quickest to read photos and run, least accurate. */
+    FAST("mobilenet_v3_small", augment = false, offered = true),
 
-    /** The large backbone, plus two cropped copies of every photo to learn from. */
-    BEST("mobilenet_v3_large", augment = true),
+    /** The large MobileNet (models made before DINOv2). */
+    BALANCED("mobilenet_v3_large", augment = false, offered = false),
+
+    /** The large MobileNet, plus two cropped copies of every photo to learn from (models made before DINOv2). */
+    BEST("mobilenet_v3_large", augment = true, offered = false),
 }
 
 /** How a trained model learns species or photos added later. */
 enum class UpdateMode {
+    /**
+     * Calculates the model from every photo (streaming linear discriminant analysis): each
+     * species' average photo plus how photos vary, shared by all species. No training rounds, so
+     * it takes a moment, never forgets, and was the most accurate in our study.
+     */
+    CALCULATE,
+
     /** Carries on from the last model, replaying a sample of earlier photos so they aren't forgotten. */
     REPLAY,
 
@@ -51,8 +66,8 @@ data class ExpertSettings(
 )
 
 data class TrainingSettings(
-    val quality: Quality = Quality.BALANCED,
-    val update: UpdateMode = UpdateMode.REPLAY,
+    val quality: Quality = Quality.MOST_ACCURATE,
+    val update: UpdateMode = UpdateMode.CALCULATE,
     val expert: ExpertSettings = ExpertSettings(),
 ) {
     fun options(seed: Int = expert.seed) = TrainingOptions(
@@ -201,7 +216,9 @@ class UserModelStore(private val files: AppFiles) {
     private fun decodeSettings(v: Map<String, String>): TrainingSettings {
         val d = ExpertSettings()
         return TrainingSettings(
+            // Settings saved without a quality predate the choice: those models were read with the large MobileNet
             quality = v["quality"]?.let { q -> Quality.entries.firstOrNull { it.name == q } } ?: Quality.BALANCED,
+            // Settings saved without one predate the choice of calculating: those models were trained with replay
             update = v["update"]?.let { u -> UpdateMode.entries.firstOrNull { it.name == u } } ?: UpdateMode.REPLAY,
             expert = ExpertSettings(
                 learningRate = v["learningRate"]?.toFloatOrNull() ?: d.learningRate,
@@ -362,9 +379,19 @@ object ModelTrainer {
         fun Iterable<StoredExample>.toExamples() = map { Example(it.embedding, it.classIndex) }
         val trainAll = byShare[Share.TRAIN].orEmpty()
         val validation = byShare[Share.VALIDATION].orEmpty().filter { it.original }.toExamples()
+        val test = byShare[Share.TEST].orEmpty().filter { it.original }.toExamples()
+        val lastPhoto = examples.maxOfOrNull { it.photo } ?: -1
+
+        if (model.settings.update == UpdateMode.CALCULATE) {
+            // Nothing to stop early, so the checking photos are learnt from too
+            val learn = (trainAll.toExamples() + validation)
+            require(learn.isNotEmpty()) { "No photos to learn from" }
+            val head = SldaClassifier(learn.first().embedding.size).apply { learn(learn) }.head()
+            val evaluation = Evaluation.of(head, test.ifEmpty { learn }, classes)
+            return Result(head, report(model.classes, evaluation, 0, test.isNotEmpty(), emptyList()), lastPhoto)
+        }
         val replay = previous != null && model.settings.update == UpdateMode.REPLAY &&
             model.trainedClasses.isNotEmpty() && model.classes.take(model.trainedClasses.size) == model.trainedClasses
-        val lastPhoto = examples.maxOfOrNull { it.photo } ?: -1
 
         val train: List<Example>
         val start: ClassifierHead?
@@ -388,7 +415,6 @@ object ModelTrainer {
         require(train.isNotEmpty()) { "No photos to train on" }
 
         val result = HeadTrainer.train(train, validation, classes, model.settings.options(), start, onEpoch)
-        val test = byShare[Share.TEST].orEmpty().filter { it.original }.toExamples()
         val heldOut = test.isNotEmpty()
         val evaluation = Evaluation.of(result.head, test.ifEmpty { validation.ifEmpty { train } }, classes)
         return Result(result.head, report(model.classes, evaluation, result.epochs, heldOut, result.history), lastPhoto)

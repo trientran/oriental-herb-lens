@@ -136,9 +136,10 @@ fun normalized(embedding: FloatArray): FloatArray {
     return if (length == 0f) embedding.copyOf() else FloatArray(embedding.size) { embedding[it] / length }
 }
 
-internal fun softmax(logits: FloatArray): FloatArray {
+/** Probabilities from [logits], softened by [temperature] when it's above 1. */
+internal fun softmax(logits: FloatArray, temperature: Float = 1f): FloatArray {
     val max = logits.max()
-    val exps = FloatArray(logits.size) { exp(logits[it] - max) }
+    val exps = FloatArray(logits.size) { exp((logits[it] - max) / temperature) }
     val total = exps.sum()
     return FloatArray(exps.size) { exps[it] / total }
 }

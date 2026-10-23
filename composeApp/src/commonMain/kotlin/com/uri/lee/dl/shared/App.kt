@@ -2,11 +2,14 @@ package com.uri.lee.dl.shared
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -24,6 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -36,9 +43,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.uri.lee.dl.core.common.AppInfo
+import com.uri.lee.dl.core.designsystem.LocalLanguageName
 import com.uri.lee.dl.core.designsystem.LocalSharesPhotos
 import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
+import com.uri.lee.dl.core.designsystem.component.AiTerm
 import com.uri.lee.dl.core.designsystem.component.DialogLayer
+import com.uri.lee.dl.core.designsystem.component.LocalTipViewed
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.nav_browse
 import com.uri.lee.dl.core.designsystem.resources.nav_identify
@@ -51,10 +61,17 @@ import com.uri.lee.dl.core.designsystem.resources.status_suspended
 import com.uri.lee.dl.core.designsystem.resources.status_update
 import com.uri.lee.dl.core.designsystem.resources.status_update_recommended
 import com.uri.lee.dl.core.designsystem.resources.status_update_required
+import com.uri.lee.dl.core.designsystem.resources.survey_close
+import com.uri.lee.dl.core.designsystem.resources.survey_letter
+import com.uri.lee.dl.core.designsystem.resources.survey_not_now
+import com.uri.lee.dl.core.designsystem.resources.survey_start
+import com.uri.lee.dl.core.designsystem.resources.survey_title
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.domain.analytics.Analytics
+import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.ml.ImageEmbedderLoader
 import com.uri.lee.dl.domain.ml.PhotoReader
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.domain.model.NamePreference
 import com.uri.lee.dl.domain.model.UpdatePolicy
 import com.uri.lee.dl.domain.training.Backbones
@@ -108,8 +125,18 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
 @Composable
 fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val vietnameseFirst = koinInject<NamePreference>().vietnameseFirst()
+    val analytics = koinInject<Analytics>()
+    val tipViewed = remember(analytics) { { term: AiTerm -> analytics.log(AnalyticsEvent.TipViewed(term.name.lowercase())) } }
     HerbLensTheme {
-        CompositionLocalProvider(LocalVietnameseFirst provides vietnameseFirst, LocalSharesPhotos provides actions.sharePhotos) {
+        // Right to left for Arabic and Persian everywhere: Android does it itself, iOS and the web follow this
+        val direction = if (AppLanguages.isRightToLeft(Locale.current.language)) LayoutDirection.Rtl else LocalLayoutDirection.current
+        CompositionLocalProvider(
+            LocalVietnameseFirst provides vietnameseFirst,
+            LocalSharesPhotos provides actions.sharePhotos,
+            LocalTipViewed provides tipViewed,
+            LocalLayoutDirection provides direction,
+            LocalLanguageName provides (actions.languageName ?: { code -> AppLanguages.of(code)?.nativeName ?: code }),
+        ) {
             AppContent(actions, openHerbId)
         }
     }
@@ -133,6 +160,8 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
     val wide = currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val fullScreen = listOf(SignInDestination::class, DeleteAccountDestination::class, ContributeDestination::class, SpeciesDestination::class).any { current?.hasRoute(it) == true }
     val signIn = { navController.navigate(SignInDestination) { launchSingleTop = true } }
+    val appViewModel = koinViewModel<AppViewModel>()
+    val surveyAvailable = appViewModel.state.collectAsStateWithLifecycle().value.surveyAvailable
     val addPhotos = if (actions.sharePhotos) { herbId: Long -> navController.navigate(ContributeDestination(herbId)) } else null
     NavigationSuiteScaffold(
         layoutType = when {
@@ -169,7 +198,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
             }
             composable<BrowseDestination> { entry ->
                 SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
-                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, modifier = Modifier.statusBarsPadding())
+                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, onSetLanguage = actions.setLanguage, modifier = Modifier.statusBarsPadding())
                 }
             }
             composable<SavedDestination> {
@@ -199,6 +228,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                         onShareApp = actions.onShareApp,
                         onOpenLanguageSettings = actions.onOpenLanguageSettings,
                         onDeleteAccount = { navController.navigate(DeleteAccountDestination) { launchSingleTop = true } },
+                        onOpenSurvey = if (surveyAvailable) { { appViewModel.onAction(AppAction.ShowSurveyInvite) } } else null,
                         debugTools = listOfNotNull(
                             actions.research?.let { "Research mode" to { showResearch = true } },
                         ),
@@ -271,8 +301,38 @@ private fun StatusDialogs(actions: PlatformActions) {
                     },
                 )
             }
+            else -> state.visibleSurveyInvite?.let { source ->
+                SurveyInvite(source, state.links?.surveyLink(Locale.current.language), viewModel::onAction)
+            }
         }
     }
+}
+
+/** The approved recruitment letter, then the survey in the browser. */
+@Composable
+private fun SurveyInvite(source: SurveyInviteSource, link: String?, onAction: (AppAction) -> Unit) {
+    val uriHandler = LocalUriHandler.current
+    val close = { onAction(AppAction.SurveyInviteClosed) }
+    AlertDialog(
+        onDismissRequest = close,
+        icon = { Icon(Icons.Filled.RateReview, contentDescription = null) },
+        title = { Text(stringResource(Res.string.survey_title)) },
+        text = { Text(stringResource(Res.string.survey_letter), Modifier.verticalScroll(rememberScrollState())) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onAction(AppAction.SurveyStarted)
+                    link?.let(uriHandler::openUri)
+                },
+                enabled = link != null,
+            ) { Text(stringResource(Res.string.survey_start)) }
+        },
+        dismissButton = {
+            TextButton(onClick = close) {
+                Text(stringResource(if (source == SurveyInviteSource.PROFILE) Res.string.survey_close else Res.string.survey_not_now))
+            }
+        },
+    )
 }
 
 /** "com.uri.lee.dl.shared.SpeciesDestination/{herbId}" → "species", for usage statistics. */

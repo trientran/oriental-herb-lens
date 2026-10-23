@@ -62,7 +62,12 @@ class ResearchTest {
 
     @Test
     fun planAndEmbeddingsSurviveSaving() {
-        val saved = ResearchPlan(options = TrainingOptions(classBalanced = true, hiddenUnits = 100, learningRate = 0.005f))
+        val saved = ResearchPlan(
+            scenarios = listOf(Scenario(ScenarioKind.StageIncremental, 2), Scenario(ScenarioKind.ClassIncremental)),
+            strategies = listOf(Strategy.LwF, Strategy.Replay(20)),
+            options = TrainingOptions(classBalanced = true, hiddenUnits = 100, learningRate = 0.005f),
+            split = SplitSettings(0.8f, 0.1f),
+        )
         assertEquals(saved, ResearchFormats.decodePlan(ResearchFormats.encodePlan(saved)))
 
         val examples = clusters(3, 4, 8, 0.3f)

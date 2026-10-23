@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -152,8 +153,9 @@ fun HerbDetailsRoute(
     if (suggesting && species != null) {
         SuggestNameSheet(
             herbId = herbId,
-            listed = NameLanguages.ENABLED.associateWith { species.names(it) },
-            language = if (LocalVietnameseFirst.current) NameLanguages.VIETNAMESE else NameLanguages.ENGLISH,
+            listed = NameLanguages.SUGGESTIBLE.associateWith { species.names(it) },
+            // The language the app is shown in, which follows the system's unless the user chose another
+            language = Locale.current.language,
             onSignIn = { suggesting = false; onSignIn() },
             onDismiss = { suggesting = false },
         )
