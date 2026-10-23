@@ -36,10 +36,15 @@ with everyone, or try models others have shared.
 LEARN AS YOU GO
 Tap ? next to any AI term (model, confidence, training, and more) for a plain-language explanation.
 
+IN YOUR LANGUAGE
+The app is available in 39 languages and follows your device's language, with right-to-left layout
+for Arabic and Persian. Species names, the privacy policy and the terms are in English and Vietnamese.
+
 CONTRIBUTE
-Sign in with Apple or Google to add your own plant photos, suggest common names in English or
-Vietnamese, and share models. Photos are checked on the device before upload, and anything shared
-can be reported.
+Sign in with Apple or Google to add your own plant photos, suggest common names in any of the 39
+languages, and share models. Photos are checked on the device before upload, and anything shared
+can be reported. You must be 13 or older to use Med Herb Lens; if you are under 18, you need a parent
+or guardian's permission.
 
 FOR RESEARCH
 Med Herb Lens is part of a PhD research project at the University of New England, Australia. The
@@ -57,9 +62,12 @@ herb,medicinal plant,plant identifier,Vietnam,botany,GBIF,species,flora,AI,thả
 
 ## URLs
 
-- Support URL: https://medherblens.com
-- Marketing URL: https://medherblens.com
-- Privacy Policy URL: https://medherblens.com/pages/privacy-policy
+- Support URL: https://med-herb-lens.pages.dev
+- Marketing URL: https://med-herb-lens.pages.dev
+- Privacy Policy URL: https://med-herb-lens.pages.dev/pages/privacy-policy
+
+Store listings use the Pages address, like the apps (LegalLinks): it is free and cannot lapse, and it redirects to
+medherblens.com while the project keeps that domain (website/README.md).
 
 ## Screenshots (upload in this order)
 
@@ -96,10 +104,15 @@ cứu. Chia sẻ mô hình với mọi người, hoặc dùng thử mô hình ng
 VỪA DÙNG VỪA HỌC
 Chạm vào ? cạnh mỗi thuật ngữ AI (mô hình, độ tin cậy, huấn luyện…) để xem giải thích dễ hiểu.
 
+THEO NGÔN NGỮ CỦA BẠN
+Ứng dụng có 39 ngôn ngữ và tự theo ngôn ngữ của thiết bị, với bố cục từ phải sang trái cho tiếng
+Ả Rập và tiếng Ba Tư. Tên loài, chính sách quyền riêng tư và điều khoản dùng tiếng Việt và tiếng Anh.
+
 ĐÓNG GÓP
-Đăng nhập bằng Apple hoặc Google để thêm ảnh cây của bạn, đề xuất tên thường gọi bằng tiếng Việt
-hoặc tiếng Anh, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải lên, và mọi
-nội dung chia sẻ đều có thể bị báo cáo.
+Đăng nhập bằng Apple hoặc Google để thêm ảnh cây của bạn, đề xuất tên thường gọi bằng bất kỳ ngôn
+ngữ nào trong 39 ngôn ngữ, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải
+lên, và mọi nội dung chia sẻ đều có thể bị báo cáo. Bạn cần từ 13 tuổi trở lên để dùng Med Herb Lens;
+nếu dưới 18 tuổi, bạn cần có sự đồng ý của cha mẹ hoặc người giám hộ.
 
 PHỤC VỤ NGHIÊN CỨU
 Med Herb Lens là một phần của dự án nghiên cứu tiến sĩ tại Đại học New England, Úc. Danh sách loài
@@ -117,7 +130,7 @@ cây thuốc,thảo dược,nhận dạng cây,cây thuốc nam,dược liệu,t
 
 ### Support URL
 
-https://medherblens.com/about-vi
+https://med-herb-lens.pages.dev/about-vi
 
 ### Subtitle
 
