@@ -1,0 +1,19 @@
+{
+  "upload_type": "software",
+  "license": "cc-by-4.0",
+  "creators": [
+    {
+      "name": "Tran, Trien Phat",
+      "affiliation": "School of Science and Technology, University of New England",
+      "orcid": "0009-0009-8135-9130"
+    }
+  ],
+  "description": "<p>Med Herb Lens: a Kotlin Multiplatform app (Android, iOS and the web) that identifies medicinal herbs on the device and lets users train and share their own image models, with a research mode for on-device continual learning studies.</p><p>The code is licensed under the Apache License 2.0. The herb identification model, the species catalog as compiled for the app, the documentation and website text, and images are licensed under the Creative Commons Attribution 4.0 International licence (CC BY 4.0): you may share and adapt them for any purpose, as long as you give credit (see Research and how to cite). NOTICE says which is which.</p><p>Release notes are on the GitHub release page for this version.</p>",
+  "related_identifiers": [
+    {
+      "identifier": "https://medherblens.com",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    }
+  ]
+}
