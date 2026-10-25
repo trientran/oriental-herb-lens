@@ -37,7 +37,8 @@ ready meanwhile; the secrets are set.
    - Fill in the App Store listing:
      - App Privacy answers (the table at the end of this file);
      - screenshots: iPhone 6.9″ and iPad 13″;
-     - description, keywords, support URL `https://medherblens.com`;
+     - description, keywords, support URL `https://med-herb-lens.pages.dev` (store listings use the Pages
+       address, which cannot lapse; it redirects to medherblens.com);
      - age rating 13+, to match the terms;
      - review notes (below).
    - Submit the build for review.
