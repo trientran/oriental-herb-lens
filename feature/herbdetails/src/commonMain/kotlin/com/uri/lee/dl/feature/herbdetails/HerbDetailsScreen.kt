@@ -86,6 +86,8 @@ import com.uri.lee.dl.core.designsystem.resources.cd_close
 import com.uri.lee.dl.core.designsystem.resources.cd_photo
 import com.uri.lee.dl.core.designsystem.resources.cd_remove_favorite
 import com.uri.lee.dl.core.designsystem.resources.details_add_photos
+import com.uri.lee.dl.core.designsystem.resources.details_needs_photos_body
+import com.uri.lee.dl.core.designsystem.resources.details_needs_photos_title
 import com.uri.lee.dl.core.designsystem.resources.details_classification
 import com.uri.lee.dl.core.designsystem.resources.details_english_names
 import com.uri.lee.dl.core.designsystem.resources.details_family
@@ -139,6 +141,9 @@ fun HerbDetailsRoute(
 ) {
     val viewModel = koinViewModel<HerbDetailsViewModel>(key = "herb-$herbId") { parametersOf(herbId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // Only where photos can be shared: on the web, telling would load the whole herb model
+    val sharesPhotos = onAddPhotos != null
+    LaunchedEffect(herbId, sharesPhotos) { if (sharesPhotos) viewModel.onAction(HerbDetailsAction.CheckNeedsPhotos) }
     var suggesting by rememberSaveable(herbId) { mutableStateOf(false) }
 
     HerbDetailsScreen(
@@ -252,7 +257,7 @@ fun HerbDetailsScreen(
                 )
                 state.notFound -> EmptyState(Icons.Filled.SearchOff, stringResource(Res.string.details_not_found))
                 species == null -> LoadingState()
-                else -> DetailsContent(species, state.photos, state.photosLoading, state.place, onAction, onAddPhotos, onSuggestName)
+                else -> DetailsContent(species, state.photos, state.photosLoading, state.place, onAction, onAddPhotos, onSuggestName, state.needsPhotos)
             }
         }
     }
@@ -267,6 +272,7 @@ private fun DetailsContent(
     onAction: (HerbDetailsAction) -> Unit,
     onAddPhotos: (() -> Unit)?,
     onSuggestName: () -> Unit,
+    needsPhotos: Boolean = false,
 ) {
     val spacing = HerbLensTheme.spacing
     val uriHandler = LocalUriHandler.current
@@ -320,6 +326,16 @@ private fun DetailsContent(
                 OutlinedButton(onClick = onSuggestName) {
                     Icon(Icons.Filled.Edit, contentDescription = null)
                     Text(stringResource(Res.string.details_suggest_name), Modifier.padding(start = spacing.sm))
+                }
+            }
+        }
+        if (needsPhotos && onAddPhotos != null) {
+            item("needs-photos") {
+                Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.secondaryContainer) {
+                    Column(Modifier.fillMaxWidth().padding(spacing.md), verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                        Text(stringResource(Res.string.details_needs_photos_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(Res.string.details_needs_photos_body), style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }

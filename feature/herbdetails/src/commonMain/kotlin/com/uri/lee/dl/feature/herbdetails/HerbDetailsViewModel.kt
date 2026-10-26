@@ -5,6 +5,7 @@ import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.model.GeoLocation
+import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.location.AddressLine
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
@@ -46,6 +47,9 @@ sealed interface HerbDetailsAction {
 
     /** The [HerbDetailsState.notice] was shown. */
     data object NoticeShown : HerbDetailsAction
+
+    /** Checks whether the herb model knows this species, where photos can be shared to teach it. */
+    data object CheckNeedsPhotos : HerbDetailsAction
 }
 
 /** A short confirmation after a moderation action. */
@@ -71,6 +75,8 @@ data class HerbDetailsState(
     val isSignedIn: Boolean = false,
     /** The place picked on the photo map, with its address once known. */
     val place: SelectedPlace? = null,
+    /** The herb model doesn't know this species yet, so photos of it are wanted most. */
+    val needsPhotos: Boolean = false,
 ) {
     /** User contributions first, then GBIF photos, without the ones this user hid. */
     val photos: List<SpeciesPhoto> get() = (userPhotos + referencePhotos).filterNot { hidden.hides(it.url, it.uploaderId) }
@@ -89,6 +95,7 @@ class HerbDetailsViewModel(
     private val moderation: ModerationRepository,
     private val auth: AuthRepository,
     private val addresses: AddressLine,
+    private val classifier: HerbClassifier,
     private val analytics: Analytics = NoAnalytics,
 ) : MviViewModel<HerbDetailsState, HerbDetailsAction>(HerbDetailsState(herbId)) {
 
@@ -121,6 +128,16 @@ class HerbDetailsViewModel(
                 load()
             }
             HerbDetailsAction.InfoOpened -> analytics.log(AnalyticsEvent.SpeciesInfoViewed(currentState.herbId))
+            HerbDetailsAction.CheckNeedsPhotos -> viewModelScope.launch {
+                try {
+                    val known = classifier.knownSpecies()
+                    setState { copy(needsPhotos = known.isNotEmpty() && this.herbId !in known) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    log.w(e) { "The model's species unavailable" }
+                }
+            }
             is HerbDetailsAction.SelectPlace -> selectPlace(action.location)
             HerbDetailsAction.GbifOpened -> analytics.log(AnalyticsEvent.GbifOpened(currentState.herbId))
             is HerbDetailsAction.Report -> moderate(ModerationNotice.REPORTED) {

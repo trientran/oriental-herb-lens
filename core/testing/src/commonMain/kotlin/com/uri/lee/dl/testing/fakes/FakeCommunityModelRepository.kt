@@ -52,4 +52,11 @@ class FakeCommunityModelRepository(private val uid: () -> String? = { "user-1" }
     }
 
     override suspend fun hideUploader(uploaderId: String) = hiddenPeople.update { it + uploaderId }
+
+    /** Model ids whose add was counted, once per model here (the Worker counts once per person). */
+    val counted = mutableListOf<String>()
+
+    override suspend fun countAdd(model: CommunityModel) {
+        if (uid() != null && model.uploaderId != uid()) counted += model.id
+    }
 }

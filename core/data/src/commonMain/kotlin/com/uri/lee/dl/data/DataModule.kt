@@ -18,7 +18,9 @@ import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.data.firebase.UserProfileSync
 import com.uri.lee.dl.data.moderation.DefaultModerationRepository
 import com.uri.lee.dl.domain.moderation.ModerationRepository
+import com.uri.lee.dl.data.firebase.FirestoreContributionHistory
 import com.uri.lee.dl.data.firebase.FirestoreContributionRepository
+import com.uri.lee.dl.domain.model.ContributionHistoryRepository
 import com.uri.lee.dl.data.firebase.FirestorePhotoRepository
 import com.uri.lee.dl.data.gbif.GbifPhotoRepository
 import com.uri.lee.dl.data.settings.DataStoreSettingsRepository
@@ -59,6 +61,7 @@ val dataModule: Module = module {
     singleOf(::FirebaseAuthRepository) bind AuthRepository::class
     singleOf(::FirestorePhotoRepository) bind PhotoRepository::class
     singleOf(::FirestoreContributionRepository) bind ContributionRepository::class
+    singleOf(::FirestoreContributionHistory) bind ContributionHistoryRepository::class
     single<AppStatusRepository> {
         val app = get<AppInfo>()
         DefaultAppStatusRepository(get(), versionCode = app.versionCode, platform = app.platform)
@@ -66,7 +69,7 @@ val dataModule: Module = module {
     single<CitationRepository> { RemoteConfigCitationRepository(get()) }
     single<AppLinksRepository> { RemoteConfigAppLinksRepository(get()) }
     single<CommunityModelRepository> {
-        DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl)
+        DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl, history = get(), settings = get())
     }
     singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
     single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = get<AppInfo>().photoUploadUrl) }

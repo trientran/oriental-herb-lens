@@ -35,4 +35,13 @@ class SharingRulesTest {
         // "các" and "lon" fold to Vietnamese abuse without their diacritics
         assertNull(SharingRules.problem("Các loại rau", species + "Lon nước", 1))
     }
+
+    @Test
+    fun `credit names are short and carry no contact details or abuse`() {
+        assertNull(SharingRules.creditProblem("Trần Thị Lan"))
+        assertEquals(SharingProblem.NAME_LENGTH, SharingRules.creditProblem("  "))
+        assertEquals(SharingProblem.NAME_LENGTH, SharingRules.creditProblem("x".repeat(41)))
+        assertEquals(SharingProblem.CONTACT_DETAILS, SharingRules.creditProblem("lan@example.com"))
+        assertEquals(SharingProblem.OFFENSIVE_WORDS, SharingRules.creditProblem("shit"))
+    }
 }

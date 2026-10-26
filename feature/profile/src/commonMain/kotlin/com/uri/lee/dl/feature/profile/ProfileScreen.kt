@@ -126,6 +126,8 @@ fun ProfileScreen(state: ProfileState, onAction: (ProfileAction) -> Unit, action
         ) {
             AccountCard(state.isSignedIn, onSignIn = actions.onSignIn, onSignOut = { onAction(ProfileAction.SignOut) }, onDeleteAccount = actions.onDeleteAccount)
 
+            ContributionsCard(state, onAction)
+
             SectionCard(stringResource(Res.string.profile_identification)) {
                 ConfidenceSetting(state.scanSettings.minConfidence) { onAction(ProfileAction.SetMinConfidence(it)) }
             }

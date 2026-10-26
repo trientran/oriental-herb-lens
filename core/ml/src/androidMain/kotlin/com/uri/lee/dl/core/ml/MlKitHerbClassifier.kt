@@ -1,5 +1,6 @@
 package com.uri.lee.dl.core.ml
 
+import android.content.Context
 import android.graphics.Bitmap
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
@@ -8,10 +9,16 @@ import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.HerbClassifier
+import com.uri.lee.dl.domain.ml.speciesKeysOf
+import com.uri.lee.dl.domain.ml.LABELS_TAIL_BYTES
+import com.uri.lee.dl.domain.ml.storedZipEntry
 import com.uri.lee.dl.domain.model.Classification
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.InputStream
 
 /**
  * An ML Kit [InputImage] handed to the classifier. With its upright [bitmap], objects found in it
@@ -26,7 +33,7 @@ class MlKitClassifierImage(val inputImage: InputImage, val bitmap: Bitmap? = nul
  * normalisation from the model's metadata. One labeler is kept per model file and options, instead
  * of building a new one for every image or camera frame.
  */
-internal class MlKitHerbClassifier(private val models: HerbModelLocator) : HerbClassifier {
+internal class MlKitHerbClassifier(private val models: HerbModelLocator, private val context: Context) : HerbClassifier {
 
     private data class LabelerKey(val model: String, val minConfidence: Float, val maxResults: Int)
 
@@ -39,6 +46,26 @@ internal class MlKitHerbClassifier(private val models: HerbModelLocator) : HerbC
             .process(input)
             .await()
             .map { Classification(label = it.text, confidence = it.confidence) }
+    }
+
+    private var known: Pair<String, Set<Long>>? = null
+
+    /** The labels.txt the model's metadata carries, read once per model file from its end. */
+    override suspend fun knownSpecies(): Set<Long> = mutex.withLock {
+        val model = models.current()
+        known?.takeIf { it.first == model.cacheKey }?.second ?: withContext(Dispatchers.IO) {
+            val stream: InputStream = when (model) {
+                is HerbModelFile.Bundled -> context.assets.open(model.name)
+                is HerbModelFile.Installed -> java.io.File(model.path).inputStream()
+            }
+            stream.use {
+                val size = it.available().toLong()
+                val offset = (size - LABELS_TAIL_BYTES).coerceAtLeast(0)
+                var skipped = 0L
+                while (skipped < offset) skipped += it.skip(offset - skipped).takeIf { n -> n > 0 } ?: break
+                speciesKeysOf(storedZipEntry(it.readBytes(), skipped, "labels.txt"))
+            }.also { known = model.cacheKey to it }
+        }
     }
 
     private suspend fun labeler(minConfidence: Float, maxResults: Int): ImageLabeler = mutex.withLock {

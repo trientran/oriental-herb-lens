@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import com.uri.lee.dl.core.designsystem.resources.Res
+import com.uri.lee.dl.core.designsystem.resources.photo_by_named
 import com.uri.lee.dl.core.designsystem.resources.photo_by_user
 import com.uri.lee.dl.core.designsystem.resources.photo_credit
 import com.uri.lee.dl.core.designsystem.resources.photo_credit_publisher
@@ -26,7 +27,8 @@ internal fun PhotoCredit(photo: SpeciesPhoto, style: TextStyle, color: Color, mo
     val credit = photo.credit
     Column(modifier) {
         if (photo.source == PhotoSource.USER || credit == null) {
-            Text(stringResource(Res.string.photo_by_user), style = style, color = color)
+            val name = photo.creditName.takeIf { photo.source == PhotoSource.USER }
+            Text(name?.let { stringResource(Res.string.photo_by_named, it) } ?: stringResource(Res.string.photo_by_user), style = style, color = color)
             return@Column
         }
         Text(stringResource(Res.string.photo_credit, credit.creator, credit.license), style = style, color = color)

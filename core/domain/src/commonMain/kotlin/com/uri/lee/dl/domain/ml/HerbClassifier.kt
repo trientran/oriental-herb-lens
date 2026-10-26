@@ -14,4 +14,14 @@ interface HerbClassifier {
      * at least [minConfidence], highest confidence first.
      */
     suspend fun classify(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification>
+
+    /**
+     * The species (GBIF keys) the current herb model can name; the rest of the catalog needs
+     * photos before it can learn them. Empty when that can't be told. On the web this loads the model.
+     */
+    suspend fun knownSpecies(): Set<Long> = emptySet()
 }
+
+/** The species keys among a herb model's labels (its embedded labels.txt); other labels are left out. */
+fun speciesKeysOf(labels: String?): Set<Long> =
+    labels?.lineSequence()?.mapNotNull { it.trim().toLongOrNull() }?.toSet().orEmpty()

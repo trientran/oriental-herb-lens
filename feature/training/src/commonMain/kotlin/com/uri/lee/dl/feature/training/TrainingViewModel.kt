@@ -335,6 +335,7 @@ class TrainingViewModel(
             val bytes = community.download(shared)
             if (importFile("${shared.name}.tflite", bytes)) {
                 analytics.log(AnalyticsEvent.CommunityModelAdded(shared.species.size, shared.trainable))
+                community.countAdd(shared)
                 backStack.clear()
                 show(TrainingScreen.Models)
                 setState { copy(message = TrainingMessage.ADDED) }

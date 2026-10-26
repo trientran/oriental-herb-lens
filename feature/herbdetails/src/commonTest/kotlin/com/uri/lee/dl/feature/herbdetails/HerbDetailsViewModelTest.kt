@@ -9,6 +9,7 @@ import com.uri.lee.dl.domain.moderation.ReportReason
 import com.uri.lee.dl.domain.repository.ReferencePhotoRepository
 import com.uri.lee.dl.testing.MainDispatcherTest
 import com.uri.lee.dl.testing.fakes.FakeAuthRepository
+import com.uri.lee.dl.testing.fakes.FakeHerbClassifier
 import com.uri.lee.dl.testing.fakes.FakeModerationRepository
 import com.uri.lee.dl.testing.fakes.FakePhotoRepository
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
@@ -34,12 +35,25 @@ class HerbDetailsViewModelTest : MainDispatcherTest() {
 
     private val moderation = FakeModerationRepository()
     private val auth = FakeAuthRepository()
+    private val classifier = FakeHerbClassifier(known = setOf(1L))
     private val events = mutableListOf<AnalyticsEvent>()
     private val analytics = object : Analytics {
         override fun log(event: AnalyticsEvent) { events += event }
         override fun screen(name: String) = Unit
     }
-    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, addresses = { if (it.latitude > 0) "Hà Nội" else null }, analytics = analytics)
+    private fun viewModel(id: Long = 5) = HerbDetailsViewModel(id, catalog, photos, gbif, library, moderation, auth, addresses = { if (it.latitude > 0) "Hà Nội" else null }, classifier = classifier, analytics = analytics)
+
+    @Test
+    fun `a species the model does not know yet needs photos`() {
+        val viewModel = viewModel()
+        viewModel.onAction(HerbDetailsAction.CheckNeedsPhotos)
+        assertTrue(viewModel.state.value.needsPhotos)
+
+        classifier.known = setOf(5L)
+        val known = viewModel()
+        known.onAction(HerbDetailsAction.CheckNeedsPhotos)
+        assertTrue(!known.state.value.needsPhotos)
+    }
 
     @Test
     fun `reporting follows the sign-in state`() {

@@ -51,8 +51,13 @@ import com.uri.lee.dl.core.designsystem.LocalVietnameseFirst
 import com.uri.lee.dl.core.designsystem.component.EmptyState
 import com.uri.lee.dl.core.designsystem.component.ErrorState
 import com.uri.lee.dl.core.designsystem.component.highlighted
+import androidx.compose.foundation.layout.Row
+import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.core.designsystem.resources.Res
 import com.uri.lee.dl.core.designsystem.resources.browse_header
+import com.uri.lee.dl.core.designsystem.resources.browse_needs_photos
+import com.uri.lee.dl.core.designsystem.resources.browse_needs_photos_note
+import androidx.compose.material.icons.filled.AddAPhoto
 import com.uri.lee.dl.core.designsystem.resources.cd_clear_search
 import com.uri.lee.dl.core.designsystem.resources.cd_voice_search
 import com.uri.lee.dl.core.designsystem.resources.generic_error
@@ -79,10 +84,14 @@ fun BrowseRoute(
     onVoiceSearch: (((String) -> Unit) -> Unit)? = null,
     /** Switches the app's language (an AppLanguages code); null hides the choice (the apps follow the system's). */
     onSetLanguage: ((String) -> Unit)? = null,
+    /** Opens on the species needing photos (from Identify's "help it learn"). */
+    needsPhotos: Boolean = false,
 ) {
     val vietnamese = LocalVietnameseFirst.current
     val viewModel = koinViewModel<BrowseViewModel> { parametersOf(vietnamese) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // Also when Browse was already open: the view model outlives the navigation
+    LaunchedEffect(needsPhotos) { if (needsPhotos) viewModel.onAction(BrowseAction.SetNeedsPhotos(true)) }
     BrowseScreen(
         state = state,
         onAction = viewModel::onAction,
@@ -114,14 +123,52 @@ fun BrowseScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.lg, vertical = spacing.sm),
         )
         onSetLanguage?.let { LanguageChoice(it, Modifier.align(Alignment.End).padding(horizontal = spacing.lg)) }
+        val needsPhotosChip: @Composable () -> Unit = {
+            if (state.needsPhotosAvailable) {
+                FilterChip(
+                    selected = state.needsPhotos,
+                    onClick = { onAction(BrowseAction.SetNeedsPhotos(!state.needsPhotos)) },
+                    label = { Text(stringResource(Res.string.browse_needs_photos)) },
+                    leadingIcon = { Icon(Icons.Filled.AddAPhoto, contentDescription = null) },
+                )
+            }
+        }
         when {
             state.isSearching -> SearchResults(state.query, state.results, selectedId, onOpenSpecies)
+            state.needsPhotos -> NeedsPhotosList(state.needsPhotosSpecies, selectedId, onOpenSpecies, needsPhotosChip)
             state.hasError && state.species.isEmpty() -> ErrorState(
                 message = stringResource(Res.string.generic_error),
                 retryLabel = stringResource(Res.string.retry),
                 onRetry = { onAction(BrowseAction.Retry) },
             )
-            else -> CatalogList(state, selectedId, onOpenSpecies, onLoadMore = { onAction(BrowseAction.LoadMore) })
+            else -> CatalogList(state, selectedId, onOpenSpecies, onLoadMore = { onAction(BrowseAction.LoadMore) }, filter = needsPhotosChip)
+        }
+    }
+}
+
+/** The species the herb model doesn't know yet: photos of these teach it the most. */
+@Composable
+private fun NeedsPhotosList(species: List<Species>?, selectedId: Long?, onOpenSpecies: (Long) -> Unit, filter: @Composable () -> Unit) {
+    val spacing = HerbLensTheme.spacing
+    Row(Modifier.fillMaxWidth().padding(horizontal = spacing.lg), horizontalArrangement = Arrangement.End) { filter() }
+    if (species == null) {
+        Box(Modifier.fillMaxWidth().padding(spacing.lg), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        return
+    }
+    LazyColumn(
+        contentPadding = PaddingValues(start = spacing.lg, end = spacing.lg, bottom = spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        item(key = "note") {
+            Text(
+                stringResource(Res.string.browse_needs_photos_note, species.size),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = spacing.xs),
+            )
+        }
+        items(species, key = { it.id }) { item ->
+            SpeciesCard(item, selected = item.id == selectedId, onClick = { onOpenSpecies(item.id) })
         }
     }
 }
@@ -207,6 +254,8 @@ private fun CatalogList(
     onOpenSpecies: (Long) -> Unit,
     onLoadMore: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
+    /** Beside the header: the Needs photos filter. */
+    filter: @Composable () -> Unit = {},
 ) {
     val spacing = HerbLensTheme.spacing
     val nearEnd by remember {
@@ -223,12 +272,15 @@ private fun CatalogList(
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
         item(key = "header") {
-            Text(
-                stringResource(Res.string.browse_header),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = spacing.xs),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(Res.string.browse_header),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f).padding(vertical = spacing.xs),
+                )
+                filter()
+            }
         }
         items(state.species, key = { it.id }) { species ->
             SpeciesCard(species, selected = species.id == selectedId, onClick = { onOpenSpecies(species.id) })

@@ -99,7 +99,8 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Serializable data object IdentifyDestination
-@Serializable data class BrowseDestination(val openHerbId: Long? = null)
+/** Browse; [needsPhotos] opens it on the species that need photos (Identify's "help it learn"). */
+@Serializable data class BrowseDestination(val openHerbId: Long? = null, val needsPhotos: Boolean = false)
 @Serializable data object SavedDestination
 @Serializable data object TrainDestination
 @Serializable data object ProfileDestination
@@ -186,6 +187,8 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                     pickPhotos = actions.pickPhotos,
                     onOpenSpecies = { navController.navigate(SpeciesDestination(it)) },
                     canSharePhotos = actions.sharePhotos,
+                    // Photos can only be shared from the apps
+                    onHelpLearn = if (actions.sharePhotos) { { navController.navigateTopLevel(BrowseDestination(needsPhotos = true)) } } else null,
                 )
             }
             composable<SpeciesDestination> { entry ->
@@ -197,8 +200,12 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
                 )
             }
             composable<BrowseDestination> { entry ->
-                SpeciesListDetail(entry.toRoute<BrowseDestination>().openHerbId, addPhotos, signIn) { selected, open ->
-                    BrowseRoute(onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, onSetLanguage = actions.setLanguage, modifier = Modifier.statusBarsPadding())
+                val route = entry.toRoute<BrowseDestination>()
+                SpeciesListDetail(route.openHerbId, addPhotos, signIn) { selected, open ->
+                    BrowseRoute(
+                        onOpenSpecies = open, selectedId = selected, onVoiceSearch = actions.onVoiceSearch, onSetLanguage = actions.setLanguage,
+                        needsPhotos = route.needsPhotos, modifier = Modifier.statusBarsPadding(),
+                    )
                 }
             }
             composable<SavedDestination> {
@@ -273,7 +280,7 @@ private fun AppContent(actions: PlatformActions, openHerbId: Long?) {
 private fun NavHostController.navigateTopLevel(route: Any) = navigate(route) {
     popUpTo(graph.findStartDestination().id) { saveState = true }
     launchSingleTop = true
-    restoreState = route !is BrowseDestination || route.openHerbId == null
+    restoreState = route !is BrowseDestination || (route.openHerbId == null && !route.needsPhotos)
 }
 
 @Composable
