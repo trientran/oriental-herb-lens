@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">helyes a korábban nem látott fotókon (%1$d)</string>
     <string name="train_right_on_checking">helyes az ellenőrző fotóin (%1$d): adj hozzá több fotót, hogy néhányat félre lehessen tenni teszteléshez</string>
     <string name="train_mixed_up">Gyakran összekeveri: %1$s és %2$s</string>
+    <string name="train_time_both">Ezen az eszközön a fotók beolvasása %1$s (fotónként %2$s), a tanítás %3$s volt.</string>
+    <string name="train_time_training">Ezen az eszközön a tanítás %1$s volt.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d mp</string>
+    <string name="train_duration_min">%1$d perc %2$d mp</string>
     <string name="train_try_it">Kipróbálás</string>
     <string name="train_add_more">Továbbiak hozzáadása</string>
     <string name="train_share">.tflite megosztása</string>

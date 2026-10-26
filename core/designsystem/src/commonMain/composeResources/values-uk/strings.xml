@@ -286,6 +286,11 @@
     <string name="train_right_on_unseen">правильно на нових фото (%1$d)</string>
     <string name="train_right_on_checking">правильно на перевірних фото (%1$d): додайте ще фото, щоб відкласти частину для тесту</string>
     <string name="train_mixed_up">Часто плутає: %1$s і %2$s</string>
+    <string name="train_time_both">На цьому пристрої читання фото тривало %1$s (%2$s на фото), а навчання %3$s.</string>
+    <string name="train_time_training">На цьому пристрої навчання тривало %1$s.</string>
+    <string name="train_duration_ms">%1$d мс</string>
+    <string name="train_duration_s">%1$d с</string>
+    <string name="train_duration_min">%1$d хв %2$d с</string>
     <string name="train_try_it">Спробувати</string>
     <string name="train_add_more">Додати ще</string>
     <string name="train_share">Поділитися .tflite</string>

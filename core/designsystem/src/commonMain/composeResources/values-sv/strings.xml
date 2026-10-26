@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">rätt på foton den inte hade sett (%1$d)</string>
     <string name="train_right_on_checking">rätt på sina kontrollfoton (%1$d): lägg till fler foton så att några kan läggas undan för test</string>
     <string name="train_mixed_up">Blandas ofta ihop: %1$s och %2$s</string>
+    <string name="train_time_both">På den här enheten tog det %1$s att läsa fotona (%2$s per foto) och %3$s att träna.</string>
+    <string name="train_time_training">På den här enheten tog det %1$s att träna.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Prova den</string>
     <string name="train_add_more">Lägg till fler</string>
     <string name="train_share">Dela .tflite</string>

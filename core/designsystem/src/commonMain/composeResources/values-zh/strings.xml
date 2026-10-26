@@ -274,6 +274,11 @@
     <string name="train_right_on_unseen">在未见过的照片上的正确率（%1$d 张）</string>
     <string name="train_right_on_checking">在检验照片上的正确率（%1$d 张）：添加更多照片，以便预留一部分用于测试</string>
     <string name="train_mixed_up">常被混淆：%1$s 和 %2$s</string>
+    <string name="train_time_both">在此设备上，读取照片用时 %1$s（每张 %2$s），训练用时 %3$s。</string>
+    <string name="train_time_training">在此设备上，训练用时 %1$s。</string>
+    <string name="train_duration_ms">%1$d 毫秒</string>
+    <string name="train_duration_s">%1$d 秒</string>
+    <string name="train_duration_min">%1$d 分 %2$d 秒</string>
     <string name="train_try_it">试一试</string>
     <string name="train_add_more">添加更多</string>
     <string name="train_share">分享 .tflite</string>

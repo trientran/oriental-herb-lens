@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">правилно върху невиждани снимки (%1$d)</string>
     <string name="train_right_on_checking">правилно върху контролни снимки (%1$d): добавете още снимки, за да се отделят някои за тест</string>
     <string name="train_mixed_up">Често бърка: %1$s и %2$s</string>
+    <string name="train_time_both">На това устройство четенето на снимките отне %1$s (%2$s на снимка), а обучението %3$s.</string>
+    <string name="train_time_training">На това устройство обучението отне %1$s.</string>
+    <string name="train_duration_ms">%1$d мс</string>
+    <string name="train_duration_s">%1$d с</string>
+    <string name="train_duration_min">%1$d мин %2$d с</string>
     <string name="train_try_it">Изпробване</string>
     <string name="train_add_more">Добавяне на още</string>
     <string name="train_share">Споделяне на .tflite</string>

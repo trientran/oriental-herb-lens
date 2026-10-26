@@ -286,6 +286,11 @@
     <string name="train_right_on_unseen">верно на новых фото (%1$d)</string>
     <string name="train_right_on_checking">верно на проверочных фото (%1$d): добавьте ещё фото, чтобы отложить часть для теста</string>
     <string name="train_mixed_up">Часто путает: %1$s и %2$s</string>
+    <string name="train_time_both">На этом устройстве чтение фото заняло %1$s (%2$s на фото), а обучение %3$s.</string>
+    <string name="train_time_training">На этом устройстве обучение заняло %1$s.</string>
+    <string name="train_duration_ms">%1$d мс</string>
+    <string name="train_duration_s">%1$d с</string>
+    <string name="train_duration_min">%1$d мин %2$d с</string>
     <string name="train_try_it">Попробовать</string>
     <string name="train_add_more">Добавить ещё</string>
     <string name="train_share">Поделиться .tflite</string>

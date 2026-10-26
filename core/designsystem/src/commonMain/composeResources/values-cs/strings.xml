@@ -286,6 +286,11 @@
     <string name="train_right_on_unseen">správně na neviděných fotkách (%1$d)</string>
     <string name="train_right_on_checking">správně na kontrolních fotkách (%1$d): přidejte další fotky, aby se část odložila na test</string>
     <string name="train_mixed_up">Často zaměňuje: %1$s a %2$s</string>
+    <string name="train_time_both">Na tomto zařízení trvalo načtení fotek %1$s (%2$s na fotku) a trénování %3$s.</string>
+    <string name="train_time_training">Na tomto zařízení trvalo trénování %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Vyzkoušet</string>
     <string name="train_add_more">Přidat další</string>
     <string name="train_share">Sdílet .tflite</string>

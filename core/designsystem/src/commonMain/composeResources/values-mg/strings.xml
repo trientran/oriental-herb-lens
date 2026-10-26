@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">marina amin'ny sary tsy mbola hitany (%1$d)</string>
     <string name="train_right_on_checking">marina amin'ny sary fanamarinana (%1$d): ampio sary bebe kokoa mba hahafahana manokana ny sasany ho fitsapana</string>
     <string name="train_mixed_up">Matetika mampifangaro: %1$s sy %2$s</string>
+    <string name="train_time_both">Amin’ity fitaovana ity, naharitra %1$s ny famakiana ny sary (%2$s isaky ny sary) ary %3$s ny fampianarana.</string>
+    <string name="train_time_training">Amin’ity fitaovana ity, naharitra %1$s ny fampianarana.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Andramo</string>
     <string name="train_add_more">Ampio bebe kokoa</string>
     <string name="train_share">Zarao ny .tflite</string>

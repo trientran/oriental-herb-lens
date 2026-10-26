@@ -282,6 +282,11 @@
     <string name="train_right_on_unseen">justes sur des photos jamais vues (%1$d)</string>
     <string name="train_right_on_checking">justes sur ses photos de contrôle (%1$d) : ajoutez des photos pour en mettre de côté pour le test</string>
     <string name="train_mixed_up">Souvent confondues : %1$s et %2$s</string>
+    <string name="train_time_both">Sur cet appareil, la lecture des photos a pris %1$s (%2$s par photo) et l’entraînement %3$s.</string>
+    <string name="train_time_training">Sur cet appareil, l’entraînement a pris %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">L’essayer</string>
     <string name="train_add_more">Ajouter plus</string>
     <string name="train_share">Partager le .tflite</string>

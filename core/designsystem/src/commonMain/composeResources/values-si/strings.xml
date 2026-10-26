@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">නොදුටු ඡායාරූපවල නිවැරදි (%1$d)</string>
     <string name="train_right_on_checking">පරීක්ෂණ ඡායාරූපවල නිවැරදි (%1$d): සමහරක් පරීක්ෂාව සඳහා වෙන් කළ හැකි වන සේ තවත් ඡායාරූප එක් කරන්න</string>
     <string name="train_mixed_up">බොහෝ විට පටලවා ගනී: %1$s සහ %2$s</string>
+    <string name="train_time_both">මෙම උපාංගයේ ඡායාරූප කියවීමට %1$s (ඡායාරූපයකට %2$s) සහ පුහුණුවට %3$s ගත විය.</string>
+    <string name="train_time_training">මෙම උපාංගයේ පුහුණුවට %1$s ගත විය.</string>
+    <string name="train_duration_ms">මිලි තත්. %1$d</string>
+    <string name="train_duration_s">තත්. %1$d</string>
+    <string name="train_duration_min">මිනි. %1$d තත්. %2$d</string>
     <string name="train_try_it">උත්සාහ කරන්න</string>
     <string name="train_add_more">තවත් එක් කරන්න</string>
     <string name="train_share">.tflite බෙදා ගන්න</string>

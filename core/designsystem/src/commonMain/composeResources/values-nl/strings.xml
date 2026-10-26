@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">goed op foto’s die het nog niet had gezien (%1$d)</string>
     <string name="train_right_on_checking">goed op de controlefoto’s (%1$d): voeg meer foto’s toe zodat er een paar apart gehouden worden om te testen</string>
     <string name="train_mixed_up">Vaak verward: %1$s en %2$s</string>
+    <string name="train_time_both">Op dit apparaat duurde het lezen van de foto’s %1$s (%2$s per foto) en het trainen %3$s.</string>
+    <string name="train_time_training">Op dit apparaat duurde het trainen %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Uitproberen</string>
     <string name="train_add_more">Meer toevoegen</string>
     <string name="train_share">.tflite delen</string>

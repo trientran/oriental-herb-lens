@@ -286,6 +286,11 @@
     <string name="train_right_on_unseen">trafnie na niewidzianych zdjęciach (%1$d)</string>
     <string name="train_right_on_checking">trafnie na zdjęciach kontrolnych (%1$d): dodaj więcej zdjęć, aby część odłożyć do testu</string>
     <string name="train_mixed_up">Często mylone: %1$s i %2$s</string>
+    <string name="train_time_both">Na tym urządzeniu odczytanie zdjęć zajęło %1$s (%2$s na zdjęcie), a trening %3$s.</string>
+    <string name="train_time_training">Na tym urządzeniu trening zajął %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Wypróbuj</string>
     <string name="train_add_more">Dodaj więcej</string>
     <string name="train_share">Udostępnij .tflite</string>
