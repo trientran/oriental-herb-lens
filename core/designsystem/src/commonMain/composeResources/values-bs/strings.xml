@@ -282,6 +282,11 @@
     <string name="train_right_on_unseen">tačno na neviđenim fotografijama (%1$d)</string>
     <string name="train_right_on_checking">tačno na provjernim fotografijama (%1$d): dodajte još fotografija kako bi se neke izdvojile za test</string>
     <string name="train_mixed_up">Često zamjenjuje: %1$s i %2$s</string>
+    <string name="train_time_both">Na ovom uređaju čitanje fotografija trajalo je %1$s (%2$s po fotografiji), a treniranje %3$s.</string>
+    <string name="train_time_training">Na ovom uređaju treniranje je trajalo %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Isprobaj</string>
     <string name="train_add_more">Dodaj još</string>
     <string name="train_share">Podijeli .tflite</string>

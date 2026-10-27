@@ -282,6 +282,11 @@
     <string name="train_right_on_unseen">тачно на невиђеним фотографијама (%1$d)</string>
     <string name="train_right_on_checking">тачно на контролним фотографијама (%1$d): додајте још фотографија да би се неке издвојиле за тест</string>
     <string name="train_mixed_up">Често меша: %1$s и %2$s</string>
+    <string name="train_time_both">На овом уређају читање фотографија трајало је %1$s (%2$s по фотографији), а обука %3$s.</string>
+    <string name="train_time_training">На овом уређају обука је трајала %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Испробај</string>
     <string name="train_add_more">Додај још</string>
     <string name="train_share">Подели .tflite</string>

@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">right on photos it hadn’t seen (%1$d)</string>
     <string name="train_right_on_checking">right on its checking photos (%1$d): add more photos to set some aside for testing</string>
     <string name="train_mixed_up">Often mixed up: %1$s and %2$s</string>
+    <string name="train_time_both">On this device, reading the photos took %1$s (%2$s a photo) and training took %3$s.</string>
+    <string name="train_time_training">On this device, training took %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Try it</string>
     <string name="train_add_more">Add more</string>
     <string name="train_share">Share .tflite</string>

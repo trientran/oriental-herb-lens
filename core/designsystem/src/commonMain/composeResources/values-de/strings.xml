@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">richtig bei Fotos, die es nicht kannte (%1$d)</string>
     <string name="train_right_on_checking">richtig bei seinen Prüffotos (%1$d): Füge mehr Fotos hinzu, damit einige für den Test zurückgelegt werden</string>
     <string name="train_mixed_up">Oft verwechselt: %1$s und %2$s</string>
+    <string name="train_time_both">Auf diesem Gerät dauerte das Lesen der Fotos %1$s (%2$s pro Foto) und das Training %3$s.</string>
+    <string name="train_time_training">Auf diesem Gerät dauerte das Training %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Ausprobieren</string>
     <string name="train_add_more">Mehr hinzufügen</string>
     <string name="train_share">.tflite teilen</string>

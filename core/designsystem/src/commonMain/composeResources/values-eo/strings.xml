@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">ĝusta sur nevidataj fotoj (%1$d)</string>
     <string name="train_right_on_checking">ĝusta sur kontrolaj fotoj (%1$d): aldonu pliajn fotojn, por ke kelkaj estu flankenmetitaj por testo</string>
     <string name="train_mixed_up">Ofte konfuzas: %1$s kaj %2$s</string>
+    <string name="train_time_both">En ĉi tiu aparato, legi la fotojn daŭris %1$s (%2$s po foto) kaj trejni daŭris %3$s.</string>
+    <string name="train_time_training">En ĉi tiu aparato, trejni daŭris %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Provi ĝin</string>
     <string name="train_add_more">Aldoni pli</string>
     <string name="train_share">Kunhavigi .tflite</string>
