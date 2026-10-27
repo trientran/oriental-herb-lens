@@ -2,29 +2,34 @@
 // deployed on its contributor's record. Safe to run again: records already there are left alone.
 //
 //   export GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
-//   node backfill.js [--dry-run] [--model-url https://.../herb_model.tflite]
+//   node backfill.js [--dry-run] [--model-url https://.../herb_model.tflite | --model-file herb_model.tflite]
 //
-// Without --model-url, the herb model is the one Remote Config announces (herb_model_url).
+// Without either, the herb model is the one Remote Config announces (herb_model_url), which needs
+// an account allowed to read Remote Config.
 
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getRemoteConfig } from 'firebase-admin/remote-config';
+import { readFileSync } from 'node:fs';
 import { addedPhotos, knownSpeciesAt, modelRecord, nameRecord, photoRecords, writeRecords } from './contributions.js';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
-const modelUrlArg = args[args.indexOf('--model-url') + 1];
+const option = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
 
 initializeApp({ projectId: process.env.GOOGLE_CLOUD_PROJECT ?? 'oriental-herb-lens-41d17' });
 const db = getFirestore();
 const auth = getAuth();
 
-const modelUrl = args.includes('--model-url')
-  ? modelUrlArg
-  : (await getRemoteConfig().getTemplate()).parameters.herb_model_url?.defaultValue?.value;
-const known = modelUrl ? await knownSpeciesAt(modelUrl) : new Set();
-console.log(`Herb model knows ${known.size} species${modelUrl ? '' : ' (no model URL: no photo marked as needed)'}`);
+const modelFile = option('--model-file');
+const modelUrl = modelFile ? null
+  : option('--model-url') ?? (await getRemoteConfig().getTemplate()).parameters.herb_model_url?.defaultValue?.value;
+// A local file is read as if fetched whole
+const readModel = async () => new Response(readFileSync(modelFile), { status: 200 });
+const known = modelFile ? await knownSpeciesAt(modelFile, readModel)
+  : modelUrl ? await knownSpeciesAt(modelUrl) : new Set();
+console.log(`Herb model knows ${known.size} species${modelFile || modelUrl ? '' : ' (no model: no photo marked as needed)'}`);
 
 // A record's time: the share's own where it has one, else (photos) when the species was first given one
 const times = new Map();

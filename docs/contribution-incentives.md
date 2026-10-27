@@ -60,8 +60,9 @@ Code: `Badges` and `ContributionHistoryRepository` (core:domain), `FirestoreCont
 
 1. The functions (`cd firebase && npx firebase deploy --only functions`). The first deploy
    enables Cloud Functions, Cloud Build, Artifact Registry, Eventarc and Cloud Run (Blaze plan).
-2. The backfill (`cd firebase/functions && node backfill.js --dry-run`, then without
-   `--dry-run`).
+2. The backfill (`cd firebase/functions && node backfill.js --dry-run --model-file
+   ../../androidApp/assets/herb_model.tflite`, then without `--dry-run`). `--model-file` is for an
+   account that can't read Remote Config; use the model file Remote Config announces.
 3. The Firestore rules (`npx firebase deploy --only firestore:rules`): records are server-only;
    older app versions never wrote them, so they keep working.
 4. The upload Worker (`cd workers/photo-upload && npx wrangler deploy`), for the add counter.
