@@ -428,12 +428,16 @@ private fun ResultsPanel(state: ScanState, onAction: (ScanAction) -> Unit, onOpe
                 }
                 state.mode == ScanMode.PICK_PLANT && picked != null -> Picked(picked, state.source == ScanSource.Camera, onAction, onOpenSpecies)
                 state.mode == ScanMode.WHOLE_VIEW && state.results.isNotEmpty() -> state.results.forEach { ResultRow(it, onOpenSpecies) }
-                else -> Text(
-                    hintFor(state),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                )
+                else -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        hintFor(state),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    )
+                    // A photo was read and identified, and nothing was recognised
+                    if (state.source is ScanSource.Photo && state.mode == ScanMode.WHOLE_VIEW && !state.hasError && !state.identifyFailed) HelpLearn()
+                }
             }
             NoticeLine({ onAction(ScanAction.ShowNotice) })
         }
