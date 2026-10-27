@@ -353,12 +353,12 @@
     <string name="train_sharing">正在分享…</string>
     <string name="train_share_sign_in">登录后才能与所有人分享模型，这样分享的模型被举报时可以进行跟进。</string>
     <string name="train_share_terms_title">要与所有人分享吗？</string>
-    <string name="train_share_terms_body">所有使用 Med Herb Lens 的人都能找到此模型、添加它并继续训练。\n\n• 它以知识共享署名许可（CC BY 4.0）分享，除非你在分享时取消勾选，否则还会发布到 Hugging Face，任何人都可以在那里下载。\n• 它包含模型名称、你输入的物种名称，以及让它能继续学习的照片精简摘要。不包含你的照片本身，也不包含你的姓名或电子邮件。\n• 请勿使用他人姓名、联系方式或任何冒犯性内容。分享的模型可以被举报，违反服务条款的模型将被我们移除。\n• 你可以随时停止分享，这也会将它从 Hugging Face 移除；别人已添加的副本会保留在他们那里。</string>
+    <string name="train_share_terms_body">所有使用 Med Herb Lens 的人都能找到此模型、添加它并继续训练。\n\n• 它以知识共享署名许可（CC BY 4.0）分享，除非你在分享时取消勾选，否则还会发布到 Hugging Face，任何人都可以在那里下载。\n• 它包含模型名称、你输入的物种名称，以及让它能继续学习的照片精简摘要。不包含你的照片本身，也不包含你的电子邮件。如果你在个人资料中设置了署名，它会作为分享者显示。\n• 请勿使用他人姓名、联系方式或任何冒犯性内容。分享的模型可以被举报，违反服务条款的模型将被我们移除。\n• 你可以随时停止分享，这也会将它从 Hugging Face 移除；别人已添加的副本会保留在他们那里。</string>
     <string name="train_share_accept">同意并分享</string>
     <string name="train_share_confirm_title">要与所有人分享吗？</string>
     <string name="train_share_confirm_body">所有使用 Med Herb Lens 的人都能把它添加到自己的模型中并继续训练。</string>
     <string name="train_share_hf">同时发布到 Hugging Face（推荐）</string>
-    <string name="train_share_hf_body">它会立即发布到 Hugging Face 上的 Med Herb Lens 组织，研究人员会在那里寻找模型；页面署名为 Med Herb Lens 用户，而不是你的名字。这有助于研究惠及更多人。</string>
+    <string name="train_share_hf_body">它会立即发布到 Hugging Face 上的 Med Herb Lens 组织，研究人员会在那里寻找模型；页面以你在个人资料中设置的署名标注你，未设置则标注为 Med Herb Lens 用户。这有助于研究惠及更多人。</string>
     <string name="train_share_button">分享</string>
     <string name="train_msg_shared_hf">已在应用和 Hugging Face 上分享。</string>
     <string name="train_msg_shared_hf_later">已分享。很快就会出现在 Hugging Face 上。</string>
