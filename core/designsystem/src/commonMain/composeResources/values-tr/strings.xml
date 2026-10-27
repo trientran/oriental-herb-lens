@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">görmediği fotoğraflarda doğru (%1$d)</string>
     <string name="train_right_on_checking">kontrol fotoğraflarında doğru (%1$d): test için bazılarını ayırmak üzere daha fazla fotoğraf ekleyin</string>
     <string name="train_mixed_up">Sık karıştırılanlar: %1$s ve %2$s</string>
+    <string name="train_time_both">Bu cihazda fotoğrafları okumak %1$s (fotoğraf başına %2$s), eğitim ise %3$s sürdü.</string>
+    <string name="train_time_training">Bu cihazda eğitim %1$s sürdü.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d sn</string>
+    <string name="train_duration_min">%1$d dk %2$d sn</string>
     <string name="train_try_it">Dene</string>
     <string name="train_add_more">Daha fazla ekle</string>
     <string name="train_share">.tflite paylaş</string>

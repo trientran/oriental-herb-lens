@@ -275,6 +275,11 @@
     <string name="train_right_on_unseen">đúng trên các ảnh chưa từng thấy (%1$d)</string>
     <string name="train_right_on_checking">đúng trên các ảnh kiểm tra (%1$d): thêm ảnh để có ảnh riêng cho việc đánh giá</string>
     <string name="train_mixed_up">Hay nhầm: %1$s và %2$s</string>
+    <string name="train_time_both">Trên thiết bị này, đọc ảnh mất %1$s (%2$s mỗi ảnh) và huấn luyện mất %3$s.</string>
+    <string name="train_time_training">Trên thiết bị này, huấn luyện mất %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d giây</string>
+    <string name="train_duration_min">%1$d phút %2$d giây</string>
     <string name="train_try_it">Dùng thử</string>
     <string name="train_add_more">Thêm nữa</string>
     <string name="train_share">Chia sẻ .tflite</string>

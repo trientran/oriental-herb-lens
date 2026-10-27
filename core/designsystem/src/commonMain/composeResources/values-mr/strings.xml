@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">न पाहिलेल्या फोटोंवर बरोबर (%1$d)</string>
     <string name="train_right_on_checking">तपासणी फोटोंवर बरोबर (%1$d): काही चाचणीसाठी बाजूला ठेवता यावेत म्हणून अधिक फोटो जोडा</string>
     <string name="train_mixed_up">अनेकदा गोंधळते: %1$s आणि %2$s</string>
+    <string name="train_time_both">या डिव्हाइसवर फोटो वाचायला %1$s (प्रत्येक फोटोला %2$s) आणि प्रशिक्षणाला %3$s लागले.</string>
+    <string name="train_time_training">या डिव्हाइसवर प्रशिक्षणाला %1$s लागले.</string>
+    <string name="train_duration_ms">%1$d मि.से.</string>
+    <string name="train_duration_s">%1$d से.</string>
+    <string name="train_duration_min">%1$d मि. %2$d से.</string>
     <string name="train_try_it">वापरून पाहा</string>
     <string name="train_add_more">आणखी जोडा</string>
     <string name="train_share">.tflite शेअर करा</string>

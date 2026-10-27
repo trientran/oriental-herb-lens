@@ -274,6 +274,11 @@
     <string name="train_right_on_unseen">처음 보는 사진에서 맞힌 비율(%1$d장)</string>
     <string name="train_right_on_checking">검증 사진에서 맞힌 비율(%1$d장): 사진을 더 추가하면 일부를 테스트용으로 떼어 둘 수 있습니다</string>
     <string name="train_mixed_up">자주 혼동함: %1$s, %2$s</string>
+    <string name="train_time_both">이 기기에서 사진 읽기에 %1$s(사진당 %2$s), 학습에 %3$s 걸렸습니다.</string>
+    <string name="train_time_training">이 기기에서 학습에 %1$s 걸렸습니다.</string>
+    <string name="train_duration_ms">%1$dms</string>
+    <string name="train_duration_s">%1$d초</string>
+    <string name="train_duration_min">%1$d분 %2$d초</string>
     <string name="train_try_it">사용해 보기</string>
     <string name="train_add_more">더 추가</string>
     <string name="train_share">.tflite 공유</string>

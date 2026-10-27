@@ -286,6 +286,11 @@
     <string name="train_right_on_unseen">teisingai nematytose nuotraukose (%1$d)</string>
     <string name="train_right_on_checking">teisingai tikrinimo nuotraukose (%1$d): pridėkite daugiau nuotraukų, kad dalis būtų atidėta testui</string>
     <string name="train_mixed_up">Dažnai painioja: %1$s ir %2$s</string>
+    <string name="train_time_both">Šiame įrenginyje nuotraukų skaitymas užtruko %1$s (%2$s vienai nuotraukai), o apmokymas %3$s.</string>
+    <string name="train_time_training">Šiame įrenginyje apmokymas užtruko %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min. %2$d s</string>
     <string name="train_try_it">Išbandyti</string>
     <string name="train_add_more">Pridėti daugiau</string>
     <string name="train_share">Bendrinti .tflite</string>

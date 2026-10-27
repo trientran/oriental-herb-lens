@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">नदेखेका फोटोमा सही (%1$d)</string>
     <string name="train_right_on_checking">जाँच फोटोमा सही (%1$d): केही परीक्षणका लागि छुट्याउन सकियोस् भनेर थप फोटो थप्नुहोस्</string>
     <string name="train_mixed_up">प्रायः अलमलिन्छ: %1$s र %2$s</string>
+    <string name="train_time_both">यो उपकरणमा फोटो पढ्न %1$s (प्रति फोटो %2$s) र तालिममा %3$s लाग्यो।</string>
+    <string name="train_time_training">यो उपकरणमा तालिममा %1$s लाग्यो।</string>
+    <string name="train_duration_ms">%1$d मि.से.</string>
+    <string name="train_duration_s">%1$d से.</string>
+    <string name="train_duration_min">%1$d मि. %2$d से.</string>
     <string name="train_try_it">प्रयोग गरी हेर्नुहोस्</string>
     <string name="train_add_more">थप थप्नुहोस्</string>
     <string name="train_share">.tflite साझा गर्नुहोस्</string>

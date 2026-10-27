@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">σωστά σε φωτογραφίες που δεν έχει δει (%1$d)</string>
     <string name="train_right_on_checking">σωστά σε φωτογραφίες ελέγχου (%1$d): προσθέστε περισσότερες φωτογραφίες ώστε κάποιες να κρατηθούν για δοκιμή</string>
     <string name="train_mixed_up">Συχνά μπερδεύει: %1$s και %2$s</string>
+    <string name="train_time_both">Σε αυτή τη συσκευή η ανάγνωση των φωτογραφιών διήρκεσε %1$s (%2$s ανά φωτογραφία) και η εκπαίδευση %3$s.</string>
+    <string name="train_time_training">Σε αυτή τη συσκευή η εκπαίδευση διήρκεσε %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d δευτ.</string>
+    <string name="train_duration_min">%1$d λεπ. %2$d δευτ.</string>
     <string name="train_try_it">Δοκιμάστε το</string>
     <string name="train_add_more">Προσθήκη περισσότερων</string>
     <string name="train_share">Κοινοποίηση .tflite</string>

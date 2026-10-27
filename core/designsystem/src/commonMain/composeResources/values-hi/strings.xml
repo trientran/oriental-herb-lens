@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">बिना देखी फ़ोटो पर सही (%1$d)</string>
     <string name="train_right_on_checking">जाँच फ़ोटो पर सही (%1$d): और फ़ोटो जोड़ें ताकि कुछ परीक्षण के लिए अलग रखी जा सकें</string>
     <string name="train_mixed_up">अक्सर उलझा देता है: %1$s और %2$s</string>
+    <string name="train_time_both">इस डिवाइस पर फ़ोटो पढ़ने में %1$s (हर फ़ोटो में %2$s) और प्रशिक्षण में %3$s लगे।</string>
+    <string name="train_time_training">इस डिवाइस पर प्रशिक्षण में %1$s लगे।</string>
+    <string name="train_duration_ms">%1$d मि.से.</string>
+    <string name="train_duration_s">%1$d से.</string>
+    <string name="train_duration_min">%1$d मि. %2$d से.</string>
     <string name="train_try_it">आज़माएँ</string>
     <string name="train_add_more">और जोड़ें</string>
     <string name="train_share">.tflite साझा करें</string>

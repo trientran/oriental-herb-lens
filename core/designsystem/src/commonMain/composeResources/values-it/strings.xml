@@ -282,6 +282,11 @@
     <string name="train_right_on_unseen">corrette su foto mai viste (%1$d)</string>
     <string name="train_right_on_checking">corrette sulle sue foto di controllo (%1$d): aggiungi altre foto per metterne da parte alcune per il test</string>
     <string name="train_mixed_up">Spesso confuse: %1$s e %2$s</string>
+    <string name="train_time_both">Su questo dispositivo la lettura delle foto ha richiesto %1$s (%2$s per foto) e l’addestramento %3$s.</string>
+    <string name="train_time_training">Su questo dispositivo l’addestramento ha richiesto %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Provalo</string>
     <string name="train_add_more">Aggiungi altro</string>
     <string name="train_share">Condividi .tflite</string>

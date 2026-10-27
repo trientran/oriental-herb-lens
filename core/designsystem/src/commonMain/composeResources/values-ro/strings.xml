@@ -282,6 +282,11 @@
     <string name="train_right_on_unseen">corect pe fotografii nevăzute (%1$d)</string>
     <string name="train_right_on_checking">corect pe fotografiile de verificare (%1$d): adaugă mai multe fotografii ca unele să fie puse deoparte pentru test</string>
     <string name="train_mixed_up">Des confundate: %1$s și %2$s</string>
+    <string name="train_time_both">Pe acest dispozitiv, citirea fotografiilor a durat %1$s (%2$s pe fotografie), iar antrenarea %3$s.</string>
+    <string name="train_time_training">Pe acest dispozitiv, antrenarea a durat %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Încearcă-l</string>
     <string name="train_add_more">Adaugă mai multe</string>
     <string name="train_share">Distribuie .tflite</string>

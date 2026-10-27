@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">sahihi kwenye picha ambazo haijaziona (%1$d)</string>
     <string name="train_right_on_checking">sahihi kwenye picha za ukaguzi (%1$d): ongeza picha zaidi ili baadhi zitengwe kwa majaribio</string>
     <string name="train_mixed_up">Mara nyingi huchanganya: %1$s na %2$s</string>
+    <string name="train_time_both">Kwenye kifaa hiki, kusoma picha kulichukua %1$s (%2$s kwa kila picha) na mafunzo yalichukua %3$s.</string>
+    <string name="train_time_training">Kwenye kifaa hiki, mafunzo yalichukua %1$s.</string>
+    <string name="train_duration_ms">ms %1$d</string>
+    <string name="train_duration_s">sek %1$d</string>
+    <string name="train_duration_min">dak %1$d sek %2$d</string>
     <string name="train_try_it">Ijaribu</string>
     <string name="train_add_more">Ongeza zaidi</string>
     <string name="train_share">Shiriki .tflite</string>

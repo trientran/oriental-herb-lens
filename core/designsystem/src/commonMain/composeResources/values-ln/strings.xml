@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">malamu na bafoto oyo emonaki te (%1$d)</string>
     <string name="train_right_on_checking">malamu na bafoto ya komeka (%1$d): bakisa bafoto mosusu mpo mosusu etiama pembeni mpo na komeka</string>
     <string name="train_mixed_up">Mbala mingi esangisaka: %1$s mpe %2$s</string>
+    <string name="train_time_both">Na esaleli oyo, kotanga bafoto ezwaki %1$s (%2$s mpo na foto moko) mpe koteya ezwaki %3$s.</string>
+    <string name="train_time_training">Na esaleli oyo, koteya ezwaki %1$s.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Meka yango</string>
     <string name="train_add_more">Bakisa mosusu</string>
     <string name="train_share">Kabola .tflite</string>

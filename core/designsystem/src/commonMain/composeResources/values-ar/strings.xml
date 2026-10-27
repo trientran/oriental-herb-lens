@@ -294,6 +294,11 @@
     <string name="train_right_on_unseen">صحيح على صور لم يرها (%1$d)</string>
     <string name="train_right_on_checking">صحيح على صور التحقق (%1$d): أضف مزيدًا من الصور لتُحفظ بعضها جانبًا للاختبار</string>
     <string name="train_mixed_up">يخلط بينهما كثيرًا: %1$s و%2$s</string>
+    <string name="train_time_both">على هذا الجهاز، استغرقت قراءة الصور %1$s (%2$s لكل صورة) واستغرق التدريب %3$s.</string>
+    <string name="train_time_training">على هذا الجهاز، استغرق التدريب %1$s.</string>
+    <string name="train_duration_ms">%1$d ملي ثانية</string>
+    <string name="train_duration_s">%1$d ث</string>
+    <string name="train_duration_min">%1$d د %2$d ث</string>
     <string name="train_try_it">جرّبه</string>
     <string name="train_add_more">إضافة المزيد</string>
     <string name="train_share">مشاركة ‎.tflite</string>

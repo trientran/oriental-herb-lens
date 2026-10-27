@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">درست روی عکس‌هایی که ندیده بود (%1$d)</string>
     <string name="train_right_on_checking">درست روی عکس‌های بررسی (%1$d): عکس بیشتری اضافه کنید تا تعدادی برای آزمون کنار گذاشته شود</string>
     <string name="train_mixed_up">اغلب اشتباه گرفته می‌شوند: %1$s و %2$s</string>
+    <string name="train_time_both">در این دستگاه، خواندن عکس‌ها %1$s (%2$s برای هر عکس) و آموزش %3$s طول کشید.</string>
+    <string name="train_time_training">در این دستگاه، آموزش %1$s طول کشید.</string>
+    <string name="train_duration_ms">%1$d میلی‌ثانیه</string>
+    <string name="train_duration_s">%1$d ثانیه</string>
+    <string name="train_duration_min">%1$d دقیقه و %2$d ثانیه</string>
     <string name="train_try_it">امتحانش کنید</string>
     <string name="train_add_more">افزودن بیشتر</string>
     <string name="train_share">هم‌رسانی ‎.tflite</string>

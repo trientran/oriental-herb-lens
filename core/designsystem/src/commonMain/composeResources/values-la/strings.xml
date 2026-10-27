@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">recte in imaginibus non visis (%1$d)</string>
     <string name="train_right_on_checking">recte in imaginibus probationis (%1$d): plures imagines adde ut quaedam ad experimentum seponantur</string>
     <string name="train_mixed_up">Saepe confundit: %1$s et %2$s</string>
+    <string name="train_time_both">In hoc instrumento imagines legere %1$s (%2$s singulis imaginibus) et exercere %3$s duravit.</string>
+    <string name="train_time_training">In hoc instrumento exercere %1$s duravit.</string>
+    <string name="train_duration_ms">%1$d ms</string>
+    <string name="train_duration_s">%1$d s</string>
+    <string name="train_duration_min">%1$d min %2$d s</string>
     <string name="train_try_it">Tempta</string>
     <string name="train_add_more">Plura adde</string>
     <string name="train_share">.tflite communica</string>

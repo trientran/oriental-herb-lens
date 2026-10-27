@@ -278,6 +278,11 @@
     <string name="train_right_on_unseen">না-দেখা ছবিতে সঠিক (%1$d)</string>
     <string name="train_right_on_checking">যাচাই ছবিতে সঠিক (%1$d): আরও ছবি যোগ করুন যাতে কিছু পরীক্ষার জন্য আলাদা রাখা যায়</string>
     <string name="train_mixed_up">প্রায়ই গুলিয়ে ফেলে: %1$s ও %2$s</string>
+    <string name="train_time_both">এই ডিভাইসে ছবি পড়তে %1$s (প্রতি ছবিতে %2$s) এবং প্রশিক্ষণে %3$s লেগেছে।</string>
+    <string name="train_time_training">এই ডিভাইসে প্রশিক্ষণে %1$s লেগেছে।</string>
+    <string name="train_duration_ms">%1$d মি.সে.</string>
+    <string name="train_duration_s">%1$d সে.</string>
+    <string name="train_duration_min">%1$d মি. %2$d সে.</string>
     <string name="train_try_it">চেষ্টা করে দেখুন</string>
     <string name="train_add_more">আরও যোগ করুন</string>
     <string name="train_share">.tflite শেয়ার করুন</string>

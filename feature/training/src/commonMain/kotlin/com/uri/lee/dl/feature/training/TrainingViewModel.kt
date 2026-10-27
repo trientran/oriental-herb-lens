@@ -15,6 +15,7 @@ import com.uri.lee.dl.domain.ml.Region
 import com.uri.lee.dl.domain.training.Backbones
 import com.uri.lee.dl.domain.training.Dataset
 import kotlin.random.Random
+import kotlin.time.TimeSource
 import com.uri.lee.dl.domain.analytics.Analytics
 import com.uri.lee.dl.domain.analytics.AnalyticsEvent
 import com.uri.lee.dl.domain.analytics.NoAnalytics
@@ -453,8 +454,12 @@ class TrainingViewModel(
         var next = currentState.lastPhoto + 1
         var unreadable = 0
         val examples = mutableListOf<StoredExample>()
+        // Reading time (decoding and embedding) of the photos read, shown with the trained model
+        var readMillis = 0L
+        var read = 0
         photos.forEachIndexed { i, (species, photo) ->
             setState { copy(work = TrainingWork.Reading(i, photos.size)) }
+            val started = TimeSource.Monotonic.markNow()
             val image = reader.read(photo)?.image
             val classIndex = model.classes.indexOf(species)
             if (image == null || classIndex < 0) {
@@ -466,6 +471,8 @@ class TrainingViewModel(
             if (model.settings.quality.augment) {
                 for (region in CROPS) cropper.crop(image, region)?.let { examples += StoredExample(classIndex, photoNumber, false, embedder.embed(it)) }
             }
+            readMillis += started.elapsedNow().inWholeMilliseconds
+            read++
             // Saved in batches, so an interruption keeps most of the work
             if (examples.size >= SAVE_EVERY) {
                 store.addExamples(model.id, examples.toList())
@@ -473,6 +480,8 @@ class TrainingViewModel(
             }
         }
         store.addExamples(model.id, examples)
+        store.addReadTime(model.id, readMillis, read)
+        if (read > 0) log.i { "Read $read photos with ${model.backbone} in $readMillis ms" }
         load(model.id)
         if (unreadable > 0) setState { copy(error = TrainingError.READ_PHOTOS) }
     }
@@ -504,13 +513,22 @@ class TrainingViewModel(
             val previous = if (model.settings.update == UpdateMode.REPLAY && currentState.hasChanges) store.head(model.id) else null
             val maxEpochs = model.settings.expert.maxEpochs
             if (model.settings.update == UpdateMode.CALCULATE) setState { copy(work = TrainingWork.Calculating) }
+            val started = TimeSource.Monotonic.markNow()
             val result = withContext(Dispatchers.Default) {
                 ModelTrainer.train(model, examples, previous) { epoch ->
                     setState { copy(work = TrainingWork.Learning(epoch.epoch, maxEpochs), history = history + epoch) }
                 }
             }
+            val trainMillis = started.elapsedNow().inWholeMilliseconds
+            log.i { "Trained ${model.classes.size} species, ${model.photos} photos (${model.settings.update}) in $trainMillis ms" }
             setState { copy(work = TrainingWork.Saving) }
-            val trained = model.copy(trainedThrough = result.trainedThrough, trainedClasses = model.classes, report = result.report)
+            // Reloaded so the reading time added since the screen loaded the model is kept
+            val current = store.load(model.id) ?: model
+            val trained = model.copy(
+                trainedThrough = result.trainedThrough, trainedClasses = model.classes,
+                report = result.report.copy(trainMillis = trainMillis),
+                readMillis = current.readMillis, readPhotos = current.readPhotos,
+            )
             val tflite = TfliteExport.export(
                 backbones.read(model.backbone), result.head, model.classes, model.name, author = "Herb Lens",
                 extraFiles = SharedModel.pack(model, result.head, examples),
