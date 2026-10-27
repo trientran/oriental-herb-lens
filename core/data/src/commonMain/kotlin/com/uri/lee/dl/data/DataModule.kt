@@ -69,7 +69,7 @@ val dataModule: Module = module {
     single<CitationRepository> { RemoteConfigCitationRepository(get()) }
     single<AppLinksRepository> { RemoteConfigAppLinksRepository(get()) }
     single<CommunityModelRepository> {
-        DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl, history = get(), settings = get())
+        DefaultCommunityModelRepository(get(), get(), get(), get(named(PreferenceStore.SETTINGS)), workerUrl = get<AppInfo>().photoUploadUrl, settings = get())
     }
     singleOf(::GbifPhotoRepository) bind ReferencePhotoRepository::class
     single<ImageHost> { R2PhotoHost(get(), get(), workerUrl = get<AppInfo>().photoUploadUrl) }

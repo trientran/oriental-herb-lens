@@ -105,9 +105,6 @@ interface ContributionHistoryRepository {
     /** The signed-in user's contributions, newest first; empty while signed out. */
     fun observe(): Flow<List<Contribution>>
 
-    /** Notes something the signed-in user just shared; does nothing while signed out. Never throws. */
-    suspend fun record(contribution: Contribution)
-
     /** Which of [contributions] are still shown: photos still on their species page, models still listed. Names always are. */
     suspend fun stillShown(contributions: List<Contribution>): Set<String>
 

@@ -78,13 +78,6 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     /** The photo URLs listed for a species now (a single read). */
     suspend fun herbImageUrls(speciesKey: Long): Set<String> = observeHerbImages(speciesKey).first().keys
 
-    /** Notes on the user's own record something they shared; only they can read it. */
-    suspend fun addContribution(uid: String, record: ContributionRecord) {
-        db.collection(USERS).document(uid).collection(CONTRIBUTIONS).add(
-            ContributionDocument(record.kind, record.speciesKey?.asStoredKey(), record.url, record.modelId, record.neededPhotos),
-        )
-    }
-
     /** The user's contributions, newest first; documents that don't read as one are skipped. */
     fun observeContributions(uid: String): Flow<List<ContributionRecord>> =
         db.collection(USERS).document(uid).collection(CONTRIBUTIONS).orderBy(CREATED_AT, Direction.DESCENDING).snapshots
@@ -192,16 +185,6 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         val license: String,
         val huggingFace: String,
         val creditName: String? = null,
-        val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
-    )
-
-    @Serializable
-    private data class ContributionDocument(
-        val kind: String,
-        val speciesKey: Int?,
-        val url: String?,
-        val modelId: String?,
-        val neededPhotos: Boolean,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )
 

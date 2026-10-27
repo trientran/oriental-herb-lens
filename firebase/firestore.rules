@@ -141,20 +141,11 @@ service cloud.firestore {
     }
 
     // What a contributor shared, kept for them alone: Profile shows it back as totals and private
-    // badges. Entries are only added (and removed with the account); counts of others' adds of a
-    // shared model are kept by the upload Worker on the model (sharedModels/{id}.adds).
+    // badges. Entries are written by the server only (firebase/functions), when a photo, name or
+    // model is shared, and removed with the account; counts of others' adds of a shared model are
+    // kept by the upload Worker on the model (sharedModels/{id}.adds).
     match /users/{uid}/contributions/{id} {
       allow get, list, delete: if signedIn() && request.auth.uid == uid;
-      allow create: if contributor() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['kind', 'speciesKey', 'url', 'modelId', 'neededPhotos', 'createdAt'])
-        && request.resource.data.kind in ['photo', 'name', 'model']
-        && (request.resource.data.get('speciesKey', null) == null || request.resource.data.speciesKey is int)
-        && (request.resource.data.get('url', null) == null
-            || (request.resource.data.url is string && request.resource.data.url.size() <= 500))
-        && (request.resource.data.get('modelId', null) == null
-            || (request.resource.data.modelId is string && request.resource.data.modelId.size() <= 64))
-        && request.resource.data.neededPhotos is bool
-        && request.resource.data.createdAt == request.time;
     }
 
     // Older app versions read this to learn they must update.

@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.map
 
 /**
  * The signed-in user's own record of what they shared (`users/{uid}/contributions`, readable by
- * them alone), and the checks that it's still shown. Recording never fails a share: the share
- * itself is what matters.
+ * them alone), and the checks that it's still shown. The records are written by the server
+ * (firebase/functions) when a photo, name or model is shared, from any app version.
  */
 internal class FirestoreContributionHistory(
     private val firestore: FirestoreClient,
@@ -36,17 +36,6 @@ internal class FirestoreContributionHistory(
                     log.w(e) { "Contributions unavailable" }
                     emit(emptyList())
                 }
-        }
-    }
-
-    override suspend fun record(contribution: Contribution) {
-        val uid = auth.currentUserId ?: return
-        try {
-            firestore.addContribution(uid, contribution.toRecord())
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            log.w(e) { "Contribution not recorded" }
         }
     }
 
@@ -91,14 +80,6 @@ internal class FirestoreContributionHistory(
         modelId = modelId,
         neededPhotos = neededPhotos,
         createdAtMillis = createdAtMillis,
-    )
-
-    private fun Contribution.toRecord() = ContributionRecord(
-        kind = kind.name.lowercase(),
-        speciesKey = speciesKey,
-        url = url,
-        modelId = modelId,
-        neededPhotos = neededPhotos,
     )
 
     private companion object {

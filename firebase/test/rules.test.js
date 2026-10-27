@@ -177,29 +177,24 @@ test('contributors share models as themselves; anyone browses; only the uploader
   await assertSucceeds(deleteDoc(ref('carol')));
 });
 
-test('contributors keep their own record of contributions, which nobody else reads', async () => {
+test('contributors read their own record of contributions, which only the server writes', async () => {
   const entry = (extra = {}) => ({ kind: 'photo', speciesKey: 3035652, url: photo('b'), modelId: null, neededPhotos: true, createdAt: serverTimestamp(), ...extra });
   const mine = (who, owner = who) => collection(as(who), `users/${owner}/contributions`);
+  const path = 'users/bob/contributions/photo_1';
+  await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), path), entry()));
 
-  const created = await assertSucceeds(addDoc(mine('bob'), entry()));
-  await assertSucceeds(addDoc(mine('bob'), entry({ kind: 'name', url: null, neededPhotos: false })));
-  await assertSucceeds(addDoc(mine('bob'), entry({ kind: 'model', speciesKey: null, url: null, modelId: '0f8fad5b-d9cb-469f-a165-70867728950e', neededPhotos: false })));
   await assertSucceeds(getDocs(mine('bob')));
+  await assertSucceeds(getDoc(doc(as('bob'), path)));
   await assertFails(getDocs(mine('carol', 'bob')));
-  await assertFails(getDoc(doc(as(null), created.path)));
+  await assertFails(getDoc(doc(as(null), path)));
 
+  await assertFails(addDoc(mine('bob'), entry()));
+  await assertFails(setDoc(doc(as('bob'), 'users/bob/contributions/photo_2'), entry()));
   await assertFails(addDoc(mine('carol', 'bob'), entry()));
-  await assertFails(addDoc(mine(null, 'bob'), entry()));
-  await assertFails(addDoc(mine('mallory'), entry()));
-  await assertFails(addDoc(mine('bob'), entry({ kind: 'badge' })));
-  await assertFails(addDoc(mine('bob'), entry({ points: 100 })));
-  await assertFails(addDoc(mine('bob'), entry({ speciesKey: '3035652' })));
-  await assertFails(addDoc(mine('bob'), entry({ url: 'x'.repeat(501) })));
-  await assertFails(addDoc(mine('bob'), entry({ createdAt: new Date(0) })));
 
-  await assertFails(updateDoc(doc(as('bob'), created.path), { neededPhotos: false }));
-  await assertFails(deleteDoc(doc(as('carol'), created.path)));
-  await assertSucceeds(deleteDoc(doc(as('bob'), created.path)));
+  await assertFails(updateDoc(doc(as('bob'), path), { neededPhotos: false }));
+  await assertFails(deleteDoc(doc(as('carol'), path)));
+  await assertSucceeds(deleteDoc(doc(as('bob'), path)));
 });
 
 test('signed-in users can report a shared model, never read back', async () => {

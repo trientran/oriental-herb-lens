@@ -6,9 +6,6 @@ import com.uri.lee.dl.core.datastore.stringSetKey
 import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.core.firebase.SharedModelRecord
 import com.uri.lee.dl.data.upload.sendWithinRateLimit
-import com.uri.lee.dl.domain.model.Contribution
-import com.uri.lee.dl.domain.model.ContributionHistoryRepository
-import com.uri.lee.dl.domain.model.ContributionKind
 import com.uri.lee.dl.domain.repository.AuthRepository
 import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
@@ -50,7 +47,6 @@ internal class DefaultCommunityModelRepository(
     private val auth: AuthRepository,
     private val prefs: KeyValueStore,
     private val workerUrl: String,
-    private val history: ContributionHistoryRepository,
     private val settings: SettingsRepository,
 ) : CommunityModelRepository {
 
@@ -99,10 +95,7 @@ internal class DefaultCommunityModelRepository(
         )
         try {
             // Listed by an earlier try that didn't get to finish: keep that entry (the rules don't allow rewriting it)
-            if (!firestore.sharedModelExists(record.id)) {
-                firestore.addSharedModel(record)
-                history.record(Contribution("", ContributionKind.MODEL, modelId = record.id))
-            }
+            if (!firestore.sharedModelExists(record.id)) firestore.addSharedModel(record)
         } catch (e: Exception) {
             // Not listed: don't leave the file behind
             if (e !is CancellationException) runCatching { deleteFile(uploaded.id, token) }
