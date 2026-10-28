@@ -41,4 +41,14 @@ class FakeSettingsRepository(initial: ScanSettings = ScanSettings()) : SettingsR
     }
 
     override suspend fun finishSurveyInvite() = surveyProgress.update { it.copy(finished = true) }
+
+    override val creditName = MutableStateFlow<String?>(null)
+
+    override suspend fun setCreditName(name: String?) {
+        creditName.value = name?.trim()?.ifEmpty { null }
+    }
+
+    override val seenBadges = MutableStateFlow<Set<String>>(emptySet())
+
+    override suspend fun markBadgesSeen(badges: Set<String>) = seenBadges.update { it + badges }
 }

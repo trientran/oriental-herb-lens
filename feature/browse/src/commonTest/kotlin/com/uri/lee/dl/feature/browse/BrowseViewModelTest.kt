@@ -1,6 +1,7 @@
 package com.uri.lee.dl.feature.browse
 
 import com.uri.lee.dl.testing.MainDispatcherTest
+import com.uri.lee.dl.testing.fakes.FakeHerbClassifier
 import com.uri.lee.dl.testing.fakes.FakeSpeciesRepository
 import com.uri.lee.dl.testing.fakes.species
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,7 +23,31 @@ class BrowseViewModelTest : MainDispatcherTest(StandardTestDispatcher()) {
             species(3035652, "Polyscias fruticosa", vi = listOf("Đinh lăng")),
     )
 
-    private fun viewModel() = BrowseViewModel(catalog, sortByVietnameseName = true)
+    private val classifier = FakeHerbClassifier(known = (1L..88L).toSet())
+
+    private fun viewModel() = BrowseViewModel(catalog, sortByVietnameseName = true, classifier)
+
+    @Test
+    fun `needs photos lists the species the model does not know yet`() = runTest(testDispatcher) {
+        val viewModel = viewModel()
+        viewModel.onAction(BrowseAction.SetNeedsPhotos(true))
+        advanceUntilIdle()
+
+        assertEquals(listOf("Cây 089", "Cây 090", "Đinh lăng"), viewModel.state.value.needsPhotosSpecies?.map { it.vietnameseNames.first() })
+        viewModel.onAction(BrowseAction.SetNeedsPhotos(false))
+        assertFalse(viewModel.state.value.needsPhotos)
+    }
+
+    @Test
+    fun `needs photos is not offered when the model's species are unknown`() = runTest(testDispatcher) {
+        classifier.known = emptySet()
+        val viewModel = viewModel()
+        viewModel.onAction(BrowseAction.SetNeedsPhotos(true))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.needsPhotos)
+        assertFalse(viewModel.state.value.needsPhotosAvailable)
+    }
 
     @Test
     fun `pages through the whole catalog then stops`() = runTest(testDispatcher) {

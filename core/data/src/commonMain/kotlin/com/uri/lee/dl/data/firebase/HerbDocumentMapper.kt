@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 internal object HerbDocumentMapper {
 
     @Serializable
-    private data class ImageDetail(val uid: String? = null, val lat: Double? = null, val lng: Double? = null)
+    private data class ImageDetail(val uid: String? = null, val lat: Double? = null, val lng: Double? = null, val name: String? = null)
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -25,13 +25,13 @@ internal object HerbDocumentMapper {
         }
         if (parsed == null) return userPhoto(url, uploaderId = detail.ifBlank { null }, location = null)
         val location = if (parsed.lat != null && parsed.lng != null) GeoLocation(parsed.lat, parsed.lng) else null
-        return userPhoto(url, uploaderId = parsed.uid, location = location)
+        return userPhoto(url, uploaderId = parsed.uid, location = location, creditName = parsed.name?.takeIf { it.isNotBlank() })
     }
 
-    private fun userPhoto(url: String, uploaderId: String?, location: GeoLocation?) =
-        SpeciesPhoto(url = url, thumbnailUrl = url, source = PhotoSource.USER, uploaderId = uploaderId, location = location)
+    private fun userPhoto(url: String, uploaderId: String?, location: GeoLocation?, creditName: String? = null) =
+        SpeciesPhoto(url = url, thumbnailUrl = url, source = PhotoSource.USER, uploaderId = uploaderId, location = location, creditName = creditName)
 
-    /** The value stored for an uploaded image; the inverse of [toPhoto]. */
-    fun imageDetail(uploaderId: String, location: GeoLocation?): String =
-        json.encodeToString(ImageDetail.serializer(), ImageDetail(uploaderId, location?.latitude, location?.longitude))
+    /** The value stored for an uploaded image, with the name its contributor chose to be credited by, if any; the inverse of [toPhoto]. */
+    fun imageDetail(uploaderId: String, location: GeoLocation?, creditName: String? = null): String =
+        json.encodeToString(ImageDetail.serializer(), ImageDetail(uploaderId, location?.latitude, location?.longitude, creditName))
 }

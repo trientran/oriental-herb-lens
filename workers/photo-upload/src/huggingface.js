@@ -59,7 +59,7 @@ export function modelCard(model) {
     'Like any model, it can be wrong, and its species names were typed by its sharer. Never eat a plant or use it as '
       + 'medicine because of what a model says.', '',
     '## Credit and citation', '',
-    `Shared by a Med Herb Lens user (shared model \`${model.id}\`). If you use it, please cite:`, '',
+    `Shared by ${model.creditName && namesAllowed([model.creditName]) ? model.creditName : 'a Med Herb Lens user'} (shared model \`${model.id}\`). If you use it, please cite:`, '',
     ...CITATIONS.flatMap((c) => [c, '']),
   ].join('\n');
 }
@@ -160,6 +160,7 @@ export async function sharedModel(env, id, fetchFn = fetch) {
     uploaderId: str(fields, 'uploaderId'),
     huggingFace: str(fields, 'huggingFace') ?? 'none',
     huggingFaceUrl: str(fields, 'huggingFaceUrl'),
+    creditName: str(fields, 'creditName'),
   };
 }
 

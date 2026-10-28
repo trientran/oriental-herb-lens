@@ -86,7 +86,10 @@ service cloud.firestore {
       allow get, list: if true;
       allow create: if contributor()
         && id.matches('^[0-9a-f-]{36}$')
-        && request.resource.data.keys().hasOnly(['name', 'species', 'backbone', 'trainable', 'url', 'size', 'uploaderId', 'license', 'huggingFace', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'species', 'backbone', 'trainable', 'url', 'size', 'uploaderId', 'license', 'huggingFace', 'creditName', 'createdAt'])
+        // The name the sharer chose to be credited by (Profile); the app checks it for contact details and abuse
+        && (request.resource.data.get('creditName', null) == null
+            || (request.resource.data.creditName is string && request.resource.data.creditName.size() > 0 && request.resource.data.creditName.size() <= 40))
         // Asking for Hugging Face; only the administrator (admin SDK) marks it published or declined
         && request.resource.data.get('huggingFace', 'none') in ['none', 'requested']
         && request.resource.data.name is string
@@ -135,6 +138,14 @@ service cloud.firestore {
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'name', 'email'])
         && validProfile(request.resource.data, uid);
+    }
+
+    // What a contributor shared, kept for them alone: Profile shows it back as totals and private
+    // badges. Entries are written by the server only (firebase/functions), when a photo, name or
+    // model is shared, and removed with the account; counts of others' adds of a shared model are
+    // kept by the upload Worker on the model (sharedModels/{id}.adds).
+    match /users/{uid}/contributions/{id} {
+      allow get, list, delete: if signedIn() && request.auth.uid == uid;
     }
 
     // Older app versions read this to learn they must update.

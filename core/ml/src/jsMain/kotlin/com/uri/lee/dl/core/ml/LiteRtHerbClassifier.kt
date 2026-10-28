@@ -3,6 +3,7 @@ package com.uri.lee.dl.core.ml
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.domain.ml.ClassifierImage
 import com.uri.lee.dl.domain.ml.HerbClassifier
+import com.uri.lee.dl.domain.ml.speciesKeysOf
 import com.uri.lee.dl.domain.model.Classification
 import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
@@ -42,6 +43,8 @@ internal class LiteRtHerbClassifier(private val source: WebModelSource) : HerbCl
 
     override suspend fun classify(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> =
         jsErrorsAsExceptions { run(image, minConfidence, maxResults) }
+
+    override suspend fun knownSpecies(): Set<Long> = jsErrorsAsExceptions { speciesKeysOf(model().labels.joinToString("\n")) }
 
     private suspend fun run(image: ClassifierImage, minConfidence: Float, maxResults: Int): List<Classification> {
         val model = model()

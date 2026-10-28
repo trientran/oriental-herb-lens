@@ -7,6 +7,7 @@ import com.uri.lee.dl.core.firebase.FirestoreClient
 import com.uri.lee.dl.core.firebase.SharedModelRecord
 import com.uri.lee.dl.data.upload.sendWithinRateLimit
 import com.uri.lee.dl.domain.repository.AuthRepository
+import com.uri.lee.dl.domain.repository.SettingsRepository
 import com.uri.lee.dl.domain.sharing.CommunityModel
 import com.uri.lee.dl.domain.sharing.CommunityModelRepository
 import com.uri.lee.dl.domain.sharing.HuggingFaceStatus
@@ -30,6 +31,7 @@ import okio.ByteString.Companion.toByteString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.io.IOException
 import kotlinx.serialization.Serializable
 
@@ -45,6 +47,7 @@ internal class DefaultCommunityModelRepository(
     private val auth: AuthRepository,
     private val prefs: KeyValueStore,
     private val workerUrl: String,
+    private val settings: SettingsRepository,
 ) : CommunityModelRepository {
 
     @Serializable
@@ -88,6 +91,7 @@ internal class DefaultCommunityModelRepository(
         val record = SharedModelRecord(
             uploaded.id, name, species, backbone, trainable, uploaded.url, uploaded.size, uid, SharingRules.LICENSE,
             huggingFace = if (offerToHuggingFace) "requested" else "none",
+            creditName = settings.creditName.first(),
         )
         try {
             // Listed by an earlier try that didn't get to finish: keep that entry (the rules don't allow rewriting it)
@@ -155,6 +159,19 @@ internal class DefaultCommunityModelRepository(
         prefs.edit { it[HIDDEN_CONTRIBUTORS] = it[HIDDEN_CONTRIBUTORS].orEmpty() + uploaderId }
     }
 
+    override suspend fun countAdd(model: CommunityModel) {
+        if (workerUrl.isBlank() || model.uploaderId == auth.currentUserId) return
+        try {
+            val token = auth.idToken() ?: return
+            val response = client.post("${workerUrl.trimEnd('/')}/models/${model.id}/added") { bearerAuth(token) }
+            if (!response.status.isSuccess()) log.w { "Add not counted: HTTP ${response.status.value}" }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.w(e) { "Add not counted" }
+        }
+    }
+
     private suspend fun deleteFile(id: String, token: String) {
         val response = client.delete("${workerUrl.trimEnd('/')}/models/$id") { bearerAuth(token) }
         if (!response.status.isSuccess() && response.status != HttpStatusCode.NotFound) {
@@ -171,6 +188,8 @@ internal class DefaultCommunityModelRepository(
             else -> HuggingFaceStatus.NONE
         },
         huggingFaceUrl = huggingFaceUrl?.takeIf { it.startsWith("https://huggingface.co/") },
+        adds = adds,
+        creditName = creditName,
     )
 
     private companion object {

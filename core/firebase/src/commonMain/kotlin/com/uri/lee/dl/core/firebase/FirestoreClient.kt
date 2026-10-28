@@ -1,5 +1,6 @@
 package com.uri.lee.dl.core.firebase
 
+import com.uri.lee.dl.core.firebase.FirestorePaths.CONTRIBUTIONS
 import com.uri.lee.dl.core.firebase.FirestorePaths.CREATED_AT
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERBS
 import com.uri.lee.dl.core.firebase.FirestorePaths.HERB_IMAGES
@@ -19,6 +20,7 @@ import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FirebaseFirestore
 import dev.gitlive.firebase.firestore.Timestamp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 
@@ -36,6 +38,23 @@ data class SharedModelRecord(
     /** "none" or "requested" when shared; the administrator sets "published" (with [huggingFaceUrl]) or "declined". */
     val huggingFace: String = "none",
     val huggingFaceUrl: String? = null,
+    /** How many other people added it; counted by the upload Worker. */
+    val adds: Int = 0,
+    /** The name its sharer chose to be credited by; null for "a Med Herb Lens user". */
+    val creditName: String? = null,
+)
+
+/** Something a user shared, as their own `users/{uid}/contributions/{id}` stores it. */
+data class ContributionRecord(
+    val id: String = "",
+    /** "photo", "name" or "model". */
+    val kind: String,
+    val speciesKey: Long? = null,
+    val url: String? = null,
+    val modelId: String? = null,
+    val neededPhotos: Boolean = false,
+    /** Null until the server has stamped it. */
+    val createdAtMillis: Long? = null,
 )
 
 /** Favourites and history as earlier versions stored them on `users/{uid}`, oldest first. */
@@ -54,6 +73,20 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
     /** Adds entries to the `images` map of `herbs/{speciesKey}`, creating the document if needed. */
     suspend fun addHerbImages(speciesKey: Long, images: Map<String, String>) {
         db.collection(HERBS).document(speciesKey.toString()).set(mapOf(HERB_IMAGES to images), merge = true)
+    }
+
+    /** The photo URLs listed for a species now (a single read). */
+    suspend fun herbImageUrls(speciesKey: Long): Set<String> = observeHerbImages(speciesKey).first().keys
+
+    /** The user's contributions, newest first; documents that don't read as one are skipped. */
+    fun observeContributions(uid: String): Flow<List<ContributionRecord>> =
+        db.collection(USERS).document(uid).collection(CONTRIBUTIONS).orderBy(CREATED_AT, Direction.DESCENDING).snapshots
+            .map { snapshot -> snapshot.documents.mapNotNull { runCatching { it.contribution() }.getOrNull() } }
+
+    /** Removes the user's record of contributions (with their account); what they shared stays shared. */
+    suspend fun deleteContributions(uid: String) {
+        val contributions = db.collection(USERS).document(uid).collection(CONTRIBUTIONS)
+        contributions.get().documents.forEach { contributions.document(it.id).delete() }
     }
 
     suspend fun addNameSuggestion(speciesKey: Long, language: String, name: String, uid: String) {
@@ -96,12 +129,16 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         db.collection(SHARED_MODELS).document(record.id).set(
             SharedModelDocument(
                 record.name, record.species, record.backbone, record.trainable, record.url, record.size,
-                record.uploaderId, record.license, record.huggingFace,
+                record.uploaderId, record.license, record.huggingFace, record.creditName,
             ),
         )
     }
 
     suspend fun sharedModelExists(id: String): Boolean = db.collection(SHARED_MODELS).document(id).get().exists
+
+    /** One shared model, or null when it's no longer listed. */
+    suspend fun sharedModel(id: String): SharedModelRecord? =
+        db.collection(SHARED_MODELS).document(id).get().takeIf { it.exists }?.let { runCatching { it.sharedModel() }.getOrNull() }
 
     suspend fun deleteSharedModel(id: String) {
         db.collection(SHARED_MODELS).document(id).delete()
@@ -147,8 +184,24 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         val uploaderId: String,
         val license: String,
         val huggingFace: String,
+        val creditName: String? = null,
         val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     )
+
+    private fun DocumentSnapshot.contribution() = ContributionRecord(
+        id = id,
+        kind = get<String>("kind"),
+        speciesKey = number("speciesKey")?.toLong(),
+        url = runCatching { get<String?>("url") }.getOrNull(),
+        modelId = runCatching { get<String?>("modelId") }.getOrNull(),
+        neededPhotos = runCatching { get<Boolean?>("neededPhotos") }.getOrNull() ?: false,
+        // Null while the server hasn't stamped a new entry yet
+        createdAtMillis = runCatching { get<Timestamp?>(CREATED_AT) }.getOrNull()?.let { it.seconds * 1000 + it.nanoseconds / 1_000_000 },
+    )
+
+    /** A whole number arrives as a Long on Android and iOS, and as a JS number on the web. */
+    private fun DocumentSnapshot.number(field: String): Double? =
+        runCatching { get<Long?>(field)?.toDouble() }.getOrNull() ?: runCatching { get<Double?>(field) }.getOrNull()
 
     @Serializable
     private data class ModelReport(
@@ -172,6 +225,8 @@ class FirestoreClient internal constructor(private val db: FirebaseFirestore) {
         license = get<String?>("license").orEmpty(),
         huggingFace = runCatching { get<String?>("huggingFace") }.getOrNull() ?: "none",
         huggingFaceUrl = runCatching { get<String?>("huggingFaceUrl") }.getOrNull(),
+        adds = if (contains("adds")) number("adds")?.toInt() ?: 0 else 0,
+        creditName = runCatching { get<String?>("creditName") }.getOrNull(),
     )
 
     @Serializable

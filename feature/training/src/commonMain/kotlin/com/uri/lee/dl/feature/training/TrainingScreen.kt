@@ -527,6 +527,14 @@ private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (Tr
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            listOfNotNull(
+                model.creditName?.let { stringResource(Res.string.train_community_shared_by, it) },
+                if (model.adds > 0) stringResource(Res.string.train_community_adds, model.adds) else null,
+            ).joinToString(" · ").ifEmpty { stringResource(Res.string.photo_by_user) },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Work(state.work)
         Button(onClick = { onAction(TrainingAction.AddCommunityModel(model.id)) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Download, contentDescription = null)

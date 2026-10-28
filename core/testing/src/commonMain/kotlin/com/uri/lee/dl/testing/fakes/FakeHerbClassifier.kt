@@ -7,7 +7,7 @@ import com.uri.lee.dl.domain.model.Classification
 object FakeImage : ClassifierImage
 
 /** Returns [results], filtered and capped the way a real classifier would be. */
-class FakeHerbClassifier(var results: List<Classification> = emptyList()) : HerbClassifier {
+class FakeHerbClassifier(var results: List<Classification> = emptyList(), var known: Set<Long> = emptySet()) : HerbClassifier {
     var lastMinConfidence: Float? = null
     var lastMaxResults: Int? = null
 
@@ -16,4 +16,6 @@ class FakeHerbClassifier(var results: List<Classification> = emptyList()) : Herb
         lastMaxResults = maxResults
         return results.filter { it.confidence >= minConfidence }.take(maxResults)
     }
+
+    override suspend fun knownSpecies(): Set<Long> = known
 }

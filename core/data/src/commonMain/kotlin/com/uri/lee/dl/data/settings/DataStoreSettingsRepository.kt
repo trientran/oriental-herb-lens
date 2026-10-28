@@ -4,6 +4,8 @@ import com.uri.lee.dl.core.datastore.KeyValueStore
 import com.uri.lee.dl.core.datastore.booleanKey
 import com.uri.lee.dl.core.datastore.floatKey
 import com.uri.lee.dl.core.datastore.intKey
+import com.uri.lee.dl.core.datastore.stringKey
+import com.uri.lee.dl.core.datastore.stringSetKey
 import com.uri.lee.dl.domain.model.ScanSettings
 import com.uri.lee.dl.domain.model.SurveyProgress
 import com.uri.lee.dl.domain.repository.SettingsRepository
@@ -72,6 +74,18 @@ internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore)
         dataStore.edit { it[SURVEY_FINISHED] = true }
     }
 
+    override val creditName: Flow<String?> = dataStore.data.map { it[CREDIT_NAME] }.distinctUntilChanged()
+
+    override suspend fun setCreditName(name: String?) {
+        dataStore.edit { if (name.isNullOrBlank()) it.remove(CREDIT_NAME) else it[CREDIT_NAME] = name.trim() }
+    }
+
+    override val seenBadges: Flow<Set<String>> = dataStore.data.map { it[SEEN_BADGES].orEmpty() }.distinctUntilChanged()
+
+    override suspend fun markBadgesSeen(badges: Set<String>) {
+        dataStore.edit { it[SEEN_BADGES] = it[SEEN_BADGES].orEmpty() + badges }
+    }
+
     companion object {
         // Persisted key names. Renaming one silently resets the user's setting.
         val IS_OBJECTS_MODE_SINGLE_IMAGE = booleanKey("IS_OBJECTS_MODE")
@@ -82,5 +96,7 @@ internal class DataStoreSettingsRepository(private val dataStore: KeyValueStore)
         val APP_OPENS = intKey("app_opens")
         val SURVEY_ASK_AT = intKey("survey_ask_at")
         val SURVEY_FINISHED = booleanKey("survey_finished")
+        val CREDIT_NAME = stringKey("credit_name")
+        val SEEN_BADGES = stringSetKey("seen_badges")
     }
 }

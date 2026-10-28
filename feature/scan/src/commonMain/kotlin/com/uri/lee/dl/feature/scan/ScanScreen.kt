@@ -108,6 +108,9 @@ import com.uri.lee.dl.core.designsystem.resources.scan_photo_none_pick
 import com.uri.lee.dl.core.designsystem.resources.scan_photos
 import com.uri.lee.dl.core.designsystem.resources.scan_pick_plant
 import com.uri.lee.dl.core.designsystem.resources.scan_plant_unknown
+import com.uri.lee.dl.core.designsystem.resources.scan_help_learn
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.CompositionLocalProvider
 import com.uri.lee.dl.core.designsystem.resources.scan_point
 import com.uri.lee.dl.core.designsystem.resources.scan_preparing
 import com.uri.lee.dl.core.designsystem.resources.scan_tap_plant
@@ -132,6 +135,8 @@ fun ScanRoute(
     onOpenSpecies: (Long) -> Unit,
     modifier: Modifier = Modifier,
     canSharePhotos: Boolean = true,
+    /** Opens the species that need photos, after a plant wasn't recognised; null hides the offer. */
+    onHelpLearn: (() -> Unit)? = null,
 ) {
     val viewModel = koinViewModel<ScanViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -151,8 +156,21 @@ fun ScanRoute(
         },
         modifier = modifier,
         canSharePhotos = canSharePhotos,
+        onHelpLearn = onHelpLearn,
         camera = { CameraPreview(onFrame = viewModel::analyzeFrame, modifier = Modifier.fillMaxSize()) },
     )
+}
+
+/** Where "help it learn" leads, under a plant that wasn't recognised. */
+private val LocalHelpLearn = staticCompositionLocalOf<(() -> Unit)?> { null }
+
+/** A plant wasn't recognised: if the user knows it, their photos of it can teach the model. */
+@Composable
+private fun HelpLearn() {
+    val onHelpLearn = LocalHelpLearn.current ?: return
+    TextButton(onClick = onHelpLearn, contentPadding = PaddingValues(0.dp)) {
+        Text(stringResource(Res.string.scan_help_learn), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 @Composable
@@ -164,17 +182,21 @@ fun ScanScreen(
     modifier: Modifier = Modifier,
     /** Whether this platform shares photos; where it doesn't (the web), the notice points to the apps. */
     canSharePhotos: Boolean = true,
+    /** Opens the species that need photos, under a plant that wasn't recognised; null hides it. */
+    onHelpLearn: (() -> Unit)? = null,
     camera: @Composable () -> Unit = {},
 ) {
-    Box(modifier.fillMaxSize()) {
-        val source = state.source
-        if (source is ScanSource.Photos) {
-            Batch(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, { onAction(ScanAction.ShowNotice) }, onOpenSpecies)
-        } else {
-            Single(state, source, onAction, onPickPhotos, onOpenSpecies, camera)
+    CompositionLocalProvider(LocalHelpLearn provides onHelpLearn) {
+        Box(modifier.fillMaxSize()) {
+            val source = state.source
+            if (source is ScanSource.Photos) {
+                Batch(source, onPickPhotos, { onAction(ScanAction.BackToCamera) }, { onAction(ScanAction.ShowNotice) }, onOpenSpecies)
+            } else {
+                Single(state, source, onAction, onPickPhotos, onOpenSpecies, camera)
+            }
+            if (state.preparingPhotos > 0) Preparing(state.preparingPhotos)
+            if (state.showNotice) NoticeDialog(canSharePhotos) { onAction(ScanAction.DismissNotice) }
         }
-        if (state.preparingPhotos > 0) Preparing(state.preparingPhotos)
-        if (state.showNotice) NoticeDialog(canSharePhotos) { onAction(ScanAction.DismissNotice) }
     }
 }
 
@@ -406,12 +428,16 @@ private fun ResultsPanel(state: ScanState, onAction: (ScanAction) -> Unit, onOpe
                 }
                 state.mode == ScanMode.PICK_PLANT && picked != null -> Picked(picked, state.source == ScanSource.Camera, onAction, onOpenSpecies)
                 state.mode == ScanMode.WHOLE_VIEW && state.results.isNotEmpty() -> state.results.forEach { ResultRow(it, onOpenSpecies) }
-                else -> Text(
-                    hintFor(state),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                )
+                else -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        hintFor(state),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    )
+                    // A photo was read and identified, and nothing was recognised
+                    if (state.source is ScanSource.Photo && state.mode == ScanMode.WHOLE_VIEW && !state.hasError && !state.identifyFailed) HelpLearn()
+                }
             }
             NoticeLine({ onAction(ScanAction.ShowNotice) })
         }
@@ -434,6 +460,7 @@ private fun Picked(picked: PickedPlant, fromCamera: Boolean, onAction: (ScanActi
         Column(Modifier.weight(1f).heightIn(min = 88.dp), verticalArrangement = Arrangement.Center) {
             if (picked.herbs.isEmpty()) {
                 Text(stringResource(Res.string.scan_plant_unknown), style = MaterialTheme.typography.bodyMedium)
+                HelpLearn()
             } else {
                 picked.herbs.forEachIndexed { i, herb ->
                     if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -532,7 +559,10 @@ private fun BatchCard(index: Int, item: BatchItem, onOpenSpecies: (Long) -> Unit
                         CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         Text(stringResource(Res.string.scan_working), style = MaterialTheme.typography.bodyMedium)
                     }
-                    herbs.isEmpty() -> Text(stringResource(Res.string.scan_photo_none), style = MaterialTheme.typography.bodyMedium)
+                    herbs.isEmpty() -> Column {
+                        Text(stringResource(Res.string.scan_photo_none), style = MaterialTheme.typography.bodyMedium)
+                        HelpLearn()
+                    }
                     else -> herbs.forEachIndexed { i, herb ->
                         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                         CompactResult(herb, onOpenSpecies)
