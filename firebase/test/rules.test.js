@@ -76,9 +76,13 @@ test('name suggestions: a name in an offered language, never read back', async (
   const created = await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), ok));
   await assertFails(getDoc(created));
   await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'vi', name: 'Đinh lăng' }));
-  // Languages waiting for the ethics approval, and anything else
+  // Every interface language, with a script or region where it has one, and nothing else
   await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh', name: '南洋参' }));
-  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'he', name: 'דוגמה' }));
+  await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh-Hant', name: '南洋參' }));
+  await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'id', name: 'Kedondong laut' }));
+  await assertSucceeds(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'pt-BR', name: 'Árvore-da-felicidade' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'iw', name: 'דוגמה' }));
+  await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'zh-TW', name: '南洋參' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, language: 'english' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: '' }));
   await assertFails(addDoc(collection(bob, 'nameSuggestions'), { ...ok, name: 'x'.repeat(101) }));

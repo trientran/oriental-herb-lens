@@ -137,12 +137,26 @@ private object WebLanguageSwitch : LanguageSwitchStore {
  */
 private fun applyChosenLanguage() {
     val all = runCatching { window.localStorage.getItem(ALL_LANGUAGES_KEY) }.getOrNull() != "false"
-    val saved = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()
-    val browser = window.navigator.language.substringBefore('-')
-    val preferred = saved?.takeIf { it in AppLanguages.CODES } ?: browser
-    val chosen = AppLanguages.start(all, preferred) ?: saved?.takeIf { it in AppLanguages.CODES } ?: return
+    val saved = runCatching { window.localStorage.getItem(LANGUAGE_KEY) }.getOrNull()?.takeIf { it in AppLanguages.CODES }
+    val browser = window.navigator.language
+    val preferred = saved ?: AppLanguages.codeForTag(browser)
+    val chosen = AppLanguages.start(all, preferred) ?: saved ?: resourceTag(browser) ?: return
     js("Object.defineProperty(navigator, 'language', { get: function () { return chosen; }, configurable: true })")
     js("Object.defineProperty(navigator, 'languages', { get: function () { return [chosen]; }, configurable: true })")
+}
+
+/**
+ * The browser's [tag] spelled so that Compose's resources find its interface, or null when it already
+ * is: "zh-TW" names no script, which would show Simplified Chinese, so it becomes "zh-Hant-TW"; "no"
+ * becomes "nb".
+ */
+private fun resourceTag(tag: String): String? {
+    val rest = tag.substringAfter('-', "").let { if (it.isEmpty()) "" else "-$it" }
+    return when {
+        AppLanguages.codeForTag(tag) == "zh-Hant" && !tag.contains("Hant", ignoreCase = true) -> "zh-Hant$rest"
+        tag.substringBefore('-').lowercase() == "no" -> "nb$rest"
+        else -> null
+    }
 }
 
 /** Remembers [code] and restarts the app in it. */

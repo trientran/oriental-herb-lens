@@ -118,6 +118,7 @@ import com.uri.lee.dl.core.designsystem.resources.retry
 import com.uri.lee.dl.core.designsystem.theme.HerbLensTheme
 import com.uri.lee.dl.core.maps.HerbMap
 import com.uri.lee.dl.core.maps.LatLng
+import com.uri.lee.dl.domain.model.AppLanguages
 import com.uri.lee.dl.domain.model.GeoLocation
 import com.uri.lee.dl.domain.model.NameLanguages
 import com.uri.lee.dl.domain.model.Species
@@ -160,7 +161,7 @@ fun HerbDetailsRoute(
             herbId = herbId,
             listed = NameLanguages.SUGGESTIBLE.associateWith { species.names(it) },
             // The language the app is shown in, which follows the system's unless the user chose another
-            language = Locale.current.language,
+            language = Locale.current.let { AppLanguages.codeFor(it.language, it.script, it.region) },
             onSignIn = { suggesting = false; onSignIn() },
             onDismiss = { suggesting = false },
         )

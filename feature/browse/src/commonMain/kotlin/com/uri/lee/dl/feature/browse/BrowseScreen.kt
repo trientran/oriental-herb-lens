@@ -176,7 +176,7 @@ private fun NeedsPhotosList(species: List<Species>?, selectedId: Long?, onOpenSp
 /** The web's language menu: the interface's languages this run, named as LocalLanguageName gives them. */
 @Composable
 private fun LanguageChoice(onSetLanguage: (String) -> Unit, modifier: Modifier = Modifier) {
-    val current = Locale.current.language.takeIf { it in AppLanguages.offered } ?: "en"
+    val current = Locale.current.let { AppLanguages.codeFor(it.language, it.script, it.region) }.takeIf { it in AppLanguages.offered } ?: "en"
     val name = LocalLanguageName.current
     var open by remember { mutableStateOf(false) }
     Box(modifier) {
