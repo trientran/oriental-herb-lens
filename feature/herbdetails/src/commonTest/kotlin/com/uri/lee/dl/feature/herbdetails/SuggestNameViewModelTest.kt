@@ -44,12 +44,12 @@ class SuggestNameViewModelTest : MainDispatcherTest() {
 
     @Test
     fun `only the offered languages can be chosen`() {
-        viewModel.onAction(SuggestNameAction.LanguageChanged("he"))
+        viewModel.onAction(SuggestNameAction.LanguageChanged("yi"))
         assertEquals("vi", viewModel.state.value.language)
         viewModel.onAction(SuggestNameAction.LanguageChanged("zh"))
         assertEquals("zh", viewModel.state.value.language)
 
-        val unoffered = SuggestNameViewModel(5L, listed, "he", contributions, auth)
+        val unoffered = SuggestNameViewModel(5L, listed, "yi", contributions, auth)
         assertEquals("en", unoffered.state.value.language)
     }
 

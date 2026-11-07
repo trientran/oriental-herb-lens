@@ -129,8 +129,9 @@ fun App(actions: PlatformActions, openHerbId: Long? = null) {
     val analytics = koinInject<Analytics>()
     val tipViewed = remember(analytics) { { term: AiTerm -> analytics.log(AnalyticsEvent.TipViewed(term.name.lowercase())) } }
     HerbLensTheme {
-        // Right to left for Arabic and Persian everywhere: Android does it itself, iOS and the web follow this
-        val direction = if (AppLanguages.isRightToLeft(Locale.current.language)) LayoutDirection.Rtl else LocalLayoutDirection.current
+        // Right to left for Arabic, Persian, Hebrew and Urdu everywhere: Android does it itself, iOS and the web follow this
+        val language = Locale.current.let { AppLanguages.codeFor(it.language, it.script, it.region) }
+        val direction = if (AppLanguages.isRightToLeft(language)) LayoutDirection.Rtl else LocalLayoutDirection.current
         CompositionLocalProvider(
             LocalVietnameseFirst provides vietnameseFirst,
             LocalSharesPhotos provides actions.sharePhotos,

@@ -27,19 +27,30 @@
 		<string>vi</string>
 		<string>ar</string>
 		<string>az</string>
+		<string>eu</string>
+		<string>be</string>
 		<string>bn</string>
 		<string>bs</string>
+		<string>br</string>
 		<string>bg</string>
+		<string>ca</string>
 		<string>zh-Hans</string>
+		<string>zh-Hant</string>
 		<string>hr</string>
 		<string>cs</string>
+		<string>da</string>
 		<string>nl</string>
 		<string>eo</string>
+		<string>et</string>
+		<string>fi</string>
 		<string>fr</string>
+		<string>gl</string>
 		<string>de</string>
 		<string>el</string>
+		<string>he</string>
 		<string>hi</string>
 		<string>hu</string>
+		<string>id</string>
 		<string>it</string>
 		<string>ja</string>
 		<string>ko</string>
@@ -47,21 +58,31 @@
 		<string>ln</string>
 		<string>lt</string>
 		<string>mg</string>
+		<string>ms</string>
+		<string>ml</string>
 		<string>mr</string>
 		<string>ne</string>
+		<string>nb</string>
+		<string>oc</string>
 		<string>fa</string>
 		<string>pl</string>
 		<string>pt</string>
+		<string>pt-BR</string>
 		<string>ro</string>
 		<string>ru</string>
+		<string>sat</string>
 		<string>sr</string>
 		<string>si</string>
+		<string>sk</string>
+		<string>sl</string>
 		<string>es</string>
 		<string>sv</string>
 		<string>sw</string>
 		<string>th</string>
 		<string>tr</string>
 		<string>uk</string>
+		<string>ur</string>
+		<string>cy</string>
 	</array>
 	<!-- Google sign-in returns to the app through its reversed client ID -->
 	<key>CFBundleURLTypes</key>

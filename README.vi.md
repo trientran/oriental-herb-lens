@@ -29,8 +29,13 @@ Lens chạy trên Android, iOS và trình duyệt web.
   GBIF và iNaturalist và ảnh do người dùng chia sẻ.
 - **Đã lưu.** Các loài yêu thích và những loài bạn xem gần đây.
 - **Đóng góp.** Người dùng đã đăng nhập có thể chia sẻ ảnh thảo dược (kèm nơi chụp) và đề xuất tên
-  thông dụng (hiện bằng tiếng Việt hoặc tiếng Anh). Ảnh được chia sẻ có thể bị báo cáo, và có thể ẩn
+  thông dụng bằng bất kỳ ngôn ngữ giao diện nào. Ảnh được chia sẻ có thể bị báo cáo, và có thể ẩn
   ảnh của một người đóng góp.
+- **60 ngôn ngữ.** Giao diện theo ngôn ngữ của thiết bị (hoặc, trên web, ngôn ngữ bạn chọn): tiếng
+  Anh và tiếng Việt được viết riêng cho ứng dụng, cùng 58 ngôn ngữ khác được dịch máy, bố cục từ
+  phải sang trái cho tiếng Ả Rập, tiếng Ba Tư, tiếng Do Thái và tiếng Urdu. Tên loài, chính sách
+  quyền riêng tư và điều khoản vẫn bằng tiếng Việt và tiếng Anh, còn thư mời khảo sát nghiên cứu
+  bằng tiếng Anh.
 - **Tự huấn luyện mô hình.** Thu thập ảnh những loài cây bạn quan tâm, huấn luyện bộ phân loại ngay
   trên thiết bị và dùng thử với camera. Chia sẻ mô hình dưới dạng tệp `.tflite` chuẩn có kèm danh
   sách loài, nên dùng được trong bất kỳ ứng dụng nào chạy mô hình TensorFlow Lite; khi được nhập vào

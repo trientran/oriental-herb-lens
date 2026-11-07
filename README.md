@@ -28,8 +28,12 @@ on Android, iOS and the web.
   iNaturalist contributors and photos shared by users.
 - **Saved.** Favourites and the herbs you viewed recently.
 - **Contribute.** Signed-in users share photos of herbs (with where they were taken) and suggest
-  common names (Vietnamese or English for now). Shared photos can be reported, and a contributor's
-  photos hidden.
+  common names in any of the interface's languages. Shared photos can be reported, and a
+  contributor's photos hidden.
+- **In 60 languages.** The interface follows the device's language (or, on the web, the one you
+  pick): English and Vietnamese, written for the app, and 58 more, machine-translated, laid out
+  right to left for Arabic, Persian, Hebrew and Urdu. Species names, the privacy policy and the
+  terms stay in English and Vietnamese, and the research survey's letter in English.
 - **Train your own model.** Collect photos of the plants you care about, train a classifier on the
   device and try it with the camera. Share it as a standard `.tflite` file that carries its own
   species list, so it works in any app that runs TensorFlow Lite models; imported into Med Herb
