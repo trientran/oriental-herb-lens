@@ -20,10 +20,16 @@ plugins {
 // dependent catches up.
 plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
     the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().apply {
-        resolution("serialize-javascript", "7.0.5")
+        resolution("serialize-javascript", "7.1.3")
         resolution("diff", "8.0.3")
-        resolution("undici", "6.29.0")
+        resolution("undici", "6.29.1")
         resolution("@grpc/grpc-js", "1.13.6")
         resolution("ws", "8.21.3")
+        // webpack-dev-server: launch-editor, follow-redirects, fast-uri, qs. body-parser (Karma and
+        // Express 5) is updated in the lock file instead, as each needs a different major.
+        resolution("launch-editor", "2.14.2")
+        resolution("follow-redirects", "1.16.2")
+        resolution("fast-uri", "3.1.9")
+        resolution("qs", "6.16.1")
     }
 }
