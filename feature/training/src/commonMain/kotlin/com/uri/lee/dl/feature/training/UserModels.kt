@@ -99,6 +99,8 @@ data class ModelReport(
     val history: List<EpochStats> = emptyList(),
     /** [actual][predicted] counts on the test photos. */
     val confusion: List<List<Int>> = emptyList(),
+    /** How long training (or calculating) took on this device; 0 for reports made before it was timed. */
+    val trainMillis: Long = 0,
 )
 
 /** A model on the device: one the user trains here, or an imported .tflite. */
@@ -117,6 +119,9 @@ data class UserModel(
     val importedTrainable: Boolean = false,
     /** Its id among the shared models, once the user shared it with everyone; null otherwise. */
     val sharedId: String? = null,
+    /** Time spent reading (decoding and embedding) photos on this device, and how many, since timing began. */
+    val readMillis: Long = 0,
+    val readPhotos: Int = 0,
 ) {
     val backbone: String get() = settings.quality.backbone
     val isTrained: Boolean get() = imported || trainedClasses.isNotEmpty()
@@ -151,6 +156,8 @@ class UserModelStore(private val files: AppFiles) {
             report = files.read("$ROOT/$id/report.txt")?.decodeToString()?.let(::decodeReport),
             importedTrainable = meta["importedTrainable"] == "true",
             sharedId = meta["sharedId"]?.takeIf { it.isNotEmpty() },
+            readMillis = meta["readMillis"]?.toLongOrNull() ?: 0,
+            readPhotos = meta["readPhotos"]?.toIntOrNull() ?: 0,
         )
     }
 
@@ -167,6 +174,13 @@ class UserModelStore(private val files: AppFiles) {
     suspend fun addExamples(id: String, examples: List<StoredExample>) {
         if (examples.isEmpty()) return
         files.write("$ROOT/$id/embeddings.bin", encodeExamples(examples(id) + examples))
+    }
+
+    /** Adds the time [photos] took to read to [id]'s total. */
+    suspend fun addReadTime(id: String, millis: Long, photos: Int) {
+        if (photos <= 0) return
+        val model = load(id) ?: return
+        save(model.copy(readMillis = model.readMillis + millis, readPhotos = model.readPhotos + photos))
     }
 
     suspend fun head(id: String): ClassifierHead? = files.read("$ROOT/$id/head.json")?.let { ModelPack.fromJson(it.decodeToString()).head }
@@ -196,6 +210,8 @@ class UserModelStore(private val files: AppFiles) {
         appendLine("sharedId=${model.sharedId.orEmpty()}")
         appendLine("trainedThrough=${model.trainedThrough}")
         appendLine("trainedClasses=${model.trainedClasses.joinToString(SEPARATOR)}")
+        appendLine("readMillis=${model.readMillis}")
+        appendLine("readPhotos=${model.readPhotos}")
         val s = model.settings
         val e = s.expert
         appendLine("quality=${s.quality.name}")
@@ -241,6 +257,7 @@ class UserModelStore(private val files: AppFiles) {
         appendLine("testPhotos=${r.testPhotos}")
         appendLine("epochs=${r.epochs}")
         appendLine("heldOut=${r.heldOut}")
+        appendLine("trainMillis=${r.trainMillis}")
         r.confused?.let { appendLine("confused=${it.first}$SEPARATOR${it.second}") }
         r.perClass.forEach { (name, accuracy) -> appendLine("class=$accuracy$SEPARATOR$name") }
         r.confusion.forEach { row -> appendLine("confusion=${row.joinToString(",")}") }
@@ -263,6 +280,7 @@ class UserModelStore(private val files: AppFiles) {
                 if (p.size < 4) null else EpochStats(p[0].toInt(), p[1].toFloat(), p[2].toFloat(), p[3].toFloat())
             },
             confusion = lines.filter { it.startsWith("confusion=") }.map { l -> l.substringAfter('=').split(',').mapNotNull { it.toIntOrNull() } },
+            trainMillis = value("trainMillis")?.toLongOrNull() ?: 0,
         )
     }
 

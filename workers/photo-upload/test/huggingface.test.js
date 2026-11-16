@@ -95,6 +95,13 @@ test('the model card carries the licence, the species and the papers to cite', (
   assert.match(card, /- Basil\n- Mint/);
   assert.match(card, /doi\.org\/10\.1016\/j\.procs\.2025\.09\.382/);
   assert.match(card, /Never eat a plant/);
+  assert.match(card, /Shared by a Med Herb Lens user/);
+});
+
+test('the model card credits the sharer by the name they chose, if it passes the checks', () => {
+  const model = { id: ID, name: 'Garden herbs', species: ['Mint', 'Basil'], backbone: 'mobilenet_v3_large', trainable: true };
+  assert.match(modelCard({ ...model, creditName: 'Trần Thị Lan' }), /Shared by Trần Thị Lan \(/);
+  assert.match(modelCard({ ...model, creditName: 'see www.shop.vn' }), /Shared by a Med Herb Lens user/);
 });
 
 test('the sharer publishes their model: repo, LFS upload, commit, then the listing says where', async () => {

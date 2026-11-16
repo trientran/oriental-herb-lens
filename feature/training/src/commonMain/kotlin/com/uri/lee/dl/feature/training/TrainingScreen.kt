@@ -527,6 +527,14 @@ private fun CommunityModelScreen(state: TrainingState, id: String, onAction: (Tr
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            listOfNotNull(
+                model.creditName?.let { stringResource(Res.string.train_community_shared_by, it) },
+                if (model.adds > 0) stringResource(Res.string.train_community_adds, model.adds) else null,
+            ).joinToString(" · ").ifEmpty { stringResource(Res.string.photo_by_user) },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Work(state.work)
         Button(onClick = { onAction(TrainingAction.AddCommunityModel(model.id)) }, enabled = state.work == null, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Download, contentDescription = null)
@@ -924,6 +932,7 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         report.confused?.let { (a, b) ->
             Text(stringResource(Res.string.train_mixed_up, a, b), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        DeviceTimes(model, report)
         Button(onClick = { onAction(TrainingAction.Open(TrainingScreen.Use(model.id))) }, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.PhotoCamera, contentDescription = null)
             Text(stringResource(Res.string.train_try_it), Modifier.padding(start = spacing.sm))
@@ -951,6 +960,26 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
         TextButton(onClick = { confirmDelete = true }) { Text(stringResource(Res.string.train_delete), color = MaterialTheme.colorScheme.error) }
     }
     if (confirmDelete) ConfirmDeleteDialog(model.name, onDismiss = { confirmDelete = false }) { confirmDelete = false; onAction(TrainingAction.Delete) }
+}
+
+/** How long this device took to read the photos and to train: models made before timing show nothing. */
+@Composable
+private fun DeviceTimes(model: UserModel, report: ModelReport) {
+    if (report.trainMillis <= 0) return
+    val training = duration(report.trainMillis)
+    val text = if (model.readPhotos > 0) {
+        stringResource(Res.string.train_time_both, duration(model.readMillis), duration(model.readMillis / model.readPhotos), training)
+    } else {
+        stringResource(Res.string.train_time_training, training)
+    }
+    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+private fun duration(millis: Long): String = when (val d = ShownDuration.of(millis)) {
+    is ShownDuration.Millis -> stringResource(Res.string.train_duration_ms, d.millis.toInt())
+    is ShownDuration.Seconds -> stringResource(Res.string.train_duration_s, d.seconds.toInt())
+    is ShownDuration.Minutes -> stringResource(Res.string.train_duration_min, d.minutes.toInt(), d.seconds.toInt())
 }
 
 /** The learning curve and the confusion matrix, for those who want to see how it learned. */

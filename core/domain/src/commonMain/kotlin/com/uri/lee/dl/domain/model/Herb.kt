@@ -27,4 +27,6 @@ data class SpeciesPhoto(
     /** Where the photo was taken, when known. */
     val location: GeoLocation? = null,
     val credit: PhotoCredit? = null,
+    /** For a user's photo: the name they chose to be credited by; null for "a Med Herb Lens user". */
+    val creditName: String? = null,
 )

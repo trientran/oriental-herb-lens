@@ -242,7 +242,7 @@ val speciesPages by tasks.registering {
             val content = buildString {
                 appendLine("<h1><i>${esc(h.scientific)}</i>${if (h.authorship.isNotEmpty()) " <small>${esc(h.authorship)}</small>" else ""}</h1>")
                 if (common.isNotEmpty()) appendLine("<p class=\"updated\">${common.joinToString(" · ") { esc(it) }}</p>")
-                appendLine("<div class=\"buttons\"><a class=\"button\" href=\"../app/?species=${h.id}\">Open in Med Herb Lens</a></div>")
+                appendLine("<div class=\"buttons\"><a class=\"button\" href=\"../app/?species=${h.id}\" rel=\"nofollow\">Open in Med Herb Lens</a></div>")
                 if (h.vietnamese.isNotEmpty() || h.english.isNotEmpty()) {
                     appendLine("<h2>Names</h2>")
                     if (h.vietnamese.isNotEmpty()) appendLine("<p><b>Vietnamese</b> (<span lang=\"vi\">tiếng Việt</span>): <span lang=\"vi\">${h.vietnamese.joinToString(" · ") { esc(it) }}</span></p>")
@@ -309,7 +309,8 @@ val speciesPages by tasks.registering {
                 appendLine("</urlset>")
             },
         )
-        dir.resolve("robots.txt").writeText("User-agent: *\nAllow: /\n\nSitemap: $SITE_URL/sitemap.xml\n")
+        // /cdn-cgi/ holds Cloudflare's own addresses, such as its email-obfuscation link, which answer 404 to crawlers
+        dir.resolve("robots.txt").writeText("User-agent: *\nAllow: /\nDisallow: /cdn-cgi/\n\nSitemap: $SITE_URL/sitemap.xml\n")
         logger.lifecycle("Species pages: ${herbs.size}")
     }
 }
@@ -325,4 +326,21 @@ val site by tasks.registering(Sync::class) {
         exclude("**/*.map", "skiko.wasm", "skiko.mjs", "skikod8.mjs", "js-reexport-symbols.mjs")
     }
     into(layout.buildDirectory.dir("site"))
+    // Cloudflare Pages serves "x.html" at "x" and redirects the former: link to the address that answers, as the
+    // sitemap and canonical links do, so search engines don't record thousands of redirects. The web app (app/)
+    // keeps its own files.
+    doLast {
+        val linkToHtml = Regex("""href="(?!https?:|mailto:|#|/?app/)([^"#]*?)(index)?\.html(#[^"]*)?"""")
+        destinationDir.walkTopDown()
+            .filter { it.isFile && it.extension == "html" && !it.path.contains("/app/") }
+            .forEach { page ->
+                val text = page.readText()
+                val clean = linkToHtml.replace(text) { m ->
+                    val (path, index, anchor) = m.destructured
+                    val target = if (index.isNotEmpty() && (path.isEmpty() || path.endsWith("/"))) path.ifEmpty { "./" } else path + index
+                    "href=\"$target$anchor\""
+                }
+                if (clean != text) page.writeText(clean)
+            }
+    }
 }

@@ -13,7 +13,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 actual val mlModule: Module = module {
-    single<HerbClassifier> { MlKitHerbClassifier(get()) }
+    single<HerbClassifier> { MlKitHerbClassifier(get(), androidContext()) }
     single<ObjectFinder> { MlKitObjectFinder() }
     single<ImageCropper> { AndroidImageCropper() }
     single<PlantCheck> { MlKitPlantCheck(androidContext()) }

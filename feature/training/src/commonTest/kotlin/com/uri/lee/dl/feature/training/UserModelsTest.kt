@@ -49,6 +49,42 @@ class UserModelsTest {
     }
 
     @Test
+    fun storeKeepsReadingAndTrainingTimes() = runTest {
+        val store = UserModelStore(MemoryFiles())
+        val report = ModelReport(0.9f, listOf("Lantana" to 1f, "Mimosa" to 0.8f), null, testPhotos = 6, epochs = 0, heldOut = true, trainMillis = 1_234)
+        store.save(UserModel("m1", "Weeds", listOf("Lantana", "Mimosa"), report = report))
+        store.addReadTime("m1", 9_000, 10)
+        store.addReadTime("m1", 1_000, 2)
+        store.addReadTime("m1", 500, 0)
+
+        val loaded = assertNotNull(store.load("m1"))
+        assertEquals(10_000, loaded.readMillis)
+        assertEquals(12, loaded.readPhotos)
+        assertEquals(1_234, loaded.report?.trainMillis)
+    }
+
+    @Test
+    fun modelsSavedBeforeTimingLoadWithoutTimes() = runTest {
+        val files = MemoryFiles()
+        files.files["models/old/meta.txt"] = "name=Old\nimported=false\n".encodeToByteArray()
+        files.files["models/old/classes.txt"] = "a\nb\n".encodeToByteArray()
+        files.files["models/old/report.txt"] = "accuracy=0.5\ntestPhotos=2\nepochs=3\nheldOut=true\n".encodeToByteArray()
+
+        val loaded = assertNotNull(UserModelStore(files).load("old"))
+        assertEquals(0, loaded.readPhotos)
+        assertEquals(0, loaded.report?.trainMillis)
+    }
+
+    @Test
+    fun durationsShowMillisecondsSecondsOrMinutes() {
+        assertEquals(ShownDuration.Millis(129), ShownDuration.of(129))
+        assertEquals(ShownDuration.Seconds(1), ShownDuration.of(1_499))
+        assertEquals(ShownDuration.Seconds(47), ShownDuration.of(46_750))
+        assertEquals(ShownDuration.Minutes(1, 0), ShownDuration.of(59_600))
+        assertEquals(ShownDuration.Minutes(3, 7), ShownDuration.of(187_000))
+    }
+
+    @Test
     fun newModelsBuildOnDinov2AndEarlierModelsKeepTheirBackbone() = runTest {
         assertEquals("dinov2_vits14", TrainingSettings().quality.backbone)
         assertEquals(listOf(Quality.MOST_ACCURATE, Quality.FAST), Quality.entries.filter { it.offered })

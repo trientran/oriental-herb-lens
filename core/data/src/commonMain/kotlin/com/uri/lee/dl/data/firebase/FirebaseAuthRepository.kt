@@ -41,6 +41,13 @@ internal class FirebaseAuthRepository(private val auth: AuthClient, private val 
         val uid = auth.currentUserId ?: return
         // While still signed in, as the rules require; most users never had one, which is fine
         try {
+            firestore.deleteContributions(uid)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.w(e) { "users/$uid/contributions not deleted" }
+        }
+        try {
             firestore.deleteUserDocument(uid)
         } catch (e: CancellationException) {
             throw e

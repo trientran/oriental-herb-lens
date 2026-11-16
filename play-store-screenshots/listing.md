@@ -88,10 +88,10 @@ LEARN AS YOU GO
 Tap ? next to any AI term (model, confidence, training, and more) for a plain-language explanation.
 
 IN YOUR LANGUAGE
-The app is available in 39 languages and follows your device's language, with right-to-left layout for Arabic and Persian. Species names, the privacy policy and the terms are in English and Vietnamese.
+The app is available in 60 languages and follows your device's language, with right-to-left layout for Arabic, Persian, Hebrew and Urdu. Species names, the privacy policy and the terms are in English and Vietnamese.
 
 CONTRIBUTE
-Sign in to add your own plant photos, suggest common names in any of the 39 languages, and share models. Photos are checked on the device before upload, and anything shared can be reported. You must be 13 or older to use Med Herb Lens; if you are under 18, you need a parent or guardian's permission.
+Sign in to add your own plant photos, suggest common names in any of the 60 languages, and share models. Photos are checked on the device before upload, and anything shared can be reported. You must be 13 or older to use Med Herb Lens; if you are under 18, you need a parent or guardian's permission.
 
 FOR RESEARCH
 Med Herb Lens is a research project at the University of New England, Australia. The species list and GBIF image data are available as an open dataset, and Profile shows how to cite the app.
@@ -133,10 +133,10 @@ VỪA DÙNG VỪA HỌC
 Chạm vào ? cạnh mỗi thuật ngữ AI (mô hình, độ tin cậy, huấn luyện…) để xem giải thích dễ hiểu.
 
 THEO NGÔN NGỮ CỦA BẠN
-Ứng dụng có 39 ngôn ngữ và tự theo ngôn ngữ của thiết bị, với bố cục từ phải sang trái cho tiếng Ả Rập và tiếng Ba Tư. Tên loài, chính sách quyền riêng tư và điều khoản dùng tiếng Việt và tiếng Anh.
+Ứng dụng có 60 ngôn ngữ và tự theo ngôn ngữ của thiết bị, với bố cục từ phải sang trái cho tiếng Ả Rập, tiếng Ba Tư, tiếng Do Thái và tiếng Urdu. Tên loài, chính sách quyền riêng tư và điều khoản dùng tiếng Việt và tiếng Anh.
 
 ĐÓNG GÓP
-Đăng nhập để thêm ảnh cây của bạn, đề xuất tên thường gọi bằng bất kỳ ngôn ngữ nào trong 39 ngôn ngữ, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải lên, và mọi nội dung chia sẻ đều có thể bị báo cáo. Bạn cần từ 13 tuổi trở lên để dùng Med Herb Lens; nếu dưới 18 tuổi, bạn cần có sự đồng ý của cha mẹ hoặc người giám hộ.
+Đăng nhập để thêm ảnh cây của bạn, đề xuất tên thường gọi bằng bất kỳ ngôn ngữ nào trong 60 ngôn ngữ, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải lên, và mọi nội dung chia sẻ đều có thể bị báo cáo. Bạn cần từ 13 tuổi trở lên để dùng Med Herb Lens; nếu dưới 18 tuổi, bạn cần có sự đồng ý của cha mẹ hoặc người giám hộ.
 
 PHỤC VỤ NGHIÊN CỨU
 Med Herb Lens là một dự án nghiên cứu tại Đại học New England, Úc. Danh sách loài và dữ liệu ảnh GBIF được công bố dưới dạng bộ dữ liệu mở, và mục Cá nhân hướng dẫn cách trích dẫn ứng dụng.
@@ -178,10 +178,10 @@ APPRENDRE EN CHEMIN
 Touchez ? à côté de tout terme d'IA (modèle, confiance, entraînement, etc.) pour une explication simple.
 
 DANS VOTRE LANGUE
-L'application est disponible en 39 langues et suit la langue de votre appareil, avec une mise en page de droite à gauche pour l'arabe et le persan. Les noms d'espèces, la politique de confidentialité et les conditions sont en anglais et en vietnamien.
+L'application est disponible en 60 langues et suit la langue de votre appareil, avec une mise en page de droite à gauche pour l'arabe, le persan, l'hébreu et l'ourdou. Les noms d'espèces, la politique de confidentialité et les conditions sont en anglais et en vietnamien.
 
 CONTRIBUER
-Connectez-vous pour ajouter vos photos de plantes, proposer des noms communs dans l'une des 39 langues et partager des modèles. Les photos sont vérifiées sur l'appareil avant l'envoi, et tout contenu partagé peut être signalé. Vous devez avoir au moins 13 ans pour utiliser Med Herb Lens ; si vous avez moins de 18 ans, il vous faut l'autorisation d'un parent ou d'un tuteur.
+Connectez-vous pour ajouter vos photos de plantes, proposer des noms communs dans l'une des 60 langues et partager des modèles. Les photos sont vérifiées sur l'appareil avant l'envoi, et tout contenu partagé peut être signalé. Vous devez avoir au moins 13 ans pour utiliser Med Herb Lens ; si vous avez moins de 18 ans, il vous faut l'autorisation d'un parent ou d'un tuteur.
 
 POUR LA RECHERCHE
 Med Herb Lens est un projet de recherche de l'Université de New England, en Australie. La liste des espèces et les données d'images GBIF sont disponibles en jeu de données ouvert, et Profil indique comment citer l'application.
@@ -223,10 +223,10 @@ APRENDE SOBRE LA MARCHA
 Toca ? junto a cualquier término de IA (modelo, confianza, entrenamiento y más) para ver una explicación sencilla.
 
 EN TU IDIOMA
-La aplicación está disponible en 39 idiomas y sigue el idioma de tu dispositivo, con diseño de derecha a izquierda para el árabe y el persa. Los nombres de las especies, la política de privacidad y los términos están en inglés y vietnamita.
+La aplicación está disponible en 60 idiomas y sigue el idioma de tu dispositivo, con diseño de derecha a izquierda para el árabe, el persa, el hebreo y el urdu. Los nombres de las especies, la política de privacidad y los términos están en inglés y vietnamita.
 
 CONTRIBUIR
-Inicia sesión para añadir tus fotos de plantas, sugerir nombres comunes en cualquiera de los 39 idiomas y compartir modelos. Las fotos se revisan en el dispositivo antes de subirlas, y todo lo compartido se puede denunciar. Debes tener 13 años o más para usar Med Herb Lens; si eres menor de 18, necesitas el permiso de tu madre, padre o tutor.
+Inicia sesión para añadir tus fotos de plantas, sugerir nombres comunes en cualquiera de los 60 idiomas y compartir modelos. Las fotos se revisan en el dispositivo antes de subirlas, y todo lo compartido se puede denunciar. Debes tener 13 años o más para usar Med Herb Lens; si eres menor de 18, necesitas el permiso de tu madre, padre o tutor.
 
 PARA LA INVESTIGACIÓN
 Med Herb Lens es un proyecto de investigación de la Universidad de New England, Australia. La lista de especies y los datos de imágenes de GBIF están disponibles como conjunto de datos abierto, y Perfil indica cómo citar la aplicación.
@@ -268,10 +268,10 @@ APRENDA AO USAR
 Toque em ? ao lado de qualquer termo de IA (modelo, confiança, treinamento e outros) para ver uma explicação simples.
 
 NO SEU IDIOMA
-O aplicativo está disponível em 39 idiomas e segue o idioma do seu aparelho, com layout da direita para a esquerda para árabe e persa. Os nomes das espécies, a política de privacidade e os termos estão em inglês e vietnamita.
+O aplicativo está disponível em 60 idiomas e segue o idioma do seu aparelho, com layout da direita para a esquerda para árabe, persa, hebraico e urdu. Os nomes das espécies, a política de privacidade e os termos estão em inglês e vietnamita.
 
 CONTRIBUIR
-Entre na sua conta para adicionar suas fotos de plantas, sugerir nomes populares em qualquer um dos 39 idiomas e compartilhar modelos. As fotos são verificadas no aparelho antes do envio, e tudo o que é compartilhado pode ser denunciado. Você precisa ter 13 anos ou mais para usar o Med Herb Lens; se tiver menos de 18, precisa da permissão de um responsável.
+Entre na sua conta para adicionar suas fotos de plantas, sugerir nomes populares em qualquer um dos 60 idiomas e compartilhar modelos. As fotos são verificadas no aparelho antes do envio, e tudo o que é compartilhado pode ser denunciado. Você precisa ter 13 anos ou mais para usar o Med Herb Lens; se tiver menos de 18, precisa da permissão de um responsável.
 
 PARA PESQUISA
 O Med Herb Lens é um projeto de pesquisa da Universidade de New England, Austrália. A lista de espécies e os dados de imagens do GBIF estão disponíveis como conjunto de dados aberto, e o Perfil mostra como citar o aplicativo.
@@ -313,10 +313,10 @@ NEBENBEI LERNEN
 Tippe auf ? neben einem KI-Begriff (Modell, Konfidenz, Training und mehr), um eine leicht verständliche Erklärung zu sehen.
 
 IN DEINER SPRACHE
-Die App gibt es in 39 Sprachen, und sie folgt der Sprache deines Geräts, mit Rechts-nach-links-Layout für Arabisch und Persisch. Artnamen, Datenschutzerklärung und Nutzungsbedingungen sind auf Englisch und Vietnamesisch.
+Die App gibt es in 60 Sprachen, und sie folgt der Sprache deines Geräts, mit Rechts-nach-links-Layout für Arabisch, Persisch, Hebräisch und Urdu. Artnamen, Datenschutzerklärung und Nutzungsbedingungen sind auf Englisch und Vietnamesisch.
 
 MITMACHEN
-Melde dich an, um eigene Pflanzenfotos hinzuzufügen, gebräuchliche Namen in jeder der 39 Sprachen vorzuschlagen und Modelle zu teilen. Fotos werden vor dem Hochladen auf dem Gerät geprüft, und alles Geteilte kann gemeldet werden. Du musst mindestens 13 Jahre alt sein, um Med Herb Lens zu nutzen; unter 18 brauchst du die Erlaubnis eines Elternteils oder Erziehungsberechtigten.
+Melde dich an, um eigene Pflanzenfotos hinzuzufügen, gebräuchliche Namen in jeder der 60 Sprachen vorzuschlagen und Modelle zu teilen. Fotos werden vor dem Hochladen auf dem Gerät geprüft, und alles Geteilte kann gemeldet werden. Du musst mindestens 13 Jahre alt sein, um Med Herb Lens zu nutzen; unter 18 brauchst du die Erlaubnis eines Elternteils oder Erziehungsberechtigten.
 
 FÜR DIE FORSCHUNG
 Med Herb Lens ist ein Forschungsprojekt der University of New England, Australien. Die Artenliste und die GBIF-Bilddaten sind als offener Datensatz verfügbar, und unter Profil steht, wie die App zitiert wird.
@@ -358,10 +358,10 @@ IMPARA STRADA FACENDO
 Tocca ? accanto a un termine di IA (modello, confidenza, addestramento e altri) per una spiegazione semplice.
 
 NELLA TUA LINGUA
-L'app è disponibile in 39 lingue e segue la lingua del dispositivo, con layout da destra a sinistra per arabo e persiano. I nomi delle specie, l'informativa sulla privacy e i termini sono in inglese e vietnamita.
+L'app è disponibile in 60 lingue e segue la lingua del dispositivo, con layout da destra a sinistra per arabo, persiano, ebraico e urdu. I nomi delle specie, l'informativa sulla privacy e i termini sono in inglese e vietnamita.
 
 CONTRIBUISCI
-Accedi per aggiungere le tue foto di piante, suggerire nomi comuni in una qualsiasi delle 39 lingue e condividere modelli. Le foto vengono controllate sul dispositivo prima del caricamento, e tutto ciò che viene condiviso può essere segnalato. Devi avere almeno 13 anni per usare Med Herb Lens; se hai meno di 18 anni, serve il permesso di un genitore o tutore.
+Accedi per aggiungere le tue foto di piante, suggerire nomi comuni in una qualsiasi delle 60 lingue e condividere modelli. Le foto vengono controllate sul dispositivo prima del caricamento, e tutto ciò che viene condiviso può essere segnalato. Devi avere almeno 13 anni per usare Med Herb Lens; se hai meno di 18 anni, serve il permesso di un genitore o tutore.
 
 PER LA RICERCA
 Med Herb Lens è un progetto di ricerca della University of New England, Australia. L'elenco delle specie e i dati delle immagini GBIF sono disponibili come dataset aperto, e Profilo indica come citare l'app.
@@ -403,10 +403,10 @@ LEER ONDERWEG
 Tik op ? naast een AI-term (model, betrouwbaarheid, training en meer) voor een uitleg in gewone taal.
 
 IN JOUW TAAL
-De app is beschikbaar in 39 talen en volgt de taal van je toestel, met een opmaak van rechts naar links voor Arabisch en Perzisch. Soortnamen, het privacybeleid en de voorwaarden zijn in het Engels en Vietnamees.
+De app is beschikbaar in 60 talen en volgt de taal van je toestel, met een opmaak van rechts naar links voor Arabisch, Perzisch, Hebreeuws en Urdu. Soortnamen, het privacybeleid en de voorwaarden zijn in het Engels en Vietnamees.
 
 BIJDRAGEN
-Log in om je eigen plantenfoto's toe te voegen, volksnamen voor te stellen in elk van de 39 talen en modellen te delen. Foto's worden vóór het uploaden op het toestel gecontroleerd, en alles wat gedeeld wordt kan worden gemeld. Je moet 13 jaar of ouder zijn om Med Herb Lens te gebruiken; ben je jonger dan 18, dan heb je toestemming nodig van een ouder of voogd.
+Log in om je eigen plantenfoto's toe te voegen, volksnamen voor te stellen in elk van de 60 talen en modellen te delen. Foto's worden vóór het uploaden op het toestel gecontroleerd, en alles wat gedeeld wordt kan worden gemeld. Je moet 13 jaar of ouder zijn om Med Herb Lens te gebruiken; ben je jonger dan 18, dan heb je toestemming nodig van een ouder of voogd.
 
 VOOR ONDERZOEK
 Med Herb Lens is een onderzoeksproject van de University of New England, Australië. De soortenlijst en de GBIF-beeldgegevens zijn beschikbaar als open dataset, en onder Profiel staat hoe je de app citeert.
@@ -448,10 +448,10 @@ Med Herb Lens помогает определять лекарственные �
 Нажмите ? рядом с любым термином ИИ (модель, уверенность, обучение и другие), чтобы прочитать простое объяснение.
 
 НА ВАШЕМ ЯЗЫКЕ
-Приложение доступно на 39 языках и следует языку устройства; для арабского и персидского используется письмо справа налево. Названия видов, политика конфиденциальности и условия использования приводятся на английском и вьетнамском.
+Приложение доступно на 60 языках и следует языку устройства; для арабского, персидского, иврита и урду используется письмо справа налево. Названия видов, политика конфиденциальности и условия использования приводятся на английском и вьетнамском.
 
 УЧАСТВУЙТЕ
-Войдите, чтобы добавлять свои фото растений, предлагать народные названия на любом из 39 языков и делиться моделями. Фото проверяются на устройстве перед загрузкой, а на любой опубликованный материал можно пожаловаться. Пользоваться Med Herb Lens можно с 13 лет; если вам меньше 18, нужно разрешение родителя или опекуна.
+Войдите, чтобы добавлять свои фото растений, предлагать народные названия на любом из 60 языков и делиться моделями. Фото проверяются на устройстве перед загрузкой, а на любой опубликованный материал можно пожаловаться. Пользоваться Med Herb Lens можно с 13 лет; если вам меньше 18, нужно разрешение родителя или опекуна.
 
 ДЛЯ НАУКИ
 Med Herb Lens является исследовательским проектом Университета Новой Англии (Австралия). Список видов и данные изображений GBIF доступны как открытый набор данных, а в разделе Профиль указано, как ссылаться на приложение.
@@ -493,10 +493,10 @@ Med Herb Lens допомагає визначати лікарські росл�
 Торкніться ? біля будь-якого терміна ШІ (модель, впевненість, навчання тощо), щоб прочитати просте пояснення.
 
 ВАШОЮ МОВОЮ
-Застосунок доступний 39 мовами й відповідає мові пристрою; для арабської та перської використовується розкладка справа наліво. Назви видів, політика конфіденційності та умови використання наведено англійською та в'єтнамською.
+Застосунок доступний 60 мовами й відповідає мові пристрою; для арабської, перської, івриту та урду використовується розкладка справа наліво. Назви видів, політика конфіденційності та умови використання наведено англійською та в'єтнамською.
 
 ДОЛУЧАЙТЕСЯ
-Увійдіть, щоб додавати власні фото рослин, пропонувати народні назви будь-якою з 39 мов і ділитися моделями. Фото перевіряються на пристрої перед завантаженням, а на будь-який поширений вміст можна поскаржитися. Користуватися Med Herb Lens можна з 13 років; якщо вам менше 18, потрібен дозвіл батьків або опікуна.
+Увійдіть, щоб додавати власні фото рослин, пропонувати народні назви будь-якою з 60 мов і ділитися моделями. Фото перевіряються на пристрої перед завантаженням, а на будь-який поширений вміст можна поскаржитися. Користуватися Med Herb Lens можна з 13 років; якщо вам менше 18, потрібен дозвіл батьків або опікуна.
 
 ДЛЯ НАУКИ
 Med Herb Lens є дослідницьким проєктом Університету Нової Англії (Австралія). Список видів і дані зображень GBIF доступні як відкритий набір даних, а в розділі Профіль зазначено, як цитувати застосунок.
@@ -538,10 +538,10 @@ UCZ SIĘ PRZY OKAZJI
 Dotknij ? obok dowolnego pojęcia AI (model, pewność, trenowanie i inne), aby zobaczyć proste wyjaśnienie.
 
 W TWOIM JĘZYKU
-Aplikacja jest dostępna w 39 językach i dostosowuje się do języka urządzenia, z układem od prawej do lewej dla arabskiego i perskiego. Nazwy gatunków, polityka prywatności i regulamin są po angielsku i wietnamsku.
+Aplikacja jest dostępna w 60 językach i dostosowuje się do języka urządzenia, z układem od prawej do lewej dla arabskiego, perskiego, hebrajskiego i urdu. Nazwy gatunków, polityka prywatności i regulamin są po angielsku i wietnamsku.
 
 WSPÓŁTWÓRZ
-Zaloguj się, aby dodawać własne zdjęcia roślin, proponować nazwy zwyczajowe w dowolnym z 39 języków i udostępniać modele. Zdjęcia są sprawdzane na urządzeniu przed wysłaniem, a każdą udostępnioną treść można zgłosić. Aby korzystać z Med Herb Lens, musisz mieć co najmniej 13 lat; jeśli masz mniej niż 18 lat, potrzebujesz zgody rodzica lub opiekuna.
+Zaloguj się, aby dodawać własne zdjęcia roślin, proponować nazwy zwyczajowe w dowolnym z 60 języków i udostępniać modele. Zdjęcia są sprawdzane na urządzeniu przed wysłaniem, a każdą udostępnioną treść można zgłosić. Aby korzystać z Med Herb Lens, musisz mieć co najmniej 13 lat; jeśli masz mniej niż 18 lat, potrzebujesz zgody rodzica lub opiekuna.
 
 DLA NAUKI
 Med Herb Lens to projekt badawczy University of New England w Australii. Lista gatunków i dane zdjęć z GBIF są dostępne jako otwarty zbiór danych, a w Profilu znajdziesz informację, jak cytować aplikację.
@@ -583,10 +583,10 @@ UČTE SE ZA POCHODU
 Klepněte na ? vedle libovolného pojmu z AI (model, jistota, trénování a další) a zobrazí se srozumitelné vysvětlení.
 
 VE VAŠEM JAZYCE
-Aplikace je dostupná ve 39 jazycích a řídí se jazykem zařízení, s rozvržením zprava doleva pro arabštinu a perštinu. Názvy druhů, zásady ochrany soukromí a podmínky jsou v angličtině a vietnamštině.
+Aplikace je dostupná ve 60 jazycích a řídí se jazykem zařízení, s rozvržením zprava doleva pro arabštinu, perštinu, hebrejštinu a urdštinu. Názvy druhů, zásady ochrany soukromí a podmínky jsou v angličtině a vietnamštině.
 
 PŘISPÍVEJTE
-Přihlaste se, abyste mohli přidávat vlastní fotky rostlin, navrhovat lidové názvy v kterémkoli z 39 jazyků a sdílet modely. Fotky se před nahráním kontrolují v zařízení a vše sdílené lze nahlásit. Med Herb Lens mohou používat lidé od 13 let; pokud je vám méně než 18, potřebujete svolení rodiče nebo opatrovníka.
+Přihlaste se, abyste mohli přidávat vlastní fotky rostlin, navrhovat lidové názvy v kterémkoli z 60 jazyků a sdílet modely. Fotky se před nahráním kontrolují v zařízení a vše sdílené lze nahlásit. Med Herb Lens mohou používat lidé od 13 let; pokud je vám méně než 18, potřebujete svolení rodiče nebo opatrovníka.
 
 PRO VÝZKUM
 Med Herb Lens je výzkumný projekt University of New England v Austrálii. Seznam druhů a obrazová data z GBIF jsou k dispozici jako otevřená datová sada a v Profilu najdete, jak aplikaci citovat.
@@ -628,10 +628,10 @@ TANULJ MENET KÖZBEN
 Koppints a ? jelre bármely MI-fogalom (modell, megbízhatóság, tanítás és más) mellett egy közérthető magyarázatért.
 
 A TE NYELVEDEN
-Az alkalmazás 39 nyelven érhető el, és követi az eszközöd nyelvét, jobbról balra írt elrendezéssel arab és perzsa nyelven. A fajnevek, az adatvédelmi irányelvek és a feltételek angolul és vietnamiul olvashatók.
+Az alkalmazás 60 nyelven érhető el, és követi az eszközöd nyelvét, jobbról balra írt elrendezéssel arab, perzsa, héber és urdu nyelven. A fajnevek, az adatvédelmi irányelvek és a feltételek angolul és vietnamiul olvashatók.
 
 HOZZÁJÁRULÁS
-Jelentkezz be, hogy saját növényfotókat adj hozzá, népies neveket javasolj a 39 nyelv bármelyikén, és modelleket ossz meg. A fotókat feltöltés előtt az eszköz ellenőrzi, és minden megosztott tartalom jelenthető. A Med Herb Lens használatához legalább 13 évesnek kell lenned; ha 18 év alatti vagy, szülői vagy gondviselői engedély szükséges.
+Jelentkezz be, hogy saját növényfotókat adj hozzá, népies neveket javasolj a 60 nyelv bármelyikén, és modelleket ossz meg. A fotókat feltöltés előtt az eszköz ellenőrzi, és minden megosztott tartalom jelenthető. A Med Herb Lens használatához legalább 13 évesnek kell lenned; ha 18 év alatti vagy, szülői vagy gondviselői engedély szükséges.
 
 KUTATÁSHOZ
 A Med Herb Lens az ausztráliai University of New England kutatási projektje. A fajlista és a GBIF-képadatok nyílt adatkészletként érhetők el, a Profil pedig megmutatja, hogyan kell hivatkozni az alkalmazásra.
@@ -673,10 +673,10 @@ Antrenarea creează propriul tău model de clasificare a imaginilor din fotograf
 Atinge ? lângă orice termen de IA (model, încredere, antrenare și altele) pentru o explicație pe înțelesul tuturor.
 
 ÎN LIMBA TA
-Aplicația este disponibilă în 39 de limbi și urmează limba dispozitivului, cu aranjare de la dreapta la stânga pentru arabă și persană. Denumirile speciilor, politica de confidențialitate și termenii sunt în engleză și vietnameză.
+Aplicația este disponibilă în 60 de limbi și urmează limba dispozitivului, cu aranjare de la dreapta la stânga pentru arabă, persană, ebraică și urdu. Denumirile speciilor, politica de confidențialitate și termenii sunt în engleză și vietnameză.
 
 CONTRIBUIE
-Conectează-te pentru a adăuga propriile fotografii de plante, a propune denumiri populare în oricare dintre cele 39 de limbi și a distribui modele. Fotografiile sunt verificate pe dispozitiv înainte de încărcare, iar orice conținut distribuit poate fi raportat. Trebuie să ai cel puțin 13 ani pentru a folosi Med Herb Lens; dacă ai sub 18 ani, ai nevoie de permisiunea unui părinte sau tutore.
+Conectează-te pentru a adăuga propriile fotografii de plante, a propune denumiri populare în oricare dintre cele 60 de limbi și a distribui modele. Fotografiile sunt verificate pe dispozitiv înainte de încărcare, iar orice conținut distribuit poate fi raportat. Trebuie să ai cel puțin 13 ani pentru a folosi Med Herb Lens; dacă ai sub 18 ani, ai nevoie de permisiunea unui părinte sau tutore.
 
 PENTRU CERCETARE
 Med Herb Lens este un proiect de cercetare al University of New England, Australia. Lista speciilor și datele de imagine GBIF sunt disponibile ca set de date deschis, iar Profil arată cum se citează aplicația.
@@ -718,10 +718,10 @@ LÄR DIG UNDER TIDEN
 Tryck på ? bredvid ett AI-begrepp (modell, säkerhet, träning med mera) för en lättbegriplig förklaring.
 
 PÅ DITT SPRÅK
-Appen finns på 39 språk och följer enhetens språk, med layout från höger till vänster för arabiska och persiska. Artnamn, integritetspolicy och villkor är på engelska och vietnamesiska.
+Appen finns på 60 språk och följer enhetens språk, med layout från höger till vänster för arabiska, persiska, hebreiska och urdu. Artnamn, integritetspolicy och villkor är på engelska och vietnamesiska.
 
 BIDRA
-Logga in för att lägga till egna växtfoton, föreslå trivialnamn på något av de 39 språken och dela modeller. Foton kontrolleras på enheten före uppladdning, och allt som delas kan anmälas. Du måste vara minst 13 år för att använda Med Herb Lens; är du under 18 behöver du tillstånd av en förälder eller vårdnadshavare.
+Logga in för att lägga till egna växtfoton, föreslå trivialnamn på något av de 60 språken och dela modeller. Foton kontrolleras på enheten före uppladdning, och allt som delas kan anmälas. Du måste vara minst 13 år för att använda Med Herb Lens; är du under 18 behöver du tillstånd av en förälder eller vårdnadshavare.
 
 FÖR FORSKNING
 Med Herb Lens är ett forskningsprojekt vid University of New England i Australien. Artlistan och bilddata från GBIF finns som öppen datamängd, och under Profil står hur du citerar appen.
@@ -763,10 +763,10 @@ KULLANDIKÇA ÖĞRENİN
 Basit bir açıklama için herhangi bir yapay zekâ teriminin (model, güven, eğitim ve daha fazlası) yanındaki ?'ye dokunun.
 
 KENDİ DİLİNİZDE
-Uygulama 39 dilde sunulur ve cihazınızın dilini izler; Arapça ve Farsça için sağdan sola düzen kullanılır. Tür adları, gizlilik politikası ve koşullar İngilizce ve Vietnamcadır.
+Uygulama 60 dilde sunulur ve cihazınızın dilini izler; Arapça, Farsça, İbranice ve Urduca için sağdan sola düzen kullanılır. Tür adları, gizlilik politikası ve koşullar İngilizce ve Vietnamcadır.
 
 KATKIDA BULUNUN
-Kendi bitki fotoğraflarınızı eklemek, 39 dilin herhangi birinde yaygın ad önermek ve model paylaşmak için oturum açın. Fotoğraflar yüklenmeden önce cihazda kontrol edilir ve paylaşılan her şey bildirilebilir. Med Herb Lens'i kullanmak için en az 13 yaşında olmalısınız; 18 yaşından küçükseniz bir ebeveyn veya vasinin izni gerekir.
+Kendi bitki fotoğraflarınızı eklemek, 60 dilin herhangi birinde yaygın ad önermek ve model paylaşmak için oturum açın. Fotoğraflar yüklenmeden önce cihazda kontrol edilir ve paylaşılan her şey bildirilebilir. Med Herb Lens'i kullanmak için en az 13 yaşında olmalısınız; 18 yaşından küçükseniz bir ebeveyn veya vasinin izni gerekir.
 
 ARAŞTIRMA İÇİN
 Med Herb Lens, Avustralya'daki University of New England'ın bir araştırma projesidir. Tür listesi ve GBIF görüntü verileri açık veri kümesi olarak sunulur; Profil, uygulamaya nasıl atıf yapılacağını gösterir.
@@ -808,10 +808,10 @@ TANIMA
 Sadə izah üçün istənilən süni intellekt termininin (model, etibarlılıq, öyrətmə və s.) yanındakı ? işarəsinə toxunun.
 
 ÖZ DİLİNİZDƏ
-Tətbiq 39 dildə mövcuddur və cihazınızın dilinə uyğunlaşır; ərəb və fars dilləri üçün sağdan sola düzüm istifadə olunur. Növ adları, məxfilik siyasəti və şərtlər ingilis və vyetnam dillərindədir.
+Tətbiq 60 dildə mövcuddur və cihazınızın dilinə uyğunlaşır; ərəb, fars, ivrit və urdu dilləri üçün sağdan sola düzüm istifadə olunur. Növ adları, məxfilik siyasəti və şərtlər ingilis və vyetnam dillərindədir.
 
 TÖHFƏ VERİN
-Öz bitki şəkillərinizi əlavə etmək, 39 dilin istənilən birində ümumi ad təklif etmək və modelləri paylaşmaq üçün daxil olun. Şəkillər yüklənmədən əvvəl cihazda yoxlanılır və paylaşılan hər şey barədə şikayət etmək olar. Med Herb Lens-dən istifadə etmək üçün ən azı 13 yaşınız olmalıdır; 18 yaşdan kiçiksinizsə, valideyn və ya qəyyumun icazəsi lazımdır.
+Öz bitki şəkillərinizi əlavə etmək, 60 dilin istənilən birində ümumi ad təklif etmək və modelləri paylaşmaq üçün daxil olun. Şəkillər yüklənmədən əvvəl cihazda yoxlanılır və paylaşılan hər şey barədə şikayət etmək olar. Med Herb Lens-dən istifadə etmək üçün ən azı 13 yaşınız olmalıdır; 18 yaşdan kiçiksinizsə, valideyn və ya qəyyumun icazəsi lazımdır.
 
 TƏDQİQAT ÜÇÜN
 Med Herb Lens Avstraliyadakı University of New England-in tədqiqat layihəsidir. Növ siyahısı və GBIF şəkil məlumatları açıq məlumat dəsti kimi təqdim olunur, Profil isə tətbiqə necə istinad ediləcəyini göstərir.
@@ -853,10 +853,10 @@ Med Herb Lens ви помага да разпознавате лечебни р�
 Докоснете ? до всеки термин от ИИ (модел, увереност, обучение и др.) за простичко обяснение.
 
 НА ВАШИЯ ЕЗИК
-Приложението е налично на 39 езика и следва езика на устройството, с подредба отдясно наляво за арабски и персийски. Имената на видовете, политиката за поверителност и условията са на английски и виетнамски.
+Приложението е налично на 60 езика и следва езика на устройството, с подредба отдясно наляво за арабски, персийски, иврит и урду. Имената на видовете, политиката за поверителност и условията са на английски и виетнамски.
 
 ДОПРИНЕСЕТЕ
-Влезте, за да добавяте свои снимки на растения, да предлагате народни имена на някой от 39-те езика и да споделяте модели. Снимките се проверяват на устройството преди качване и всичко споделено може да бъде докладвано. Трябва да сте на поне 13 години, за да използвате Med Herb Lens; ако сте под 18, ви е нужно разрешение от родител или настойник.
+Влезте, за да добавяте свои снимки на растения, да предлагате народни имена на някой от 60-те езика и да споделяте модели. Снимките се проверяват на устройството преди качване и всичко споделено може да бъде докладвано. Трябва да сте на поне 13 години, за да използвате Med Herb Lens; ако сте под 18, ви е нужно разрешение от родител или настойник.
 
 ЗА НАУКАТА
 Med Herb Lens е изследователски проект на University of New England, Австралия. Списъкът с видове и данните за изображения от GBIF са достъпни като отворен набор от данни, а в Профил е посочено как да цитирате приложението.
@@ -898,10 +898,10 @@ UČITE USPUT
 Dodirnite ? pokraj bilo kojeg pojma iz AI-ja (model, pouzdanost, treniranje i drugo) za jednostavno objašnjenje.
 
 NA VAŠEM JEZIKU
-Aplikacija je dostupna na 39 jezika i prati jezik uređaja, s rasporedom zdesna nalijevo za arapski i perzijski. Nazivi vrsta, pravila o privatnosti i uvjeti su na engleskom i vijetnamskom.
+Aplikacija je dostupna na 60 jezika i prati jezik uređaja, s rasporedom zdesna nalijevo za arapski, perzijski, hebrejski i urdski. Nazivi vrsta, pravila o privatnosti i uvjeti su na engleskom i vijetnamskom.
 
 DOPRINESITE
-Prijavite se kako biste dodavali vlastite fotografije biljaka, predlagali narodne nazive na bilo kojem od 39 jezika i dijelili modele. Fotografije se provjeravaju na uređaju prije prijenosa, a sve podijeljeno može se prijaviti. Za korištenje aplikacije Med Herb Lens morate imati najmanje 13 godina; ako imate manje od 18, potrebno je dopuštenje roditelja ili skrbnika.
+Prijavite se kako biste dodavali vlastite fotografije biljaka, predlagali narodne nazive na bilo kojem od 60 jezika i dijelili modele. Fotografije se provjeravaju na uređaju prije prijenosa, a sve podijeljeno može se prijaviti. Za korištenje aplikacije Med Herb Lens morate imati najmanje 13 godina; ako imate manje od 18, potrebno je dopuštenje roditelja ili skrbnika.
 
 ZA ISTRAŽIVANJE
 Med Herb Lens istraživački je projekt sveučilišta University of New England u Australiji. Popis vrsta i slikovni podaci s GBIF-a dostupni su kao otvoreni skup podataka, a u Profilu piše kako citirati aplikaciju.
@@ -943,10 +943,10 @@ Med Herb Lens вам помаже да препознате лековите б�
 Додирните ? поред било ког појма из AI-ја (модел, поузданост, обука и друго) за једноставно објашњење.
 
 НА ВАШЕМ ЈЕЗИКУ
-Апликација је доступна на 39 језика и прати језик уређаја, са распоредом здесна налево за арапски и персијски. Називи врста, политика приватности и услови су на енглеском и вијетнамском.
+Апликација је доступна на 60 језика и прати језик уређаја, са распоредом здесна налево за арапски, персијски, хебрејски и урду. Називи врста, политика приватности и услови су на енглеском и вијетнамском.
 
 ДОПРИНЕСИТЕ
-Пријавите се да бисте додавали сопствене фотографије биљака, предлагали народне називе на било ком од 39 језика и делили моделе. Фотографије се проверавају на уређају пре отпремања, а све што се дели може да се пријави. Да бисте користили Med Herb Lens, морате имати најмање 13 година; ако имате мање од 18, потребна вам је дозвола родитеља или старатеља.
+Пријавите се да бисте додавали сопствене фотографије биљака, предлагали народне називе на било ком од 60 језика и делили моделе. Фотографије се проверавају на уређају пре отпремања, а све што се дели може да се пријави. Да бисте користили Med Herb Lens, морате имати најмање 13 година; ако имате мање од 18, потребна вам је дозвола родитеља или старатеља.
 
 ЗА ИСТРАЖИВАЊЕ
 Med Herb Lens је истраживачки пројекат универзитета University of New England у Аустралији. Списак врста и сликовни подаци са GBIF-а доступни су као отворени скуп података, а у Профилу пише како да цитирате апликацију.
@@ -988,10 +988,10 @@ MOKYKITĖS NAUDODAMI
 Palieskite ? šalia bet kurio DI termino (modelis, patikimumas, mokymas ir kt.), kad pamatytumėte paprastą paaiškinimą.
 
 JŪSŲ KALBA
-Programėlė prieinama 39 kalbomis ir prisitaiko prie įrenginio kalbos, arabų ir persų kalboms naudojamas išdėstymas iš dešinės į kairę. Rūšių pavadinimai, privatumo politika ir sąlygos pateikiamos anglų ir vietnamiečių kalbomis.
+Programėlė prieinama 60 kalbomis ir prisitaiko prie įrenginio kalbos, arabų, persų, hebrajų ir urdu kalboms naudojamas išdėstymas iš dešinės į kairę. Rūšių pavadinimai, privatumo politika ir sąlygos pateikiamos anglų ir vietnamiečių kalbomis.
 
 PRISIDĖKITE
-Prisijunkite, kad galėtumėte pridėti savo augalų nuotraukų, siūlyti liaudiškus pavadinimus bet kuria iš 39 kalbų ir dalytis modeliais. Prieš įkeliant nuotraukos patikrinamos įrenginyje, o apie bet kokį bendrinamą turinį galima pranešti. Med Herb Lens naudotis galima nuo 13 metų; jei jums mažiau nei 18, reikia tėvų ar globėjo leidimo.
+Prisijunkite, kad galėtumėte pridėti savo augalų nuotraukų, siūlyti liaudiškus pavadinimus bet kuria iš 60 kalbų ir dalytis modeliais. Prieš įkeliant nuotraukos patikrinamos įrenginyje, o apie bet kokį bendrinamą turinį galima pranešti. Med Herb Lens naudotis galima nuo 13 metų; jei jums mažiau nei 18, reikia tėvų ar globėjo leidimo.
 
 MOKSLUI
 Med Herb Lens yra Naujosios Anglijos universiteto (Australija) mokslinių tyrimų projektas. Rūšių sąrašas ir GBIF vaizdų duomenys prieinami kaip atviras duomenų rinkinys, o skiltyje Profilis nurodyta, kaip cituoti programėlę.
@@ -1033,10 +1033,10 @@ Med Herb Lens yra tyrimų peržiūros versija, ir jos rezultatai dažnai būna k
 Πατήστε ? δίπλα σε έναν όρο ΤΝ (μοντέλο, βεβαιότητα, εκπαίδευση κ.ά.) για μια απλή εξήγηση.
 
 ΣΤΗ ΓΛΩΣΣΑ ΣΑΣ
-Η εφαρμογή διατίθεται σε 39 γλώσσες και ακολουθεί τη γλώσσα της συσκευής, με διάταξη από δεξιά προς τα αριστερά για τα αραβικά και τα περσικά. Τα ονόματα των ειδών, η πολιτική απορρήτου και οι όροι είναι στα αγγλικά και τα βιετναμέζικα.
+Η εφαρμογή διατίθεται σε 60 γλώσσες και ακολουθεί τη γλώσσα της συσκευής, με διάταξη από δεξιά προς τα αριστερά για τα αραβικά, τα περσικά, τα εβραϊκά και τα ούρντου. Τα ονόματα των ειδών, η πολιτική απορρήτου και οι όροι είναι στα αγγλικά και τα βιετναμέζικα.
 
 ΣΥΜΜΕΤΟΧΗ
-Συνδεθείτε για να προσθέτετε δικές σας φωτογραφίες φυτών, να προτείνετε κοινά ονόματα σε οποιαδήποτε από τις 39 γλώσσες και να μοιράζεστε μοντέλα. Οι φωτογραφίες ελέγχονται στη συσκευή πριν από τη μεταφόρτωση, και ό,τι κοινοποιείται μπορεί να αναφερθεί. Πρέπει να είστε τουλάχιστον 13 ετών για να χρησιμοποιείτε το Med Herb Lens· αν είστε κάτω των 18, χρειάζεστε την άδεια γονέα ή κηδεμόνα.
+Συνδεθείτε για να προσθέτετε δικές σας φωτογραφίες φυτών, να προτείνετε κοινά ονόματα σε οποιαδήποτε από τις 60 γλώσσες και να μοιράζεστε μοντέλα. Οι φωτογραφίες ελέγχονται στη συσκευή πριν από τη μεταφόρτωση, και ό,τι κοινοποιείται μπορεί να αναφερθεί. Πρέπει να είστε τουλάχιστον 13 ετών για να χρησιμοποιείτε το Med Herb Lens· αν είστε κάτω των 18, χρειάζεστε την άδεια γονέα ή κηδεμόνα.
 
 ΓΙΑ ΤΗΝ ΕΡΕΥΝΑ
 Το Med Herb Lens είναι ερευνητικό έργο του University of New England στην Αυστραλία. Ο κατάλογος ειδών και τα δεδομένα εικόνων του GBIF διατίθενται ως ανοιχτό σύνολο δεδομένων, και στο Προφίλ φαίνεται πώς να αναφέρετε την εφαρμογή.
@@ -1078,10 +1078,10 @@ Med Herb Lens yra tyrimų peržiūros versija, ir jos rezultatai dažnai būna k
 المس ? بجانب أي مصطلح في الذكاء الاصطناعي (النموذج، الثقة، التدريب وغيرها) لترى شرحًا مبسّطًا.
 
 بلغتك
-يتوفّر التطبيق بـ39 لغة ويتبع لغة جهازك، مع اتجاه من اليمين إلى اليسار للعربية والفارسية. أسماء الأنواع وسياسة الخصوصية والشروط باللغتين الإنجليزية والفيتنامية.
+يتوفّر التطبيق بـ60 لغة ويتبع لغة جهازك، مع اتجاه من اليمين إلى اليسار للعربية والفارسية والعبرية والأردية. أسماء الأنواع وسياسة الخصوصية والشروط باللغتين الإنجليزية والفيتنامية.
 
 شارك
-سجّل الدخول لإضافة صور نباتاتك، واقتراح أسماء شائعة بأيّ من اللغات الـ39، ومشاركة النماذج. تُفحص الصور على الجهاز قبل رفعها، ويمكن الإبلاغ عن أي محتوى مُشارك. يجب أن يكون عمرك 13 عامًا على الأقل لاستخدام Med Herb Lens؛ وإن كنت دون 18 عامًا فتحتاج إلى إذن أحد والديك أو وليّ أمرك.
+سجّل الدخول لإضافة صور نباتاتك، واقتراح أسماء شائعة بأيّ من اللغات الـ60، ومشاركة النماذج. تُفحص الصور على الجهاز قبل رفعها، ويمكن الإبلاغ عن أي محتوى مُشارك. يجب أن يكون عمرك 13 عامًا على الأقل لاستخدام Med Herb Lens؛ وإن كنت دون 18 عامًا فتحتاج إلى إذن أحد والديك أو وليّ أمرك.
 
 للبحث العلمي
 Med Herb Lens مشروع بحثي في جامعة نيو إنجلاند بأستراليا. قائمة الأنواع وبيانات صور GBIF متاحة كمجموعة بيانات مفتوحة، ويوضّح قسم الملف الشخصي كيفية الاستشهاد بالتطبيق.
@@ -1123,10 +1123,10 @@ Med Herb Lens به شما کمک می‌کند گیاهان دارویی را ب
 برای توضیحی ساده، روی ? کنار هر اصطلاح هوش مصنوعی (مدل، اطمینان، آموزش و غیره) بزنید.
 
 به زبان شما
-برنامه به ۳۹ زبان در دسترس است و از زبان دستگاه شما پیروی می‌کند، با چیدمان راست‌به‌چپ برای عربی و فارسی. نام گونه‌ها، سیاست حریم خصوصی و شرایط استفاده به انگلیسی و ویتنامی است.
+برنامه به ۶۰ زبان در دسترس است و از زبان دستگاه شما پیروی می‌کند، با چیدمان راست‌به‌چپ برای عربی، فارسی، عبری و اردو. نام گونه‌ها، سیاست حریم خصوصی و شرایط استفاده به انگلیسی و ویتنامی است.
 
 مشارکت کنید
-وارد شوید تا عکس‌های گیاهان خود را اضافه کنید، نام‌های رایج را به هر یک از ۳۹ زبان پیشنهاد دهید و مدل‌ها را به اشتراک بگذارید. عکس‌ها پیش از بارگذاری روی دستگاه بررسی می‌شوند و هر محتوای به‌اشتراک‌گذاشته‌شده قابل گزارش است. برای استفاده از Med Herb Lens باید دست‌کم ۱۳ سال داشته باشید؛ اگر زیر ۱۸ سال هستید، به اجازه والدین یا سرپرست نیاز دارید.
+وارد شوید تا عکس‌های گیاهان خود را اضافه کنید، نام‌های رایج را به هر یک از ۶۰ زبان پیشنهاد دهید و مدل‌ها را به اشتراک بگذارید. عکس‌ها پیش از بارگذاری روی دستگاه بررسی می‌شوند و هر محتوای به‌اشتراک‌گذاشته‌شده قابل گزارش است. برای استفاده از Med Herb Lens باید دست‌کم ۱۳ سال داشته باشید؛ اگر زیر ۱۸ سال هستید، به اجازه والدین یا سرپرست نیاز دارید.
 
 برای پژوهش
 Med Herb Lens یک پروژه پژوهشی در دانشگاه نیوانگلند استرالیا است. فهرست گونه‌ها و داده‌های تصویری GBIF به‌صورت مجموعه داده باز در دسترس است و بخش نمایه نشان می‌دهد چگونه به برنامه استناد کنید.
@@ -1168,10 +1168,10 @@ Med Herb Lens 帮助你识别和了解药用植物，重点是越南常用的草
 点按任何 AI 术语（模型、置信度、训练等）旁边的 ?，即可看到通俗易懂的解释。
 
 使用你的语言
-应用提供 39 种语言并跟随设备语言，阿拉伯语和波斯语采用从右到左的布局。物种名称、隐私政策和条款为英文和越南文。
+应用提供 60 种语言并跟随设备语言，阿拉伯语、波斯语、希伯来语和乌尔都语采用从右到左的布局。物种名称、隐私政策和条款为英文和越南文。
 
 参与贡献
-登录后即可添加你的植物照片、用 39 种语言中的任意一种建议俗名，并分享模型。照片在上传前会在设备上进行检查，所有分享的内容都可以被举报。年满 13 岁才能使用 Med Herb Lens；未满 18 岁需获得父母或监护人的许可。
+登录后即可添加你的植物照片、用 60 种语言中的任意一种建议俗名，并分享模型。照片在上传前会在设备上进行检查，所有分享的内容都可以被举报。年满 13 岁才能使用 Med Herb Lens；未满 18 岁需获得父母或监护人的许可。
 
 用于研究
 Med Herb Lens 是澳大利亚新英格兰大学的一个研究项目。物种列表和 GBIF 图像数据以开放数据集形式提供，在“我的”页面可查看如何引用本应用。
@@ -1213,10 +1213,10 @@ Med Herb Lens は、ベトナムで使われるハーブを中心に、薬用植
 AI 用語（モデル、確信度、トレーニングなど）の横にある ? をタップすると、わかりやすい説明が表示されます。
 
 あなたの言語で
-アプリは 39 の言語に対応し、端末の言語に合わせて表示されます。アラビア語とペルシア語は右から左のレイアウトです。種名、プライバシーポリシー、利用規約は英語とベトナム語です。
+アプリは 60 の言語に対応し、端末の言語に合わせて表示されます。アラビア語、ペルシア語、ヘブライ語、ウルドゥー語は右から左のレイアウトです。種名、プライバシーポリシー、利用規約は英語とベトナム語です。
 
 貢献する
-サインインすると、自分の植物写真の追加、39 の言語のいずれかでの一般名の提案、モデルの共有ができます。写真はアップロード前に端末上でチェックされ、共有されたものはすべて報告できます。Med Herb Lens を使うには 13 歳以上である必要があります。18 歳未満の方は保護者の許可が必要です。
+サインインすると、自分の植物写真の追加、60 の言語のいずれかでの一般名の提案、モデルの共有ができます。写真はアップロード前に端末上でチェックされ、共有されたものはすべて報告できます。Med Herb Lens を使うには 13 歳以上である必要があります。18 歳未満の方は保護者の許可が必要です。
 
 研究のために
 Med Herb Lens は、オーストラリアのニューイングランド大学の研究プロジェクトです。種のリストと GBIF の画像データはオープンデータセットとして公開されており、アプリの引用方法は「プロフィール」で確認できます。
@@ -1258,10 +1258,10 @@ Med Herb Lens는 베트남에서 쓰이는 약초를 중심으로 약용 식물�
 AI 용어(모델, 확신도, 학습 등) 옆의 ?를 탭하면 쉬운 설명을 볼 수 있습니다.
 
 내 언어로
-앱은 39개 언어로 제공되며 기기 언어를 따릅니다. 아랍어와 페르시아어는 오른쪽에서 왼쪽으로 표시됩니다. 종 이름, 개인정보처리방침, 이용약관은 영어와 베트남어로 제공됩니다.
+앱은 60개 언어로 제공되며 기기 언어를 따릅니다. 아랍어, 페르시아어, 히브리어, 우르두어는 오른쪽에서 왼쪽으로 표시됩니다. 종 이름, 개인정보처리방침, 이용약관은 영어와 베트남어로 제공됩니다.
 
 참여하기
-로그인하면 내 식물 사진을 추가하고, 39개 언어 중 어떤 언어로든 일반명을 제안하고, 모델을 공유할 수 있습니다. 사진은 업로드 전에 기기에서 검사되며, 공유된 모든 콘텐츠는 신고할 수 있습니다. Med Herb Lens는 만 13세 이상만 사용할 수 있으며, 만 18세 미만은 부모나 보호자의 허락이 필요합니다.
+로그인하면 내 식물 사진을 추가하고, 60개 언어 중 어떤 언어로든 일반명을 제안하고, 모델을 공유할 수 있습니다. 사진은 업로드 전에 기기에서 검사되며, 공유된 모든 콘텐츠는 신고할 수 있습니다. Med Herb Lens는 만 13세 이상만 사용할 수 있으며, 만 18세 미만은 부모나 보호자의 허락이 필요합니다.
 
 연구를 위해
 Med Herb Lens는 호주 뉴잉글랜드 대학교의 연구 프로젝트입니다. 종 목록과 GBIF 이미지 데이터는 공개 데이터 세트로 제공되며, 프로필에서 앱 인용 방법을 확인할 수 있습니다.
@@ -1303,10 +1303,10 @@ Med Herb Lens ช่วยให้คุณระบุและเรียน
 แตะ ? ข้างคำศัพท์ AI ใด ๆ (โมเดล ความมั่นใจ การฝึก และอื่น ๆ) เพื่อดูคำอธิบายที่เข้าใจง่าย
 
 ในภาษาของคุณ
-แอปมีให้ใช้ 39 ภาษาและเปลี่ยนตามภาษาของอุปกรณ์ โดยภาษาอาหรับและเปอร์เซียจัดวางจากขวาไปซ้าย ชื่อชนิดพืช นโยบายความเป็นส่วนตัว และข้อกำหนดเป็นภาษาอังกฤษและเวียดนาม
+แอปมีให้ใช้ 60 ภาษาและเปลี่ยนตามภาษาของอุปกรณ์ โดยภาษาอาหรับ เปอร์เซีย ฮีบรู และอูรดูจัดวางจากขวาไปซ้าย ชื่อชนิดพืช นโยบายความเป็นส่วนตัว และข้อกำหนดเป็นภาษาอังกฤษและเวียดนาม
 
 ร่วมสนับสนุน
-ลงชื่อเข้าใช้เพื่อเพิ่มรูปพืชของคุณ เสนอชื่อสามัญในภาษาใดก็ได้จาก 39 ภาษา และแชร์โมเดล รูปจะถูกตรวจสอบบนอุปกรณ์ก่อนอัปโหลด และทุกสิ่งที่แชร์สามารถรายงานได้ คุณต้องมีอายุ 13 ปีขึ้นไปจึงจะใช้ Med Herb Lens ได้ หากอายุต่ำกว่า 18 ปี ต้องได้รับอนุญาตจากผู้ปกครอง
+ลงชื่อเข้าใช้เพื่อเพิ่มรูปพืชของคุณ เสนอชื่อสามัญในภาษาใดก็ได้จาก 60 ภาษา และแชร์โมเดล รูปจะถูกตรวจสอบบนอุปกรณ์ก่อนอัปโหลด และทุกสิ่งที่แชร์สามารถรายงานได้ คุณต้องมีอายุ 13 ปีขึ้นไปจึงจะใช้ Med Herb Lens ได้ หากอายุต่ำกว่า 18 ปี ต้องได้รับอนุญาตจากผู้ปกครอง
 
 เพื่อการวิจัย
 Med Herb Lens เป็นโครงการวิจัยของมหาวิทยาลัยนิวอิงแลนด์ ประเทศออสเตรเลีย รายชื่อชนิดและข้อมูลภาพจาก GBIF เผยแพร่เป็นชุดข้อมูลเปิด และหน้าโปรไฟล์มีวิธีอ้างอิงแอป
@@ -1348,10 +1348,10 @@ Med Herb Lens औषधीय पौधों को पहचानने औ�
 किसी भी AI शब्द (मॉडल, आत्मविश्वास, प्रशिक्षण आदि) के पास ? पर टैप करें और आसान भाषा में समझें।
 
 आपकी भाषा में
-ऐप 39 भाषाओं में उपलब्ध है और आपके डिवाइस की भाषा अपनाता है; अरबी और फ़ारसी के लिए दाएँ से बाएँ लेआउट है। प्रजातियों के नाम, गोपनीयता नीति और शर्तें अंग्रेज़ी और वियतनामी में हैं।
+ऐप 60 भाषाओं में उपलब्ध है और आपके डिवाइस की भाषा अपनाता है; अरबी, फ़ारसी, हिब्रू और उर्दू के लिए दाएँ से बाएँ लेआउट है। प्रजातियों के नाम, गोपनीयता नीति और शर्तें अंग्रेज़ी और वियतनामी में हैं।
 
 योगदान करें
-अपनी पौधों की फ़ोटो जोड़ने, 39 में से किसी भी भाषा में सामान्य नाम सुझाने और मॉडल साझा करने के लिए साइन इन करें। अपलोड से पहले फ़ोटो डिवाइस पर जाँची जाती हैं, और साझा की गई किसी भी चीज़ की रिपोर्ट की जा सकती है। Med Herb Lens इस्तेमाल करने के लिए आपकी उम्र कम से कम 13 वर्ष होनी चाहिए; 18 से कम हों तो माता-पिता या अभिभावक की अनुमति ज़रूरी है।
+अपनी पौधों की फ़ोटो जोड़ने, 60 में से किसी भी भाषा में सामान्य नाम सुझाने और मॉडल साझा करने के लिए साइन इन करें। अपलोड से पहले फ़ोटो डिवाइस पर जाँची जाती हैं, और साझा की गई किसी भी चीज़ की रिपोर्ट की जा सकती है। Med Herb Lens इस्तेमाल करने के लिए आपकी उम्र कम से कम 13 वर्ष होनी चाहिए; 18 से कम हों तो माता-पिता या अभिभावक की अनुमति ज़रूरी है।
 
 शोध के लिए
 Med Herb Lens ऑस्ट्रेलिया के यूनिवर्सिटी ऑफ़ न्यू इंग्लैंड की एक शोध परियोजना है। प्रजातियों की सूची और GBIF फ़ोटो डेटा खुले डेटासेट के रूप में उपलब्ध हैं, और प्रोफ़ाइल में ऐप का हवाला देने का तरीका दिया गया है।
@@ -1393,10 +1393,10 @@ Med Herb Lens औषधी वनस्पती ओळखण्यास आण
 कोणत्याही AI संज्ञेजवळील ? वर टॅप करा (मॉडेल, खात्री, प्रशिक्षण इ.) आणि सोपे स्पष्टीकरण पाहा.
 
 तुमच्या भाषेत
-ॲप 39 भाषांमध्ये उपलब्ध आहे आणि तुमच्या डिव्हाइसची भाषा वापरते; अरबी आणि फारसीसाठी उजवीकडून डावीकडे मांडणी आहे. प्रजातींची नावे, गोपनीयता धोरण आणि अटी इंग्रजी आणि व्हिएतनामी भाषेत आहेत.
+ॲप 60 भाषांमध्ये उपलब्ध आहे आणि तुमच्या डिव्हाइसची भाषा वापरते; अरबी, फारसी, हिब्रू आणि उर्दूसाठी उजवीकडून डावीकडे मांडणी आहे. प्रजातींची नावे, गोपनीयता धोरण आणि अटी इंग्रजी आणि व्हिएतनामी भाषेत आहेत.
 
 योगदान द्या
-तुमचे वनस्पतींचे फोटो जोडण्यासाठी, 39 पैकी कोणत्याही भाषेत सामान्य नावे सुचवण्यासाठी आणि मॉडेल शेअर करण्यासाठी साइन इन करा. अपलोडपूर्वी फोटो डिव्हाइसवर तपासले जातात आणि शेअर केलेल्या कोणत्याही गोष्टीची तक्रार करता येते. Med Herb Lens वापरण्यासाठी तुमचे वय किमान 13 वर्षे असावे; 18 पेक्षा कमी असल्यास पालक किंवा पालकत्व असलेल्या व्यक्तीची परवानगी आवश्यक आहे.
+तुमचे वनस्पतींचे फोटो जोडण्यासाठी, 60 पैकी कोणत्याही भाषेत सामान्य नावे सुचवण्यासाठी आणि मॉडेल शेअर करण्यासाठी साइन इन करा. अपलोडपूर्वी फोटो डिव्हाइसवर तपासले जातात आणि शेअर केलेल्या कोणत्याही गोष्टीची तक्रार करता येते. Med Herb Lens वापरण्यासाठी तुमचे वय किमान 13 वर्षे असावे; 18 पेक्षा कमी असल्यास पालक किंवा पालकत्व असलेल्या व्यक्तीची परवानगी आवश्यक आहे.
 
 संशोधनासाठी
 Med Herb Lens हा ऑस्ट्रेलियातील युनिव्हर्सिटी ऑफ न्यू इंग्लंडचा संशोधन प्रकल्प आहे. प्रजातींची यादी आणि GBIF प्रतिमा डेटा मुक्त डेटासेट म्हणून उपलब्ध आहे, आणि प्रोफाइलमध्ये ॲपचा संदर्भ कसा द्यावा ते दिले आहे.
@@ -1438,10 +1438,10 @@ Med Herb Lens ले औषधीय बिरुवा चिन्न र त�
 कुनै पनि AI शब्दको (मोडेल, विश्वास, तालिम आदि) छेउको ? मा ट्याप गरी सरल व्याख्या हेर्नुहोस्।
 
 तपाईंको भाषामा
-एप ३९ भाषामा उपलब्ध छ र तपाईंको डिभाइसको भाषा अपनाउँछ; अरबी र फारसीका लागि दायाँबाट बायाँ ढाँचा छ। प्रजातिका नाम, गोपनीयता नीति र सर्तहरू अङ्ग्रेजी र भियतनामीमा छन्।
+एप ६० भाषामा उपलब्ध छ र तपाईंको डिभाइसको भाषा अपनाउँछ; अरबी, फारसी, हिब्रू र उर्दूका लागि दायाँबाट बायाँ ढाँचा छ। प्रजातिका नाम, गोपनीयता नीति र सर्तहरू अङ्ग्रेजी र भियतनामीमा छन्।
 
 योगदान गर्नुहोस्
-आफ्ना बिरुवाका फोटो थप्न, ३९ मध्ये कुनै पनि भाषामा सामान्य नाम सुझाउन र मोडेल साझा गर्न साइन इन गर्नुहोस्। अपलोड गर्नुअघि फोटो डिभाइसमै जाँचिन्छन्, र साझा गरिएका जुनसुकै कुराको उजुरी गर्न सकिन्छ। Med Herb Lens प्रयोग गर्न तपाईं कम्तीमा १३ वर्षको हुनुपर्छ; १८ भन्दा कम उमेर भए अभिभावक वा संरक्षकको अनुमति चाहिन्छ।
+आफ्ना बिरुवाका फोटो थप्न, ६० मध्ये कुनै पनि भाषामा सामान्य नाम सुझाउन र मोडेल साझा गर्न साइन इन गर्नुहोस्। अपलोड गर्नुअघि फोटो डिभाइसमै जाँचिन्छन्, र साझा गरिएका जुनसुकै कुराको उजुरी गर्न सकिन्छ। Med Herb Lens प्रयोग गर्न तपाईं कम्तीमा १३ वर्षको हुनुपर्छ; १८ भन्दा कम उमेर भए अभिभावक वा संरक्षकको अनुमति चाहिन्छ।
 
 अनुसन्धानका लागि
 Med Herb Lens अस्ट्रेलियाको युनिभर्सिटी अफ न्यू इङ्ल्यान्डको अनुसन्धान परियोजना हो। प्रजाति सूची र GBIF फोटो डेटा खुला डेटासेटका रूपमा उपलब्ध छन्, र प्रोफाइलमा एपलाई कसरी उद्धृत गर्ने भनिएको छ।
@@ -1483,10 +1483,10 @@ Med Herb Lens আপনাকে ভেষজ উদ্ভিদ শনাক্
 যে কোনো AI শব্দের (মডেল, আস্থা, প্রশিক্ষণ ইত্যাদি) পাশে ? ট্যাপ করে সহজ ব্যাখ্যা দেখুন।
 
 আপনার ভাষায়
-অ্যাপটি ৩৯টি ভাষায় পাওয়া যায় এবং আপনার ডিভাইসের ভাষা অনুসরণ করে; আরবি ও ফারসির জন্য ডান থেকে বাঁয়ে বিন্যাস। প্রজাতির নাম, গোপনীয়তা নীতি ও শর্তাবলি ইংরেজি ও ভিয়েতনামিতে।
+অ্যাপটি ৬০টি ভাষায় পাওয়া যায় এবং আপনার ডিভাইসের ভাষা অনুসরণ করে; আরবি, ফারসি, হিব্রু ও উর্দুর জন্য ডান থেকে বাঁয়ে বিন্যাস। প্রজাতির নাম, গোপনীয়তা নীতি ও শর্তাবলি ইংরেজি ও ভিয়েতনামিতে।
 
 অবদান রাখুন
-নিজের উদ্ভিদের ছবি যোগ করতে, ৩৯টি ভাষার যে কোনোটিতে প্রচলিত নাম প্রস্তাব করতে এবং মডেল শেয়ার করতে সাইন ইন করুন। আপলোডের আগে ছবিগুলো ডিভাইসে যাচাই করা হয়, এবং শেয়ার করা যে কোনো কিছুর বিরুদ্ধে রিপোর্ট করা যায়। Med Herb Lens ব্যবহার করতে আপনার বয়স অন্তত ১৩ বছর হতে হবে; ১৮-র কম হলে বাবা-মা বা অভিভাবকের অনুমতি লাগবে।
+নিজের উদ্ভিদের ছবি যোগ করতে, ৬০টি ভাষার যে কোনোটিতে প্রচলিত নাম প্রস্তাব করতে এবং মডেল শেয়ার করতে সাইন ইন করুন। আপলোডের আগে ছবিগুলো ডিভাইসে যাচাই করা হয়, এবং শেয়ার করা যে কোনো কিছুর বিরুদ্ধে রিপোর্ট করা যায়। Med Herb Lens ব্যবহার করতে আপনার বয়স অন্তত ১৩ বছর হতে হবে; ১৮-র কম হলে বাবা-মা বা অভিভাবকের অনুমতি লাগবে।
 
 গবেষণার জন্য
 Med Herb Lens অস্ট্রেলিয়ার ইউনিভার্সিটি অফ নিউ ইংল্যান্ডের একটি গবেষণা প্রকল্প। প্রজাতির তালিকা ও GBIF ছবির ডেটা উন্মুক্ত ডেটাসেট হিসেবে পাওয়া যায়, এবং প্রোফাইলে অ্যাপটি কীভাবে উদ্ধৃত করতে হবে তা দেওয়া আছে।
@@ -1528,10 +1528,10 @@ Med Herb Lens ඔබට ඖෂධ පැළෑටි හඳුනාගැනී
 සරල පැහැදිලි කිරීමක් සඳහා ඕනෑම AI පදයක් (ආකෘතිය, විශ්වාසය, පුහුණුව ආදිය) අසල ඇති ? තට්ටු කරන්න.
 
 ඔබේ භාෂාවෙන්
-යෙදුම භාෂා 39කින් ලබා ගත හැකි අතර ඔබේ උපාංගයේ භාෂාව අනුගමනය කරයි; අරාබි සහ පර්සියානු සඳහා දකුණේ සිට වමට පිරිසැලසුම භාවිත වේ. විශේෂ නාම, රහස්‍යතා ප්‍රතිපත්තිය සහ නියමයන් ඉංග්‍රීසි සහ වියට්නාම් භාෂාවෙන් ඇත.
+යෙදුම භාෂා 60කින් ලබා ගත හැකි අතර ඔබේ උපාංගයේ භාෂාව අනුගමනය කරයි; අරාබි, පර්සියානු, හීබ්‍රෘ සහ උර්දු සඳහා දකුණේ සිට වමට පිරිසැලසුම භාවිත වේ. විශේෂ නාම, රහස්‍යතා ප්‍රතිපත්තිය සහ නියමයන් ඉංග්‍රීසි සහ වියට්නාම් භාෂාවෙන් ඇත.
 
 දායක වන්න
-ඔබේ පැළෑටි ඡායාරූප එක් කිරීමට, භාෂා 39න් ඕනෑම එකකින් පොදු නාම යෝජනා කිරීමට සහ ආකෘති බෙදාගැනීමට පුරනය වන්න. උඩුගත කිරීමට පෙර ඡායාරූප උපාංගයේ පරීක්ෂා කෙරෙන අතර, බෙදාගත් ඕනෑම දෙයක් වාර්තා කළ හැකිය. Med Herb Lens භාවිත කිරීමට ඔබට අවම වශයෙන් වයස අවුරුදු 13ක් විය යුතුය; 18ට අඩු නම් දෙමාපියෙකුගේ හෝ භාරකරුවෙකුගේ අවසරය අවශ්‍ය වේ.
+ඔබේ පැළෑටි ඡායාරූප එක් කිරීමට, භාෂා 60න් ඕනෑම එකකින් පොදු නාම යෝජනා කිරීමට සහ ආකෘති බෙදාගැනීමට පුරනය වන්න. උඩුගත කිරීමට පෙර ඡායාරූප උපාංගයේ පරීක්ෂා කෙරෙන අතර, බෙදාගත් ඕනෑම දෙයක් වාර්තා කළ හැකිය. Med Herb Lens භාවිත කිරීමට ඔබට අවම වශයෙන් වයස අවුරුදු 13ක් විය යුතුය; 18ට අඩු නම් දෙමාපියෙකුගේ හෝ භාරකරුවෙකුගේ අවසරය අවශ්‍ය වේ.
 
 පර්යේෂණ සඳහා
 Med Herb Lens යනු ඕස්ට්‍රේලියාවේ නිව් ඉංග්ලන්ඩ් විශ්වවිද්‍යාලයේ පර්යේෂණ ව්‍යාපෘතියකි. විශේෂ ලැයිස්තුව සහ GBIF රූප දත්ත විවෘත දත්ත කට්ටලයක් ලෙස ලබා ගත හැකි අතර, යෙදුම උපුටා දක්වන ආකාරය පැතිකඩෙහි දැක්වේ.
@@ -1573,10 +1573,10 @@ JIFUNZE UNAPOTUMIA
 Gusa ? kando ya neno lolote la AI (modeli, uhakika, ufunzaji na mengineyo) upate maelezo rahisi.
 
 KWA LUGHA YAKO
-Programu inapatikana kwa lugha 39 na hufuata lugha ya kifaa chako, ikiwa na mpangilio wa kulia kwenda kushoto kwa Kiarabu na Kiajemi. Majina ya spishi, sera ya faragha na masharti yako kwa Kiingereza na Kivietinamu.
+Programu inapatikana kwa lugha 60 na hufuata lugha ya kifaa chako, ikiwa na mpangilio wa kulia kwenda kushoto kwa Kiarabu, Kiajemi, Kiebrania na Kiurdu. Majina ya spishi, sera ya faragha na masharti yako kwa Kiingereza na Kivietinamu.
 
 CHANGIA
-Ingia ili kuongeza picha zako za mimea, kupendekeza majina ya kawaida kwa lugha yoyote kati ya 39, na kushiriki modeli. Picha hukaguliwa kwenye kifaa kabla ya kupakiwa, na chochote kinachoshirikiwa kinaweza kuripotiwa. Lazima uwe na umri wa miaka 13 au zaidi kutumia Med Herb Lens; ikiwa uko chini ya miaka 18, unahitaji ruhusa ya mzazi au mlezi.
+Ingia ili kuongeza picha zako za mimea, kupendekeza majina ya kawaida kwa lugha yoyote kati ya 60, na kushiriki modeli. Picha hukaguliwa kwenye kifaa kabla ya kupakiwa, na chochote kinachoshirikiwa kinaweza kuripotiwa. Lazima uwe na umri wa miaka 13 au zaidi kutumia Med Herb Lens; ikiwa uko chini ya miaka 18, unahitaji ruhusa ya mzazi au mlezi.
 
 KWA UTAFITI
 Med Herb Lens ni mradi wa utafiti wa University of New England, Australia. Orodha ya spishi na data ya picha za GBIF zinapatikana kama seti ya data huria, na Wasifu unaonyesha jinsi ya kunukuu programu.

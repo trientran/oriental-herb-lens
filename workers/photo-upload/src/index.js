@@ -19,6 +19,8 @@
 //   POST /models/<uuid>/huggingface {"sha256": "<hex>"}   by its uploader, when they asked for it:
 //   publishes it in the Hugging Face organisation; 201 {"url": "https://huggingface.co/..."}
 //
+//   POST /models/<uuid>/added       someone added the model: counted once per person (src/adds.js)
+//
 // Too many requests get 429 (wrangler.toml [[ratelimits]]): per address before the token is
 // checked, then per account. Banned accounts (bannedUsers/{uid}, see src/bans.js) get 403. The
 // app then lists the URL in Firestore (herbs/{speciesKey}.images, sharedModels/{id}), where the
@@ -27,6 +29,7 @@
 // The web app calls it from the browser, so the origins in ALLOWED_ORIGINS get CORS headers
 // (the mobile apps send no Origin).
 
+import { countAdd } from './adds.js';
 import { isBanned } from './bans.js';
 import { HubError, deleteSharedModel, markPublished, namesAllowed, publish, sharedModel, unpublish } from './huggingface.js';
 import { AuthError, verifyIdToken } from './firebase-auth.js';
@@ -80,6 +83,7 @@ async function route(request, env, verify, banned, fetchFn) {
   const url = new URL(request.url);
   const model = /^\/models\/([0-9a-f-]{36})$/.exec(url.pathname)?.[1];
   const toHub = /^\/models\/([0-9a-f-]{36})\/huggingface$/.exec(url.pathname)?.[1];
+  const added = /^\/models\/([0-9a-f-]{36})\/added$/.exec(url.pathname)?.[1];
   if (url.pathname === '/photos') {
     if (request.method !== 'POST') return json(405, { error: 'Use POST' });
     return withUser(request, env, verify, banned, (uid) => uploadPhoto(request, env, url, uid));
@@ -92,6 +96,10 @@ async function route(request, env, verify, banned, fetchFn) {
     if (request.method !== 'DELETE') return json(405, { error: 'Use DELETE' });
     // A banned user may still take down their own models
     return withUser(request, env, verify, async () => false, (uid) => deleteModel(env, model, uid, fetchFn));
+  }
+  if (added) {
+    if (request.method !== 'POST') return json(405, { error: 'Use POST' });
+    return withUser(request, env, verify, banned, (uid) => countAdd(env, added, uid, json, fetchFn));
   }
   if (toHub) {
     if (request.method !== 'POST') return json(405, { error: 'Use POST' });

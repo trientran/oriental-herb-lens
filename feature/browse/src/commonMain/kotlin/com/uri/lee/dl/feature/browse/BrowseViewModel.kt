@@ -3,6 +3,7 @@ package com.uri.lee.dl.feature.browse
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.uri.lee.dl.core.ui.MviViewModel
+import com.uri.lee.dl.domain.ml.HerbClassifier
 import com.uri.lee.dl.domain.model.Species
 import com.uri.lee.dl.domain.repository.SpeciesRepository
 import com.uri.lee.dl.domain.search.SpeciesMatch
@@ -24,6 +25,9 @@ sealed interface BrowseAction {
     /** The catalog list was scrolled near its end. */
     data object LoadMore : BrowseAction
     data object Retry : BrowseAction
+
+    /** Shows only the species the herb model doesn't know yet, or the whole catalog again. */
+    data class SetNeedsPhotos(val on: Boolean) : BrowseAction
 }
 
 data class BrowseState(
@@ -34,6 +38,12 @@ data class BrowseState(
     /** Search results for [query]; meaningful only while [isSearching]. */
     val results: List<SpeciesMatch> = emptyList(),
     val hasError: Boolean = false,
+    /** Listing only the species the herb model doesn't know yet, which need photos most. */
+    val needsPhotos: Boolean = false,
+    /** Those species, in the catalog's order; null while they load. */
+    val needsPhotosSpecies: List<Species>? = null,
+    /** False when the model's species can't be told, so the filter isn't offered. */
+    val needsPhotosAvailable: Boolean = true,
 ) {
     val isSearching: Boolean get() = query.isNotBlank()
 }
@@ -43,6 +53,7 @@ data class BrowseState(
 class BrowseViewModel(
     private val catalog: SpeciesRepository,
     private val sortByVietnameseName: Boolean,
+    private val classifier: HerbClassifier,
 ) : MviViewModel<BrowseState, BrowseAction>(BrowseState()) {
 
     private val queries = MutableStateFlow("")
@@ -79,8 +90,34 @@ class BrowseViewModel(
                 setState { copy(hasError = false) }
                 loadMore()
             }
+            is BrowseAction.SetNeedsPhotos -> {
+                setState { copy(needsPhotos = action.on) }
+                if (action.on && currentState.needsPhotosSpecies == null) loadNeedsPhotos()
+            }
         }
     }
+
+    private fun loadNeedsPhotos() = viewModelScope.launch {
+        try {
+            val known = classifier.knownSpecies()
+            if (known.isEmpty()) {
+                setState { copy(needsPhotos = false, needsPhotosAvailable = false) }
+                return@launch
+            }
+            val needed = catalog.all().filter { it.id !in known }.sortedWith(catalogOrder())
+            setState { copy(needsPhotosSpecies = needed) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.e(e) { "Species needing photos not loaded" }
+            setState { copy(needsPhotos = false, needsPhotosAvailable = false) }
+        }
+    }
+
+    /** The order [SpeciesRepository.page] lists the catalog in. */
+    private fun catalogOrder(): Comparator<Species> =
+        if (sortByVietnameseName) compareBy<Species>({ it.preferredVietnameseName == null }, { it.preferredVietnameseName?.lowercase() }, { it.scientificName })
+        else compareBy { it.scientificName }
 
     private fun loadMore() {
         if (!hasMore || loading?.isActive == true || currentState.hasError) return

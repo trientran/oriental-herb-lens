@@ -19,6 +19,10 @@ data class CommunityModel(
     val huggingFace: HuggingFaceStatus = HuggingFaceStatus.NONE,
     /** Its page there, once published. */
     val huggingFaceUrl: String? = null,
+    /** How many other people added it to their models. */
+    val adds: Int = 0,
+    /** The name its sharer chose to be credited by; null for "a Med Herb Lens user". */
+    val creditName: String? = null,
 )
 
 /**
@@ -63,6 +67,12 @@ interface CommunityModelRepository {
 
     /** Hides everything this sharer shared, models and photos, for this user. */
     suspend fun hideUploader(uploaderId: String)
+
+    /**
+     * Counts that this user added [model] (once per person, not their own), so its sharer sees how
+     * many people use it. Best effort: does nothing while signed out, and never throws.
+     */
+    suspend fun countAdd(model: CommunityModel)
 }
 
 /** Why a model can't be shared as it is; the user can rename it, or its species, and try again. */
@@ -88,15 +98,28 @@ object SharingRules {
         "địt", "lồn", "cặc", "đụ", "đéo", "buồi", "đĩ",
     )
 
+    /** Longest name a contributor can be credited by (Profile). */
+    const val MAX_CREDIT_NAME = 40
+
     fun problem(name: String, species: List<String>, sizeBytes: Int): SharingProblem? {
         val texts = listOf(name) + species
         return when {
             name.isBlank() || name.length > MAX_NAME -> SharingProblem.NAME_LENGTH
             species.size < 2 || species.size > MAX_SPECIES -> SharingProblem.TOO_FEW_SPECIES
             sizeBytes > MAX_BYTES -> SharingProblem.TOO_LARGE
-            texts.any { email.containsMatchIn(it) || link.containsMatchIn(it) || phone.containsMatchIn(it) } -> SharingProblem.CONTACT_DETAILS
-            texts.any { text -> text.lowercase().split(Regex("""[^\p{L}\p{N}]+""")).any { it in blocked } } -> SharingProblem.OFFENSIVE_WORDS
-            else -> null
+            else -> textProblem(texts)
         }
+    }
+
+    /** Why [name] can't be shown as a contributor's credit, or null when it can. */
+    fun creditProblem(name: String): SharingProblem? = when {
+        name.isBlank() || name.trim().length > MAX_CREDIT_NAME -> SharingProblem.NAME_LENGTH
+        else -> textProblem(listOf(name))
+    }
+
+    private fun textProblem(texts: List<String>): SharingProblem? = when {
+        texts.any { email.containsMatchIn(it) || link.containsMatchIn(it) || phone.containsMatchIn(it) } -> SharingProblem.CONTACT_DETAILS
+        texts.any { text -> text.lowercase().split(Regex("""[^\p{L}\p{N}]+""")).any { it in blocked } } -> SharingProblem.OFFENSIVE_WORDS
+        else -> null
     }
 }

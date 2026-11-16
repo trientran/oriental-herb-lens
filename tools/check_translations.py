@@ -29,8 +29,21 @@ PLURALS = {
     "cs": {"one", "few", "many", "other"}, "lt": {"one", "few", "many", "other"},
     "pl": {"one", "few", "many", "other"}, "ru": {"one", "few", "many", "other"},
     "uk": {"one", "few", "many", "other"},
+    "id": {"other"}, "ms": {"other"}, "zh-Hant": {"other"},
+    "da": {"one", "other"}, "nb": {"one", "other"}, "fi": {"one", "other"}, "et": {"one", "other"},
+    "eu": {"one", "other"}, "gl": {"one", "other"}, "ml": {"one", "other"}, "ur": {"one", "other"},
+    # Occitan has no CLDR rules either (Compose shows its "other" form); one/other like Latin
+    "oc": {"one", "other"},
+    "ca": {"one", "many", "other"}, "pt-BR": {"one", "many", "other"},
+    "he": {"one", "two", "other"}, "sat": {"one", "two", "other"},
+    "sl": {"one", "two", "few", "other"},
+    "sk": {"one", "few", "many", "other"}, "be": {"one", "few", "many", "other"},
+    "br": {"one", "two", "few", "many", "other"},
+    "cy": {"zero", "one", "two", "few", "many", "other"},
 }
 LANGUAGES = Path(__file__).resolve().parent.parent / "core/domain/src/commonMain/kotlin/com/uri/lee/dl/domain/model/AppLanguages.kt"
+# Folder names for the codes with a script or region: Compose's BCP 47 "b+" form and Android's "-r" region
+FOLDER_CODES = {"b+zh+Hant": "zh-Hant", "pt-rBR": "pt-BR"}
 # Forms that may leave the number out ("your photo", Arabic duals)
 WORDED = {"one", "two"}
 
@@ -72,14 +85,19 @@ def check(lang: str, english: dict, translated: dict) -> list:
     return errors
 
 
+def folder_code(folder: Path) -> str:
+    name = folder.name.removeprefix("values-")
+    return FOLDER_CODES.get(name, name)
+
+
 def main() -> int:
     english = load(RESOURCES / "values")
     failed = False
     # Every interface language has its folder, and every folder is an interface language
-    codes = set(re.findall(r'AppLanguage\("([a-z]+)"', LANGUAGES.read_text()))
-    folders = {f.name.removeprefix("values-") for f in RESOURCES.glob("values-*")}
+    codes = set(re.findall(r'AppLanguage\("([A-Za-z-]+)"', LANGUAGES.read_text()))
+    folders = {folder_code(f) for f in RESOURCES.glob("values-*")}
     for code in sorted(codes - folders - {"en"}):
-        print(f"{code}: no values-{code} folder")
+        print(f"{code}: no folder of strings")
         failed = True
     for code in sorted(folders - codes):
         print(f"values-{code}: not in AppLanguages")
@@ -88,7 +106,7 @@ def main() -> int:
         print(f"{code}: plural forms unknown to this script")
         failed = True
     for folder in sorted(RESOURCES.glob("values-*")):
-        lang = folder.name.removeprefix("values-")
+        lang = folder_code(folder)
         errors = check(lang, english, load(folder))
         print(f"{lang}: {'ok' if not errors else f'{len(errors)} problem(s)'}")
         for error in errors:

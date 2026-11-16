@@ -37,11 +37,11 @@ LEARN AS YOU GO
 Tap ? next to any AI term (model, confidence, training, and more) for a plain-language explanation.
 
 IN YOUR LANGUAGE
-The app is available in 39 languages and follows your device's language, with right-to-left layout
-for Arabic and Persian. Species names, the privacy policy and the terms are in English and Vietnamese.
+The app is available in 60 languages and follows your device's language, with right-to-left layout
+for Arabic, Persian, Hebrew and Urdu. Species names, the privacy policy and the terms are in English and Vietnamese.
 
 CONTRIBUTE
-Sign in with Apple or Google to add your own plant photos, suggest common names in any of the 39
+Sign in with Apple or Google to add your own plant photos, suggest common names in any of the 60
 languages, and share models. Photos are checked on the device before upload, and anything shared
 can be reported. You must be 13 or older to use Med Herb Lens; if you are under 18, you need a parent
 or guardian's permission.
@@ -105,12 +105,12 @@ VỪA DÙNG VỪA HỌC
 Chạm vào ? cạnh mỗi thuật ngữ AI (mô hình, độ tin cậy, huấn luyện…) để xem giải thích dễ hiểu.
 
 THEO NGÔN NGỮ CỦA BẠN
-Ứng dụng có 39 ngôn ngữ và tự theo ngôn ngữ của thiết bị, với bố cục từ phải sang trái cho tiếng
-Ả Rập và tiếng Ba Tư. Tên loài, chính sách quyền riêng tư và điều khoản dùng tiếng Việt và tiếng Anh.
+Ứng dụng có 60 ngôn ngữ và tự theo ngôn ngữ của thiết bị, với bố cục từ phải sang trái cho tiếng
+Ả Rập, tiếng Ba Tư, tiếng Do Thái và tiếng Urdu. Tên loài, chính sách quyền riêng tư và điều khoản dùng tiếng Việt và tiếng Anh.
 
 ĐÓNG GÓP
 Đăng nhập bằng Apple hoặc Google để thêm ảnh cây của bạn, đề xuất tên thường gọi bằng bất kỳ ngôn
-ngữ nào trong 39 ngôn ngữ, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải
+ngữ nào trong 60 ngôn ngữ, và chia sẻ mô hình. Ảnh được kiểm tra ngay trên thiết bị trước khi tải
 lên, và mọi nội dung chia sẻ đều có thể bị báo cáo. Bạn cần từ 13 tuổi trở lên để dùng Med Herb Lens;
 nếu dưới 18 tuổi, bạn cần có sự đồng ý của cha mẹ hoặc người giám hộ.
 

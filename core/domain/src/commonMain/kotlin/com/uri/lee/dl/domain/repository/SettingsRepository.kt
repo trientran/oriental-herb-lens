@@ -37,4 +37,18 @@ interface SettingsRepository {
 
     /** The user opened the survey: the invitation isn't shown again. */
     suspend fun finishSurveyInvite()
+
+    /**
+     * The name the user chose to be credited by on photos and models they share from now on
+     * (Profile); null for "a Med Herb Lens user", the default.
+     */
+    val creditName: Flow<String?>
+
+    /** Sets or (with null) clears [creditName]; check it with SharingRules.creditProblem first. */
+    suspend fun setCreditName(name: String?)
+
+    /** Badges (Badge names) the user has already seen in Profile, so new ones can be pointed out. */
+    val seenBadges: Flow<Set<String>>
+
+    suspend fun markBadgesSeen(badges: Set<String>)
 }

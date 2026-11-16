@@ -50,6 +50,17 @@ export async function firestoreRequest(env, path, init = {}, fetchFn = fetch, no
   return fetchFn(url, { ...init, headers: { ...(init.headers ?? {}), authorization: `Bearer ${token}` } });
 }
 
+/** Applies [writes] atomically (Firestore REST commit) as the service account. */
+export async function firestoreCommit(env, writes, fetchFn = fetch, nowMs = Date.now()) {
+  const token = await accessToken(JSON.parse(env.FIREBASE_SERVICE_ACCOUNT), fetchFn, nowMs);
+  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:commit`;
+  return fetchFn(url, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ writes }),
+  });
+}
+
 /** True when bannedUsers/{uid} exists; false when it doesn't, or when no service account is set up. */
 export async function isBanned(uid, env, fetchFn = fetch, nowMs = Date.now()) {
   if (!env.FIREBASE_SERVICE_ACCOUNT) return false;

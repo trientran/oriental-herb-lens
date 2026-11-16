@@ -9,6 +9,7 @@ internal object FirestorePaths {
     const val MODEL_REPORTS = "modelReports"
     const val CREATED_AT = "createdAt"
     const val USERS = "users"
+    const val CONTRIBUTIONS = "contributions"
 
     const val USER_FAVORITES = "favorite"
     const val USER_HISTORY = "history"
