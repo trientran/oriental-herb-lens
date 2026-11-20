@@ -286,6 +286,7 @@
     <string name="train_try_it">Δοκιμάστε το</string>
     <string name="train_add_more">Προσθήκη περισσότερων</string>
     <string name="train_share">Κοινοποίηση .tflite</string>
+    <string name="train_export_scripts">Εξαγωγή με σενάρια Python</string>
     <string name="train_delete">Διαγραφή μοντέλου</string>
     <string name="train_delete_confirm">Διαγραφή του %1$s; Αυτό δεν αναιρείται.</string>
     <string name="train_quality">Ποιότητα</string>

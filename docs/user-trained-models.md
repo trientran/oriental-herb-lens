@@ -193,6 +193,18 @@ hidden layer is a setting and an ablation in the study.
   **Share .tflite:** the standalone model, with its labels inside, and, for Herb Lens, the trained
   layers (`herblens/model.json`) and up to 20 embeddings per species to replay
   (`herblens/replay.bin`), packed in the same way and ignored by TFLite tools.
+- **Export with Python scripts** (`AnalysisExport`): a zip to use and check the model without the
+  app: `model.tflite`, `labels.txt`, `head.json`, `manifest.json` (backbone, settings, how photos
+  are read, the report), `embeddings.npy` with `examples.csv` (every photo of the last training,
+  its species and its share: train, validation or test) and the scripts in
+  `core/designsystem/.../composeResources/files/analysis/`: `predict.py` (a folder of photos),
+  `evaluate.py` (labelled photos, one subfolder per species) and `reproduce.py` (recalculates the
+  report from the embeddings; for Calculate models it also recalculates the model). Photos stay on
+  the device. Python 3.9 to 3.12 with numpy, Pillow and ai-edge-litert. Checked on the 200-photo
+  Train tab set (iPhone photos embedded in Python with the deployed DINOv2, then trained and
+  exported by the app's code): `reproduce.py` matched the app's 96.7 % on 30 test photos and its
+  confusion matrix, the recalculated weights within 1e-6; `evaluate.py` gave 95 % on 200 Redmi
+  photos of the same species.
 - **Importing a shared model:** one from Herb Lens can go on learning (new species or photos,
   replaying its packed sample so it keeps the old species); any other .tflite with labels inside
   can be used to identify, not trained.

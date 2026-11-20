@@ -286,6 +286,7 @@
     <string name="train_try_it">Prøv den</string>
     <string name="train_add_more">Legg til flere</string>
     <string name="train_share">Del .tflite</string>
+    <string name="train_export_scripts">Eksporter med Python-skript</string>
     <string name="train_delete">Slett modellen</string>
     <string name="train_delete_confirm">Vil du slette %1$s? Dette kan ikke angres.</string>
     <string name="train_quality">Kvalitet</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">උත්සාහ කරන්න</string>
     <string name="train_add_more">තවත් එක් කරන්න</string>
     <string name="train_share">.tflite බෙදා ගන්න</string>
+    <string name="train_export_scripts">Python ස්ක්‍රිප්ට් සමඟ අපනයනය කරන්න</string>
     <string name="train_delete">ආකෘතිය මකන්න</string>
     <string name="train_delete_confirm">%1$s මකන්නද? මෙය අහෝසි කළ නොහැක.</string>
     <string name="train_quality">ගුණත්වය</string>

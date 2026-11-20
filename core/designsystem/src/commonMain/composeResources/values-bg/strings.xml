@@ -286,6 +286,7 @@
     <string name="train_try_it">Изпробване</string>
     <string name="train_add_more">Добавяне на още</string>
     <string name="train_share">Споделяне на .tflite</string>
+    <string name="train_export_scripts">Експортиране със скриптове на Python</string>
     <string name="train_delete">Изтриване на модела</string>
     <string name="train_delete_confirm">Изтриване на %1$s? Това не може да бъде отменено.</string>
     <string name="train_quality">Качество</string>

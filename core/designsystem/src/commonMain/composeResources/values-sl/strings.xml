@@ -294,6 +294,7 @@
     <string name="train_try_it">Preizkusi</string>
     <string name="train_add_more">Dodaj več</string>
     <string name="train_share">Deli .tflite</string>
+    <string name="train_export_scripts">Izvozi s skriptami Python</string>
     <string name="train_delete">Izbriši model</string>
     <string name="train_delete_confirm">Želite izbrisati %1$s? Tega ni mogoče razveljaviti.</string>
     <string name="train_quality">Kakovost</string>

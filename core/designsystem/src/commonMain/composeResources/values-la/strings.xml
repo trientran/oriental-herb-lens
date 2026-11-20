@@ -286,6 +286,7 @@
     <string name="train_try_it">Tempta</string>
     <string name="train_add_more">Plura adde</string>
     <string name="train_share">.tflite communica</string>
+    <string name="train_export_scripts">Cum scriptis Python exporta</string>
     <string name="train_delete">Exemplar dele</string>
     <string name="train_delete_confirm">Visne %1$s delere? Hoc revocari non potest.</string>
     <string name="train_quality">Qualitas</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">Meka yango</string>
     <string name="train_add_more">Bakisa mosusu</string>
     <string name="train_share">Kabola .tflite</string>
+    <string name="train_export_scripts">Kabola elongo na ba script ya Python</string>
     <string name="train_delete">Longola modèle</string>
     <string name="train_delete_confirm">Olingi kolongola %1$s? Okoki kozongisa yango te.</string>
     <string name="train_quality">Bolamu</string>

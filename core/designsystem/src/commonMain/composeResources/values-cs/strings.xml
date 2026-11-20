@@ -294,6 +294,7 @@
     <string name="train_try_it">Vyzkoušet</string>
     <string name="train_add_more">Přidat další</string>
     <string name="train_share">Sdílet .tflite</string>
+    <string name="train_export_scripts">Exportovat se skripty v Pythonu</string>
     <string name="train_delete">Smazat model</string>
     <string name="train_delete_confirm">Smazat %1$s? Tuto akci nelze vrátit.</string>
     <string name="train_quality">Kvalita</string>

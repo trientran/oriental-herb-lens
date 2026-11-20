@@ -294,6 +294,7 @@
     <string name="train_try_it">Wypróbuj</string>
     <string name="train_add_more">Dodaj więcej</string>
     <string name="train_share">Udostępnij .tflite</string>
+    <string name="train_export_scripts">Eksportuj ze skryptami Python</string>
     <string name="train_delete">Usuń model</string>
     <string name="train_delete_confirm">Usunąć %1$s? Tej operacji nie można cofnąć.</string>
     <string name="train_quality">Jakość</string>

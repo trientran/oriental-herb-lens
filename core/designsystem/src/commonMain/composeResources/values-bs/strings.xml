@@ -290,6 +290,7 @@
     <string name="train_try_it">Isprobaj</string>
     <string name="train_add_more">Dodaj još</string>
     <string name="train_share">Podijeli .tflite</string>
+    <string name="train_export_scripts">Izvezi sa Python skriptama</string>
     <string name="train_delete">Obriši model</string>
     <string name="train_delete_confirm">Obrisati %1$s? To se ne može poništiti.</string>
     <string name="train_quality">Kvaliteta</string>

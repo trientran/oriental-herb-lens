@@ -294,6 +294,7 @@
     <string name="train_try_it">Попробовать</string>
     <string name="train_add_more">Добавить ещё</string>
     <string name="train_share">Поделиться .tflite</string>
+    <string name="train_export_scripts">Экспортировать со скриптами Python</string>
     <string name="train_delete">Удалить модель</string>
     <string name="train_delete_confirm">Удалить %1$s? Это нельзя отменить.</string>
     <string name="train_quality">Качество</string>

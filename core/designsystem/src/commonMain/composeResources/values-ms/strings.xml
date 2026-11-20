@@ -282,6 +282,7 @@
     <string name="train_try_it">Cuba</string>
     <string name="train_add_more">Tambah lagi</string>
     <string name="train_share">Kongsi .tflite</string>
+    <string name="train_export_scripts">Eksport dengan skrip Python</string>
     <string name="train_delete">Padam model</string>
     <string name="train_delete_confirm">Padam %1$s? Tindakan ini tidak boleh dibuat asal.</string>
     <string name="train_quality">Kualiti</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">Prova den</string>
     <string name="train_add_more">Lägg till fler</string>
     <string name="train_share">Dela .tflite</string>
+    <string name="train_export_scripts">Exportera med Python-skript</string>
     <string name="train_delete">Radera modellen</string>
     <string name="train_delete_confirm">Radera %1$s? Det går inte att ångra.</string>
     <string name="train_quality">Kvalitet</string>

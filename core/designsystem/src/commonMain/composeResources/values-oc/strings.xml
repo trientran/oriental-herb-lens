@@ -286,6 +286,7 @@
     <string name="train_try_it">Ensajar</string>
     <string name="train_add_more">Apondre mai</string>
     <string name="train_share">Partejar lo .tflite</string>
+    <string name="train_export_scripts">Exportar amb d’escripts Python</string>
     <string name="train_delete">Suprimir lo modèl</string>
     <string name="train_delete_confirm">Suprimir %1$s? Se pòt pas anullar.</string>
     <string name="train_quality">Qualitat</string>

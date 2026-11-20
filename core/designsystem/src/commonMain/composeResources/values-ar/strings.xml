@@ -302,6 +302,7 @@
     <string name="train_try_it">جرّبه</string>
     <string name="train_add_more">إضافة المزيد</string>
     <string name="train_share">مشاركة ‎.tflite</string>
+    <string name="train_export_scripts">تصدير مع سكربتات Python</string>
     <string name="train_delete">حذف النموذج</string>
     <string name="train_delete_confirm">هل تريد حذف %1$s؟ لا يمكن التراجع عن ذلك.</string>
     <string name="train_quality">الجودة</string>

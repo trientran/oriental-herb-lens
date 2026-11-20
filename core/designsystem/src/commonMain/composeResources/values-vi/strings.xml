@@ -283,6 +283,7 @@
     <string name="train_try_it">Dùng thử</string>
     <string name="train_add_more">Thêm nữa</string>
     <string name="train_share">Chia sẻ .tflite</string>
+    <string name="train_export_scripts">Xuất kèm script Python</string>
     <string name="train_delete">Xoá mô hình</string>
     <string name="train_delete_confirm">Xoá %1$s? Không thể hoàn tác.</string>
     <string name="train_quality">Chất lượng</string>

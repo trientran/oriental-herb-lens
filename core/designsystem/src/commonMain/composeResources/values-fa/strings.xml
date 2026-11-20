@@ -286,6 +286,7 @@
     <string name="train_try_it">امتحانش کنید</string>
     <string name="train_add_more">افزودن بیشتر</string>
     <string name="train_share">هم‌رسانی ‎.tflite</string>
+    <string name="train_export_scripts">خروجی گرفتن با اسکریپت‌های Python</string>
     <string name="train_delete">حذف مدل</string>
     <string name="train_delete_confirm">%1$s حذف شود؟ این کار برگشت‌پذیر نیست.</string>
     <string name="train_quality">کیفیت</string>

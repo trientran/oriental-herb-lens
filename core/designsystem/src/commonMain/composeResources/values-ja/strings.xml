@@ -282,6 +282,7 @@
     <string name="train_try_it">試す</string>
     <string name="train_add_more">さらに追加</string>
     <string name="train_share">.tflite を共有</string>
+    <string name="train_export_scripts">Python スクリプト付きで書き出す</string>
     <string name="train_delete">モデルを削除</string>
     <string name="train_delete_confirm">%1$s を削除しますか？ 元に戻せません。</string>
     <string name="train_quality">品質</string>

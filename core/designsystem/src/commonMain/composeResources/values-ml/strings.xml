@@ -286,6 +286,7 @@
     <string name="train_try_it">പരീക്ഷിക്കുക</string>
     <string name="train_add_more">കൂടുതൽ ചേർക്കുക</string>
     <string name="train_share">.tflite പങ്കിടുക</string>
+    <string name="train_export_scripts">Python സ്ക്രിപ്റ്റുകൾക്കൊപ്പം എക്സ്പോർട്ട് ചെയ്യുക</string>
     <string name="train_delete">മോഡൽ ഇല്ലാതാക്കുക</string>
     <string name="train_delete_confirm">%1$s ഇല്ലാതാക്കണോ? ഇത് പഴയപടിയാക്കാനാകില്ല.</string>
     <string name="train_quality">നിലവാരം</string>
