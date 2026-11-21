@@ -290,6 +290,7 @@
     <string name="train_try_it">L’essayer</string>
     <string name="train_add_more">Ajouter plus</string>
     <string name="train_share">Partager le .tflite</string>
+    <string name="train_export_scripts">Exporter avec des scripts Python</string>
     <string name="train_delete">Supprimer le modèle</string>
     <string name="train_delete_confirm">Supprimer %1$s ? Cette action est irréversible.</string>
     <string name="train_quality">Qualité</string>

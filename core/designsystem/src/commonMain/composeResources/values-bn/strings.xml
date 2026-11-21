@@ -286,6 +286,7 @@
     <string name="train_try_it">চেষ্টা করে দেখুন</string>
     <string name="train_add_more">আরও যোগ করুন</string>
     <string name="train_share">.tflite শেয়ার করুন</string>
+    <string name="train_export_scripts">Python স্ক্রিপ্টসহ এক্সপোর্ট করুন</string>
     <string name="train_delete">মডেল মুছুন</string>
     <string name="train_delete_confirm">%1$s মুছবেন? এটি ফেরানো যাবে না।</string>
     <string name="train_quality">গুণমান</string>

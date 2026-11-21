@@ -286,6 +286,7 @@
     <string name="train_try_it">Provi ĝin</string>
     <string name="train_add_more">Aldoni pli</string>
     <string name="train_share">Kunhavigi .tflite</string>
+    <string name="train_export_scripts">Eksporti kun Python-skriptoj</string>
     <string name="train_delete">Forigi modelon</string>
     <string name="train_delete_confirm">Ĉu forigi %1$s? Tio ne malfareblas.</string>
     <string name="train_quality">Kvalito</string>

@@ -1,0 +1,4 @@
+# Python 3.9 to 3.12 (LiteRT has no wheels for newer Pythons yet)
+numpy>=1.23
+pillow>=9.1
+ai-edge-litert>=1.0

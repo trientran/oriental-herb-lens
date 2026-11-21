@@ -286,6 +286,7 @@
     <string name="train_try_it">Probalo</string>
     <string name="train_add_more">Engadir máis</string>
     <string name="train_share">Compartir o .tflite</string>
+    <string name="train_export_scripts">Exportar con scripts de Python</string>
     <string name="train_delete">Eliminar o modelo</string>
     <string name="train_delete_confirm">Queres eliminar %1$s? Non se pode desfacer.</string>
     <string name="train_quality">Calidade</string>

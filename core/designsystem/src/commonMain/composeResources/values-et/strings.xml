@@ -286,6 +286,7 @@
     <string name="train_try_it">Proovi</string>
     <string name="train_add_more">Lisa veel</string>
     <string name="train_share">Jaga .tflite</string>
+    <string name="train_export_scripts">Ekspordi koos Pythoni skriptidega</string>
     <string name="train_delete">Kustuta mudel</string>
     <string name="train_delete_confirm">Kas kustutada %1$s? Seda ei saa tagasi võtta.</string>
     <string name="train_quality">Kvaliteet</string>

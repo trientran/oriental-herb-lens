@@ -290,6 +290,7 @@
     <string name="train_try_it">ניסיון</string>
     <string name="train_add_more">הוספת עוד</string>
     <string name="train_share">שיתוף .tflite</string>
+    <string name="train_export_scripts">ייצוא עם סקריפטים של Python</string>
     <string name="train_delete">מחיקת המודל</string>
     <string name="train_delete_confirm">למחוק את %1$s? אי אפשר לבטל את הפעולה.</string>
     <string name="train_quality">איכות</string>

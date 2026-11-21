@@ -290,6 +290,7 @@
     <string name="train_try_it">Provalo</string>
     <string name="train_add_more">Aggiungi altro</string>
     <string name="train_share">Condividi .tflite</string>
+    <string name="train_export_scripts">Esporta con script Python</string>
     <string name="train_delete">Elimina modello</string>
     <string name="train_delete_confirm">Eliminare %1$s? L’operazione non si può annullare.</string>
     <string name="train_quality">Qualità</string>

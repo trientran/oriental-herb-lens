@@ -286,6 +286,7 @@
     <string name="train_try_it">Kipróbálás</string>
     <string name="train_add_more">Továbbiak hozzáadása</string>
     <string name="train_share">.tflite megosztása</string>
+    <string name="train_export_scripts">Exportálás Python-szkriptekkel</string>
     <string name="train_delete">Modell törlése</string>
     <string name="train_delete_confirm">Törlöd ezt: %1$s? Ez nem vonható vissza.</string>
     <string name="train_quality">Minőség</string>

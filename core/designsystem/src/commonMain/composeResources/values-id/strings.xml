@@ -282,6 +282,7 @@
     <string name="train_try_it">Coba</string>
     <string name="train_add_more">Tambah lagi</string>
     <string name="train_share">Bagikan .tflite</string>
+    <string name="train_export_scripts">Ekspor dengan skrip Python</string>
     <string name="train_delete">Hapus model</string>
     <string name="train_delete_confirm">Hapus %1$s? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="train_quality">Kualitas</string>

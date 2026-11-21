@@ -282,6 +282,7 @@
     <string name="train_try_it">试一试</string>
     <string name="train_add_more">添加更多</string>
     <string name="train_share">分享 .tflite</string>
+    <string name="train_export_scripts">导出并附带 Python 脚本</string>
     <string name="train_delete">删除模型</string>
     <string name="train_delete_confirm">要删除 %1$s 吗？此操作无法撤销。</string>
     <string name="train_quality">质量</string>

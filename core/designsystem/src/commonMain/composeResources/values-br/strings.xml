@@ -298,6 +298,7 @@
     <string name="train_try_it">Esaeañ</string>
     <string name="train_add_more">Ouzhpennañ muioc’h</string>
     <string name="train_share">Rannañ .tflite</string>
+    <string name="train_export_scripts">Ezporzhiañ gant skriptoù Python</string>
     <string name="train_delete">Dilemel ar patrom</string>
     <string name="train_delete_confirm">Dilemel %1$s? N’haller ket dizober.</string>
     <string name="train_quality">Perzhded</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">Sına</string>
     <string name="train_add_more">Daha çox əlavə et</string>
     <string name="train_share">.tflite paylaş</string>
+    <string name="train_export_scripts">Python skriptləri ilə ixrac et</string>
     <string name="train_delete">Modeli sil</string>
     <string name="train_delete_confirm">%1$s silinsin? Bu geri qaytarıla bilməz.</string>
     <string name="train_quality">Keyfiyyət</string>
