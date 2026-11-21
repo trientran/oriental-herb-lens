@@ -286,6 +286,7 @@
     <string name="train_try_it">Ausprobieren</string>
     <string name="train_add_more">Mehr hinzufügen</string>
     <string name="train_share">.tflite teilen</string>
+    <string name="train_export_scripts">Mit Python-Skripten exportieren</string>
     <string name="train_delete">Modell löschen</string>
     <string name="train_delete_confirm">%1$s löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="train_quality">Qualität</string>

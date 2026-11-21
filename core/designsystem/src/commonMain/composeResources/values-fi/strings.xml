@@ -286,6 +286,7 @@
     <string name="train_try_it">Kokeile</string>
     <string name="train_add_more">Lisää enemmän</string>
     <string name="train_share">Jaa .tflite</string>
+    <string name="train_export_scripts">Vie Python-skriptien kanssa</string>
     <string name="train_delete">Poista malli</string>
     <string name="train_delete_confirm">Poistetaanko %1$s? Tätä ei voi kumota.</string>
     <string name="train_quality">Laatu</string>

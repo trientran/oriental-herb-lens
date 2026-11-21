@@ -286,6 +286,7 @@
     <string name="train_try_it">Ijaribu</string>
     <string name="train_add_more">Ongeza zaidi</string>
     <string name="train_share">Shiriki .tflite</string>
+    <string name="train_export_scripts">Hamisha pamoja na hati za Python</string>
     <string name="train_delete">Futa modeli</string>
     <string name="train_delete_confirm">Ufute %1$s? Hili haliwezi kutenduliwa.</string>
     <string name="train_quality">Ubora</string>

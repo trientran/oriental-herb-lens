@@ -286,6 +286,7 @@
     <string name="train_try_it">Andramo</string>
     <string name="train_add_more">Ampio bebe kokoa</string>
     <string name="train_share">Zarao ny .tflite</string>
+    <string name="train_export_scripts">Avoahy miaraka amin'ny script Python</string>
     <string name="train_delete">Fafao ny maodely</string>
     <string name="train_delete_confirm">Hofafana ve ny %1$s? Tsy azo averina izany.</string>
     <string name="train_quality">Kalitao</string>

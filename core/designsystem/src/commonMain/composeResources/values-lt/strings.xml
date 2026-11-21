@@ -294,6 +294,7 @@
     <string name="train_try_it">Išbandyti</string>
     <string name="train_add_more">Pridėti daugiau</string>
     <string name="train_share">Bendrinti .tflite</string>
+    <string name="train_export_scripts">Eksportuoti su Python scenarijais</string>
     <string name="train_delete">Ištrinti modelį</string>
     <string name="train_delete_confirm">Ištrinti %1$s? To atšaukti negalima.</string>
     <string name="train_quality">Kokybė</string>

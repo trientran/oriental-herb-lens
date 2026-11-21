@@ -286,6 +286,7 @@
     <string name="train_try_it">آزمائیں</string>
     <string name="train_add_more">مزید شامل کریں</string>
     <string name="train_share">.tflite شیئر کریں</string>
+    <string name="train_export_scripts">Python اسکرپٹس کے ساتھ ایکسپورٹ کریں</string>
     <string name="train_delete">ماڈل حذف کریں</string>
     <string name="train_delete_confirm">%1$s حذف کریں؟ اسے واپس نہیں کیا جا سکتا۔</string>
     <string name="train_quality">معیار</string>

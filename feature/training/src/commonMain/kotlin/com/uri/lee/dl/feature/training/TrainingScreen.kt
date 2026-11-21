@@ -947,6 +947,17 @@ private fun ResultScreen(state: TrainingState, onAction: (TrainingAction) -> Uni
             ) { Text(stringResource(Res.string.train_share)) }
             InfoTip(AiTerm.TFLITE, Modifier.align(Alignment.CenterVertically))
         }
+        if (!model.imported) {
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        val scripts = AnalysisExport.SCRIPTS.associateWith { Res.readBytes("files/analysis/$it") }
+                        viewModel?.exportForAnalysis(scripts)?.let { (name, bytes) -> platform.saveFile(name, bytes) }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(stringResource(Res.string.train_export_scripts)) }
+        }
         Work(state.work)
         if (model.sharedId == null) {
             ShareInvite(enabled = state.work == null) { onAction(TrainingAction.ShareWithEveryone) }

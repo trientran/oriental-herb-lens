@@ -290,6 +290,7 @@
     <string name="train_try_it">Încearcă-l</string>
     <string name="train_add_more">Adaugă mai multe</string>
     <string name="train_share">Distribuie .tflite</string>
+    <string name="train_export_scripts">Exportă cu scripturi Python</string>
     <string name="train_delete">Șterge modelul</string>
     <string name="train_delete_confirm">Ștergi %1$s? Acțiunea nu poate fi anulată.</string>
     <string name="train_quality">Calitate</string>

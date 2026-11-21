@@ -302,6 +302,7 @@
     <string name="train_try_it">Rhoi cynnig arni</string>
     <string name="train_add_more">Ychwanegu rhagor</string>
     <string name="train_share">Rhannu .tflite</string>
+    <string name="train_export_scripts">Allforio gyda sgriptiau Python</string>
     <string name="train_delete">Dileu’r model</string>
     <string name="train_delete_confirm">Dileu %1$s? Does dim modd dadwneud hyn.</string>
     <string name="train_quality">Ansawdd</string>

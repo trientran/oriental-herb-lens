@@ -286,6 +286,7 @@
     <string name="train_try_it">Uitproberen</string>
     <string name="train_add_more">Meer toevoegen</string>
     <string name="train_share">.tflite delen</string>
+    <string name="train_export_scripts">Exporteren met Python-scripts</string>
     <string name="train_delete">Model verwijderen</string>
     <string name="train_delete_confirm">%1$s verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
     <string name="train_quality">Kwaliteit</string>

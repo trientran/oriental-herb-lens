@@ -282,6 +282,7 @@
     <string name="train_try_it">ลองใช้</string>
     <string name="train_add_more">เพิ่มอีก</string>
     <string name="train_share">แชร์ .tflite</string>
+    <string name="train_export_scripts">ส่งออกพร้อมสคริปต์ Python</string>
     <string name="train_delete">ลบโมเดล</string>
     <string name="train_delete_confirm">ลบ %1$s ใช่ไหม การดำเนินการนี้เลิกทำไม่ได้</string>
     <string name="train_quality">คุณภาพ</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">Probatu</string>
     <string name="train_add_more">Gehitu gehiago</string>
     <string name="train_share">Partekatu .tflite</string>
+    <string name="train_export_scripts">Esportatu Python scriptekin</string>
     <string name="train_delete">Ezabatu eredua</string>
     <string name="train_delete_confirm">%1$s ezabatu nahi duzu? Ezin da desegin.</string>
     <string name="train_quality">Kalitatea</string>

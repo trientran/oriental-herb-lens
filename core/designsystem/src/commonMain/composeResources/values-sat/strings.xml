@@ -290,6 +290,7 @@
     <string name="train_try_it">ᱪᱮᱥᱴᱟᱭ ᱢᱮ</string>
     <string name="train_add_more">ᱟᱨᱦᱚᱸ ᱥᱮᱞᱮᱫ</string>
     <string name="train_share">.tflite ᱦᱟᱹᱴᱤᱧ</string>
+    <string name="train_export_scripts">Python ᱥᱠᱨᱤᱯᱴ ᱥᱟᱶ ᱦᱟᱹᱴᱤᱧ</string>
     <string name="train_delete">ᱢᱚᱰᱮᱞ ᱢᱮᱴᱟᱣ</string>
     <string name="train_delete_confirm">%1$s ᱢᱮᱴᱟᱣ ᱟᱢ ᱥᱮ? ᱱᱚᱶᱟ ᱫᱚ ᱫᱚᱦᱲᱟ ᱵᱟᱝ ᱨᱩᱣᱟᱹᱲ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾</string>
     <string name="train_quality">ᱜᱩᱱ</string>

@@ -286,6 +286,7 @@
     <string name="train_try_it">आज़माएँ</string>
     <string name="train_add_more">और जोड़ें</string>
     <string name="train_share">.tflite साझा करें</string>
+    <string name="train_export_scripts">Python स्क्रिप्ट के साथ निर्यात करें</string>
     <string name="train_delete">मॉडल हटाएँ</string>
     <string name="train_delete_confirm">%1$s हटाएँ? इसे पूर्ववत नहीं किया जा सकता।</string>
     <string name="train_quality">गुणवत्ता</string>

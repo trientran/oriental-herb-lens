@@ -666,9 +666,21 @@ class TrainingViewModel(
         val model = currentState.model ?: return null
         val bytes = store.tflite(model.id) ?: return null
         analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "file"))
-        val name = model.name.filter { it.isLetterOrDigit() || it == ' ' || it == '-' }.trim().replace(' ', '_').ifEmpty { "model" }
-        return "$name.tflite" to bytes
+        return "${fileName(model)}.tflite" to bytes
     }
+
+    /** The model with its photos' embeddings and [scripts] to use and check it in Python (see [AnalysisExport]), as a zip to save. */
+    suspend fun exportForAnalysis(scripts: Map<String, ByteArray>): Pair<String, ByteArray>? {
+        val model = currentState.model?.takeIf { !it.imported && it.trainedClasses.isNotEmpty() } ?: return null
+        val tflite = store.tflite(model.id) ?: return null
+        val head = store.head(model.id) ?: return null
+        val bytes = AnalysisExport.build(model, head, tflite, store.examples(model.id), scripts)
+        analytics.log(AnalyticsEvent.ModelShared(model.trainedClasses.size, to = "scripts"))
+        return "${fileName(model)}_scripts.zip" to bytes
+    }
+
+    private fun fileName(model: UserModel) =
+        model.name.filter { it.isLetterOrDigit() || it == ' ' || it == '-' }.trim().replace(' ', '_').ifEmpty { "model" }
 
     /** [failure] is the error shown if [block] fails; by default, from the screen it ran on. */
     private fun launchWork(failure: TrainingError? = null, block: suspend kotlinx.coroutines.CoroutineScope.() -> Unit) {
